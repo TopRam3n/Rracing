@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ROK Racers JA — Coming Soon</title>
+  <meta name="description" content="ROK Racers JA — Jamaica's motorsport community. Events, sightings and updates. Coming soon." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0b0b; --fg:#fff; --muted:#bdbdbd; --red:#e50914; --border:rgba(255,255,255,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;}
+    a{color:var(--fg);text-decoration:none}
+    .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+    /* NAV */
+    .nav{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.7),rgba(0,0,0,.2));backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--border)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:50px;height:50px;border-radius:8px;display:block;object-fit:contain}
+    .title{line-height:1}
+    .title h1{margin:0;font-family:"Bebas Neue", system-ui, sans-serif;letter-spacing:2px;font-size:22px}
+    .title small{color:var(--muted)}
+
+    .coming{position:fixed;left:0;right:0;bottom:0;background:#111;border-top:1px solid var(--border);text-align:center;padding:10px 8px;color:#fff;letter-spacing:1px;font-weight:600}
+
+    /* HERO */
+    .hero{position:relative;padding:80px 0}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
+    .headline{font-family:"Bebas Neue", sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
+    .sub{color:var(--muted);margin:14px 0 22px;max-width:60ch}
+    .cta{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{padding:12px 18px;border-radius:14px;border:1px solid var(--border);background:transparent;color:#fff}
+    .btn.primary{background:var(--fg);color:#000;border-color:#fff}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:999px;color:#fff;font-size:14px}
+
+    /* Movable car image (Apple-like motion) */
+    .car-stage{position:relative;perspective:900px;isolation:isolate}
+    .car-wrap{
+      position:relative;
+      width:100%;max-width:640px;margin-inline:auto;
+      transform-style:preserve-3d;
+      border-radius:18px;border:1px solid var(--border);overflow:hidden;
+      will-change:transform, filter;
+    }
+    .car{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+    .reflection{
+      content:"";position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(120deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40% 60%, rgba(255,255,255,.08));
+      mix-blend-mode:screen;opacity:.35;
+    }
+    .glow{position:absolute;inset:auto -10% -15% -10%;height:200px;background:radial-gradient(60% 60% at 50% 0%, rgba(229,9,20,.28), rgba(0,0,0,0));filter:blur(28px);opacity:.7;pointer-events:none;z-index:-1}
+
+    /* Sections */
+    .section{padding:64px 0;border-top:1px solid var(--border)}
+    .section h2{font-family:"Bebas Neue";letter-spacing:1px;font-size:40px;margin:0 0 18px}
+    .quote{background:#0f0f0f;border:1px solid var(--border);border-radius:16px;padding:22px;font-size:18px;line-height:1.4}
+    .quote footer{margin-top:10px;color:var(--muted);font-size:14px}
+
+    .ig{display:flex;align-items:center;gap:14px;background:#0f0f0f;border:1px solid var(--border);padding:14px;border-radius:14px}
+    .ig svg{width:22px;height:22px}
+
+    .subscribe{display:flex;gap:10px;flex-wrap:wrap}
+    .subscribe input{flex:1;min-width:200px;background:#0f0f0f;border:1px solid var(--border);color:#fff;padding:14px;border-radius:12px;outline:none}
+    .subscribe button{padding:14px 18px;border-radius:12px;background:var(--red);color:#fff;border:none}
+
+    @media (max-width: 900px){
+      .hero-grid{grid-template-columns:1fr;gap:20px}
+      .car{aspect-ratio:16/10}
+    }
+
+    /* Reduced motion accessibility */
+    @media (prefers-reduced-motion: reduce){
+      .car-wrap, .car { transition:none !important; animation:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <div class="nav">
+    <div class="wrap nav-inner">
+      <div class="brand">
+        <img src="Assets/logo.jpg" alt="RRXNG logo" class="logo-img">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Jamaica's motorsport community</small>
+        </div>
+      </div>
+      <a class="badge" href="#subscribe">Join newsletter</a>
+    </div>
+  </div>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <h2 class="headline">Built for the streets. <span style="color:var(--red)">Coming soon.</span></h2>
+          <p class="sub">Discover meets, share sightings and connect with Jamaica's car culture. Be first to know when we launch.</p>
+          <div class="cta">
+            <a class="btn primary" href="#subscribe">Subscribe</a>
+            <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
+          </div>
+        </div>
+
+        <!-- Apple-style motion block -->
+        <div class="car-stage">
+          <div id="card" class="car-wrap">
+            <img id="car" class="car" src="Assets/car.jpg" alt="ROK Racers JA build">
+            <div class="reflection"></div>
+          </div>
+          <div class="glow"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIAL -->
+    <section class="section">
+      <div class="wrap">
+        <h2>Testimony</h2>
+        <blockquote class="quote">“This is exactly what Jamaica's car scene needed — one place to find meets, share builds and link up.”
+          <footer>— Early Member, RRXNG Club</footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- INSTAGRAM HANDLE -->
+    <section class="section">
+      <div class="wrap">
+        <h2>Instagram</h2>
+        <div class="ig">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="#fff" stroke-opacity=".6"/><circle cx="12" cy="12" r="4" stroke="#fff" stroke-opacity=".6"/><circle cx="18" cy="6" r="1" fill="#fff"/></svg>
+          <div>
+            <div style="font-weight:700">@rrxngclub</div>
+            <a href="https://instagram.com/rrxngclub" target="_blank" rel="noopener" style="color:var(--muted)">instagram.com/rrxngclub →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUBSCRIBE -->
+    <section id="subscribe" class="section">
+      <div class="wrap">
+        <h2>Join the club</h2>
+        <p class="sub">Weekly drops: upcoming meets, top sightings, and community picks.</p>
+        <form class="subscribe" onsubmit="return subscribe(event)">
+          <input id="email" type="email" placeholder="you@email.com" required />
+          <button type="submit">Subscribe</button>
+        </form>
+        <p id="msg" class="sub" style="margin-top:10px;display:none">Thanks! We’ll send updates soon.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="coming">COMING SOON • ROK RACERS JA</div>
+
+  <script>
+    // ===== Apple-like motion (mouse parallax + scroll float + mobile tilt) =====
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stage = document.querySelector('.car-stage');
+    const card  = document.getElementById('card');
+
+    let mx = 0, my = 0;      // mouse normalized -1..1
+    let tx = 0, ty = 0;      // eased / target
+    let scrollYEase = 0;     // eased scroll offset
+    let tiltX = 0, tiltY = 0;// device tilt (mobile)
+
+    function normalize(val, max){ return Math.min(1, Math.max(-1, val / max)); }
+
+    if(!prefersReduced){
+      // Mouse move parallax (desktop)
+      window.addEventListener('mousemove', (e) => {
+        const rect = stage.getBoundingClientRect();
+        const cx = rect.left + rect.width/2;
+        const cy = rect.top  + rect.height/2;
+        mx = normalize(e.clientX - cx, rect.width/2);
+        my = normalize(e.clientY - cy, rect.height/2);
+      });
+
+      // Device tilt (mobile)
+      window.addEventListener('deviceorientation', (e)=>{
+        if (e.beta == null || e.gamma == null) return;
+        // gamma: left-right, beta: front-back
+        tiltY = Math.max(-1, Math.min(1, e.gamma / 30)); // -30..30°
+        tiltX = Math.max(-1, Math.min(1, e.beta  / 30));
+      }, true);
+
+      // Smooth scroll float
+      window.addEventListener('scroll', ()=>{
+        // ease in RAF
+      });
+
+      function raf(){
+        // Ease to mouse/tilt blend
+        const blendX = (mx * 0.8) + (tiltY * 0.2);
+        const blendY = (my * 0.8) + (tiltX * 0.2);
+
+        tx += (blendX - tx) * 0.06;
+        ty += (blendY - ty) * 0.06;
+
+        // subtle float on scroll
+        const targetScroll = window.scrollY * 0.05;
+        scrollYEase += (targetScroll - scrollYEase) * 0.08;
+
+        const rotY = tx * 6;     // rotate around Y (left-right)
+        const rotX = -ty * 4;    // rotate around X (up-down)
+        const transX = tx * 12;  // slight lateral shift
+        const transY = scrollYEase; // float with scroll
+
+        card.style.transform =
+          `translate3d(${transX}px, ${transY}px, 0) rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    }
+
+    // ===== Demo subscribe (swap to Mailchimp/ConvertKit embed when ready) =====
+    function subscribe(e){
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      document.getElementById('msg').style.display = 'block';
+      e.target.reset();
+      console.log('Captured email (hook to provider later):', email);
+      return false;
+    }
+    window.subscribe = subscribe;
+  </script>
+</body>
+</html>
