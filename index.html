@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ROK Racers JA — Coming Soon</title>
   <meta name="description" content="ROK Racers JA — Jamaica's motorsport community. Events, sightings and updates. Coming soon." />
-  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="theme-color" content="#141414" />
   <link rel="icon" href="/Assets/og.png" />
 
   <!-- Open Graph -->
@@ -30,7 +30,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
-    :root{ --bg:#0b0b0b; --fg:#fff; --muted:#bdbdbd; --red:#e50914; --border:rgba(255,255,255,.08); }
+    :root{
+      --bg:#141414;            /* matched page black */
+      --fg:#fff; --muted:#bdbdbd; --red:#e50914; --border:rgba(255,255,255,.08);
+    }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;}
@@ -50,6 +53,14 @@
 
     /* HERO */
     .hero{position:relative;padding:80px 0}
+    /* subtle page-level vignette & red wash to ground the 3D */
+    .hero::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(60% 40% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
+        radial-gradient(55% 35% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
+      mix-blend-mode:normal;
+    }
     .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
     .headline{font-family:"Bebas Neue", sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
     .sub{color:var(--muted);margin:14px 0 22px;max-width:60ch}
@@ -58,13 +69,27 @@
     .btn.primary{background:var(--fg);color:#000;border-color:#fff}
     .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:999px;color:#fff;font-size:14px}
 
-    /* 3D area */
+    /* 3D area — remove box feel */
     .car-stage{position:relative;perspective:900px;isolation:isolate}
     model-viewer{
-      width:100%;max-width:700px;height:480px;border-radius:18px;border:1px solid var(--border);background:#0f0f0f;
+      width:100%; max-width:740px; height:520px;
+      border:none; border-radius:0; background:transparent; /* no container box */
       --poster-color: transparent;
+      --progress-bar-color: transparent;
+      --progress-mask: none;
     }
-    .glow{position:absolute;inset:auto -10% -15% -10%;height:200px;background:radial-gradient(60% 60% at 50% 0%, rgba(229,9,20,.28), rgba(0,0,0,0));filter:blur(28px);opacity:.7;pointer-events:none;z-index:-1}
+    /* soft local vignette behind car (if any edge remains) */
+    .car-stage::before{
+      content:""; position:absolute; inset:-40px -60px -30px -60px; z-index:-1;
+      background: radial-gradient(60% 50% at 60% 55%, rgba(0,0,0,.35), transparent 70%);
+    }
+    /* floor shadow to anchor the model */
+    .car-stage .floor{
+      position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
+      width:min(80%,560px); height:120px; pointer-events:none;
+      background: radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
+      filter: blur(18px); opacity:.9;
+    }
 
     /* Sections */
     .section{padding:64px 0;border-top:1px solid var(--border)}
@@ -112,19 +137,24 @@
           </div>
         </div>
 
-        <!-- 3D model -->
+        <!-- 3D model (seamless) -->
         <div class="car-stage">
           <model-viewer
             src="Assets/car.glb"
             alt="ROK Racers JA 3D car"
             camera-controls
             auto-rotate
-            rotation-per-second="10deg"
-            exposure="1.15"
-            shadow-intensity="0.6"
-            environment-image="neutral">
+            rotation-per-second="8deg"
+            exposure="1.1"
+            shadow-intensity="0.8"
+            shadow-softness="1"
+            environment-image="neutral"
+            camera-orbit="20deg 65deg 28m"
+            field-of-view="25deg"
+            interaction-prompt="none"
+            disable-zoom>
           </model-viewer>
-          <div class="glow"></div>
+          <div class="floor"></div>
         </div>
       </div>
     </section>
