@@ -1,0 +1,15 @@
+<!doctype html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Loading…</title>
+<style>
+  html,body{height:100%;margin:0;background:#000;display:grid;place-items:center}
+  .skip{position:fixed;bottom:16px;color:#fff;opacity:.7}
+</style>
+</head><body>
+  <img src="Assets/racing.gif" alt="Loading" style="max-width:90%;height:auto"/>
+  <a class="skip" href="/">Skip →</a>
+<script>
+  const url=new URLSearchParams(location.search).get('to')||'/';
+  setTimeout(()=>location.href=url, 1200);
+</script>
+</body></html>
