@@ -6,22 +6,22 @@
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ROK Racers JA — Coming Soon</title>
-  <meta name="description" content="ROK Racers JA — Jamaica's motorsport community. Events, sightings and updates. Coming soon." />
+  <title>ROK Racers JA</title>
+  <meta name="description" content="ROK Racers JA — Jamaica's motorsport community. Events, sightings, builds, and updates." />
   <meta name="theme-color" content="#141414" />
   <link rel="icon" href="/Assets/og.png" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="ROK Racers JA — Coming Soon" />
-  <meta property="og:description" content="Jamaica's motorsport community. Events, sightings, and updates." />
+  <meta property="og:title" content="ROK Racers JA" />
+  <meta property="og:description" content="Jamaica's motorsport community. Events, sightings, builds, and updates." />
   <meta property="og:image" content="https://rokracersja.vercel.app/Assets/og.png" />
   <meta property="og:url" content="https://rokracersja.vercel.app/" />
   <meta property="og:type" content="website" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="ROK Racers JA — Coming Soon" />
-  <meta name="twitter:description" content="Jamaica's motorsport community. Events, sightings, and updates." />
+  <meta name="twitter:title" content="ROK Racers JA" />
+  <meta name="twitter:description" content="Jamaica's motorsport community. Events, sightings, builds, and updates." />
   <meta name="twitter:image" content="https://rokracersja.vercel.app/Assets/og.png" />
 
   <!-- Fonts -->
@@ -31,114 +31,126 @@
 
   <style>
     :root{
-      --bg:#141414;            /* matched page black */
-      --fg:#fff; --muted:#bdbdbd; --red:#e50914; --border:rgba(255,255,255,.08);
+      --bg-0:#141414; --bg-1:#161616; --bg-2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow-lg:0 40px 120px -30px rgba(0,0,0,.6);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;}
+    body{margin:0;background:var(--bg-0);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
     a{color:var(--fg);text-decoration:none}
-    .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-    /* NAV */
-    .nav{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.7),rgba(0,0,0,.2));backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--border)}
+    /* NAV (transparent -> solid on scroll) */
+    .nav{position:sticky;top:0;z-index:60;transition:background .35s ease,border-color .35s ease}
     .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:12px}
-    .logo-img{width:50px;height:50px;border-radius:8px;display:block;object-fit:contain}
+    .logo-img{width:48px;height:48px;border-radius:8px;display:block;object-fit:contain}
     .title{line-height:1}
-    .title h1{margin:0;font-family:"Bebas Neue", system-ui, sans-serif;letter-spacing:2px;font-size:22px}
+    .title h1{margin:0;font-family:"Bebas Neue",system-ui,sans-serif;letter-spacing:2px;font-size:22px}
     .title small{color:var(--muted)}
-
-    .coming{position:fixed;left:0;right:0;bottom:0;background:#111;border-top:1px solid var(--border);text-align:center;padding:10px 8px;color:#fff;letter-spacing:1px;font-weight:600}
+    .nav--solid{background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+    .menu{display:flex;gap:10px}
+    .btn{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);transition:transform .2s ease,background .2s ease}
+    .btn:hover{transform:translateY(-2px)}
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
 
     /* HERO */
     .hero{position:relative;padding:80px 0}
-    /* subtle page-level vignette & red wash to ground the 3D */
     .hero::before{
-      content:""; position:absolute; inset:0; pointer-events:none;
+      content:"";position:absolute;inset:0;pointer-events:none;
       background:
         radial-gradient(60% 40% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
         radial-gradient(55% 35% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
-      mix-blend-mode:normal;
     }
     .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
-    .headline{font-family:"Bebas Neue", sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
+    .headline{font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
+    .headline .accent{color:var(--accent)}
     .sub{color:var(--muted);margin:14px 0 22px;max-width:60ch}
-    .cta{display:flex;gap:12px;flex-wrap:wrap}
-    .btn{padding:12px 18px;border-radius:14px;border:1px solid var(--border);background:transparent;color:#fff}
-    .btn.primary{background:var(--fg);color:#000;border-color:#fff}
-    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:999px;color:#fff;font-size:14px}
 
-    /* 3D area — remove box feel */
+    /* 3D area (seamless) */
     .car-stage{position:relative;perspective:900px;isolation:isolate}
     model-viewer{
-      width:100%; max-width:740px; height:520px;
-      border:none; border-radius:0; background:transparent; /* no container box */
-      --poster-color: transparent;
-      --progress-bar-color: transparent;
-      --progress-mask: none;
+      width:100%;max-width:740px;height:520px;border:none;border-radius:0;background:transparent;
+      --poster-color:transparent;--progress-bar-color:transparent;--progress-mask:none;
     }
-    /* soft local vignette behind car (if any edge remains) */
     .car-stage::before{
-      content:""; position:absolute; inset:-40px -60px -30px -60px; z-index:-1;
-      background: radial-gradient(60% 50% at 60% 55%, rgba(0,0,0,.35), transparent 70%);
+      content:"";position:absolute;inset:-40px -60px -30px -60px;z-index:-1;
+      background:radial-gradient(60% 50% at 60% 55%, rgba(0,0,0,.35), transparent 70%);
     }
-    /* floor shadow to anchor the model */
     .car-stage .floor{
-      position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
-      width:min(80%,560px); height:120px; pointer-events:none;
-      background: radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
-      filter: blur(18px); opacity:.9;
+      position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+      width:min(80%,560px);height:120px;pointer-events:none;
+      background:radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
+      filter:blur(18px);opacity:.9;
     }
 
-    /* Sections */
-    .section{padding:64px 0;border-top:1px solid var(--border)}
-    .section h2{font-family:"Bebas Neue";letter-spacing:1px;font-size:40px;margin:0 0 18px}
-    .quote{background:#0f0f0f;border:1px solid var(--border);border-radius:16px;padding:22px;font-size:18px;line-height:1.4}
-    .quote footer{margin-top:10px;color:var(--muted);font-size:14px}
+    /* REVEAL + PARALLAX */
+    .reveal{opacity:0;transform:translateY(22px) scale(.98);transition:opacity .6s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform,opacity}
+    .reveal.is-in{opacity:1;transform:translateY(0) scale(1)}
+    [data-parallax]{will-change:transform}
 
-    .ig{display:flex;align-items:center;gap:14px;background:#0f0f0f;border:1px solid var(--border);padding:14px;border-radius:14px}
-    .ig svg{width:22px;height:22px}
+    /* CARDS + GRIDS */
+    .grid{display:grid;gap:24px}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    .cols-2{grid-template-columns:repeat(2,1fr)}
+    @media(max-width:960px){.cols-3,.cols-2{grid-template-columns:1fr}}
+    .card{background:var(--bg-1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
+    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .card img{display:block;width:100%;height:auto;transition:filter .25s}
+    .card:hover img{filter:brightness(1.06) contrast(1.02)}
+    .pad{padding:18px}
 
-    .subscribe{display:flex;gap:10px;flex-wrap:wrap}
-    .subscribe input{flex:1;min-width:200px;background:#0f0f0f;border:1px solid var(--border);color:#fff;padding:14px;border-radius:12px;outline:none}
-    .subscribe button{padding:14px 18px;border-radius:12px;background:var(--red);color:#fff;border:none}
+    /* SECTION */
+    section.section{padding:64px 0}
+    section.section + section.section{border-top:1px solid var(--line)}
 
-    @media (max-width: 900px){
-      .hero-grid{grid-template-columns:1fr;gap:20px}
-    }
+    /* Sponsors */
+    .sponsors{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;align-items:center}
+    .sponsors img{width:100%;opacity:.8;filter:grayscale(100%);transition:opacity .2s}
+    .sponsors img:hover{opacity:1}
+
+    /* Footer */
+    footer{padding:48px 0;border-top:1px solid var(--line);margin-top:64px}
+    footer .social{display:flex;gap:12px}
   </style>
 </head>
 <body>
   <!-- NAV -->
-  <div class="nav">
-    <div class="wrap nav-inner">
+  <nav class="nav">
+    <div class="container nav-inner">
       <div class="brand">
-        <img src="Assets/logo.png" alt="RRXNG logo" class="logo-img">
+        <img src="Assets/logo.png" alt="RRXNG logo" class="logo-img" />
         <div class="title">
           <h1>ROK RACERS JA</h1>
           <small>Jamaica's motorsport community</small>
         </div>
       </div>
-      <a class="badge" href="#subscribe">Join newsletter</a>
+      <div class="menu">
+        <a class="btn" href="/about.html">About</a>
+        <a class="btn" href="#events">Events</a>
+        <a class="btn" href="#sightings">Sightings</a>
+        <a class="btn primary" href="#subscribe">Join newsletter</a>
+      </div>
     </div>
-  </div>
+  </nav>
 
   <main>
     <!-- HERO -->
     <section class="hero">
-      <div class="wrap hero-grid">
-        <div>
-          <h2 class="headline">Built for the streets. <span style="color:var(--red)">Coming soon.</span></h2>
-          <p class="sub">Discover meets, share sightings and connect with Jamaica's car culture. Be first to know when we launch.</p>
-          <div class="cta">
+      <div class="container hero-grid">
+        <div class="reveal">
+          <h2 class="headline">Built for the <span class="accent">streets.</span></h2>
+          <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC & RRXNG.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
             <a class="btn primary" href="#subscribe">Subscribe</a>
             <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
           </div>
         </div>
 
         <!-- 3D model (seamless) -->
-        <div class="car-stage">
+        <div class="car-stage reveal" data-parallax="0.08">
           <model-viewer
             src="Assets/car.glb"
             alt="ROK Racers JA 3D car"
@@ -159,48 +171,188 @@
       </div>
     </section>
 
-    <!-- TESTIMONIAL -->
+    <!-- HIGHLIGHTS -->
     <section class="section">
-      <div class="wrap">
-        <h2>Testimony</h2>
-        <blockquote class="quote">“This is exactly what Jamaica's car scene needed — one place to find meets, share builds and link up.”
-          <footer>— Early Member, RRXNG Club</footer>
-        </blockquote>
+      <div class="container">
+        <h2 class="headline reveal">Highlights</h2>
+        <div class="grid cols-3">
+          <article class="card reveal">
+            <img src="Assets/highlight1.jpg" alt="News highlight (placeholder)" />
+            <div class="pad">
+              <h3 style="margin:0 0 6px">News</h3>
+              <p class="sub" style="margin:0">ROC launch roadmap & early partner program.</p>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img src="Assets/highlight2.jpg" alt="Events highlight (placeholder)" />
+            <div class="pad">
+              <h3 style="margin:0 0 6px">Events</h3>
+              <p class="sub" style="margin:0">Fresh meets dropping across Kingston & MoBay.</p>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img src="Assets/highlight3.jpg" alt="Merch highlight (placeholder)" />
+            <div class="pad">
+              <h3 style="margin:0 0 6px">Merch</h3>
+              <p class="sub" style="margin:0">RRXNG Club stickers & plates coming soon.</p>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
-    <!-- INSTAGRAM HANDLE -->
+    <!-- SIGHTINGS / BUILDS -->
+    <section id="sightings" class="section">
+      <div class="container">
+        <h2 class="headline reveal">Sightings & Builds</h2>
+        <div class="grid cols-3">
+          <article class="card reveal">
+            <img src="Assets/sighting1.jpg" alt="Sighting (placeholder)" />
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>@e36king</strong><small class="sub">Kingston</small>
+              </div>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img src="Assets/sighting2.jpg" alt="Sighting (placeholder)" />
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>@rotaryja</strong><small class="sub">Montego Bay</small>
+              </div>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img src="Assets/sighting3.jpg" alt="Sighting (placeholder)" />
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>@boosted876</strong><small class="sub">Ocho Rios</small>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="events" class="section">
+      <div class="container">
+        <h2 class="headline reveal">Upcoming Events</h2>
+        <div class="grid cols-3">
+          <article class="card reveal">
+            <div class="pad">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+                <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
+                  <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">NOV</div>
+                  <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">22</div>
+                </div>
+                <div>
+                  <strong>Montego Bay Night Meet</strong>
+                  <div class="sub">Fairview Parking Lot</div>
+                </div>
+              </div>
+              <a class="btn" href="#">Details</a>
+            </div>
+          </article>
+
+          <article class="card reveal">
+            <div class="pad">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+                <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
+                  <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">DEC</div>
+                  <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">05</div>
+                </div>
+                <div>
+                  <strong>Kingston Drift Challenge</strong>
+                  <div class="sub">Seaview Raceway</div>
+                </div>
+              </div>
+              <a class="btn" href="#">Details</a>
+            </div>
+          </article>
+
+          <article class="card reveal">
+            <div class="pad">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+                <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
+                  <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">DEC</div>
+                  <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">19</div>
+                </div>
+                <div>
+                  <strong>Portmore Cars & Coffee</strong>
+                  <div class="sub">MegaMart Car Park</div>
+                </div>
+              </div>
+              <a class="btn" href="#">Details</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SPONSORS -->
     <section class="section">
-      <div class="wrap">
-        <h2>Instagram</h2>
-        <div class="ig">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="#fff" stroke-opacity=".6"/><circle cx="12" cy="12" r="4" stroke="#fff" stroke-opacity=".6"/><circle cx="18" cy="6" r="1" fill="#fff"/></svg>
-          <div>
-            <div style="font-weight:700">@rrxngclub</div>
-            <a href="https://instagram.com/rrxngclub" target="_blank" rel="noopener" style="color:var(--muted)">instagram.com/rrxngclub →</a>
-          </div>
+      <div class="container reveal" data-parallax="0.06">
+        <h2 class="headline">Partners & Sponsors</h2>
+        <div class="sponsors" style="margin-top:16px">
+          <!-- Replace with monochrome SVG/PNGs -->
+          <img src="Assets/sponsors/brand1.png" alt="Brand 1" />
+          <img src="Assets/sponsors/brand2.png" alt="Brand 2" />
+          <img src="Assets/sponsors/brand3.png" alt="Brand 3" />
+          <img src="Assets/sponsors/brand4.png" alt="Brand 4" />
+          <img src="Assets/sponsors/brand5.png" alt="Brand 5" />
+          <img src="Assets/sponsors/brand6.png" alt="Brand 6" />
         </div>
       </div>
     </section>
 
     <!-- SUBSCRIBE -->
     <section id="subscribe" class="section">
-      <div class="wrap">
-        <h2>Join the club</h2>
+      <div class="container reveal">
+        <h2 class="headline">Join the club</h2>
         <p class="sub">Weekly drops: upcoming meets, top sightings, and community picks.</p>
-        <form class="subscribe" onsubmit="return subscribe(event)">
-          <input id="email" type="email" placeholder="you@email.com" required />
-          <button type="submit">Subscribe</button>
+        <form class="subscribe" onsubmit="return subscribe(event)" style="display:flex;gap:10px;flex-wrap:wrap">
+          <input id="email" type="email" placeholder="you@email.com" required
+                 style="flex:1;min-width:220px;background:var(--bg-1);border:1px solid var(--line);color:#fff;padding:14px;border-radius:12px;outline:none">
+          <button type="submit" class="btn primary">Subscribe</button>
         </form>
         <p id="msg" class="sub" style="margin-top:10px;display:none">Thanks! We’ll send updates soon.</p>
       </div>
     </section>
   </main>
 
-  <div class="coming">COMING SOON • ROK RACERS JA</div>
+  <footer class="container">
+    <div class="social">
+      <a class="btn icon" href="https://instagram.com/rrxngclub" aria-label="Instagram" target="_blank" rel="noopener">IG</a>
+      <a class="btn icon" href="#" aria-label="YouTube">YT</a>
+      <a class="btn icon" href="#" aria-label="X / Twitter">X</a>
+    </div>
+    <small class="sub" style="display:block;margin-top:14px">© ROK Racers JA. All rights reserved.</small>
+  </footer>
 
   <script>
-    // Demo subscribe (swap to Mailchimp/ConvertKit embed when ready)
+    // Nav darken on scroll
+    const nav = document.querySelector('.nav');
+    const setSolid = () => nav.classList.toggle('nav--solid', window.scrollY > 40);
+    setSolid(); window.addEventListener('scroll', setSolid);
+
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); });
+    }, { threshold:.18 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Subtle parallax for elements with data-parallax
+    const parallaxEls = [...document.querySelectorAll('[data-parallax]')];
+    window.addEventListener('scroll', ()=>{
+      const y = window.scrollY;
+      parallaxEls.forEach(el=>{
+        const speed = parseFloat(el.dataset.parallax) || 0.12; // 0.05–0.3
+        el.style.transform = `translate3d(0, ${y*speed}px, 0)`;
+      });
+    }, { passive:true });
+
+    // Demo subscribe (swap to Mailchimp/ConvertKit/Firebase later)
     function subscribe(e){
       e.preventDefault();
       const email = document.getElementById('email').value;

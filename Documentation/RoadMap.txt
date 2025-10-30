@@ -1,0 +1,145 @@
+ROK Racers JA — Revised Build Plan (2-Week, 3 Sprints)
+
+Tech stack (unchanged)
+
+Next.js (App Router) + Supabase (Auth, DB, Storage) + Vercel (deploy)
+Image: Next/Image; Forms: React Hook Form + Zod
+
+---
+
+## Sprint 1 (Days 1–5) — Foundation & Landing v2
+
+**Goals:** cinematic landing, profiles skeleton, data plumbing.
+
+**Deliverables**
+
+* Landing v2 polished (nav darken, reveal, parallax, 3D hero).
+* **Top 5 Builds grid** on landing (Lando-style cards) → each card clickable to the user’s Garage/build page; “See more” opens full Garage listing.
+* **Redirect page** using racing **GIF transition** (e.g., `/go`), used after actions like login or form submit.
+* Basic routes:
+
+  * `/garage` (discover builds, paginated grid)
+  * `/build/[id]` (detail stub)
+  * `/u/[handle]` (profile stub + user’s builds)
+* Newsletter connected (Firebase/ConvertKit).
+* OG/SEO finalized.
+
+**Data schema (create now)**
+
+* `users(id, handle, display_name, avatar_url, parish, bio, socials jsonb)`
+* `builds(id, user_id, type ENUM('owned','dream','sale'), base_make, base_model, base_year, trim, engine_code, stage, power_goal_whp, budget_jmd, cover_url, gallery jsonb[], notes, is_public bool DEFAULT true, likes_count int DEFAULT 0, created_at)`
+* `build_parts(id, build_id, category, brand, model, qty, price_jmd, meta jsonb)`
+* `likes(id, user_id, build_id, created_at)` (unique (user_id, build_id))
+
+**Key queries**
+
+* Top 5: `SELECT * FROM builds WHERE is_public=true ORDER BY likes_count DESC, created_at DESC LIMIT 5;`
+* Landing grid uses this; `/garage` uses infinite scroll.
+
+---
+
+## Sprint 2 (Days 6–10) — Profiles + Garage MVP
+
+**Goals:** let users create + manage builds; public/private; likes.
+
+**Deliverables**
+
+* **Auth** (Supabase: email + magic link + OAuth optional).
+* **Profile page** `/u/[handle]`:
+
+  * Edit profile (avatar, socials, parish).
+  * Tabs: **Garage** (Owned, Dream, Sale) + **About**.
+* **Create Build wizard** (3 steps):
+
+  1. Base car (make/model/year/trim) + Cover image
+  2. Type + Stage + Power goal + Privacy toggle (**Public/Private**)
+  3. Mods list (categories), costs (optional)
+* **Build page** `/build/[id]`:
+
+  * Gallery, Spec card, Mods grouped, Notes
+  * **Like button** (debounced); update `likes` + `likes_count`
+  * **Privacy enforcement** (RLS: only owner can see private)
+* **Discover Garage** `/garage`:
+
+  * Filters (make/model, type, stage, parish), sort (Newest / Most Liked)
+  * Lando-style **rounded-corner cards** with subtle neon outline on hover
+* **“See more”** from landing → `/garage?sort=top`
+
+---
+
+## Sprint 3 (Days 11–14) — Engagement + Monetization Hooks
+
+**Goals:** stickiness + investor appeal.
+
+**Deliverables**
+
+* **Build Logs** (timeline posts with photos) on `/build/[id]`.
+* **Clone as Dream** (make a copy under the current user).
+* **For-Sale flag** → contact form (lead capture table).
+* **Admin mini-dashboard** (counts: users, public builds, likes, top posts).
+* **Sponsors strip** (monochrome logos) + Partner CTA (Bert’s Auto Parts discount).
+* **Email triggers** (weekly digest: top builds/events).
+* **Polish**: skeleton loaders, empty states, animations tuned.
+
+---
+
+## UX & Component Spec (what to build)
+
+**Landing**
+
+* Top 5 grid (cards):
+
+  * Cover image, make/model, owner handle, parish chip, **♥ likes**
+  * Border style inspired by LN (rounded with subtle highlighted corner)
+  * Click → `/build/[id]`
+  * “See more” → `/garage?sort=top`
+* Racing GIF redirect page `/go`:
+
+  * Fullscreen GIF + 1.2s timeout → target; accessible “Skip” link.
+
+**Garage Cards**
+
+* Hover: lift + 1px neon border (RRXNG red); image brightens
+* Badges: Type (Owned/Dream/Sale), Stage (S1/S2/Track), Likes count
+
+**Build Page**
+
+* Left: Gallery (lightbox)
+* Right: Spec card (sticky), Like button, Share
+* Below: Mods grouped with totals; Build Log
+
+**Privacy**
+
+* Toggle in build form; `is_public=false` hides from all lists and only visible to owner (`RLS`)
+
+---
+
+## Supabase: RLS (outline)
+
+* `builds`: `auth.uid() = user_id` can `insert/update/delete`; `select` allowed where `is_public=true OR user_id=auth.uid()`.
+* `likes`: allow insert where `auth.uid()` present; unique constraint `(user_id, build_id)`.
+* Increment likes via RPC or on insert trigger to update `builds.likes_count`.
+
+---
+
+## Quick styles to match LN vibe (cards)
+
+* Card: `background:#161616; border:1px solid rgba(255,255,255,.08); border-radius:20px;`
+* Hover: outline accent `box-shadow: 0 0 0 2px rgba(229,9,20,.5) inset;`
+* Accent corner path (optional): pseudo-element with 1px line like LN.
+
+---
+
+## Immediate Next Actions (today)
+
+1. Add tables + RLS in Supabase (I can give you the SQL next).
+2. Add routes: `/garage`, `/build/[id]`, `/u/[handle]`, `/go`.
+3. Implement Landing “Top 5 builds” section (uses placeholder data until DB wired).
+4. Scaffold Create Build wizard (client-only, saving to Supabase).
+5. Wire Like button with optimistic update.
+
+Say the word and I’ll drop:
+
+* **SQL schema (copy-paste)**
+* **Minimal Next.js page skeletons** for `/garage`, `/build/[id]`, `/u/[handle]`, `/go`
+* **Client hooks** for likes and top-5 query.

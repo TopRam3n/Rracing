@@ -1,0 +1,169 @@
+🏁 ROK RACERS JA — FULL FEATURE LIST
+
+## 🌍 1. Landing Page / Public Website
+
+**Core Layout**
+
+* Cinematic hero section with **3D car model** (`.glb`) and Apple-style parallax rotation.
+* **Scroll-triggered transitions** — sections fade or slide in smoothly.
+* **Transparent navbar** that darkens on scroll; sticky on top.
+* **Responsive grid layout** optimized for mobile, tablet, desktop.
+* **Minimal, luxury-feel design** inspired by *Lando Norris* × *Apple*: high contrast blacks, motion highlights, soft neon edges.
+
+**Sections**
+
+* **Hero** — 3D car + headline + CTA (Subscribe / Follow).
+* **Top 5 Builds** — Most-liked public builds (Garage integration).
+
+  * Clickable cards → `/build/[id]`
+  * “See more” → `/garage?sort=top`
+* **Highlights / News / Merch** — card-based teaser section.
+* **Sightings & Events** — preview grid of community content.
+* **Partners & Sponsors** strip (monochrome logos).
+* **Instagram / Social links**.
+* **Newsletter sign-up** (Firebase or ConvertKit).
+* **Footer** — social icons + copyright.
+* **OG meta tags + custom thumbnail** for link sharing.
+
+**Animations & Visual Effects**
+
+* Parallax motion (mouse/scroll/tilt).
+* Reveal-on-scroll fade & slide.
+* Hover glow + subtle scaling on interactive elements.
+* Racing-GIF redirect page `/go` used between major navigations (1 s transition).
+
+---
+
+## 🧍‍♂️ 2. User Profiles / Accounts
+
+**Auth & Identity**
+
+* Supabase Auth (email login + OAuth).
+* Profile fields:
+
+  * Display Name
+  * Handle (`/u/[handle]`)
+  * Avatar
+  * Parish / Location
+  * Bio + Social links (Instagram, YouTube, TikTok)
+
+**Profile Page**
+
+* Public URL (`/u/[handle]`).
+* Tabs: Garage  |  About  |  Activity.
+* Displays user’s public builds as cards (Lando-style grid).
+* Followers / Following (optional v2).
+
+---
+
+## 🏎️ 3. Garage / Builds System
+
+**Garage Concept**
+
+* Each user has one garage → contains multiple builds.
+* **Build types:** Owned | Dream | For Sale.
+* Builds can be **Public or Private (draft)**.
+
+**Build Page (`/build/[id]`)**
+
+* Cover image + gallery (lightbox).
+* Specs summary: Make | Model | Year | Trim | Engine.
+* Mods list (grouped by category).
+* Power goal / Budget / Stage badges.
+* Owner profile card + socials.
+* Like button (♥) with real-time count.
+* Share link + social preview.
+* Build logs timeline (v2).
+
+**Create Build Wizard**
+
+1. Base Car → Make / Model / Year / Trim (+ photo).
+2. Type  |  Stage  |  Power goal  |  Privacy toggle (Public/Private).
+3. Mods list (category, brand, model, price, notes).
+
+**Garage Directory (`/garage`)**
+
+* Grid of all public builds.
+* Filters: Make, Model, Type, Stage, Parish.
+* Sort by Newest | Most Liked | Power | Budget.
+* Infinite scroll / pagination.
+* Cards show: cover image, name, likes, badges.
+* “Clone as Dream Build” (v2).
+
+**Like System**
+
+* Logged-in users can like builds (1 per build).
+* Likes stored in `likes` table + incremented counter in `builds.likes_count`.
+* Top 5 most-liked → Landing Page.
+
+**Privacy Rules**
+
+* Public builds → visible to everyone.
+* Private builds → visible only to owner.
+* RLS enforced in Supabase.
+
+---
+
+## 🧩 4. Parts & Vendors (Phase 2)
+
+* Optional “Parts Database” table for brands + categories.
+* Local vendors (Bert’s Auto Parts, Kingston etc).
+* Build mods can reference existing parts for fitment info + pricing.
+* Future integration: discount API / referral tracking.
+
+---
+
+## 💬 5. Community & Engagement
+
+* **Build Logs:** timeline posts with images + updates.
+* **Comments** (optional v2).
+* **Following system** (optional v2).
+* **Featured builds / badges** (Staff Pick, Community Fav).
+* **Weekly Digest Email** (top builds + upcoming events).
+* **Events integration:** link build → RSVP to event.
+
+---
+
+## 💰 6. Monetization Hooks
+
+* **Bert’s Auto Parts Partnership:** discounts for ROC users through site.
+* **Featured build placement** (paid promotion).
+* **Affiliate links** for parts stores / Amazon / local vendors.
+* **Inspection or quote requests** via ROC Mobile Mechanics.
+* **Merch / Shop section** (“RRXNG Club Gear”).
+
+---
+
+## ⚙️ 7. System & Tech Features
+
+* **Stack:** Next.js  |  Supabase (DB, Auth, Storage)  |  Vercel.
+* **RLS Security:** Owner-only writes, public read rules.
+* **Storage:** Supabase Storage (`/builds/{id}/images`).
+* **Analytics:** Google Analytics + Hotjar.
+* **SEO:** Dynamic Open Graph images per build.
+* **Responsive & PWA-ready.**
+
+---
+
+## 🎨 8. Design System / Branding
+
+* Colors:
+
+  * `#141414` Background
+  * `#FFFFFF` Text
+  * `#E50914` Accent (RRXNG Red)
+  * `#BDBDBD` Muted Text
+* Fonts: **Bebas Neue** (headings) + **Rajdhani** (body).
+* Style: Lando Norris × Apple hybrid (cinematic, smooth motion, high-contrast UI).
+* Hover states + neon red outline effects.
+* Card corners + grid spacing match Lando helmet gallery feel.
+
+---
+
+## 📅 9. Deployment / Admin Tools
+
+* **Admin Dashboard:** total users, builds, likes, top 5 list.
+* **CMS hook** for Highlights / News (WordPress or Strapi).
+* **Vercel hosting** + Supabase project link.
+* **Automatic build deployment** from GitHub.
+
