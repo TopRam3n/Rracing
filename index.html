@@ -95,7 +95,11 @@
     .grid{display:grid;gap:24px}
     .cols-3{grid-template-columns:repeat(3,1fr)}
     .cols-2{grid-template-columns:repeat(2,1fr)}
-    @media(max-width:960px){.cols-3,.cols-2{grid-template-columns:1fr}}
+    @media(max-width:960px){
+      .hero-grid{grid-template-columns:1fr}
+      .cols-3,.cols-2{grid-template-columns:1fr}
+      model-viewer{height:420px}
+    }
     .card{background:var(--bg-1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
     .card:hover{transform:translateY(-6px) scale(1.01)}
     .card img{display:block;width:100%;height:auto;transition:filter .25s}
@@ -114,35 +118,38 @@
     /* Footer */
     footer{padding:48px 0;border-top:1px solid var(--line);margin-top:64px}
     footer .social{display:flex;gap:12px}
+
+    /* Visually hidden for a11y */
+    .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   </style>
 </head>
 <body>
   <!-- NAV -->
-  <nav class="nav">
+  <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
-      <div class="brand">
-        <img src="Assets/logo.png" alt="RRXNG logo" class="logo-img" />
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="Assets/logo.png" alt="" class="logo-img" />
         <div class="title">
           <h1>ROK RACERS JA</h1>
           <small>Jamaica's motorsport community</small>
         </div>
-      </div>
-      <div class="menu">
-        <a class="btn" href="/about.html">About</a>
-        <a class="btn" href="#events">Events</a>
-        <a class="btn" href="#sightings">Sightings</a>
-        <a class="btn primary" href="#subscribe">Join newsletter</a>
+      </a>
+      <div class="menu" role="menubar" aria-label="Main menu">
+        <a class="btn" role="menuitem" href="/about.html">About</a>
+        <a class="btn" role="menuitem" href="#events">Events</a>
+        <a class="btn" role="menuitem" href="#sightings">Sightings</a>
+        <a class="btn primary" role="menuitem" href="#subscribe">Join newsletter</a>
       </div>
     </div>
   </nav>
 
-  <main>
+  <main id="main-content">
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
         <div class="reveal">
-          <h2 class="headline">Built for the <span class="accent">streets.</span></h2>
-          <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC & RRXNG.</p>
+          <h2 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h2>
+          <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</p>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <a class="btn primary" href="#subscribe">Subscribe</a>
             <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
@@ -153,7 +160,7 @@
         <div class="car-stage reveal" data-parallax="0.08">
           <model-viewer
             src="Assets/car.glb"
-            alt="ROK Racers JA 3D car"
+            alt="ROK Racers JA concept car preview"
             camera-controls
             auto-rotate
             rotation-per-second="8deg"
@@ -166,80 +173,17 @@
             interaction-prompt="none"
             disable-zoom>
           </model-viewer>
-          <div class="floor"></div>
+          <div class="floor" aria-hidden="true"></div>
         </div>
       </div>
     </section>
 
-    <!-- HIGHLIGHTS -->
-    <section class="section">
+    <!-- 🔥 EVENTS — moved directly under HERO -->
+    <section id="events" class="section" aria-labelledby="events-title">
       <div class="container">
-        <h2 class="headline reveal">Highlights</h2>
-        <div class="grid cols-3">
-          <article class="card reveal">
-            <img src="Assets/highlight1.jpg" alt="News highlight (placeholder)" />
-            <div class="pad">
-              <h3 style="margin:0 0 6px">News</h3>
-              <p class="sub" style="margin:0">ROC launch roadmap & early partner program.</p>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img src="Assets/highlight2.jpg" alt="Events highlight (placeholder)" />
-            <div class="pad">
-              <h3 style="margin:0 0 6px">Events</h3>
-              <p class="sub" style="margin:0">Fresh meets dropping across Kingston & MoBay.</p>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img src="Assets/highlight3.jpg" alt="Merch highlight (placeholder)" />
-            <div class="pad">
-              <h3 style="margin:0 0 6px">Merch</h3>
-              <p class="sub" style="margin:0">RRXNG Club stickers & plates coming soon.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- SIGHTINGS / BUILDS -->
-    <section id="sightings" class="section">
-      <div class="container">
-        <h2 class="headline reveal">Sightings & Builds</h2>
-        <div class="grid cols-3">
-          <article class="card reveal">
-            <img src="Assets/sighting1.jpg" alt="Sighting (placeholder)" />
-            <div class="pad">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong>@e36king</strong><small class="sub">Kingston</small>
-              </div>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img src="Assets/sighting2.jpg" alt="Sighting (placeholder)" />
-            <div class="pad">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong>@rotaryja</strong><small class="sub">Montego Bay</small>
-              </div>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img src="Assets/sighting3.jpg" alt="Sighting (placeholder)" />
-            <div class="pad">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong>@boosted876</strong><small class="sub">Ocho Rios</small>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- EVENTS -->
-    <section id="events" class="section">
-      <div class="container">
-        <h2 class="headline reveal">Upcoming Events</h2>
-        <div class="grid cols-3">
-          <article class="card reveal">
+        <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
+        <div class="grid cols-3" role="list">
+          <article class="card reveal" role="listitem">
             <div class="pad">
               <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
                 <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
@@ -255,7 +199,7 @@
             </div>
           </article>
 
-          <article class="card reveal">
+          <article class="card reveal" role="listitem">
             <div class="pad">
               <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
                 <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
@@ -271,7 +215,7 @@
             </div>
           </article>
 
-          <article class="card reveal">
+          <article class="card reveal" role="listitem">
             <div class="pad">
               <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
                 <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
@@ -279,7 +223,7 @@
                   <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">19</div>
                 </div>
                 <div>
-                  <strong>Portmore Cars & Coffee</strong>
+                  <strong>Portmore Cars &amp; Coffee</strong>
                   <div class="sub">MegaMart Car Park</div>
                 </div>
               </div>
@@ -290,33 +234,122 @@
       </div>
     </section>
 
+    <!-- 🏆 TOP BUILDS (stub for Supabase wiring) -->
+    <section id="top-builds" class="section" aria-labelledby="top-builds-title">
+      <div class="container">
+        <h2 id="top-builds-title" class="headline reveal">Top 5 Builds</h2>
+        <div class="grid cols-3" id="top-builds-grid" role="list" aria-live="polite">
+          <!-- Replace with dynamic cards from Supabase; placeholders for now -->
+          <article class="card reveal" role="listitem">
+            <img loading="lazy" src="Assets/build1.jpg" alt="Build highlight 1" />
+            <div class="pad"><strong>EK Civic — B18 Swap</strong><div class="sub">♥ 128 likes</div></div>
+          </article>
+          <article class="card reveal" role="listitem">
+            <img loading="lazy" src="Assets/build2.jpg" alt="Build highlight 2" />
+            <div class="pad"><strong>RX-7 — Bridgeport</strong><div class="sub">♥ 102 likes</div></div>
+          </article>
+          <article class="card reveal" role="listitem">
+            <img loading="lazy" src="Assets/build3.jpg" alt="Build highlight 3" />
+            <div class="pad"><strong>E36 — Drift Ready</strong><div class="sub">♥ 96 likes</div></div>
+          </article>
+        </div>
+        <div style="margin-top:14px">
+          <a class="btn" href="/garage.html">See more</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- HIGHLIGHTS -->
+    <section class="section" aria-labelledby="highlights-title">
+      <div class="container">
+        <h2 id="highlights-title" class="headline reveal">Highlights</h2>
+        <div class="grid cols-3">
+          <article class="card reveal">
+            <img loading="lazy" src="Assets/highlight1.jpg" alt="News highlight (placeholder)" />
+            <div class="pad">
+              <h3 style="margin:0 0 6px">News</h3>
+              <p class="sub" style="margin:0">ROC launch roadmap &amp; early partner program.</p>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img loading="lazy" src="Assets/highlight2.jpg" alt="Events highlight (placeholder)" />
+            <div class="pad">
+              <h3 style="margin:0 0 6px">Events</h3>
+              <p class="sub" style="margin:0">Fresh meets dropping across Kingston &amp; MoBay.</p>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img loading="lazy" src="Assets/highlight3.jpg" alt="Merch highlight (placeholder)" />
+            <div class="pad">
+              <h3 style="margin:0 0 6px">Merch</h3>
+              <p class="sub" style="margin:0">RRXNG Club stickers &amp; plates coming soon.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIGHTINGS / BUILDS -->
+    <section id="sightings" class="section" aria-labelledby="sightings-title">
+      <div class="container">
+        <h2 id="sightings-title" class="headline reveal">Sightings &amp; Builds</h2>
+        <div class="grid cols-3">
+          <article class="card reveal">
+            <img loading="lazy" src="Assets/sighting1.jpg" alt="Sighting in Kingston (placeholder)" />
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>@e36king</strong><small class="sub">Kingston</small>
+              </div>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img loading="lazy" src="Assets/sighting2.jpg" alt="Sighting in Montego Bay (placeholder)" />
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>@rotaryja</strong><small class="sub">Montego Bay</small>
+              </div>
+            </div>
+          </article>
+          <article class="card reveal">
+            <img loading="lazy" src="Assets/sighting3.jpg" alt="Sighting in Ocho Rios (placeholder)" />
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong>@boosted876</strong><small class="sub">Ocho Rios</small>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <!-- SPONSORS -->
-    <section class="section">
+    <section class="section" aria-labelledby="sponsors-title">
       <div class="container reveal" data-parallax="0.06">
-        <h2 class="headline">Partners & Sponsors</h2>
+        <h2 id="sponsors-title" class="headline">Partners &amp; Sponsors</h2>
         <div class="sponsors" style="margin-top:16px">
-          <!-- Replace with monochrome SVG/PNGs -->
-          <img src="Assets/sponsors/brand1.png" alt="Brand 1" />
-          <img src="Assets/sponsors/brand2.png" alt="Brand 2" />
-          <img src="Assets/sponsors/brand3.png" alt="Brand 3" />
-          <img src="Assets/sponsors/brand4.png" alt="Brand 4" />
-          <img src="Assets/sponsors/brand5.png" alt="Brand 5" />
-          <img src="Assets/sponsors/brand6.png" alt="Brand 6" />
+          <img loading="lazy" src="Assets/sponsors/brand1.png" alt="Brand 1" />
+          <img loading="lazy" src="Assets/sponsors/brand2.png" alt="Brand 2" />
+          <img loading="lazy" src="Assets/sponsors/brand3.png" alt="Brand 3" />
+          <img loading="lazy" src="Assets/sponsors/brand4.png" alt="Brand 4" />
+          <img loading="lazy" src="Assets/sponsors/brand5.png" alt="Brand 5" />
+          <img loading="lazy" src="Assets/sponsors/brand6.png" alt="Brand 6" />
         </div>
       </div>
     </section>
 
     <!-- SUBSCRIBE -->
-    <section id="subscribe" class="section">
+    <section id="subscribe" class="section" aria-labelledby="subscribe-title">
       <div class="container reveal">
-        <h2 class="headline">Join the club</h2>
+        <h2 id="subscribe-title" class="headline">Join the club</h2>
         <p class="sub">Weekly drops: upcoming meets, top sightings, and community picks.</p>
-        <form class="subscribe" onsubmit="return subscribe(event)" style="display:flex;gap:10px;flex-wrap:wrap">
-          <input id="email" type="email" placeholder="you@email.com" required
+        <form class="subscribe" onsubmit="return subscribe(event)" style="display:flex;gap:10px;flex-wrap:wrap" aria-label="Newsletter signup">
+          <label for="email" class="sr-only">Email address</label>
+          <input id="email" name="email" type="email" placeholder="you@email.com" required
+                 autocomplete="email"
                  style="flex:1;min-width:220px;background:var(--bg-1);border:1px solid var(--line);color:#fff;padding:14px;border-radius:12px;outline:none">
           <button type="submit" class="btn primary">Subscribe</button>
         </form>
-        <p id="msg" class="sub" style="margin-top:10px;display:none">Thanks! We’ll send updates soon.</p>
+        <p id="msg" class="sub" style="margin-top:10px;display:none" role="status">Thanks! We’ll send updates soon.</p>
       </div>
     </section>
   </main>
@@ -331,10 +364,21 @@
   </footer>
 
   <script>
+    // Respect reduced motion: pause auto-rotate if user prefers less motion
+    const mv = document.querySelector('model-viewer');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const applyMotionPref = () => {
+      if (!mv) return;
+      if (prefersReduced.matches) mv.removeAttribute('auto-rotate');
+      else mv.setAttribute('auto-rotate', '');
+    };
+    prefersReduced.addEventListener?.('change', applyMotionPref);
+    applyMotionPref();
+
     // Nav darken on scroll
     const nav = document.querySelector('.nav');
     const setSolid = () => nav.classList.toggle('nav--solid', window.scrollY > 40);
-    setSolid(); window.addEventListener('scroll', setSolid);
+    setSolid(); window.addEventListener('scroll', setSolid, { passive:true });
 
     // Reveal on scroll
     const io = new IntersectionObserver((entries)=>{
@@ -363,5 +407,9 @@
     }
     window.subscribe = subscribe;
   </script>
+
+  <noscript>
+    <style>.reveal{opacity:1;transform:none}</style>
+  </noscript>
 </body>
 </html>
