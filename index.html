@@ -11,6 +11,15 @@
   <meta name="theme-color" content="#141414" />
   <link rel="icon" href="/Assets/og.png" />
 
+  <!--Database Schema Meta Tags for Supabase-->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
+
   <!-- Open Graph -->
   <meta property="og:title" content="ROK Racers JA" />
   <meta property="og:description" content="Jamaica's motorsport community. Events, sightings, builds, and updates." />
@@ -123,6 +132,7 @@
     .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   </style>
 </head>
+
 <body>
   <!-- NAV -->
   <nav class="nav" role="navigation" aria-label="Primary">
@@ -409,7 +419,35 @@
   </script>
 
   <noscript>
+    
     <style>.reveal{opacity:1;transform:none}</style>
   </noscript>
+  <script>
+  async function loadEvents() {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id,title,starts_at,location,cover_url")
+      .order("starts_at", { ascending: true })
+      .limit(3);
+    if (error) return console.error(error);
+
+    const grid = document.getElementById("eventsGrid");
+    grid.innerHTML = data.map(e => {
+      const d = new Date(e.starts_at);
+      const m = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
+      const day = d.getDate().toString().padStart(2, "0");
+      return `
+        <article class="card reveal">
+          <div class="pad" style="display:flex;gap:12px;align-items:center">
+            <div class="date-badge"><div class="m">${m}</div><div class="d">${day}</div></div>
+            <div><strong>${e.title}</strong><div class="sub">${e.location || ""}</div></div>
+          </div>
+          <div class="pad"><a class="btn" href="/events/${e.id}">Details</a></div>
+        </article>`;
+    }).join("");
+  }
+  loadEvents();
+</script>
+
 </body>
 </html>
