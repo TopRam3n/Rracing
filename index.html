@@ -192,56 +192,10 @@
     <section id="events" class="section" aria-labelledby="events-title">
       <div class="container">
         <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
-        <div class="grid cols-3" role="list">
-          <article class="card reveal" role="listitem">
-            <div class="pad">
-              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-                <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
-                  <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">NOV</div>
-                  <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">22</div>
-                </div>
-                <div>
-                  <strong>Montego Bay Night Meet</strong>
-                  <div class="sub">Fairview Parking Lot</div>
-                </div>
-              </div>
-              <a class="btn" href="#">Details</a>
-            </div>
-          </article>
+        <div id="eventsGrid" class="grid cols-3" role="list" aria-live="polite">
+  <article class="card"><div class="pad sub">Loading events…</div></article>
+</div>
 
-          <article class="card reveal" role="listitem">
-            <div class="pad">
-              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-                <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
-                  <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">DEC</div>
-                  <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">05</div>
-                </div>
-                <div>
-                  <strong>Kingston Drift Challenge</strong>
-                  <div class="sub">Seaview Raceway</div>
-                </div>
-              </div>
-              <a class="btn" href="#">Details</a>
-            </div>
-          </article>
-
-          <article class="card reveal" role="listitem">
-            <div class="pad">
-              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-                <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center">
-                  <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">DEC</div>
-                  <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">19</div>
-                </div>
-                <div>
-                  <strong>Portmore Cars &amp; Coffee</strong>
-                  <div class="sub">MegaMart Car Park</div>
-                </div>
-              </div>
-              <a class="btn" href="#">Details</a>
-            </div>
-          </article>
-        </div>
-      </div>
     </section>
 
     <!-- 🏆 TOP BUILDS (stub for Supabase wiring) -->
@@ -424,30 +378,50 @@
   </noscript>
   <script>
   async function loadEvents() {
+    const grid = document.getElementById("eventsGrid");
+    if (!grid) return console.warn("eventsGrid not found in DOM");
+
     const { data, error } = await supabase
       .from("events")
       .select("id,title,starts_at,location,cover_url")
       .order("starts_at", { ascending: true })
       .limit(3);
-    if (error) return console.error(error);
 
-    const grid = document.getElementById("eventsGrid");
+    if (error) {
+      console.error("Supabase events error:", error);
+      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+      return;
+    }
+    if (!data || !data.length) {
+      grid.innerHTML = `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
+      return;
+    }
+
     grid.innerHTML = data.map(e => {
       const d = new Date(e.starts_at);
       const m = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
       const day = d.getDate().toString().padStart(2, "0");
       return `
-        <article class="card reveal">
+        <article class="card reveal" role="listitem">
           <div class="pad" style="display:flex;gap:12px;align-items:center">
-            <div class="date-badge"><div class="m">${m}</div><div class="d">${day}</div></div>
-            <div><strong>${e.title}</strong><div class="sub">${e.location || ""}</div></div>
+            <div class="date-badge">
+              <div class="m">${m}</div>
+              <div class="d">${day}</div>
+            </div>
+            <div>
+              <strong>${e.title}</strong>
+              <div class="sub">${e.location || ""}</div>
+            </div>
           </div>
-          <div class="pad"><a class="btn" href="/events/${e.id}">Details</a></div>
+          <div class="pad">
+            <a class="btn" href="/events/${e.id}">Details</a>
+          </div>
         </article>`;
     }).join("");
   }
   loadEvents();
 </script>
+
 
 </body>
 </html>
