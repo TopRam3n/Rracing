@@ -1,66 +1,82 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All Events — ROK Racers JA</title>
-  <meta name="description" content="See all upcoming events in Jamaica's car community." />
-  <link rel="icon" href="/Assets/og.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "<?= put your anon key here if not using a template engine ?>";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  </script>
-  <style>
-    :root{--bg:#141414;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08)}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    a{color:var(--fg);text-decoration:none} .container{max-width:1200px;margin:0 auto;padding:0 24px}
-    .nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px} .logo{width:48px;height:48px;border-radius:8px}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .section{padding:56px 0} .grid{display:grid;gap:24px} .cols-3{grid-template-columns:repeat(3,1fr)}
-    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
-    .card{background:#161616;border:1px solid var(--line);border-radius:20px;overflow:hidden;transition:.25s;box-shadow:0 40px 120px -30px rgba(0,0,0,.6)}
-    .card:hover{transform:translateY(-6px) scale(1.01)}
-    .pad{padding:18px} .sub{color:var(--muted)}
-    .date{background:#1b1b1b;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
-    .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}.date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
-    .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-    input,select{background:#1b1b1b;border:1px solid var(--line);color:#fff;padding:10px 12px;border-radius:12px;outline:none}
-    .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line)}
-    .pagination{display:flex;gap:10px;justify-content:center;margin-top:16px}
-  </style>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>All Events — ROK Racers JA</title>
+<meta name="description" content="See all upcoming car meets and events across Jamaica." />
+<link rel="icon" href="/Assets/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+  :root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:var(--fg);text-decoration:none} .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  .nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:8px}
+  .title small{color:var(--muted)} h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+  .section{padding:56px 0}.grid{display:grid;gap:24px}.cols-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+  .card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+  .card:hover{transform:translateY(-6px) scale(1.01)} .card img{display:block;width:100%;height:auto}
+  .pad{padding:18px}.sub{color:var(--muted)}
+  .date{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
+  .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}.date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+  input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none}
+  .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line)}
+  .btn.primary{background:#fff;color:#000;border-color:#fff}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
+  .pagination .btn[disabled]{opacity:.5;pointer-events:none}
+</style>
 </head>
 <body>
-  <nav class="nav">
+  <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
-      <a href="/" class="brand"><img src="/Assets/logo.png" class="logo" alt=""><div><h1>ROK RACERS JA</h1><small class="sub">Events</small></div></a>
-      <div><a class="btn" href="/">Home</a></div>
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div class="title"><h1>ROK RACERS JA</h1><small>Events</small></div>
+      </a>
+      <div class="actions">
+        <span id="userBadge" class="sub"></span>
+        <button id="signinBtn" class="btn">Sign in</button>
+        <button id="signoutBtn" class="btn" style="display:none">Sign out</button>
+        <a class="btn" href="/">Home</a>
+        <a id="addEventBtn" class="btn primary" href="#" style="display:none">Add Event</a>
+      </div>
     </div>
   </nav>
 
   <main class="container">
     <section class="section">
-      <h2>All Events</h2>
+      <h2 style="font-size:44px">All Events</h2>
 
-      <div class="filters">
-        <input id="q" placeholder="Search title or location…" />
-        <select id="month">
+      <div class="filters" role="region" aria-label="Event filters">
+        <input id="q" placeholder="Search title or location…" aria-label="Search"/>
+        <select id="month" aria-label="Month">
           <option value="">Any month</option>
           <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
           <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
           <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
           <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
         </select>
+        <select id="when" aria-label="When">
+          <option value="upcoming">Upcoming</option>
+          <option value="past">Past</option>
+          <option value="all">All</option>
+        </select>
         <button class="btn" id="apply">Apply</button>
       </div>
 
-      <div id="eventsList" class="grid cols-3">
-        <article class="card"><div class="pad sub">Loading…</div></article>
+      <div id="eventsList" class="grid cols-3" role="list" aria-live="polite">
+        <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
       </div>
 
       <div class="pagination">
@@ -71,68 +87,103 @@
   </main>
 
   <script>
-    const pageSize = 9;
-    let page = 0;
-
-    function withinMonth(dateStr, monthIndex){
-      if(monthIndex === "" || monthIndex === null || monthIndex === undefined || monthIndex === "") return true;
-      const d = new Date(dateStr); return d.getMonth() === Number(monthIndex);
+    // ------ auth mini-widget
+    async function refreshAuthUI(){
+      const { data: { user } } = await supabase.auth.getUser();
+      const badge = document.getElementById('userBadge');
+      const si = document.getElementById('signinBtn');
+      const so = document.getElementById('signoutBtn');
+      const add = document.getElementById('addEventBtn');
+      if(user){
+        badge.textContent = user.email;
+        si.style.display = 'none'; so.style.display = 'inline-flex';
+        add.style.display = 'inline-flex';
+      }else{
+        badge.textContent = '';
+        si.style.display = 'inline-flex'; so.style.display = 'none';
+        add.style.display = 'none';
+      }
     }
+    document.getElementById('signinBtn').onclick = async ()=>{
+      const email = prompt("Enter your email to sign in:");
+      if(!email) return;
+      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+      if(error) return alert("Sign-in error: " + error.message);
+      alert("Magic link sent! Check your email.");
+    };
+    document.getElementById('signoutBtn').onclick = async ()=>{ await supabase.auth.signOut(); await refreshAuthUI(); };
+    supabase.auth.onAuthStateChange(refreshAuthUI); refreshAuthUI();
 
-    async function loadAll(){
-      const list = document.getElementById('eventsList');
-      const q = document.getElementById('q').value.trim().toLowerCase();
-      const month = document.getElementById('month').value;
-
-      // Pull more than needed, then filter client-side for simplicity
-      const { data, error } = await supabase
-        .from('events')
-        .select('id,title,starts_at,location,cover_url')
-        .order('starts_at', { ascending: true });
-
-      if(error){
-        console.error(error);
-        list.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
-        return;
-      }
-
-      let rows = (data||[]).filter(e=>{
-        const text = `${e.title||''} ${e.location||''}`.toLowerCase();
-        return (!q || text.includes(q)) && (e.starts_at ? withinMonth(e.starts_at, month) : true);
+    // Simple “Add Event” flow (prompt-based for now)
+    document.getElementById('addEventBtn').onclick = async (e)=>{
+      e.preventDefault();
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){ alert("Sign in first."); return; }
+      const title = prompt("Event title:");
+      if(!title) return;
+      const starts = prompt("Starts at (YYYY-MM-DD HH:MM, 24h, local):");
+      if(!starts) return;
+      const locationTxt = prompt("Location (optional):");
+      // convert to ISO
+      const startsAt = new Date(starts.replace(' ', 'T') + ':00');
+      const { error } = await supabase.from('events').insert({
+        title, starts_at: startsAt.toISOString(), location: locationTxt || null, created_by: user.id
       });
+      if(error){ alert("Couldn’t add: " + error.message); return; }
+      alert("Event added!");
+      await loadAll(); // refresh list
+    };
 
-      const start = page*pageSize;
-      const slice = rows.slice(start, start+pageSize);
-
-      if(slice.length === 0){
-        list.innerHTML = `<article class="card"><div class="pad sub">No events found.</div></article>`;
-        return;
-      }
-
+    // ------ events list + filters/pagination
+    const pageSize = 9; let page = 0; let cached = [];
+    function withinMonth(dateStr, monthIndex){ if(monthIndex===""||monthIndex==null) return true; const d = new Date(dateStr); return d.getMonth()===Number(monthIndex); }
+    function isUpcoming(dateStr){ return new Date(dateStr) >= new Date(); }
+    function render(rows){
+      const list = document.getElementById('eventsList');
+      if(!rows.length){ list.innerHTML = `<article class="card"><div class="pad sub">No events found.</div></article>`; document.getElementById('prev').disabled = true; document.getElementById('next').disabled = true; return; }
+      const start = page*pageSize; const slice = rows.slice(start, start+pageSize);
       list.innerHTML = slice.map(e=>{
         const d = e.starts_at ? new Date(e.starts_at) : null;
-        const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase():"--";
-        const day = d ? String(d.getDate()).padStart(2,"0"):"--";
+        const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
         const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
+        const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
         return `
-          <article class="card">
+          <article class="card" role="listitem">
             ${img}
             <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
               <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
-              <div><strong>${e.title}</strong><div class="sub">${e.location||""}</div></div>
+              <div><strong>${e.title}</strong>${loc}</div>
             </div>
-            <div class="pad"><a class="btn" href="/event.html?id=${e.id}">Details</a></div>
+            <div class="pad"><a class="btn" href="event.html?id=${e.id}">Details</a></div>
           </article>`;
       }).join("");
-
       document.getElementById('prev').disabled = page===0;
       document.getElementById('next').disabled = (start+pageSize)>=rows.length;
     }
-
-    document.getElementById('apply').addEventListener('click', ()=>{page=0;loadAll();});
-    document.getElementById('prev').addEventListener('click', ()=>{if(page>0){page--;loadAll();}});
-    document.getElementById('next').addEventListener('click', ()=>{page++;loadAll();});
-    window.addEventListener('DOMContentLoaded', loadAll);
+    async function fetchAll(){
+      const list = document.getElementById('eventsList');
+      list.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+      const { data, error } = await supabase.from('events').select('id,title,starts_at,ends_at,location,cover_url').order('starts_at',{ascending:true});
+      if(error){ console.error(error); list.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`; return []; }
+      return data||[];
+    }
+    function applyFilters(){
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      const month = document.getElementById('month').value;
+      const when = document.getElementById('when').value;
+      let rows = cached.slice(0);
+      if(when==='upcoming') rows = rows.filter(r=>r.starts_at && isUpcoming(r.starts_at));
+      else if(when==='past') rows = rows.filter(r=>r.starts_at && !isUpcoming(r.starts_at));
+      if(month!=="") rows = rows.filter(r=>r.starts_at && withinMonth(r.starts_at, month));
+      if(q) rows = rows.filter(r => (`${r.title||""} ${r.location||""}`).toLowerCase().includes(q));
+      page = 0; render(rows);
+    }
+    document.getElementById('apply').addEventListener('click', applyFilters);
+    document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; applyFilters(); }});
+    document.getElementById('next').addEventListener('click', ()=>{ page++; applyFilters(); });
+    window.addEventListener('DOMContentLoaded', async ()=>{ cached = await fetchAll(); applyFilters(); });
   </script>
 </body>
 </html>
+    
