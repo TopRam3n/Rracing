@@ -15,22 +15,31 @@
 </script>
 <style>
   :root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  a{color:var(--fg);text-decoration:none} .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:var(--fg);text-decoration:none}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
   .nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-  .brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:8px}
-  .title small{color:var(--muted)} h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-  .section{padding:56px 0}.grid{display:grid;gap:24px}.cols-3{grid-template-columns:repeat(3,1fr)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:8px}
+  .title small{color:var(--muted)}
+  h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+  .section{padding:56px 0}
+  .grid{display:grid;gap:24px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
   @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
   .card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
-  .card:hover{transform:translateY(-6px) scale(1.01)} .card img{display:block;width:100%;height:auto}
-  .pad{padding:18px}.sub{color:var(--muted)}
+  .card:hover{transform:translateY(-6px) scale(1.01)}
+  .card img{display:block;width:100%;height:auto}
+  .pad{padding:18px}
+  .sub{color:var(--muted)}
   .date{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
-  .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}.date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
+  .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}
+  .date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
   .filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
   input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none}
-  .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line)}
+  .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
   .btn.primary{background:#fff;color:#000;border-color:#fff}
   .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
@@ -124,23 +133,29 @@
       const starts = prompt("Starts at (YYYY-MM-DD HH:MM, 24h, local):");
       if(!starts) return;
       const locationTxt = prompt("Location (optional):");
-      // convert to ISO
       const startsAt = new Date(starts.replace(' ', 'T') + ':00');
       const { error } = await supabase.from('events').insert({
         title, starts_at: startsAt.toISOString(), location: locationTxt || null, created_by: user.id
       });
       if(error){ alert("Couldn’t add: " + error.message); return; }
       alert("Event added!");
-      await loadAll(); // refresh list
+      cached = await fetchAll();
+      applyFilters();
     };
 
     // ------ events list + filters/pagination
     const pageSize = 9; let page = 0; let cached = [];
     function withinMonth(dateStr, monthIndex){ if(monthIndex===""||monthIndex==null) return true; const d = new Date(dateStr); return d.getMonth()===Number(monthIndex); }
     function isUpcoming(dateStr){ return new Date(dateStr) >= new Date(); }
+
     function render(rows){
       const list = document.getElementById('eventsList');
-      if(!rows.length){ list.innerHTML = `<article class="card"><div class="pad sub">No events found.</div></article>`; document.getElementById('prev').disabled = true; document.getElementById('next').disabled = true; return; }
+      if(!rows.length){
+        list.innerHTML = `<article class="card"><div class="pad sub">No events found.</div></article>`;
+        document.getElementById('prev').disabled = true;
+        document.getElementById('next').disabled = true;
+        return;
+      }
       const start = page*pageSize; const slice = rows.slice(start, start+pageSize);
       list.innerHTML = slice.map(e=>{
         const d = e.starts_at ? new Date(e.starts_at) : null;
@@ -148,12 +163,14 @@
         const day = d ? String(d.getDate()).padStart(2,"0") : "--";
         const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
         const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
+        const c = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+        const stats = `<div class="sub">✅ ${c.yes_count} · 🤔 ${c.maybe_count}</div>`;
         return `
           <article class="card" role="listitem">
             ${img}
             <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
               <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
-              <div><strong>${e.title}</strong>${loc}</div>
+              <div><strong>${e.title}</strong>${loc}${stats}</div>
             </div>
             <div class="pad"><a class="btn" href="event.html?id=${e.id}">Details</a></div>
           </article>`;
@@ -161,13 +178,31 @@
       document.getElementById('prev').disabled = page===0;
       document.getElementById('next').disabled = (start+pageSize)>=rows.length;
     }
+
     async function fetchAll(){
       const list = document.getElementById('eventsList');
       list.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
-      const { data, error } = await supabase.from('events').select('id,title,starts_at,ends_at,location,cover_url').order('starts_at',{ascending:true});
-      if(error){ console.error(error); list.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`; return []; }
-      return data||[];
+
+      const [eventsRes, countsRes] = await Promise.all([
+        supabase.from('events')
+          .select('id,title,starts_at,location,cover_url')
+          .order('starts_at',{ascending:true}),
+        supabase.from('event_rsvp_counts')
+          .select('event_id,yes_count,maybe_count,no_count')
+      ]);
+
+      if (eventsRes.error){
+        console.error(eventsRes.error);
+        list.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+        return [];
+      }
+
+      const counts = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
+      return (eventsRes.data||[]).map(e => ({
+        ...e, counts: counts.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+      }));
     }
+
     function applyFilters(){
       const q = document.getElementById('q').value.trim().toLowerCase();
       const month = document.getElementById('month').value;
@@ -182,8 +217,11 @@
     document.getElementById('apply').addEventListener('click', applyFilters);
     document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; applyFilters(); }});
     document.getElementById('next').addEventListener('click', ()=>{ page++; applyFilters(); });
-    window.addEventListener('DOMContentLoaded', async ()=>{ cached = await fetchAll(); applyFilters(); });
+
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      cached = await fetchAll();
+      applyFilters();
+    });
   </script>
 </body>
 </html>
-    
