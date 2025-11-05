@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Event — ROK Racers JA</title>
+<meta name="description" content="Event details for the Jamaican car community." />
+<link rel="icon" href="/Assets/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "<?= put your anon key here ?>";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+  :root{--bg:#141414;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08)}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:var(--fg);text-decoration:none} .container{max-width:900px;margin:0 auto;padding:0 24px}
+  .nav{position:sticky;top:0;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{display:flex;align-items:center;gap:12px} .logo{width:40px;height:40px;border-radius:8px}
+  h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0} .sub{color:var(--muted)}
+  .section{padding:48px 0} .card{background:#161616;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .pad{padding:18px}
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="brand"><img src="/Assets/logo.png" class="logo" alt=""><div><h1>ROK RACERS JA</h1><small class="sub">Event</small></div></a>
+      <div><a class="btn" href="/events.html" style="border:1px solid var(--line);padding:8px 12px;border-radius:12px">All events</a></div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div id="eventCard" class="card"><div class="pad sub">Loading…</div></div>
+    </section>
+  </main>
+
+  <script>
+    function fmt(d){
+      if(!d) return "";
+      const dt = new Date(d);
+      return dt.toLocaleString(undefined,{weekday:'short',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+    async function loadEvent(){
+      const id = new URLSearchParams(location.search).get('id');
+      const card = document.getElementById('eventCard');
+      if(!id){ card.innerHTML = `<div class="pad sub">Missing event ID.</div>`; return; }
+
+      const { data, error } = await supabase.from('events')
+        .select('id,title,starts_at,ends_at,location,description,cover_url')
+        .eq('id', id).maybeSingle();
+
+      if(error || !data){ card.innerHTML = `<div class="pad sub">Event not found.</div>`; return; }
+
+      card.innerHTML = `
+        ${data.cover_url ? `<img src="${data.cover_url}" alt="${data.title}" style="width:100%;display:block">` : ""}
+        <div class="pad">
+          <h2 style="font-size:40px">${data.title}</h2>
+          <div class="sub" style="margin:8px 0">${fmt(data.starts_at)}${data.ends_at?` — ${fmt(data.ends_at)}`:""}</div>
+          <div class="sub" style="margin:8px 0">${data.location||""}</div>
+          <p style="margin-top:12px">${(data.description||"").replace(/\n/g,'<br>')}</p>
+          <!-- Future: RSVP buttons, attach build, comments -->
+        </div>`;
+      document.title = `${data.title} — ROK Racers JA`;
+    }
+    loadEvent();
+  </script>
+</body>
+</html>
