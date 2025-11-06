@@ -14,36 +14,59 @@
   window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 <style>
-  :root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
+  :root{
+    --bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;
+    --line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)
+  }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
   a{color:var(--fg);text-decoration:none}
   .container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+  /* NAV */
   .nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
   .brand{display:flex;align-items:center;gap:12px}
   .logo{width:48px;height:48px;border-radius:8px}
   .title small{color:var(--muted)}
   h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+
   .section{padding:56px 0}
   .grid{display:grid;gap:24px}
   .cols-3{grid-template-columns:repeat(3,1fr)}
   @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+
   .card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
   .card:hover{transform:translateY(-6px) scale(1.01)}
   .card img{display:block;width:100%;height:auto}
   .pad{padding:18px}
   .sub{color:var(--muted)}
+
   .date{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
   .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}
   .date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
+
   .filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
   input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none}
   .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
   .btn.primary{background:#fff;color:#000;border-color:#fff}
   .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
+
   .pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
   .pagination .btn[disabled]{opacity:.5;pointer-events:none}
+
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:80}
+  .modal{width:min(720px,92vw);background:#121212;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+  .modal header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .modal h3{font-family:"Bebas Neue";font-size:28px;margin:0}
+  .modal .content{padding:18px;display:grid;gap:12px}
+  .row{display:grid;gap:10px}
+  .modal .actions{display:flex;gap:10px;justify-content:flex-end;padding:16px 18px;border-top:1px solid var(--line)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:720px){.two{grid-template-columns:1fr}}
+  .help{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -58,7 +81,7 @@
         <button id="signinBtn" class="btn">Sign in</button>
         <button id="signoutBtn" class="btn" style="display:none">Sign out</button>
         <a class="btn" href="/">Home</a>
-        <a id="addEventBtn" class="btn primary" href="#" style="display:none">Add Event</a>
+        <button id="addEventBtn" class="btn primary" style="display:none">+ Create Event</button>
       </div>
     </div>
   </nav>
@@ -95,8 +118,52 @@
     </section>
   </main>
 
+  <!-- Create Event Modal -->
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header>
+        <h3 id="modalTitle">Create Event</h3>
+        <button id="modalClose" class="btn" aria-label="Close">✕</button>
+      </header>
+      <div class="content">
+        <div class="row">
+          <label>Title
+            <input id="f_title" required placeholder="Event name" />
+          </label>
+        </div>
+        <div class="two">
+          <label>Starts at
+            <input id="f_starts" type="datetime-local" required />
+          </label>
+          <label>Ends at <span class="help">(optional)</span>
+            <input id="f_ends" type="datetime-local" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Location <span class="help">(optional)</span>
+            <input id="f_location" placeholder="Kingston, Fairview Parking Lot…" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Cover image URL <span class="help">(optional, HTTPS)</span>
+            <input id="f_cover" placeholder="https://…" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Description <span class="help">(optional)</span>
+            <textarea id="f_desc" rows="4" style="resize:vertical;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="modalCancel" class="btn">Cancel</button>
+        <button id="modalCreate" class="btn primary">Create</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ------ auth mini-widget
+    /* ========= Auth mini-widget ========= */
     async function refreshAuthUI(){
       const { data: { user } } = await supabase.auth.getUser();
       const badge = document.getElementById('userBadge');
@@ -123,29 +190,13 @@
     document.getElementById('signoutBtn').onclick = async ()=>{ await supabase.auth.signOut(); await refreshAuthUI(); };
     supabase.auth.onAuthStateChange(refreshAuthUI); refreshAuthUI();
 
-    // Simple “Add Event” flow (prompt-based for now)
-    document.getElementById('addEventBtn').onclick = async (e)=>{
-      e.preventDefault();
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ alert("Sign in first."); return; }
-      const title = prompt("Event title:");
-      if(!title) return;
-      const starts = prompt("Starts at (YYYY-MM-DD HH:MM, 24h, local):");
-      if(!starts) return;
-      const locationTxt = prompt("Location (optional):");
-      const startsAt = new Date(starts.replace(' ', 'T') + ':00');
-      const { error } = await supabase.from('events').insert({
-        title, starts_at: startsAt.toISOString(), location: locationTxt || null, created_by: user.id
-      });
-      if(error){ alert("Couldn’t add: " + error.message); return; }
-      alert("Event added!");
-      cached = await fetchAll();
-      applyFilters();
-    };
-
-    // ------ events list + filters/pagination
+    /* ========= Filters + List + RSVP badges ========= */
     const pageSize = 9; let page = 0; let cached = [];
-    function withinMonth(dateStr, monthIndex){ if(monthIndex===""||monthIndex==null) return true; const d = new Date(dateStr); return d.getMonth()===Number(monthIndex); }
+
+    function withinMonth(dateStr, monthIndex){
+      if(monthIndex===""||monthIndex==null) return true;
+      const d = new Date(dateStr); return d.getMonth()===Number(monthIndex);
+    }
     function isUpcoming(dateStr){ return new Date(dateStr) >= new Date(); }
 
     function render(rows){
@@ -163,16 +214,22 @@
         const day = d ? String(d.getDate()).padStart(2,"0") : "--";
         const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
         const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
-        const c = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
-        const stats = `<div class="sub">✅ ${c.yes_count} · 🤔 ${c.maybe_count}</div>`;
+        const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
         return `
           <article class="card" role="listitem">
             ${img}
             <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-              <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
-              <div><strong>${e.title}</strong>${loc}${stats}</div>
+              <div class="date">
+                <div class="m">${m}</div><div class="d">${day}</div>
+              </div>
+              <div><strong>${e.title}</strong>${loc}</div>
             </div>
-            <div class="pad"><a class="btn" href="event.html?id=${e.id}">Details</a></div>
+            <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="chip">✅ ${counts.yes_count}</span>
+              <span class="chip">🤔 ${counts.maybe_count}</span>
+              <span class="chip">❌ ${counts.no_count}</span>
+              <a class="btn" href="event.html?id=${e.id}" style="margin-left:auto">Details</a>
+            </div>
           </article>`;
       }).join("");
       document.getElementById('prev').disabled = page===0;
@@ -182,7 +239,6 @@
     async function fetchAll(){
       const list = document.getElementById('eventsList');
       list.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
-
       const [eventsRes, countsRes] = await Promise.all([
         supabase.from('events')
           .select('id,title,starts_at,location,cover_url')
@@ -190,17 +246,13 @@
         supabase.from('event_rsvp_counts')
           .select('event_id,yes_count,maybe_count,no_count')
       ]);
-
       if (eventsRes.error){
         console.error(eventsRes.error);
         list.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
         return [];
       }
-
       const counts = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
-      return (eventsRes.data||[]).map(e => ({
-        ...e, counts: counts.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
-      }));
+      return (eventsRes.data||[]).map(e => ({...e, counts: counts.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }}));
     }
 
     function applyFilters(){
@@ -208,19 +260,74 @@
       const month = document.getElementById('month').value;
       const when = document.getElementById('when').value;
       let rows = cached.slice(0);
+
       if(when==='upcoming') rows = rows.filter(r=>r.starts_at && isUpcoming(r.starts_at));
       else if(when==='past') rows = rows.filter(r=>r.starts_at && !isUpcoming(r.starts_at));
       if(month!=="") rows = rows.filter(r=>r.starts_at && withinMonth(r.starts_at, month));
       if(q) rows = rows.filter(r => (`${r.title||""} ${r.location||""}`).toLowerCase().includes(q));
+
       page = 0; render(rows);
     }
+
     document.getElementById('apply').addEventListener('click', applyFilters);
     document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; applyFilters(); }});
     document.getElementById('next').addEventListener('click', ()=>{ page++; applyFilters(); });
 
-    window.addEventListener('DOMContentLoaded', async ()=>{
+    window.addEventListener('DOMContentLoaded', async ()=>{ cached = await fetchAll(); applyFilters(); });
+
+    /* ========= Create Event Modal ========= */
+    const backdrop = document.getElementById('modalBackdrop');
+    const openModal = ()=>{ backdrop.style.display = 'flex'; backdrop.setAttribute('aria-hidden','false'); };
+    const closeModal = ()=>{ backdrop.style.display = 'none'; backdrop.setAttribute('aria-hidden','true'); };
+
+    document.getElementById('addEventBtn').addEventListener('click', async ()=>{
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){ alert("Sign in first."); return; }
+      openModal();
+    });
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) closeModal(); });
+
+    function toISO(localDT){
+      if(!localDT) return null;
+      // Interpret as local time
+      const [date, time] = localDT.split('T');
+      return new Date(`${date}T${time}:00`).toISOString();
+      // (If you want exact local without TZ shift, we can store as text; ISO is fine here.)
+    }
+
+    document.getElementById('modalCreate').addEventListener('click', async ()=>{
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){ alert("Sign in first."); return; }
+
+      const title = document.getElementById('f_title').value.trim();
+      const starts = document.getElementById('f_starts').value;
+      const ends = document.getElementById('f_ends').value;
+      const locationTxt = document.getElementById('f_location').value.trim() || null;
+      const cover = document.getElementById('f_cover').value.trim() || null;
+      const desc = document.getElementById('f_desc').value.trim() || null;
+
+      if(!title || !starts){ alert("Title and start time are required."); return; }
+
+      const row = {
+        title,
+        starts_at: toISO(starts),
+        ends_at: ends ? toISO(ends) : null,
+        location: locationTxt,
+        cover_url: cover,
+        description: desc,
+        created_by: user.id
+      };
+
+      const { error } = await supabase.from('events').insert(row);
+      if(error){ alert("Couldn’t create event: " + error.message); return; }
+
+      closeModal();
+      // Refresh list (keeps filters)
       cached = await fetchAll();
       applyFilters();
+      alert("Event created!");
     });
   </script>
 </body>

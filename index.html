@@ -115,6 +115,13 @@
     .card:hover img{filter:brightness(1.06) contrast(1.02)}
     .pad{padding:18px}
 
+    /*RSVP*/
+    /* RSVP chips + date badge (match Events page look) */
+    .chip{display:inline-flex;align-items:center;gap:6px;background:#1b1b1b;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
+    .date{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
+    .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}
+    .date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
+
     /* SECTION */
     section.section{padding:64px 0}
     section.section + section.section{border-top:1px solid var(--line)}
@@ -188,15 +195,22 @@
       </div>
     </section>
 
-<!-- 🔥 EVENTS — dynamic Supabase section -->
+<!-- 🔥 EVENTS — directly under HERO -->
 <section id="events" class="section" aria-labelledby="events-title">
   <div class="container">
     <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
 
-    <!-- Where cards will render -->
+    <!-- Grid filled by Supabase -->
     <div id="eventsGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card" role="listitem"><div class="pad sub">Loading events…</div></article>
+      <article class="card reveal" role="listitem"><div class="pad sub">Loading…</div></article>
     </div>
+
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <a class="btn" href="/events.html">See all events</a>
+    </div>
+  </div>
+</section>
+
 
     <!-- See all -->
     <div style="margin-top:14px">
@@ -538,7 +552,124 @@
     setupLiveLikes();
   });
 </script>
+<script>
+async function loadHomeEvents(){
+  const grid = document.getElementById('eventsGrid');
+  if(!grid) return;
 
+  const [eventsRes, countsRes] = await Promise.all([
+    supabase.from('events')
+      .select('id,title,starts_at,location,cover_url')
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(3),
+    supabase.from('event_rsvp_counts')
+      .select('event_id,yes_count,maybe_count,no_count')
+  ]);
+
+  if(eventsRes.error){
+    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+    return;
+  }
+
+  const countMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
+  const rows = eventsRes.data || [];
+
+  grid.innerHTML = rows.map(e=>{
+    const d = e.starts_at ? new Date(e.starts_at) : null;
+    const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+    const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+    const counts = countMap.get(e.id) || { yes_count: 0, maybe_count: 0, no_count: 0 };
+    const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
+
+    return `
+      <article class="card" role="listitem">
+        ${img}
+        <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <div class="date" style="background:#1b1b1b;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center">
+            <div class="m" style="font-family:'Bebas Neue';font-size:22px;line-height:1">${m}</div>
+            <div class="d" style="font-family:'Bebas Neue';font-size:26px;line-height:1">${day}</div>
+          </div>
+          <div>
+            <strong>${e.title}</strong>
+            ${e.location ? `<div class="sub">${e.location}</div>` : ""}
+          </div>
+        </div>
+        <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="chip">✅ ${counts.yes_count}</span>
+          <span class="chip">🤔 ${counts.maybe_count}</span>
+          <span class="chip">❌ ${counts.no_count}</span>
+          <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details</a>
+        </div>
+      </article>`;
+  }).join('') || `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
+}
+window.addEventListener('DOMContentLoaded', loadHomeEvents);
+</script>
+
+<script>
+  // Render helper for a single event card (with RSVP chips)
+  function renderEventCard(e){
+    const d = e.starts_at ? new Date(e.starts_at) : null;
+    const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+    const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+    const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
+    const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
+    const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+
+    return `
+      <article class="card reveal" role="listitem">
+        ${img}
+        <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
+          <div><strong>${e.title}</strong>${loc}</div>
+        </div>
+        <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="chip">✅ ${counts.yes_count}</span>
+          <span class="chip">🤔 ${counts.maybe_count}</span>
+          <span class="chip">❌ ${counts.no_count}</span>
+          <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details</a>
+        </div>
+      </article>`;
+  }
+
+  // Fetch top 3 soonest events + RSVP counts
+  async function loadFrontEvents(){
+    const grid = document.getElementById('eventsGrid');
+    grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+
+    // events + counts (uses your view `event_rsvp_counts`)
+    const [eventsRes, countsRes] = await Promise.all([
+      supabase.from('events')
+        .select('id,title,starts_at,location,cover_url')
+        .gte('starts_at', new Date().toISOString())
+        .order('starts_at', { ascending: true })
+        .limit(3),
+      supabase.from('event_rsvp_counts')
+        .select('event_id,yes_count,maybe_count,no_count')
+    ]);
+
+    if(eventsRes.error){
+      console.error(eventsRes.error);
+      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+      return;
+    }
+
+    const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
+    const rows = (eventsRes.data||[]).map(e => ({
+      ...e, counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+    }));
+
+    if(!rows.length){
+      grid.innerHTML = `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
+      return;
+    }
+
+    grid.innerHTML = rows.map(renderEventCard).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', loadFrontEvents);
+</script>
 
   <noscript>
     
