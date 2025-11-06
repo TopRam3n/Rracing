@@ -35,16 +35,23 @@
   .row{display:flex;gap:18px;align-items:center}
   .input{width:100%;background:#1b1b1b;border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none}
   .comment{border-top:1px solid var(--line);padding:14px 0}
+  .comment .actions{display:flex;gap:8px;margin-top:8px}
+  .presence{display:flex;gap:8px;align-items:center}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .grid{display:grid;gap:12px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  @media(max-width:760px){.cols-2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
   <nav class="nav">
     <div class="container nav-inner">
-      <a href="/" class="brand">
+      <a href="/events.html" class="brand" aria-label="Back to events">
         <img src="/Assets/logo.png" class="logo" alt="">
         <div><h1>ROK RACERS JA</h1><small class="sub">Event</small></div>
       </a>
       <div style="display:flex;gap:10px;align-items:center">
+        <span class="presence sub">👀 <span id="viewerCount">0</span> viewing</span>
         <span id="userBadge" class="sub"></span>
         <button id="signinBtn" class="btn">Sign in</button>
         <button id="signoutBtn" class="btn" style="display:none">Sign out</button>
@@ -70,7 +77,9 @@
   </main>
 
   <script>
-    // ---- auth mini-widget (email OTP)
+    // ===== auth mini-widget (email OTP)
+    let currentUserId = null;
+
     async function refreshAuthUI(){
       const { data: { user } } = await supabase.auth.getUser();
       const badge = document.getElementById('userBadge');
@@ -88,6 +97,7 @@
         so.style.display = 'none';
         form.style.display = 'none';
       }
+      currentUserId = user?.id || null;
     }
     document.getElementById('signinBtn').onclick = async ()=>{
       const email = prompt("Enter your email to sign in:");
@@ -96,33 +106,37 @@
       if(error) return alert("Sign-in error: " + error.message);
       alert("Magic link sent! Check your email.");
     };
-    document.getElementById('signoutBtn').onclick = async ()=>{ await supabase.auth.signOut(); await refreshAuthUI(); };
+    document.getElementById('signoutBtn').onclick = async ()=>{
+      await supabase.auth.signOut();
+      await refreshAuthUI();
+    };
     supabase.auth.onAuthStateChange(refreshAuthUI); refreshAuthUI();
 
-    // ---- helpers
+    // ===== helpers
     const eventId = new URLSearchParams(location.search).get('id');
     const el = (id)=>document.getElementById(id);
     const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
     function fmt(d){
       if(!d) return "";
       const dt = new Date(d);
       return dt.toLocaleString(undefined,{weekday:'short',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     }
 
-    // ---- event loader
+    // ===== event loader + creator tools
     async function loadEvent(){
       const card = el('eventCard');
       if(!eventId){ card.innerHTML = `<div class="pad sub">Missing event ID.</div>`; return; }
 
       const { data, error } = await supabase.from('events')
-        .select('id,title,starts_at,ends_at,location,description,cover_url')
+        .select('id,title,starts_at,ends_at,location,description,cover_url,created_by')
         .eq('id', eventId).maybeSingle();
 
       if(error || !data){ card.innerHTML = `<div class="pad sub">Event not found.</div>`; return; }
 
       document.title = `${data.title} — ROK Racers JA`;
       const time = `${fmt(data.starts_at)}${data.ends_at?` — ${fmt(data.ends_at)}`:""}`;
+
+      const canEdit = !!(currentUserId && data.created_by && data.created_by === currentUserId);
 
       card.innerHTML = `
         ${data.cover_url ? `<img src="${escapeHTML(data.cover_url)}" alt="${escapeHTML(data.title)}" style="width:100%;display:block">` : ""}
@@ -134,125 +148,253 @@
           </div>
           <p style="margin-top:14px">${escapeHTML(data.description||"").replace(/\n/g,'<br>')}</p>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-            <label class="sub" for="attachBuild">Attach build (optional):</label>
-            <select id="attachBuild" class="input" style="max-width:320px">
-              <option value="">— None —</option>
-            </select>
+          <div class="toolbar" id="ownerToolbar" style="${canEdit?'':'display:none'}">
+            <button class="btn" id="editBtn">Edit</button>
+            <button class="btn" id="deleteBtn">Delete</button>
+          </div>
 
-            <button class="btn" data-rsvp="yes">RSVP: Yes</button>
-            <button class="btn" data-rsvp="maybe">Maybe</button>
-            <button class="btn" data-rsvp="no">No</button>
+          <div class="grid cols-2" style="margin-top:12px">
+            <div>
+              <label class="sub" for="attachBuild">Attach build (optional):</label>
+              <select id="attachBuild" class="input" style="max-width:320px">
+                <option value="">— None —</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <button class="btn" data-rsvp="yes">RSVP: Yes</button>
+              <button class="btn" data-rsvp="maybe">Maybe</button>
+              <button class="btn" data-rsvp="no">No</button>
+              <span id="rsvpStatus" class="sub" style="margin-left:8px"></span>
+            </div>
+          </div>
 
-            <span id="rsvpStatus" class="sub" style="margin-left:8px"></span>
+          <!-- hidden inline editor -->
+          <div id="editForm" style="display:none;margin-top:14px" class="grid cols-2">
+            <input id="e_title" class="input" placeholder="Title" value="${escapeHTML(data.title)}">
+            <input id="e_location" class="input" placeholder="Location" value="${escapeHTML(data.location||'')}">
+            <input id="e_starts" class="input" placeholder="Starts (YYYY-MM-DD HH:MM)" value="${data.starts_at? new Date(data.starts_at).toISOString().slice(0,16).replace('T',' '):''}">
+            <input id="e_ends" class="input" placeholder="Ends (YYYY-MM-DD HH:MM)" value="${data.ends_at? new Date(data.ends_at).toISOString().slice(0,16).replace('T',' '):''}">
+            <input id="e_cover" class="input" placeholder="Cover URL" value="${escapeHTML(data.cover_url||'')}">
+            <textarea id="e_desc" class="input" rows="4" placeholder="Description">${escapeHTML(data.description||'')}</textarea>
+            <div style="display:flex;gap:10px">
+              <button id="saveEdit" class="btn primary">Save</button>
+              <button id="cancelEdit" class="btn">Cancel</button>
+            </div>
           </div>
         </div>`;
 
-      // now that buttons exist, bind listeners:
+      // RSVP buttons
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
         btn.addEventListener('click', ()=> upsertRsvp(btn.dataset.rsvp));
       });
 
-      // load builds + current RSVP after render
+      // Owner controls
+      if(canEdit){
+        el('editBtn').onclick = ()=> el('editForm').style.display = 'block';
+        el('cancelEdit').onclick = ()=> el('editForm').style.display = 'none';
+        el('saveEdit').onclick = async ()=>{
+          const title = el('e_title').value.trim();
+          const locationTxt = el('e_location').value.trim() || null;
+          const startsAt = el('e_starts').value.trim();
+          const endsAt = el('e_ends').value.trim();
+          const cover = el('e_cover').value.trim() || null;
+          const desc = el('e_desc').value.trim() || null;
+
+          const payload = {
+            title,
+            location: locationTxt,
+            cover_url: cover,
+            description: desc
+          };
+          if(startsAt) payload.starts_at = new Date(startsAt.replace(' ','T')).toISOString();
+          else payload.starts_at = null;
+          if(endsAt) payload.ends_at = new Date(endsAt.replace(' ','T')).toISOString();
+          else payload.ends_at = null;
+
+          const { error } = await supabase.from('events').update(payload).eq('id', eventId);
+          if(error) return alert('Update failed: ' + error.message);
+          await loadEvent();
+          alert('Saved.');
+        };
+        el('deleteBtn').onclick = async ()=>{
+          if(!confirm('Delete this event? This cannot be undone.')) return;
+          const { error } = await supabase.from('events').delete().eq('id', eventId);
+          if(error) return alert('Delete failed: ' + error.message);
+          location.href = '/events.html';
+        };
+      }
+
       await loadMyBuilds();
       await loadMyRsvp();
     }
 
-    // ---- comments (initial load)
+    // ===== comments (render + post + live)
+    function renderComment(c){
+      const dt = new Date(c.created_at).toLocaleString();
+      const isOwner = currentUserId && (c.user_id === currentUserId);
+      return `
+        <div class="comment" data-id="${c.id}" data-user="${c.user_id}">
+          <div class="sub" style="margin-bottom:6px">${escapeHTML(dt)}</div>
+          <div class="body" data-mode="view">${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
+          ${isOwner ? `
+            <div class="actions">
+              <button class="btn btn-edit" data-action="edit">Edit</button>
+              <button class="btn" data-action="delete">Delete</button>
+            </div>` : ``}
+        </div>`;
+    }
+
     async function loadComments(){
       const wrap = el('comments');
       const { data, error } = await supabase
         .from('comments')
-        .select('id, body, created_at, profile_id')
+        .select('id, body, created_at, user_id')
         .eq('event_id', eventId)
         .order('created_at', { ascending: true });
 
       if(error){ wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`; return; }
-
       if(!data || !data.length){
         wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
         return;
       }
-
       wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-      const inner = el('commentsInner');
-      inner.innerHTML = data.map(renderComment).join('');
+      el('commentsInner').innerHTML = data.map(renderComment).join('');
     }
 
-    function renderComment(c){
-      const dt = new Date(c.created_at).toLocaleString();
-      return `
-        <div class="comment" data-id="${c.id}">
-          <div class="sub" style="margin-bottom:6px">${escapeHTML(dt)}</div>
-          <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
-        </div>`;
-    }
-
-    // ---- live updates (Realtime)
-    let commentsChannel;
-    function setupLiveComments(){
-      if(!eventId) return;
-
-      // Create container if missing
-      const wrap = el('comments');
-      if(!wrap.innerHTML.trim()){
-        wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-      }
-      const innerEnsure = ()=> el('commentsInner') || (()=>{ wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`; return el('commentsInner'); })();
-
-      // subscribe to INSERTs for comments on this event
-      commentsChannel?.unsubscribe();
-      commentsChannel = supabase.channel(`comments-${eventId}`)
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
-          (payload) => {
-            const c = payload.new;
-            const inner = innerEnsure();
-            // remove "No comments yet" if present
-            if (wrap.querySelector('.sub') && wrap.textContent.includes('No comments yet')) {
-              wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-            }
-            inner.insertAdjacentHTML('beforeend', renderComment(c));
-          }
-        )
-        .subscribe();
-    }
-
-    // ---- post comment
+    // Post
     document.getElementById('commentPost').onclick = async ()=>{
       const input = el('commentText');
       const text = input.value.trim();
       if(!text) return;
-
       const { data: { user } } = await supabase.auth.getUser();
       if(!user){ alert("Please sign in first."); return; }
-
       const { error } = await supabase.from('comments').insert({
-        event_id: eventId,
-        body: text,
-        profile_id: user.id
+        event_id: eventId, body: text, user_id: user.id     /* <-- fixed */
       });
       if(error){ alert("Couldn’t post: " + error.message); return; }
-
       input.value = "";
-      // No need to reload; realtime will append it.
+      // realtime will append
     };
 
-    // ===== RSVP UI =====
+    // Edit/Delete via event delegation
+    el('comments').addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-action]');
+      if(!btn) return;
+      const commentEl = e.target.closest('.comment');
+      const id = commentEl?.dataset.id;
+      const action = btn.dataset.action;
+
+      if(action === 'delete'){
+        if(!confirm('Delete this comment?')) return;
+        const { error } = await supabase.from('comments').delete().eq('id', id);
+        if(error) return alert('Delete failed: ' + error.message);
+      }
+
+      if(action === 'edit'){
+        const bodyDiv = commentEl.querySelector('.body');
+        const mode = bodyDiv.dataset.mode;
+        if(mode === 'view'){
+          const text = bodyDiv.innerText;
+          bodyDiv.dataset.mode = 'edit';
+          bodyDiv.innerHTML = `<textarea class="input" rows="3">${escapeHTML(text)}</textarea>
+                               <div style="display:flex;gap:8px;margin-top:8px">
+                                 <button class="btn primary" data-action="save">Save</button>
+                                 <button class="btn" data-action="cancel">Cancel</button>
+                               </div>`;
+          btn.textContent = 'Editing…';
+          btn.disabled = true;
+        }
+      }
+
+      if(action === 'cancel'){
+        const { data, error } = await supabase.from('comments').select('*').eq('id', id).maybeSingle();
+        if(!error && data){
+          const node = e.target.closest('.comment');
+          node.outerHTML = renderComment(data);
+        }
+      }
+
+      if(action === 'save'){
+        const node = e.target.closest('.comment');
+        const ta = node.querySelector('textarea');
+        const newText = ta.value.trim();
+        if(!newText) return alert('Comment cannot be empty.');
+        const { error } = await supabase.from('comments').update({ body: newText }).eq('id', id);
+        if(error) return alert('Update failed: ' + error.message);
+      }
+    });
+
+    // realtime comments
+    let commentsChannel;
+    function setupLiveComments(){
+      if(!eventId) return;
+      commentsChannel?.unsubscribe();
+      commentsChannel = supabase.channel(`comments-${eventId}`)
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+            (payload) => {
+              const c = payload.new;
+              const wrap = el('comments');
+              if (wrap.textContent.includes('No comments yet')) {
+                wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
+              }
+              const inner = el('commentsInner') || (()=>{ wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`; return el('commentsInner'); })();
+              inner.insertAdjacentHTML('beforeend', renderComment(c));
+            })
+        .on('postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+            (payload) => {
+              const c = payload.new;
+              const node = document.querySelector(`.comment[data-id="${c.id}"]`);
+              if(node){ node.outerHTML = renderComment(c); }
+            })
+        .on('postgres_changes',
+            { event: 'DELETE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+            (payload) => {
+              const id = payload.old.id;
+              const node = document.querySelector(`.comment[data-id="${id}"]`);
+              node?.remove();
+              const inner = el('commentsInner');
+              if(inner && !inner.children.length){
+                el('comments').innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
+              }
+            })
+        .subscribe();
+    }
+
+    // presence (viewers)
+    let presenceChannel;
+    async function setupPresence(){
+      const { data: { user } } = await supabase.auth.getUser();
+      const key = user?.id || `anon-${crypto.getRandomValues(new Uint32Array(1))[0]}`;
+      presenceChannel?.unsubscribe();
+      presenceChannel = supabase.channel(`presence-event-${eventId}`, {
+        config: { presence: { key } }
+      });
+      presenceChannel
+        .on('presence', { event: 'sync' }, () => {
+          const state = presenceChannel.presenceState();
+          let count = 0; for (const _k in state) count++;
+          el('viewerCount').textContent = count;
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await presenceChannel.track({ eventId });
+          }
+        });
+    }
+
+    // RSVP helpers
     async function loadMyBuilds(){
       const { data: { user } } = await supabase.auth.getUser();
       const sel = el('attachBuild');
       if(!user || !sel) return;
-
       const { data, error } = await supabase
         .from('builds')
         .select('id,title,is_public')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-
       if(error) { console.error(error); return; }
-
       sel.innerHTML = `<option value="">— None —</option>` + (data||[]).map(b =>
         `<option value="${b.id}">${escapeHTML(b.title)}${b.is_public? '':' (private)'}</option>`
       ).join("");
@@ -263,16 +405,13 @@
       const badge = el('rsvpStatus');
       const sel = el('attachBuild');
       if(!user){ if(badge) badge.textContent=''; return; }
-
       const { data, error } = await supabase
         .from('rsvps')
         .select('status, build_id')
         .eq('event_id', eventId)
         .eq('profile_id', user.id)
         .maybeSingle();
-
       if(error){ console.error(error); return; }
-
       if(data){
         if(badge) badge.textContent = `Your RSVP: ${data.status}`;
         if(sel && data.build_id) sel.value = data.build_id;
@@ -286,7 +425,6 @@
       const { data: { user } } = await supabase.auth.getUser();
       if(!user){ alert('Sign in first.'); return; }
       const buildId = el('attachBuild')?.value || null;
-
       const { error } = await supabase
         .from('rsvps')
         .upsert({
@@ -295,17 +433,17 @@
           status: newStatus,
           build_id: buildId || null
         }, { onConflict: 'event_id,profile_id' });
-
       if(error){ alert('RSVP failed: ' + error.message); return; }
       await loadMyRsvp();
       alert('Saved!');
     }
 
-    // ---- boot
+    // boot
     window.addEventListener('DOMContentLoaded', async ()=>{
       await loadEvent();
       await loadComments();
       setupLiveComments();
+      setupPresence();
     });
   </script>
 </body>

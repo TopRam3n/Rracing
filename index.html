@@ -212,28 +212,17 @@
 
     <!-- 🏆 TOP BUILDS (stub for Supabase wiring) -->
     <section id="top-builds" class="section" aria-labelledby="top-builds-title">
-      <div class="container">
-        <h2 id="top-builds-title" class="headline reveal">Top 5 Builds</h2>
-        <div class="grid cols-3" id="top-builds-grid" role="list" aria-live="polite">
-          <!-- Replace with dynamic cards from Supabase; placeholders for now -->
-          <article class="card reveal" role="listitem">
-            <img loading="lazy" src="Assets/build1.jpg" alt="Build highlight 1" />
-            <div class="pad"><strong>EK Civic — B18 Swap</strong><div class="sub">♥ 128 likes</div></div>
-          </article>
-          <article class="card reveal" role="listitem">
-            <img loading="lazy" src="Assets/build2.jpg" alt="Build highlight 2" />
-            <div class="pad"><strong>RX-7 — Bridgeport</strong><div class="sub">♥ 102 likes</div></div>
-          </article>
-          <article class="card reveal" role="listitem">
-            <img loading="lazy" src="Assets/build3.jpg" alt="Build highlight 3" />
-            <div class="pad"><strong>E36 — Drift Ready</strong><div class="sub">♥ 96 likes</div></div>
-          </article>
-        </div>
-        <div style="margin-top:14px">
-          <a class="btn" href="/garage.html">See more</a>
-        </div>
-      </div>
-    </section>
+  <div class="container">
+    <h2 id="top-builds-title" class="headline">Top 5 Builds</h2>
+    <div class="grid cols-3" id="top-builds-grid" role="list" aria-live="polite">
+      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+    </div>
+    <div style="margin-top:14px">
+      <a class="btn" href="/garage.html">See more</a>
+    </div>
+  </div>
+</section>
+
 
     <!-- HIGHLIGHTS -->
     <section class="section" aria-labelledby="highlights-title">
@@ -442,6 +431,112 @@
 
   // important: call after DOM exists and after supabase is defined
   loadEvents();
+</script>
+<script>
+  // == Top-5 public builds ordered by likes_count
+  async function loadTopBuilds(){
+    const grid = document.getElementById('top-builds-grid');
+    const { data, error } = await supabase
+      .from('builds')
+      .select('id,title,images,likes_count,is_public,user_id')
+      .eq('is_public', true)
+      .order('likes_count', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if(error){ grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`; return; }
+    if(!data || !data.length){ grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`; return; }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const myId = user?.id || null;
+
+    // Check which builds I liked (optional)
+    let liked = new Set();
+    if(myId){
+      const { data: mine } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .in('build_id', data.map(b=>b.id))
+        .eq('user_id', myId);
+      liked = new Set((mine||[]).map(r=>r.build_id));
+    }
+
+    grid.innerHTML = data.map(b=>{
+      const imgUrl = Array.isArray(b.images) && b.images.length ? b.images[0] : null;
+      const heart = myId ? (liked.has(b.id) ? '♥' : '♡') : '♡';
+      const likeTitle = myId ? (liked.has(b.id) ? 'Unlike' : 'Like') : 'Sign in to like';
+
+      return `
+        <article class="card" role="listitem" data-build="${b.id}">
+          ${imgUrl ? `<img src="${imgUrl}" alt="${b.title}" loading="lazy">` : ""}
+          <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>${b.title}</strong><div class="sub">♥ <span class="likes">${b.likes_count||0}</span></div></div>
+            <button class="btn" data-like title="${likeTitle}">${heart}</button>
+          </div>
+        </article>`;
+    }).join("");
+
+    // Like/unlike handlers
+    grid.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-like]');
+      if(!btn) return;
+
+      const card = e.target.closest('article.card');
+      const buildId = card?.dataset.build;
+      const likesEl = card.querySelector('.likes');
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){ alert('Sign in to like builds.'); return; }
+
+      // check if already liked
+      const { data: likedRow } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .eq('build_id', buildId).eq('user_id', user.id).maybeSingle();
+
+      if(likedRow){
+        // unlike
+        const { error } = await supabase.from('build_likes')
+          .delete().eq('build_id', buildId).eq('user_id', user.id);
+        if(error) return alert('Unlike failed: ' + error.message);
+        btn.textContent = '♡';
+        btn.title = 'Like';
+        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+      }else{
+        // like
+        const { error } = await supabase.from('build_likes').insert({ build_id: buildId, user_id: user.id });
+        if(error) return alert('Like failed: ' + error.message);
+        btn.textContent = '♥';
+        btn.title = 'Unlike';
+        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+      }
+    });
+  }
+
+  // optional live like count updates (multi-user)
+  let likesChannel;
+  function setupLiveLikes(){
+    likesChannel?.unsubscribe();
+    likesChannel = supabase.channel('build-likes-live')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
+        const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
+        if(!card) return;
+        const likesEl = card.querySelector('.likes');
+        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
+        const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
+        if(!card) return;
+        const likesEl = card.querySelector('.likes');
+        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+      })
+      .subscribe();
+  }
+
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    await loadTopBuilds();
+    setupLiveLikes();
+  });
 </script>
 
 
