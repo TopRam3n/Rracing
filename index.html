@@ -65,7 +65,7 @@
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
 
     /* ===== HERO (wider canvas) ===== */
-    .hero{position:relative;padding:24px 0 0}
+    .hero{position:relative;padding:24px 0 24px}
     .hero::before{
       content:"";position:absolute;inset:0;pointer-events:none;
       background:
@@ -93,13 +93,13 @@
       align-items:center;
       justify-content:center;
       width:100vw;                           /* span full width */
-      height:min(86vh, 920px);               /* tall canvas */
+      height:min(78vh, 820px);               /* tall canvas */
       margin:0 calc(50% - 50vw);             /* pull to edges */
       overflow:visible;
     }
     model-viewer{
       display:block;
-      width:min(96vw, 1600px);               /* very wide model */
+      width:min(92vw, 1420px);               /* very wide model */
       height:100%;
       border:none;border-radius:0;background:transparent;
       --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
@@ -108,7 +108,7 @@
     /* bigger, softer stage glow/reflection */
     .car-stage::before{
       content:"";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:-1;
-      width:min(96vw, 1500px);height:28vh;
+      width:min(92vw, 1300px);height:22vh;
       background:radial-gradient(55% 70% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
       filter:blur(24px);opacity:.95;
     }
@@ -208,8 +208,8 @@
             shadow-intensity="0.9"
             shadow-softness="1"
             environment-image="neutral"
-            camera-orbit="0deg 65deg 8m"
-            field-of-view="20deg"
+            camera-orbit="0deg 65deg 9m"
+            field-of-view="17deg"
             interaction-prompt="none"
             disable-zoom>
           </model-viewer>
