@@ -65,54 +65,54 @@
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
 
     /* HERO */
-    .hero{position:relative;padding:84px 0}
-    .hero::before{
-      content:"";position:absolute;inset:0;pointer-events:none;
-      background:
-        radial-gradient(60% 40% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
-        radial-gradient(55% 35% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
-    }
-    .hero .container{max-width:1200px}
-    .hero-grid{
-      display:grid;
-      grid-template-columns:1fr; /* single column so car sits center */
-      gap:32px;
-      align-items:center;
-      justify-items:center;
-      text-align:center;
-    }
-    .headline{font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
-    .headline .accent{color:var(--accent)}
-    .sub{color:var(--muted);margin:14px 0 22px;max-width:65ch}
+    /* HERO */
+.hero{position:relative;padding:24px 0 0}                 /* tighter top pad */
+.hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(70% 50% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
+    radial-gradient(65% 45% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
+}
+.hero .container{max-width:none;padding-left:0;padding-right:0}  /* full bleed */
+.hero-grid{
+  display:grid;grid-template-columns:1fr;gap:24px;align-items:center;justify-items:center;text-align:center;
+}
 
-    /* 3D area (centered) */
-    .car-stage{
-      position:relative;
-      isolation:isolate;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin:0 auto;
-      height: clamp(420px, 62vh, 640px);
-      max-width: 1100px;
-    }
-    model-viewer{
-      display:block;
-      width:min(92vw, 980px);
-      height:100%;
-      border:none;border-radius:0;background:transparent;
-      --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
-    }
-    .car-stage::before{
-      content:"";position:absolute;inset:-40px -60px -30px -60px;z-index:-1;
-      background:radial-gradient(60% 50% at 50% 55%, rgba(0,0,0,.35), transparent 70%);
-    }
-    .car-stage .floor{
-      position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);
-      width:min(86%,680px);height:140px;pointer-events:none;
-      background:radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
-      filter:blur(22px);opacity:.9;
-    }
+/* 3D area (near full-bleed) */
+.car-stage{
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
+  width:100vw;                                          /* span full width */
+  height:min(86vh, 920px);                              /* tall canvas */
+  margin:0 calc(50% - 50vw);                            /* pull to edges */
+  overflow:visible;
+}
+model-viewer{
+  display:block;
+  width:min(96vw, 1600px);                              /* very wide model */
+  height:100%;
+  background:transparent;border:0;border-radius:0;
+  --poster-color:transparent;--progress-bar-color:transparent;--progress-mask:none;
+}
+
+/* bigger, softer stage glow/reflection */
+.car-stage::before{
+  content:"";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);
+  width:min(96vw, 1500px);height:28vh;z-index:-1;
+  background:radial-gradient(55% 70% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
+  filter:blur(24px);opacity:.95;
+}
+.car-stage .floor{
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:min(92vw, 1400px);height:180px;pointer-events:none;
+  background:radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.65), rgba(0,0,0,0));
+  filter:blur(22px);opacity:.9;
+}
+
+@media (max-width:960px){
+  model-viewer{width:98vw}
+  .car-stage{height:78vh}
+}
+
 
     /* REVEAL + PARALLAX */
     .reveal{opacity:0;transform:translateY(22px) scale(.98);transition:opacity .6s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform,opacity}
@@ -193,20 +193,21 @@
         <!-- 3D model (centered) -->
         <div class="car-stage reveal" data-parallax="0.06">
           <model-viewer
-            src="Assets/car.glb"
-            alt="ROK Racers JA concept car preview"
-            camera-controls
-            auto-rotate
-            rotation-per-second="8deg"
-            exposure="1.1"
-            shadow-intensity="0.8"
-            shadow-softness="1"
-            environment-image="neutral"
-            camera-orbit="0deg 70deg 26m"
-            field-of-view="25deg"
-            interaction-prompt="none"
-            disable-zoom>
-          </model-viewer>
+  src="Assets/car.glb"
+  alt="ROK Racers JA concept car preview"
+  camera-controls
+  auto-rotate
+  rotation-per-second="8deg"
+  exposure="1.1"
+  shadow-intensity="0.9"
+  shadow-softness="1"
+  environment-image="neutral"
+  camera-orbit="0deg 65deg 8m"     
+  field-of-view="20deg"           
+  interaction-prompt="none"
+  disable-zoom>
+</model-viewer>
+
           <div class="floor" aria-hidden="true"></div>
         </div>
       </div>

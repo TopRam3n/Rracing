@@ -1,0 +1,15 @@
+edit buttons to be readable 
+remove chatter from index file 
+add loading page with racing gif 
+edit highlights to be similar to lando Norris socials layout
+add background- create with canva. Site is a little bor9ing 
+merch to sell- Helmets, sunglasses, jackets, t shirts, sweatpamts
+clickable homeoage that brings you bavk to the top of homepage
+edit events button on hero to direct to all events page 
+red taillight background upon scroll
+night lights 
+drift marks
+burn out marks
+add configuration to acceot payments and reserve tickets
+add home to events
+add a pop up headline banner for annnouncements that runs across the page
