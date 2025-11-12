@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="Jamaica's motorsport community. Events, sightings, builds, and updates." />
   <meta name="twitter:image" content="https://rokracersja.vercel.app/Assets/og.png" />
 
-  <!-- Fonts (unchanged) -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@
     a{color:var(--fg);text-decoration:none}
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-    /* NAV (transparent -> solid on scroll) */
+    /* NAV */
     .nav{position:sticky;top:0;z-index:60;transition:background .35s ease,border-color .35s ease}
     .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:12px}
@@ -63,14 +63,27 @@
     .title h1{margin:0;font-family:"Bebas Neue",system-ui,sans-serif;letter-spacing:2px;font-size:22px}
     .title small{color:var(--muted)}
     .nav--solid{background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-    .menu{display:flex;gap:10px}
+    .menu{display:flex;gap:10px;align-items:center}
     .btn{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);transition:transform .2s ease,background .2s ease}
     .btn:hover{transform:translateY(-2px)}
     .btn.primary{background:#fff;color:#000;border-color:#fff}
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
     .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
-    /* ===== HERO (wider canvas) ===== */
+    /* Profile chip + dropdown (hero + optional in nav) */
+    .profile-wrap{position:relative;display:inline-block}
+    .profile-chip{display:flex;align-items:center;gap:10px;background:#1b1b1b;border:1px solid var(--line);color:#fff;
+      padding:8px 12px;border-radius:999px;cursor:pointer}
+    .profile-chip .avatar{width:28px;height:28px;border-radius:50%;background:#2a2a2a;display:grid;place-items:center;font-weight:600}
+    .profile-menu{position:absolute;right:0;top:110%;min-width:210px;background:#161616;border:1px solid var(--line);
+      border-radius:14px;box-shadow:0 20px 60px -20px rgba(0,0,0,.6);overflow:hidden;display:none}
+    .profile-menu a,.profile-menu button{width:100%;text-align:left;background:transparent;border:0;color:#fff;
+      padding:12px 14px;display:flex;gap:10px;align-items:center;cursor:pointer}
+    .profile-menu a:hover,.profile-menu button:hover{background:#1d1d1d}
+    .profile-wrap.open .profile-menu{display:block}
+    .hidden{display:none!important}
+
+    /* ===== HERO ===== */
     .hero{position:relative;padding:24px 0 24px}
     .hero::before{
       content:"";position:absolute;inset:0;pointer-events:none;
@@ -78,7 +91,6 @@
         radial-gradient(70% 50% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
         radial-gradient(65% 45% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
     }
-    /* Soft divider into Events */
     .hero::after{
       content:"";position:absolute;left:0;right:0;bottom:-1px;height:80px;pointer-events:none;
       background:linear-gradient(to bottom, rgba(20,20,20,0), rgba(20,20,20,1));
@@ -96,31 +108,29 @@
     .headline .accent{color:var(--accent)}
     .sub{color:var(--muted);margin:14px 0 22px;max-width:65ch}
 
-    /* ===== 3D area (near full-bleed) ===== */
+    /* 3D area */
     .car-stage{
       position:relative;
       isolation:isolate;
       display:flex;
       align-items:center;
       justify-content:center;
-      width:100vw;                           /* span full width */
-      height:min(78vh, 820px);               /* tall canvas */
-      margin:0 calc(50% - 50vw);             /* pull to edges */
+      width:100vw;
+      height:min(78vh, 820px);
+      margin:0 calc(50% - 50vw);
       overflow:visible;
     }
     model-viewer{
       display:block;
-      width:min(92vw, 1420px);               /* very wide model */
+      width:min(92vw, 1420px);
       height:100%;
       border:none;border-radius:0;background:transparent;
       backface-visibility: hidden;
-      transform: translateZ(0);               /* promote to its own layer */
-      contain: layout paint size; 
+      transform: translateZ(0);
+      contain: layout paint size;
       --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
       will-change: contents;
     }
-
-    /* bigger, softer stage glow/reflection */
     .car-stage::before{
       content:"";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:-1;
       width:min(92vw, 1300px);height:22vh;
@@ -172,8 +182,6 @@
     /* Footer */
     footer{padding:48px 0;border-top:1px solid var(--line);margin-top:64px}
     footer .social{display:flex;gap:12px}
-
-    /* Visually hidden for a11y */
     .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   </style>
 </head>
@@ -189,11 +197,17 @@
           <small>Jamaica's motorsport community</small>
         </div>
       </a>
+
       <div class="menu" role="menubar" aria-label="Main menu">
         <a class="btn" role="menuitem" href="/about.html">About</a>
         <a class="btn" role="menuitem" href="#events">Events</a>
+        <a class="btn" role="menuitem" href="/garage.html">Garage</a>
         <a class="btn" role="menuitem" href="#sightings">Sightings</a>
         <a class="btn primary" role="menuitem" href="#subscribe">Join newsletter</a>
+
+        <!-- Nav auth controls -->
+        <button id="signinBtn" class="btn" type="button">Sign in</button>
+        <button id="signoutBtn" class="btn" type="button" style="display:none">Sign out</button>
       </div>
     </div>
   </nav>
@@ -202,7 +216,23 @@
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
-        <div class="reveal">
+        <!-- Hero content -->
+        <div class="reveal" style="position:relative;width:100%;max-width:800px;margin:0 auto;text-align:center;">
+          <!-- HERO PROFILE (top-right in hero; only when signed in) -->
+          <div style="position:absolute; right:0; top:-6px;">
+            <div id="heroProfile" class="profile-wrap hidden">
+              <button id="profileChip" class="profile-chip" type="button" aria-haspopup="menu" aria-expanded="false">
+                <span class="avatar" id="profileAvatar">U</span>
+                <span id="profileEmail" class="sub"></span>
+              </button>
+              <div class="profile-menu" role="menu" aria-label="Profile">
+                <a href="/garage.html" role="menuitem">🚗 My Garage</a>
+                <a href="/tickets.html" role="menuitem">🎟️ Tickets</a>
+                <button id="signOutFromMenu" role="menuitem">↩︎ Sign out</button>
+              </div>
+            </div>
+          </div>
+
           <!-- H1 for SEO/semantics -->
           <h1 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h1>
           <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</p>
@@ -212,7 +242,7 @@
           </div>
         </div>
 
-        <!-- 3D model (near full-bleed, bigger stage) -->
+        <!-- 3D model (centered) -->
         <div class="car-stage" data-no-parallax>
           <model-viewer
             src="/Assets/car.glb"
@@ -241,7 +271,6 @@
       <div class="container">
         <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
 
-        <!-- Grid filled by Supabase -->
         <div id="eventsGrid" class="grid cols-3" role="list" aria-live="polite">
           <article class="card reveal" role="listitem"><div class="pad sub">Loading…</div></article>
         </div>
@@ -370,16 +399,11 @@
   </footer>
 
   <script>
-    // Respect reduced motion: pause auto-rotate if user prefers less motion
+    // ===== Motion preferences =====
     const mv = document.querySelector('model-viewer');
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const applyMotionPref = () => {
-      if (!mv) return;
-      if (prefersReduced.matches) mv.removeAttribute('auto-rotate');
-      else mv.setAttribute('auto-rotate', '');
-    };
-    prefersReduced.addEventListener?.('change', applyMotionPref);
-    applyMotionPref();
+    const applyMotionPref = () => { if (!mv) return; prefersReduced.matches ? mv.removeAttribute('auto-rotate') : mv.setAttribute('auto-rotate',''); };
+    prefersReduced.addEventListener?.('change', applyMotionPref); applyMotionPref();
 
     // Nav darken on scroll
     const nav = document.querySelector('.nav');
@@ -387,39 +411,68 @@
     setSolid(); window.addEventListener('scroll', setSolid, { passive:true });
 
     // Reveal on scroll
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); });
-    }, { threshold:.18 });
+    const io = new IntersectionObserver((entries)=>{ entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); }); }, { threshold:.18 });
     document.querySelectorAll('.reveal:not([data-no-reveal])').forEach(el => io.observe(el));
 
-    // Subtle parallax
-    const parallaxEls = [...document.querySelectorAll('[data-parallax]:not([data-no-parallax])')];
-    window.addEventListener('scroll', ()=>{
-      const y = window.scrollY;
-      parallaxEls.forEach(el=>{
-        const speed = parseFloat(el.dataset.parallax) || 0.12;
-        el.style.transform = `translate3d(0, ${y*speed}px, 0)`;
-      });
-    }, { passive:true });
-
-    // Demo subscribe
-    function subscribe(e){
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      document.getElementById('msg').style.display = 'block';
-      e.target.reset();
-      console.log('Captured email (hook to provider later):', email);
-      return false;
-    }
+    // Subscribe demo
+    function subscribe(e){ e.preventDefault(); const email = document.getElementById('email').value; document.getElementById('msg').style.display='block'; e.target.reset(); console.log('Captured email:', email); return false; }
     window.subscribe = subscribe;
 
-    // === Top-5 public builds (via view) ===
+    // ===== Auth mini-wiring =====
+    const $ = (sel)=>document.querySelector(sel);
+    const heroProfile = $('#heroProfile');
+    const chip = $('#profileChip');
+    const signOutFromMenu = $('#signOutFromMenu');
+    function initialsFromEmail(email){
+      if(!email) return 'U';
+      const name = email.split('@')[0].replace(/[^a-z0-9]+/gi,' ').trim();
+      const parts = name.split(' ').filter(Boolean);
+      if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    async function startSignin(){
+      const email = prompt("Enter your email to sign in:");
+      if(!email) return;
+      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+      if(error) return alert("Sign-in error: " + error.message);
+      alert("Magic link sent! Check your email.");
+    }
+    document.getElementById('signinBtn')?.addEventListener('click', startSignin);
+    document.getElementById('signoutBtn')?.addEventListener('click', async ()=>{ await supabase.auth.signOut(); await refreshProfile(); });
+
+    function closeProfileMenu(){ heroProfile?.classList.remove('open'); chip?.setAttribute('aria-expanded','false'); }
+    function toggleProfileMenu(e){ e?.stopPropagation?.(); heroProfile.classList.toggle('open'); chip?.setAttribute('aria-expanded', heroProfile.classList.contains('open')?'true':'false'); }
+    chip?.addEventListener('click', toggleProfileMenu);
+    document.addEventListener('click', (e)=>{ if(!heroProfile?.contains(e.target)) closeProfileMenu(); });
+    signOutFromMenu?.addEventListener('click', async ()=>{ await supabase.auth.signOut(); closeProfileMenu(); await refreshProfile(); });
+
+    async function refreshProfile(){
+      const { data: { user } } = await supabase.auth.getUser();
+      const navSignIn = document.getElementById('signinBtn');
+      const navSignOut = document.getElementById('signoutBtn');
+      if(user){
+        heroProfile?.classList.remove('hidden');
+        const email = user.email || '';
+        const avatar = $('#profileAvatar'); const emailEl = $('#profileEmail');
+        if(avatar) avatar.textContent = initialsFromEmail(email);
+        if(emailEl) emailEl.textContent = email;
+        if(navSignIn) navSignIn.style.display = 'none';
+        if(navSignOut) navSignOut.style.display = 'inline-flex';
+      }else{
+        heroProfile?.classList.add('hidden');
+        if(navSignIn) navSignIn.style.display = 'inline-flex';
+        if(navSignOut) navSignOut.style.display = 'none';
+      }
+    }
+    supabase.auth.onAuthStateChange(refreshProfile);
+    document.addEventListener('DOMContentLoaded', refreshProfile);
+
+    // ===== Top-5 public builds (from view) =====
     async function loadTopBuilds(){
       const grid = document.getElementById('top-builds-grid');
       if(!grid) return;
       grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
 
-      // Query the public view we created
       const { data, error } = await supabase
         .from('public_builds_with_like_count')
         .select('id,title,like_count,thumb_url')
@@ -445,7 +498,7 @@
           .from('build_likes')
           .select('build_id')
           .in('build_id', data.map(b => b.id))
-          .eq('user_id', auth.user.id); // using user_id
+          .eq('user_id', auth.user.id); // using user_id consistently
         likedSet = new Set((liked||[]).map(r => r.build_id));
       }
 
@@ -486,7 +539,7 @@
           .from('build_likes')
           .select('build_id')
           .eq('build_id', buildId)
-          .eq('user_id', auth.user.id) // using user_id
+          .eq('user_id', auth.user.id)
           .maybeSingle();
 
         if(existing){
@@ -515,7 +568,7 @@
       });
     }
 
-    // Live like count updates (single channel)
+    // Live like count updates (multi-user)
     let likesChannel;
     function setupLiveLikes(){
       likesChannel?.unsubscribe();
@@ -535,7 +588,7 @@
         .subscribe();
     }
 
-    // Events: single source of truth
+    // ===== Events (with RSVP counts) =====
     function renderEventCard(e){
       const d = e.starts_at ? new Date(e.starts_at) : null;
       const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
@@ -594,11 +647,12 @@
       grid.innerHTML = rows.map(renderEventCard).join('');
     }
 
-    // Boot once
+    // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
+      await refreshProfile();
       await loadTopBuilds();
       setupLiveLikes();
-      await loadFrontEvents();   // single events loader
+      await loadFrontEvents();
     });
   </script>
 
