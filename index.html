@@ -1,7 +1,8 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
   <!-- 3D model viewer -->
+  <link rel="preload" as="script" href="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <meta charset="utf-8" />
@@ -10,6 +11,7 @@
   <meta name="description" content="ROK Racers JA — Jamaica's motorsport community. Events, sightings, builds, and updates." />
   <meta name="theme-color" content="#141414" />
   <link rel="icon" href="/Assets/og.png" />
+  <link rel="canonical" href="https://rokracersja.vercel.app/">
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -37,6 +39,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
+  <!-- Preload hero poster for fast LCP -->
+  <link rel="preload" as="image" href="/Assets/car-poster.png" imagesrcset="/Assets/car-poster.png 1x">
+
   <style>
     :root{
       --bg-0:#141414; --bg-1:#161616; --bg-2:#1b1b1b;
@@ -63,6 +68,7 @@
     .btn:hover{transform:translateY(-2px)}
     .btn.primary{background:#fff;color:#000;border-color:#fff}
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
+    .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
     /* ===== HERO (wider canvas) ===== */
     .hero{position:relative;padding:24px 0 24px}
@@ -71,6 +77,11 @@
       background:
         radial-gradient(70% 50% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
         radial-gradient(65% 45% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
+    }
+    /* Soft divider into Events */
+    .hero::after{
+      content:"";position:absolute;left:0;right:0;bottom:-1px;height:80px;pointer-events:none;
+      background:linear-gradient(to bottom, rgba(20,20,20,0), rgba(20,20,20,1));
     }
     .hero .container{max-width:none;padding-left:0;padding-right:0}
     .hero-grid{
@@ -103,9 +114,10 @@
       height:100%;
       border:none;border-radius:0;background:transparent;
       backface-visibility: hidden;
-      transform: translateZ(0);          /* promote to its own layer */
+      transform: translateZ(0);               /* promote to its own layer */
       contain: layout paint size; 
       --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
+      will-change: contents;
     }
 
     /* bigger, softer stage glow/reflection */
@@ -138,7 +150,7 @@
     }
     .card{background:var(--bg-1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
     .card:hover{transform:translateY(-6px) scale(1.01)}
-    .card img{display:block;width:100%;height:auto;transition:filter .25s}
+    .card img{display:block;width:100%;height:auto;transition:filter .25s; aspect-ratio:16/9; object-fit:cover}
     .card:hover img{filter:brightness(1.06) contrast(1.02)}
     .pad{padding:18px}
 
@@ -154,8 +166,8 @@
 
     /* Sponsors */
     .sponsors{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;align-items:center}
-    .sponsors img{width:100%;opacity:.8;filter:grayscale(100%);transition:opacity .2s}
-    .sponsors img:hover{opacity:1}
+    .sponsors img{width:100%;opacity:.8;filter:grayscale(100%);transition:opacity .2s, transform .2s}
+    .sponsors img:hover{opacity:1; transform:scale(1.02)}
 
     /* Footer */
     footer{padding:48px 0;border-top:1px solid var(--line);margin-top:64px}
@@ -171,7 +183,7 @@
   <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="Assets/logo.png" alt="" class="logo-img" />
+        <img src="/Assets/logo.png" alt="" class="logo-img" />
         <div class="title">
           <h1>ROK RACERS JA</h1>
           <small>Jamaica's motorsport community</small>
@@ -191,7 +203,8 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
         <div class="reveal">
-          <h2 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h2>
+          <!-- H1 for SEO/semantics -->
+          <h1 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h1>
           <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</p>
           <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
             <a class="btn primary" href="#subscribe">Subscribe</a>
@@ -200,9 +213,10 @@
         </div>
 
         <!-- 3D model (near full-bleed, bigger stage) -->
-        <div class="car-stage reveal" data-no-parallax>
+        <div class="car-stage" data-no-parallax>
           <model-viewer
-            src="Assets/car.glb"
+            src="/Assets/car.glb"
+            poster="/Assets/car-poster.png"
             alt="ROK Racers JA concept car preview"
             camera-controls
             auto-rotate
@@ -216,6 +230,7 @@
             interaction-prompt="none"
             disable-zoom>
           </model-viewer>
+          <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
           <div class="floor" aria-hidden="true"></div>
         </div>
       </div>
@@ -256,21 +271,21 @@
         <h2 id="highlights-title" class="headline reveal">Highlights</h2>
         <div class="grid cols-3">
           <article class="card reveal">
-            <img loading="lazy" src="Assets/highlight1.jpg" alt="News highlight (placeholder)" />
+            <img loading="lazy" src="/Assets/highlight1.jpg" width="1200" height="675" alt="News highlight (placeholder)" />
             <div class="pad">
               <h3 style="margin:0 0 6px">News</h3>
               <p class="sub" style="margin:0">ROC launch roadmap &amp; early partner program.</p>
             </div>
           </article>
           <article class="card reveal">
-            <img loading="lazy" src="Assets/highlight2.jpg" alt="Events highlight (placeholder)" />
+            <img loading="lazy" src="/Assets/highlight2.jpg" width="1200" height="675" alt="Events highlight (placeholder)" />
             <div class="pad">
               <h3 style="margin:0 0 6px">Events</h3>
               <p class="sub" style="margin:0">Fresh meets dropping across Kingston &amp; MoBay.</p>
             </div>
           </article>
           <article class="card reveal">
-            <img loading="lazy" src="Assets/highlight3.jpg" alt="Merch highlight (placeholder)" />
+            <img loading="lazy" src="/Assets/highlight3.jpg" width="1200" height="675" alt="Merch highlight (placeholder)" />
             <div class="pad">
               <h3 style="margin:0 0 6px">Merch</h3>
               <p class="sub" style="margin:0">RRXNG Club stickers &amp; plates coming soon.</p>
@@ -286,7 +301,7 @@
         <h2 id="sightings-title" class="headline reveal">Sightings &amp; Builds</h2>
         <div class="grid cols-3">
           <article class="card reveal">
-            <img loading="lazy" src="Assets/sighting1.jpg" alt="Sighting in Kingston (placeholder)" />
+            <img loading="lazy" src="/Assets/sighting1.jpg" width="1200" height="675" alt="Sighting in Kingston (placeholder)" />
             <div class="pad">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <strong>@e36king</strong><small class="sub">Kingston</small>
@@ -294,7 +309,7 @@
             </div>
           </article>
           <article class="card reveal">
-            <img loading="lazy" src="Assets/sighting2.jpg" alt="Sighting in Montego Bay (placeholder)" />
+            <img loading="lazy" src="/Assets/sighting2.jpg" width="1200" height="675" alt="Sighting in Montego Bay (placeholder)" />
             <div class="pad">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <strong>@rotaryja</strong><small class="sub">Montego Bay</small>
@@ -302,7 +317,7 @@
             </div>
           </article>
           <article class="card reveal">
-            <img loading="lazy" src="Assets/sighting3.jpg" alt="Sighting in Ocho Rios (placeholder)" />
+            <img loading="lazy" src="/Assets/sighting3.jpg" width="1200" height="675" alt="Sighting in Ocho Rios (placeholder)" />
             <div class="pad">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <strong>@boosted876</strong><small class="sub">Ocho Rios</small>
@@ -318,12 +333,12 @@
       <div class="container reveal" data-parallax="0.06">
         <h2 id="sponsors-title" class="headline">Partners &amp; Sponsors</h2>
         <div class="sponsors" style="margin-top:16px">
-          <img loading="lazy" src="Assets/sponsors/brand1.png" alt="Brand 1" />
-          <img loading="lazy" src="Assets/sponsors/brand2.png" alt="Brand 2" />
-          <img loading="lazy" src="Assets/sponsors/brand3.png" alt="Brand 3" />
-          <img loading="lazy" src="Assets/sponsors/brand4.png" alt="Brand 4" />
-          <img loading="lazy" src="Assets/sponsors/brand5.png" alt="Brand 5" />
-          <img loading="lazy" src="Assets/sponsors/brand6.png" alt="Brand 6" />
+          <img loading="lazy" src="/Assets/sponsors/brand1.png" alt="Brand 1" />
+          <img loading="lazy" src="/Assets/sponsors/brand2.png" alt="Brand 2" />
+          <img loading="lazy" src="/Assets/sponsors/brand3.png" alt="Brand 3" />
+          <img loading="lazy" src="/Assets/sponsors/brand4.png" alt="Brand 4" />
+          <img loading="lazy" src="/Assets/sponsors/brand5.png" alt="Brand 5" />
+          <img loading="lazy" src="/Assets/sponsors/brand6.png" alt="Brand 6" />
         </div>
       </div>
     </section>
@@ -397,148 +412,143 @@
       return false;
     }
     window.subscribe = subscribe;
-  </script>
 
-  <!-- Top Builds (likes) -->
-  <script>
-  // === Top-5 public builds (via view) ===
-  async function loadTopBuilds(){
-    const grid = document.getElementById('top-builds-grid');
-    if(!grid) return;
-    grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+    // === Top-5 public builds (via view) ===
+    async function loadTopBuilds(){
+      const grid = document.getElementById('top-builds-grid');
+      if(!grid) return;
+      grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
 
-    // Query the public view we created
-    const { data, error } = await supabase
-      .from('public_builds_with_like_count')
-      .select('id,title,like_count,thumb_url')
-      .order('like_count', { ascending: false })
-      .order('id', { ascending: true })
-      .limit(5);
+      // Query the public view we created
+      const { data, error } = await supabase
+        .from('public_builds_with_like_count')
+        .select('id,title,like_count,thumb_url')
+        .order('like_count', { ascending: false })
+        .order('id', { ascending: true })
+        .limit(5);
 
-    if (error){
-      console.error(error);
-      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
-      return;
-    }
-    if (!data?.length){
-      grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`;
-      return;
-    }
-
-    // Which of these did I like?
-    const { data: auth } = await supabase.auth.getUser();
-    let likedSet = new Set();
-    if (auth?.user?.id){
-      const { data: liked } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .in('build_id', data.map(b => b.id))
-        .eq('user_id', auth.user.id);                      // <-- user_id (not profile_id)
-      likedSet = new Set((liked||[]).map(r => r.build_id));
-    }
-
-    grid.innerHTML = data.map(b => {
-      const heart = likedSet.has(b.id) ? '♥' : '♡';
-      const likeTitle = auth?.user ? (likedSet.has(b.id) ? 'Unlike' : 'Like') : 'Sign in to like';
-      const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy">` : '';
-      return `
-        <article class="card" role="listitem" data-build="${b.id}">
-          ${img}
-          <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <strong>${b.title}</strong>
-              <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
-            </div>
-            <button class="btn" data-like title="${likeTitle}">${heart}</button>
-          </div>
-        </article>`;
-    }).join('');
-
-    // Like / Unlike
-    grid.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('button[data-like]');
-      if(!btn) return;
-
-      const card = e.target.closest('article.card');
-      const buildId = card?.dataset.build;
-      const likesEl = card.querySelector('.likes');
-
-      const { data: auth } = await supabase.auth.getUser();
-      if(!auth?.user){ alert('Sign in to like builds.'); return; }
-
-      const { data: existing } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .eq('build_id', buildId)
-        .eq('user_id', auth.user.id)                       // <-- user_id
-        .maybeSingle();
-
-      if(existing){
-        const { error } = await supabase
-          .from('build_likes')
-          .delete()
-          .eq('build_id', buildId)
-          .eq('user_id', auth.user.id);                    // <-- user_id
-        if(error) return alert('Unlike failed: ' + error.message);
-        btn.textContent = '♡';
-        btn.title = 'Like';
-        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-      }else{
-        const { error } = await supabase
-          .from('build_likes')
-          .insert({ build_id: buildId, user_id: auth.user.id }); // <-- user_id
-        if(error) return alert('Like failed: ' + error.message);
-        btn.textContent = '♥';
-        btn.title = 'Unlike';
-        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+      if (error){
+        console.error(error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
+        return;
       }
-    });
-  }
+      if (!data?.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`;
+        return;
+      }
 
-  // Live like count updates (single channel)
-  let likesChannel;
-  function setupLiveLikes(){
-    likesChannel?.unsubscribe();
-    likesChannel = supabase.channel('build-likes-live')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
-        const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
-        if(!card) return;
-        const el = card.querySelector('.likes');
-        el.textContent = (parseInt(el.textContent)||0) + 1;
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
-        const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
-        if(!card) return;
-        const el = card.querySelector('.likes');
-        el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
-      })
-      .subscribe();
-  }
+      // Which of these did I like?
+      const { data: auth } = await supabase.auth.getUser();
+      let likedSet = new Set();
+      if (auth?.user?.id){
+        const { data: liked } = await supabase
+          .from('build_likes')
+          .select('build_id')
+          .in('build_id', data.map(b => b.id))
+          .eq('user_id', auth.user.id); // using user_id
+        likedSet = new Set((liked||[]).map(r => r.build_id));
+      }
 
-  // Boot
-  document.addEventListener('DOMContentLoaded', async () => {
-    await loadTopBuilds();
-    setupLiveLikes();
-  });
-</script>
+      grid.innerHTML = data.map(b => {
+        const isLiked = likedSet.has(b.id);
+        const heart = isLiked ? '♥' : '♡';
+        const likeTitle = auth?.user ? (isLiked ? 'Unlike build' : 'Like build') : 'Sign in to like';
+        const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" width="1200" height="675">` : '';
+        return `
+          <article class="card" role="listitem" data-build="${b.id}">
+            ${img}
+            <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <strong>${b.title}</strong>
+                <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
+              </div>
+              <button class="btn" data-like
+                aria-pressed="${isLiked ? 'true':'false'}"
+                aria-label="${likeTitle}"
+                title="${likeTitle}">${heart}</button>
+            </div>
+          </article>`;
+      }).join('');
 
+      // Like / Unlike with ARIA updates
+      grid.addEventListener('click', async (e)=>{
+        const btn = e.target.closest('button[data-like]');
+        if(!btn) return;
 
+        const card = e.target.closest('article.card');
+        const buildId = card?.dataset.build;
+        const likesEl = card.querySelector('.likes');
 
+        const { data: auth } = await supabase.auth.getUser();
+        if(!auth?.user){ alert('Sign in to like builds.'); return; }
 
-  <!-- Events: single source of truth -->
-  <script>
+        const { data: existing } = await supabase
+          .from('build_likes')
+          .select('build_id')
+          .eq('build_id', buildId)
+          .eq('user_id', auth.user.id) // using user_id
+          .maybeSingle();
+
+        if(existing){
+          const { error } = await supabase
+            .from('build_likes')
+            .delete()
+            .eq('build_id', buildId)
+            .eq('user_id', auth.user.id);
+          if(error) return alert('Unlike failed: ' + error.message);
+          btn.textContent = '♡';
+          btn.title = 'Like build';
+          btn.setAttribute('aria-label','Like build');
+          btn.setAttribute('aria-pressed','false');
+          likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+        }else{
+          const { error } = await supabase
+            .from('build_likes')
+            .insert({ build_id: buildId, user_id: auth.user.id });
+          if(error) return alert('Like failed: ' + error.message);
+          btn.textContent = '♥';
+          btn.title = 'Unlike build';
+          btn.setAttribute('aria-label','Unlike build');
+          btn.setAttribute('aria-pressed','true');
+          likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+        }
+      });
+    }
+
+    // Live like count updates (single channel)
+    let likesChannel;
+    function setupLiveLikes(){
+      likesChannel?.unsubscribe();
+      likesChannel = supabase.channel('build-likes-live')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
+          const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
+          if(!card) return;
+          const el = card.querySelector('.likes');
+          el.textContent = (parseInt(el.textContent)||0) + 1;
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
+          const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
+          if(!card) return;
+          const el = card.querySelector('.likes');
+          el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
+        })
+        .subscribe();
+    }
+
+    // Events: single source of truth
     function renderEventCard(e){
       const d = e.starts_at ? new Date(e.starts_at) : null;
       const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
       const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-      const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
-      const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
+      const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" width="1200" height="675">` : "";
+      const when = d ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit"}) : "";
+      const loc = e.location ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>` : (when ? `<div class="sub">${when}</div>` : "");
       const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
 
       return `
         <article class="card reveal" role="listitem">
           ${img}
-          <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px; min-height:64px">
             <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
             <div><strong>${e.title}</strong>${loc}</div>
           </div>
@@ -583,135 +593,14 @@
 
       grid.innerHTML = rows.map(renderEventCard).join('');
     }
-  </script>
 
-  <!-- Boot sequence -->
-  <script>
+    // Boot once
     document.addEventListener('DOMContentLoaded', async () => {
       await loadTopBuilds();
       setupLiveLikes();
       await loadFrontEvents();   // single events loader
     });
   </script>
-  <script>
-  // Load Top-5 public builds by like_count desc (fallback created_at)
-  async function loadTopBuilds(){
-    const grid = document.getElementById('top-builds-grid');
-    if(!grid) return;
-    grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
-
-    const { data, error } = await supabase
-      .from('builds_with_like_counts')
-      .select('id,title,like_count,thumb_url')
-      .order('like_count', { ascending: false })
-      .order('id', { ascending: true })   // stable tie-breaker
-      .limit(5);
-
-    if(error){
-      console.error(error);
-      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
-      return;
-    }
-    if(!data?.length){
-      grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`;
-      return;
-    }
-
-    // Find which of these I liked (optional heart fill)
-    const { data: auth } = await supabase.auth.getUser();
-    let likedSet = new Set();
-    if(auth?.user?.id){
-      const { data: liked } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .in('build_id', data.map(b => b.id))
-        .eq('profile_id', auth.user.id);
-      likedSet = new Set((liked||[]).map(r => r.build_id));
-    }
-
-    grid.innerHTML = data.map(b => {
-      const heart = likedSet.has(b.id) ? '♥' : '♡';
-      const likeTitle = auth?.user ? (likedSet.has(b.id) ? 'Unlike' : 'Like') : 'Sign in to like';
-      const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy">` : '';
-      return `
-        <article class="card" role="listitem" data-build="${b.id}">
-          ${img}
-          <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <strong>${b.title}</strong>
-              <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
-            </div>
-            <button class="btn" data-like title="${likeTitle}">${heart}</button>
-          </div>
-        </article>`;
-    }).join('');
-
-    // Like / Unlike
-    grid.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('button[data-like]');
-      if(!btn) return;
-
-      const card = e.target.closest('article.card');
-      const buildId = card?.dataset.build;
-      const likesEl = card.querySelector('.likes');
-
-      const { data: auth } = await supabase.auth.getUser();
-      if(!auth?.user){ alert('Sign in to like builds.'); return; }
-
-      const { data: existing } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .eq('build_id', buildId)
-        .eq('profile_id', auth.user.id)
-        .maybeSingle();
-
-      if(existing){
-        const { error } = await supabase
-          .from('build_likes')
-          .delete()
-          .eq('build_id', buildId)
-          .eq('profile_id', auth.user.id);
-        if(error) return alert('Unlike failed: ' + error.message);
-        btn.textContent = '♡';
-        btn.title = 'Like';
-        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-      }else{
-        const { error } = await supabase
-          .from('build_likes')
-          .insert({ build_id: buildId, profile_id: auth.user.id });
-        if(error) return alert('Like failed: ' + error.message);
-        btn.textContent = '♥';
-        btn.title = 'Unlike';
-        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
-      }
-    });
-  }
-
-  // Live like count updates (multi-user)
-  let likesChannel;
-  function setupLiveLikes(){
-    likesChannel?.unsubscribe();
-    likesChannel = supabase.channel('build-likes-live')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
-        const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
-        if(!card) return;
-        const el = card.querySelector('.likes');
-        el.textContent = (parseInt(el.textContent)||0) + 1;
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
-        const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
-        if(!card) return;
-        const el = card.querySelector('.likes');
-        el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
-      })
-      .subscribe();
-  }
-
-  document.addEventListener('DOMContentLoaded', async ()=>{
-    await loadTopBuilds();
-    setupLiveLikes();
-  });
-</script>
 
   <noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
 </body>
