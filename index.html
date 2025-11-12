@@ -102,6 +102,9 @@
       width:min(92vw, 1420px);               /* very wide model */
       height:100%;
       border:none;border-radius:0;background:transparent;
+      backface-visibility: hidden;
+      transform: translateZ(0);          /* promote to its own layer */
+      contain: layout paint size; 
       --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
     }
 
@@ -197,7 +200,7 @@
         </div>
 
         <!-- 3D model (near full-bleed, bigger stage) -->
-        <div class="car-stage reveal" data-parallax="0.06">
+        <div class="car-stage reveal" data-no-reveal data-no-parallax>
           <model-viewer
             src="Assets/car.glb"
             alt="ROK Racers JA concept car preview"
@@ -372,10 +375,10 @@
     const io = new IntersectionObserver((entries)=>{
       entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); });
     }, { threshold:.18 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    document.querySelectorAll('.reveal:not([data-no-reveal])').forEach(el => io.observe(el));
 
     // Subtle parallax
-    const parallaxEls = [...document.querySelectorAll('[data-parallax]')];
+    const parallaxEls = [...document.querySelectorAll('[data-parallax]:not([data-no-parallax])')];
     window.addEventListener('scroll', ()=>{
       const y = window.scrollY;
       parallaxEls.forEach(el=>{
