@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Garage — ROK Racers JA</title>
+<meta name="description" content="Explore builds from Jamaica’s car community. Like, filter, and share your own." />
+<link rel="icon" href="/Assets/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Supabase -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
+<style>
+:root{
+  --bg:#141414; --bg1:#161616; --bg2:#1b1b1b; --fg:#fff; --muted:#bdbdbd;
+  --accent:#e50914; --line:rgba(255,255,255,.08); --shadow:0 40px 120px -30px rgba(0,0,0,.6)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--fg);text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border-radius:8px}
+h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+.title small{color:var(--muted)}
+.sub{color:var(--muted)}
+
+.section{padding:56px 0}
+.grid{display:grid;gap:24px}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+
+.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.card:hover{transform:translateY(-6px) scale(1.01)}
+.card img{display:block;width:100%;height:auto}
+.pad{padding:18px}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;min-width:160px}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
+.btn.primary{background:#fff;color:#000;border-color:#fff}
+.btn.ghost{background:transparent}
+
+.browse-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.badge{border:1px solid var(--line);background:var(--bg2);padding:6px 10px;border-radius:999px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
+.pagination .btn[disabled]{opacity:.5;pointer-events:none}
+
+.banner{border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.03);border-radius:16px;padding:14px}
+.banner strong{color:#fff}
+</style>
+</head>
+<body>
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div class="title"><h1>ROK RACERS JA</h1><small>Garage</small></div>
+      </a>
+      <div class="row">
+        <span id="userBadge" class="sub"></span>
+        <button id="signinBtn" class="btn">Sign in</button>
+        <button id="signoutBtn" class="btn" style="display:none">Sign out</button>
+        <a class="btn" href="/events.html">Events</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="browse-head">
+        <h2 style="font-size:44px">Garage</h2>
+
+        <div class="row">
+          <button id="newBuildBtn" class="btn primary">➕ New Build</button>
+          <span id="buildQuota" class="badge sub">0/3 builds used</span>
+        </div>
+      </div>
+
+      <div id="upgradeBanner" class="banner sub" style="display:none;margin-top:10px">
+        <strong>Limit reached:</strong> You’ve used your 3 free builds. Upgrade to Premium to unlock more builds plus parts discounts and mechanic deals.
+      </div>
+
+      <div class="filters" role="region" aria-label="Garage filters">
+        <input id="q" placeholder="Search builds…" aria-label="Search builds"/>
+        <select id="vis" aria-label="Visibility">
+          <option value="public">Public</option>
+          <option value="my">My builds</option>
+          <option value="all">All Public (default)</option>
+        </select>
+        <select id="sort" aria-label="Sort">
+          <option value="top">Most liked</option>
+          <option value="new">Newest</option>
+        </select>
+        <button id="apply" class="btn">Apply</button>
+      </div>
+
+      <div id="buildsGrid" class="grid cols-3" role="list" aria-live="polite">
+        <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+      </div>
+
+      <div class="pagination">
+        <button id="prev" class="btn">← Prev</button>
+        <button id="next" class="btn">Next →</button>
+      </div>
+    </section>
+  </main>
+
+<script>
+/* ========= Mini auth widget ========= */
+async function refreshAuthUI(){
+  const { data: { user } } = await supabase.auth.getUser();
+  const badge = document.getElementById('userBadge');
+  const si = document.getElementById('signinBtn');
+  const so = document.getElementById('signoutBtn');
+  if(user){
+    badge.textContent = user.email;
+    si.style.display = 'none'; so.style.display = 'inline-flex';
+  }else{
+    badge.textContent = '';
+    si.style.display = 'inline-flex'; so.style.display = 'none';
+  }
+  await updateQuota();
+}
+document.getElementById('signinBtn').onclick = async ()=>{
+  const email = prompt("Enter your email to sign in:");
+  if(!email) return;
+  const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+  if(error) return alert("Sign-in error: " + error.message);
+  alert("Magic link sent! Check your email.");
+};
+document.getElementById('signoutBtn').onclick = async ()=>{
+  await supabase.auth.signOut();
+  await refreshAuthUI();
+};
+supabase.auth.onAuthStateChange(refreshAuthUI);
+refreshAuthUI();
+
+/* ========= Quota (3 free builds) ========= */
+async function updateQuota(){
+  const { data: { user } } = await supabase.auth.getUser();
+  const quota = document.getElementById('buildQuota');
+  const banner = document.getElementById('upgradeBanner');
+  const btn = document.getElementById('newBuildBtn');
+  if(!user){
+    quota.textContent = '0/3 builds used';
+    banner.style.display = 'none';
+    btn.disabled = true; btn.title = 'Sign in to add a build';
+    return;
+  }
+  const { data, error } = await supabase
+    .from('builds')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+  const used = (data === null && error === null) ? 0 : (error ? 0 : (data?.length || 0));
+  // Some drivers don’t return data in head:true — fetch count via another query:
+  let count = used;
+  if(count === 0){
+    const r = await supabase.from('builds').select('id').eq('user_id', user.id);
+    count = r.data?.length || 0;
+  }
+  quota.textContent = `${count}/3 builds used`;
+  const atLimit = count >= 3;
+  banner.style.display = atLimit ? 'block' : 'none';
+  btn.disabled = atLimit; btn.title = atLimit ? 'Upgrade to add more builds' : '';
+}
+
+/* ========= New Build (prompt MVP) ========= */
+document.getElementById('newBuildBtn').onclick = async ()=>{
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user) return alert('Sign in first.');
+  // re-check quota
+  const r = await supabase.from('builds').select('id').eq('user_id', user.id);
+  if((r.data?.length || 0) >= 3) return alert('Free limit reached. Upgrade to add more builds.');
+
+  const title = prompt('Build title:');
+  if(!title) return;
+  const pub = confirm('Make this build public? (OK = public, Cancel = private)');
+  const { error } = await supabase.from('builds').insert({
+    title, is_public: !!pub, user_id: user.id
+  });
+  if(error) return alert('Couldn’t create build: ' + error.message);
+  alert('Build created!');
+  await updateQuota();
+  await applyFilters();
+};
+
+/* ========= Filtering / pagination ========= */
+const pageSize = 12; let page = 0; let currentRows = [];
+function renderPage(){
+  const grid = document.getElementById('buildsGrid');
+  if(!currentRows.length){
+    grid.innerHTML = `<article class="card"><div class="pad sub">No builds found.</div></article>`;
+    document.getElementById('prev').disabled = true;
+    document.getElementById('next').disabled = true;
+    return;
+  }
+  const start = page * pageSize;
+  const slice = currentRows.slice(start, start + pageSize);
+  grid.innerHTML = slice.map(b => {
+    const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy">` : '';
+    return `
+      <article class="card" role="listitem" data-build="${b.id}">
+        <a href="/build.html?id=${b.id}">
+          ${img}
+          <div class="pad">
+            <strong>${b.title}</strong>
+            <div class="sub">♥ <span class="likes">${Number(b.like_count||0)}</span></div>
+          </div>
+        </a>
+        <div class="pad" style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" data-like>${b._liked ? '♥' : '♡'}</button>
+        </div>
+      </article>`;
+  }).join('');
+  document.getElementById('prev').disabled = page===0;
+  document.getElementById('next').disabled = (start + pageSize) >= currentRows.length;
+}
+
+async function applyFilters(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const vis = document.getElementById('vis').value; // public | my | all (public)
+  const sort = document.getElementById('sort').value; // top | new
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let rows = [];
+  if(vis === 'my' && user){
+    // My builds: include public + private; join counts + thumb client-side
+    const my = await supabase.from('builds').select('id,title,is_public,created_at').eq('user_id', user.id).order('created_at',{ascending:false});
+    if(my.error){ console.error(my.error); }
+    const ids = (my.data||[]).map(r => r.id);
+    let counts = []; let thumbs = [];
+    if(ids.length){
+      const c = await supabase.from('build_like_counts').select('build_id, like_count').in('build_id', ids);
+      const t = await supabase.from('build_primary_image').select('build_id, image_url').in('build_id', ids);
+      counts = c.data || []; thumbs = t.data || [];
+    }
+    const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
+    const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
+    rows = (my.data||[]).map(b => ({
+      id: b.id, title: b.title, like_count: countMap.get(b.id)||0, thumb_url: thumbMap.get(b.id)||null, is_public: b.is_public, created_at: b.created_at
+    }));
+  }else{
+    // Public listing (view already contains like_count + thumb)
+    const pub = await supabase
+      .from('public_builds_with_like_count')
+      .select('id,title,like_count,thumb_url,is_public')
+      .order('like_count', { ascending: sort!=='top' })
+      .order('id', { ascending: true });
+    if(pub.error){ console.error(pub.error); }
+    rows = pub.data || [];
+  }
+
+  // Search filter
+  if(q) rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
+
+  // Sort (if 'new', sort by created_at desc when available; if not, leave as-is)
+  if(sort === 'new'){
+    rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+  }else if(sort === 'top'){
+    rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
+  }
+
+  // Mark liked hearts
+  const uid = user?.id || null;
+  if(uid && rows.length){
+    const ids = rows.map(r=>r.id);
+    const liked = await supabase.from('build_likes').select('build_id').in('build_id', ids).eq('user_id', uid);
+    const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
+    rows.forEach(r => { r._liked = likedSet.has(r.id); });
+  }
+
+  currentRows = rows;
+  page = 0;
+  renderPage();
+}
+
+// Like/unlike (delegated)
+document.getElementById('buildsGrid').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button[data-like]');
+  if(!btn) return;
+  const card = e.target.closest('article.card');
+  const id = card?.dataset.build;
+  const likesEl = card.querySelector('.likes');
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user){ return alert('Sign in to like builds.'); }
+
+  const existing = await supabase
+    .from('build_likes')
+    .select('build_id')
+    .eq('build_id', id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if(existing.data){
+    const del = await supabase.from('build_likes').delete().eq('build_id', id).eq('user_id', user.id);
+    if(del.error) return alert('Unlike failed: ' + del.error.message);
+    btn.textContent = '♡';
+    likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+  }else{
+    const ins = await supabase.from('build_likes').insert({ build_id: id, user_id: user.id });
+    if(ins.error) return alert('Like failed: ' + ins.error.message);
+    btn.textContent = '♥';
+    likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+  }
+});
+
+// Live likes channel
+let likesChannel;
+function setupLiveLikes(){
+  likesChannel?.unsubscribe();
+  likesChannel = supabase.channel('build-likes-live-garage')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
+      const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
+      if(!card) return;
+      const el = card.querySelector('.likes');
+      el.textContent = (parseInt(el.textContent)||0) + 1;
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
+      const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
+      if(!card) return;
+      const el = card.querySelector('.likes');
+      el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
+    })
+    .subscribe();
+}
+
+/* ========= Boot ========= */
+document.getElementById('apply').addEventListener('click', applyFilters);
+document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; renderPage(); }});
+document.getElementById('next').addEventListener('click', ()=>{ page++; renderPage(); });
+
+window.addEventListener('DOMContentLoaded', async ()=>{
+  await refreshAuthUI();
+  setupLiveLikes();
+  await applyFilters();
+});
+</script>
+</body>
+</html>

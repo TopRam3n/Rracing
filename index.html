@@ -11,14 +11,13 @@
   <meta name="theme-color" content="#141414" />
   <link rel="icon" href="/Assets/og.png" />
 
-  <!--Database Schema Meta Tags for Supabase-->
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
   <!-- Open Graph -->
   <meta property="og:title" content="ROK Racers JA" />
@@ -66,33 +65,53 @@
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
 
     /* HERO */
-    .hero{position:relative;padding:80px 0}
+    .hero{position:relative;padding:84px 0}
     .hero::before{
       content:"";position:absolute;inset:0;pointer-events:none;
       background:
         radial-gradient(60% 40% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
         radial-gradient(55% 35% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
     }
-    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
+    .hero .container{max-width:1200px}
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1fr; /* single column so car sits center */
+      gap:32px;
+      align-items:center;
+      justify-items:center;
+      text-align:center;
+    }
     .headline{font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
     .headline .accent{color:var(--accent)}
-    .sub{color:var(--muted);margin:14px 0 22px;max-width:60ch}
+    .sub{color:var(--muted);margin:14px 0 22px;max-width:65ch}
 
-    /* 3D area (seamless) */
-    .car-stage{position:relative;perspective:900px;isolation:isolate}
+    /* 3D area (centered) */
+    .car-stage{
+      position:relative;
+      isolation:isolate;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto;
+      height: clamp(420px, 62vh, 640px);
+      max-width: 1100px;
+    }
     model-viewer{
-      width:100%;max-width:740px;height:520px;border:none;border-radius:0;background:transparent;
-      --poster-color:transparent;--progress-bar-color:transparent;--progress-mask:none;
+      display:block;
+      width:min(92vw, 980px);
+      height:100%;
+      border:none;border-radius:0;background:transparent;
+      --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
     }
     .car-stage::before{
       content:"";position:absolute;inset:-40px -60px -30px -60px;z-index:-1;
-      background:radial-gradient(60% 50% at 60% 55%, rgba(0,0,0,.35), transparent 70%);
+      background:radial-gradient(60% 50% at 50% 55%, rgba(0,0,0,.35), transparent 70%);
     }
     .car-stage .floor{
-      position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
-      width:min(80%,560px);height:120px;pointer-events:none;
+      position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);
+      width:min(86%,680px);height:140px;pointer-events:none;
       background:radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
-      filter:blur(18px);opacity:.9;
+      filter:blur(22px);opacity:.9;
     }
 
     /* REVEAL + PARALLAX */
@@ -105,9 +124,8 @@
     .cols-3{grid-template-columns:repeat(3,1fr)}
     .cols-2{grid-template-columns:repeat(2,1fr)}
     @media(max-width:960px){
-      .hero-grid{grid-template-columns:1fr}
       .cols-3,.cols-2{grid-template-columns:1fr}
-      model-viewer{height:420px}
+      model-viewer{width:96vw}
     }
     .card{background:var(--bg-1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
     .card:hover{transform:translateY(-6px) scale(1.01)}
@@ -115,8 +133,7 @@
     .card:hover img{filter:brightness(1.06) contrast(1.02)}
     .pad{padding:18px}
 
-    /*RSVP*/
-    /* RSVP chips + date badge (match Events page look) */
+    /* RSVP chips + date badge */
     .chip{display:inline-flex;align-items:center;gap:6px;background:#1b1b1b;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
     .date{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
     .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}
@@ -167,14 +184,14 @@
         <div class="reveal">
           <h2 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h2>
           <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</p>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
             <a class="btn primary" href="#subscribe">Subscribe</a>
             <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
           </div>
         </div>
 
-        <!-- 3D model (seamless) -->
-        <div class="car-stage reveal" data-parallax="0.08">
+        <!-- 3D model (centered) -->
+        <div class="car-stage reveal" data-parallax="0.06">
           <model-viewer
             src="Assets/car.glb"
             alt="ROK Racers JA concept car preview"
@@ -185,7 +202,7 @@
             shadow-intensity="0.8"
             shadow-softness="1"
             environment-image="neutral"
-            camera-orbit="20deg 65deg 28m"
+            camera-orbit="0deg 70deg 26m"
             field-of-view="25deg"
             interaction-prompt="none"
             disable-zoom>
@@ -195,48 +212,34 @@
       </div>
     </section>
 
-<!-- 🔥 EVENTS — directly under HERO -->
-<section id="events" class="section" aria-labelledby="events-title">
-  <div class="container">
-    <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
+    <!-- 🔥 EVENTS — directly under HERO -->
+    <section id="events" class="section" aria-labelledby="events-title">
+      <div class="container">
+        <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
 
-    <!-- Grid filled by Supabase -->
-    <div id="eventsGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card reveal" role="listitem"><div class="pad sub">Loading…</div></article>
-    </div>
+        <!-- Grid filled by Supabase -->
+        <div id="eventsGrid" class="grid cols-3" role="list" aria-live="polite">
+          <article class="card reveal" role="listitem"><div class="pad sub">Loading…</div></article>
+        </div>
 
-    <div style="margin-top:14px;display:flex;gap:10px">
-      <a class="btn" href="/events.html">See all events</a>
-    </div>
-  </div>
-</section>
-
-
-    <!-- See all -->
-    <div style="margin-top:14px">
-      <a class="btn" href="/events.html">See all events →</a>
-    </div>
-
-    <!-- Optional: inline debug box; set display:none to hide -->
-    <pre id="eventsDebug" class="sub" style="margin-top:10px; white-space:pre-wrap; background:#1b1b1b; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:10px; display:none;"></pre>
-  </div>
-</section>
-
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <a class="btn" href="/events.html">See all events</a>
+        </div>
+      </div>
     </section>
 
-    <!-- 🏆 TOP BUILDS (stub for Supabase wiring) -->
+    <!-- 🏆 TOP BUILDS -->
     <section id="top-builds" class="section" aria-labelledby="top-builds-title">
-  <div class="container">
-    <h2 id="top-builds-title" class="headline">Top 5 Builds</h2>
-    <div class="grid cols-3" id="top-builds-grid" role="list" aria-live="polite">
-      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
-    </div>
-    <div style="margin-top:14px">
-      <a class="btn" href="/garage.html">See more</a>
-    </div>
-  </div>
-</section>
-
+      <div class="container">
+        <h2 id="top-builds-title" class="headline">Top 5 Builds</h2>
+        <div class="grid cols-3" id="top-builds-grid" role="list" aria-live="polite">
+          <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+        </div>
+        <div style="margin-top:14px">
+          <a class="btn" href="/garage.html">See more</a>
+        </div>
+      </div>
+    </section>
 
     <!-- HIGHLIGHTS -->
     <section class="section" aria-labelledby="highlights-title">
@@ -365,17 +368,17 @@
     }, { threshold:.18 });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-    // Subtle parallax for elements with data-parallax
+    // Subtle parallax
     const parallaxEls = [...document.querySelectorAll('[data-parallax]')];
     window.addEventListener('scroll', ()=>{
       const y = window.scrollY;
       parallaxEls.forEach(el=>{
-        const speed = parseFloat(el.dataset.parallax) || 0.12; // 0.05–0.3
+        const speed = parseFloat(el.dataset.parallax) || 0.12;
         el.style.transform = `translate3d(0, ${y*speed}px, 0)`;
       });
     }, { passive:true });
 
-    // Demo subscribe (swap to Mailchimp/ConvertKit/Firebase later)
+    // Demo subscribe
     function subscribe(e){
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -387,110 +390,62 @@
     window.subscribe = subscribe;
   </script>
 
-<script>
-  async function loadEvents() {
-    const grid = document.getElementById("eventsGrid");
-    const debug = document.getElementById("eventsDebug");
-    const showDebug = (obj) => { if (!debug) return; debug.style.display='block'; debug.textContent = JSON.stringify(obj, null, 2); };
-
-    if (!window.supabase) { showDebug({ error: "supabase not defined" }); return; }
-
-    // Pull latest 3 by soonest start
-    const { data, error } = await supabase
-      .from("events")
-      .select("id, title, starts_at, ends_at, location, cover_url")
-      .order("starts_at", { ascending: true })
-      .limit(3);
-
-    if (error) {
-      console.error("Supabase events error:", error);
-      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
-      showDebug({ error });
-      return;
-    }
-
-    showDebug({ data }); // set display:none above if you want this hidden
-
-    if (!data || !data.length) {
-      grid.innerHTML = `<article class="card"><div class="pad sub">No upcoming events yet — check back soon.</div></article>`;
-      return;
-    }
-
-    grid.innerHTML = data.map(e => {
-      const d = e.starts_at ? new Date(e.starts_at) : null;
-      const m = d ? d.toLocaleString("en-US", { month: "short" }).toUpperCase() : "--";
-      const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-      const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
-      const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" />` : "";
-
-      return `
-        <article class="card reveal" role="listitem">
-          ${img}
-          <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-            <div style="background:#1b1b1b;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;text-align:center;min-width:64px">
-              <div style="font-family:'Bebas Neue';font-size:24px;line-height:1">${m}</div>
-              <div style="font-family:'Bebas Neue';font-size:28px;line-height:1">${day}</div>
-            </div>
-            <div>
-              <strong>${e.title ?? "Untitled Event"}</strong>
-              ${loc}
-            </div>
-          </div>
-          <div class="pad">
-            <a class="btn" href="/events/${e.id}">Details</a>
-          </div>
-        </article>`;
-    }).join("");
-  }
-
-  // important: call after DOM exists and after supabase is defined
-  loadEvents();
-</script>
-<script>
-  // == Top-5 public builds ordered by likes_count
+  <!-- Top Builds (likes) -->
+  <script>
+  // === Top-5 public builds (via view) ===
   async function loadTopBuilds(){
     const grid = document.getElementById('top-builds-grid');
+    if(!grid) return;
+    grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+
+    // Query the public view we created
     const { data, error } = await supabase
-      .from('builds')
-      .select('id,title,images,likes_count,is_public,user_id')
-      .eq('is_public', true)
-      .order('likes_count', { ascending: false })
-      .order('created_at', { ascending: false })
+      .from('public_builds_with_like_count')
+      .select('id,title,like_count,thumb_url')
+      .order('like_count', { ascending: false })
+      .order('id', { ascending: true })
       .limit(5);
 
-    if(error){ grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`; return; }
-    if(!data || !data.length){ grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`; return; }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    const myId = user?.id || null;
-
-    // Check which builds I liked (optional)
-    let liked = new Set();
-    if(myId){
-      const { data: mine } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .in('build_id', data.map(b=>b.id))
-        .eq('user_id', myId);
-      liked = new Set((mine||[]).map(r=>r.build_id));
+    if (error){
+      console.error(error);
+      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
+      return;
+    }
+    if (!data?.length){
+      grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`;
+      return;
     }
 
-    grid.innerHTML = data.map(b=>{
-      const imgUrl = Array.isArray(b.images) && b.images.length ? b.images[0] : null;
-      const heart = myId ? (liked.has(b.id) ? '♥' : '♡') : '♡';
-      const likeTitle = myId ? (liked.has(b.id) ? 'Unlike' : 'Like') : 'Sign in to like';
+    // Which of these did I like?
+    const { data: auth } = await supabase.auth.getUser();
+    let likedSet = new Set();
+    if (auth?.user?.id){
+      const { data: liked } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .in('build_id', data.map(b => b.id))
+        .eq('user_id', auth.user.id);                      // <-- user_id (not profile_id)
+      likedSet = new Set((liked||[]).map(r => r.build_id));
+    }
 
+    grid.innerHTML = data.map(b => {
+      const heart = likedSet.has(b.id) ? '♥' : '♡';
+      const likeTitle = auth?.user ? (likedSet.has(b.id) ? 'Unlike' : 'Like') : 'Sign in to like';
+      const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy">` : '';
       return `
         <article class="card" role="listitem" data-build="${b.id}">
-          ${imgUrl ? `<img src="${imgUrl}" alt="${b.title}" loading="lazy">` : ""}
+          ${img}
           <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
-            <div><strong>${b.title}</strong><div class="sub">♥ <span class="likes">${b.likes_count||0}</span></div></div>
+            <div>
+              <strong>${b.title}</strong>
+              <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
+            </div>
             <button class="btn" data-like title="${likeTitle}">${heart}</button>
           </div>
         </article>`;
-    }).join("");
+    }).join('');
 
-    // Like/unlike handlers
+    // Like / Unlike
     grid.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-like]');
       if(!btn) return;
@@ -499,26 +454,30 @@
       const buildId = card?.dataset.build;
       const likesEl = card.querySelector('.likes');
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ alert('Sign in to like builds.'); return; }
+      const { data: auth } = await supabase.auth.getUser();
+      if(!auth?.user){ alert('Sign in to like builds.'); return; }
 
-      // check if already liked
-      const { data: likedRow } = await supabase
+      const { data: existing } = await supabase
         .from('build_likes')
         .select('build_id')
-        .eq('build_id', buildId).eq('user_id', user.id).maybeSingle();
+        .eq('build_id', buildId)
+        .eq('user_id', auth.user.id)                       // <-- user_id
+        .maybeSingle();
 
-      if(likedRow){
-        // unlike
-        const { error } = await supabase.from('build_likes')
-          .delete().eq('build_id', buildId).eq('user_id', user.id);
+      if(existing){
+        const { error } = await supabase
+          .from('build_likes')
+          .delete()
+          .eq('build_id', buildId)
+          .eq('user_id', auth.user.id);                    // <-- user_id
         if(error) return alert('Unlike failed: ' + error.message);
         btn.textContent = '♡';
         btn.title = 'Like';
         likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
       }else{
-        // like
-        const { error } = await supabase.from('build_likes').insert({ build_id: buildId, user_id: user.id });
+        const { error } = await supabase
+          .from('build_likes')
+          .insert({ build_id: buildId, user_id: auth.user.id }); // <-- user_id
         if(error) return alert('Like failed: ' + error.message);
         btn.textContent = '♥';
         btn.title = 'Unlike';
@@ -527,7 +486,7 @@
     });
   }
 
-  // optional live like count updates (multi-user)
+  // Live like count updates (single channel)
   let likesChannel;
   function setupLiveLikes(){
     likesChannel?.unsubscribe();
@@ -535,146 +494,217 @@
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
         const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
         if(!card) return;
-        const likesEl = card.querySelector('.likes');
-        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+        const el = card.querySelector('.likes');
+        el.textContent = (parseInt(el.textContent)||0) + 1;
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
         const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
         if(!card) return;
-        const likesEl = card.querySelector('.likes');
-        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+        const el = card.querySelector('.likes');
+        el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
       })
       .subscribe();
   }
 
-  window.addEventListener('DOMContentLoaded', async ()=>{
+  // Boot
+  document.addEventListener('DOMContentLoaded', async () => {
     await loadTopBuilds();
     setupLiveLikes();
   });
 </script>
-<script>
-async function loadHomeEvents(){
-  const grid = document.getElementById('eventsGrid');
-  if(!grid) return;
 
-  const [eventsRes, countsRes] = await Promise.all([
-    supabase.from('events')
-      .select('id,title,starts_at,location,cover_url')
-      .gte('starts_at', new Date().toISOString())
-      .order('starts_at', { ascending: true })
-      .limit(3),
-    supabase.from('event_rsvp_counts')
-      .select('event_id,yes_count,maybe_count,no_count')
-  ]);
 
-  if(eventsRes.error){
-    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
-    return;
-  }
 
-  const countMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
-  const rows = eventsRes.data || [];
 
-  grid.innerHTML = rows.map(e=>{
-    const d = e.starts_at ? new Date(e.starts_at) : null;
-    const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-    const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-    const counts = countMap.get(e.id) || { yes_count: 0, maybe_count: 0, no_count: 0 };
-    const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
+  <!-- Events: single source of truth -->
+  <script>
+    function renderEventCard(e){
+      const d = e.starts_at ? new Date(e.starts_at) : null;
+      const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+      const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+      const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
+      const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
+      const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
 
-    return `
-      <article class="card" role="listitem">
-        ${img}
-        <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-          <div class="date" style="background:#1b1b1b;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center">
-            <div class="m" style="font-family:'Bebas Neue';font-size:22px;line-height:1">${m}</div>
-            <div class="d" style="font-family:'Bebas Neue';font-size:26px;line-height:1">${day}</div>
+      return `
+        <article class="card reveal" role="listitem">
+          ${img}
+          <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+            <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
+            <div><strong>${e.title}</strong>${loc}</div>
           </div>
-          <div>
-            <strong>${e.title}</strong>
-            ${e.location ? `<div class="sub">${e.location}</div>` : ""}
+          <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="chip">✅ ${counts.yes_count}</span>
+            <span class="chip">🤔 ${counts.maybe_count}</span>
+            <span class="chip">❌ ${counts.no_count}</span>
+            <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details</a>
           </div>
-        </div>
-        <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <span class="chip">✅ ${counts.yes_count}</span>
-          <span class="chip">🤔 ${counts.maybe_count}</span>
-          <span class="chip">❌ ${counts.no_count}</span>
-          <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details</a>
-        </div>
-      </article>`;
-  }).join('') || `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
-}
-window.addEventListener('DOMContentLoaded', loadHomeEvents);
-</script>
+        </article>`;
+    }
 
-<script>
-  // Render helper for a single event card (with RSVP chips)
-  function renderEventCard(e){
-    const d = e.starts_at ? new Date(e.starts_at) : null;
-    const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-    const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-    const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
-    const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
-    const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+    async function loadFrontEvents(){
+      const grid = document.getElementById('eventsGrid');
+      grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
 
-    return `
-      <article class="card reveal" role="listitem">
-        ${img}
-        <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-          <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
-          <div><strong>${e.title}</strong>${loc}</div>
-        </div>
-        <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <span class="chip">✅ ${counts.yes_count}</span>
-          <span class="chip">🤔 ${counts.maybe_count}</span>
-          <span class="chip">❌ ${counts.no_count}</span>
-          <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details</a>
-        </div>
-      </article>`;
-  }
+      const [eventsRes, countsRes] = await Promise.all([
+        supabase.from('events')
+          .select('id,title,starts_at,location,cover_url')
+          .gte('starts_at', new Date().toISOString())
+          .order('starts_at', { ascending: true })
+          .limit(3),
+        supabase.from('event_rsvp_counts')
+          .select('event_id,yes_count,maybe_count,no_count')
+      ]);
 
-  // Fetch top 3 soonest events + RSVP counts
-  async function loadFrontEvents(){
-    const grid = document.getElementById('eventsGrid');
-    grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+      if(eventsRes.error){
+        console.error(eventsRes.error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+        return;
+      }
 
-    // events + counts (uses your view `event_rsvp_counts`)
-    const [eventsRes, countsRes] = await Promise.all([
-      supabase.from('events')
-        .select('id,title,starts_at,location,cover_url')
-        .gte('starts_at', new Date().toISOString())
-        .order('starts_at', { ascending: true })
-        .limit(3),
-      supabase.from('event_rsvp_counts')
-        .select('event_id,yes_count,maybe_count,no_count')
-    ]);
+      const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
+      const rows = (eventsRes.data||[]).map(e => ({
+        ...e, counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+      }));
 
-    if(eventsRes.error){
-      console.error(eventsRes.error);
-      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+      if(!rows.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
+        return;
+      }
+
+      grid.innerHTML = rows.map(renderEventCard).join('');
+    }
+  </script>
+
+  <!-- Boot sequence -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadTopBuilds();
+      setupLiveLikes();
+      await loadFrontEvents();   // single events loader
+    });
+  </script>
+  <script>
+  // Load Top-5 public builds by like_count desc (fallback created_at)
+  async function loadTopBuilds(){
+    const grid = document.getElementById('top-builds-grid');
+    if(!grid) return;
+    grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+
+    const { data, error } = await supabase
+      .from('builds_with_like_counts')
+      .select('id,title,like_count,thumb_url')
+      .order('like_count', { ascending: false })
+      .order('id', { ascending: true })   // stable tie-breaker
+      .limit(5);
+
+    if(error){
+      console.error(error);
+      grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
+      return;
+    }
+    if(!data?.length){
+      grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`;
       return;
     }
 
-    const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
-    const rows = (eventsRes.data||[]).map(e => ({
-      ...e, counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
-    }));
-
-    if(!rows.length){
-      grid.innerHTML = `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
-      return;
+    // Find which of these I liked (optional heart fill)
+    const { data: auth } = await supabase.auth.getUser();
+    let likedSet = new Set();
+    if(auth?.user?.id){
+      const { data: liked } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .in('build_id', data.map(b => b.id))
+        .eq('profile_id', auth.user.id);
+      likedSet = new Set((liked||[]).map(r => r.build_id));
     }
 
-    grid.innerHTML = rows.map(renderEventCard).join('');
+    grid.innerHTML = data.map(b => {
+      const heart = likedSet.has(b.id) ? '♥' : '♡';
+      const likeTitle = auth?.user ? (likedSet.has(b.id) ? 'Unlike' : 'Like') : 'Sign in to like';
+      const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy">` : '';
+      return `
+        <article class="card" role="listitem" data-build="${b.id}">
+          ${img}
+          <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong>${b.title}</strong>
+              <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
+            </div>
+            <button class="btn" data-like title="${likeTitle}">${heart}</button>
+          </div>
+        </article>`;
+    }).join('');
+
+    // Like / Unlike
+    grid.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-like]');
+      if(!btn) return;
+
+      const card = e.target.closest('article.card');
+      const buildId = card?.dataset.build;
+      const likesEl = card.querySelector('.likes');
+
+      const { data: auth } = await supabase.auth.getUser();
+      if(!auth?.user){ alert('Sign in to like builds.'); return; }
+
+      const { data: existing } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .eq('build_id', buildId)
+        .eq('profile_id', auth.user.id)
+        .maybeSingle();
+
+      if(existing){
+        const { error } = await supabase
+          .from('build_likes')
+          .delete()
+          .eq('build_id', buildId)
+          .eq('profile_id', auth.user.id);
+        if(error) return alert('Unlike failed: ' + error.message);
+        btn.textContent = '♡';
+        btn.title = 'Like';
+        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+      }else{
+        const { error } = await supabase
+          .from('build_likes')
+          .insert({ build_id: buildId, profile_id: auth.user.id });
+        if(error) return alert('Like failed: ' + error.message);
+        btn.textContent = '♥';
+        btn.title = 'Unlike';
+        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+      }
+    });
   }
 
-  document.addEventListener('DOMContentLoaded', loadFrontEvents);
+  // Live like count updates (multi-user)
+  let likesChannel;
+  function setupLiveLikes(){
+    likesChannel?.unsubscribe();
+    likesChannel = supabase.channel('build-likes-live')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
+        const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
+        if(!card) return;
+        const el = card.querySelector('.likes');
+        el.textContent = (parseInt(el.textContent)||0) + 1;
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
+        const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
+        if(!card) return;
+        const el = card.querySelector('.likes');
+        el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
+      })
+      .subscribe();
+  }
+
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    await loadTopBuilds();
+    setupLiveLikes();
+  });
 </script>
 
-  <noscript>
-    
-    <style>.reveal{opacity:1;transform:none}</style>
-  </noscript>
-  
+
+  <noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
 </body>
 </html>
