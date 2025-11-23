@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Create Build — ROK Racers JA</title>
+<link rel="icon" href="/Assets/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
+<style>
+  :root{
+    --bg-0:#141414; --bg-1:#161616; --bg-2:#1b1b1b;
+    --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --line:rgba(255,255,255,.08);
+    --shadow-lg:0 40px 120px -30px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg-0);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:var(--fg);text-decoration:none}
+  .container{max-width:960px;margin:0 auto;padding:0 24px}
+
+  .nav{position:sticky;top:0;z-index:60;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo-img{width:40px;height:40px;border-radius:8px;object-fit:contain}
+  .title h1{margin:0;font-family:"Bebas Neue";letter-spacing:2px;font-size:22px}
+  .title small{color:var(--muted)}
+  .menu{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:transparent;cursor:pointer;font:inherit;color:var(--fg);transition:transform .2s ease,background .2s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.primary{background:#fff;color:#000;border-color:#fff}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+  .section{padding:32px 0}
+  .sub{color:var(--muted)}
+
+  form{display:grid;gap:20px;margin-top:18px}
+  label{display:block;font-size:14px;margin-bottom:4px}
+  input[type="text"],
+  input[type="color"],
+  textarea,
+  select{
+    width:100%;background:#1b1b1b;border:1px solid var(--line);color:#fff;
+    padding:10px 12px;border-radius:10px;font:inherit;outline:none;
+  }
+  textarea{min-height:80px;resize:vertical}
+  .row{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+  @media(max-width:900px){.row{grid-template-columns:1fr}}
+  .card{background:#161616;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow-lg)}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .tag{display:inline-flex;padding:4px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/">
+        <img src="/Assets/logo.png" class="logo-img" alt="">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Create build</small>
+        </div>
+      </a>
+      <div class="menu">
+        <a class="btn" href="/garage.html">My Garage</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <h1 style="font-size:40px">New build</h1>
+      <p class="sub">Pick a base car, choose parts, and drop it into your garage.</p>
+
+      <div id="authWarning" class="sub" style="margin-top:8px"></div>
+
+      <form id="buildForm">
+        <div class="row">
+          <div>
+            <div class="card">
+              <label for="title">Build name</label>
+              <input id="title" type="text" placeholder="e.g. Pink Kirby E36" required>
+
+              <label for="description" style="margin-top:12px">Description</label>
+              <textarea id="description" placeholder="What’s the story behind this build?"></textarea>
+
+              <label for="baseModel" style="margin-top:12px">Base car model</label>
+              <select id="baseModel">
+                <option value="">Select a model…</option>
+              </select>
+              <p class="sub" style="font-size:12px;margin:4px 0 0">
+                Choose from our 3D-ready models. You can still upload your real car photo below.
+              </p>
+
+              <label for="colorHex" style="margin-top:12px">Paint color</label>
+              <input id="colorHex" type="color" value="#e50914">
+            </div>
+
+            <div class="card" style="margin-top:16px">
+              <h2 style="font-size:24px;margin-bottom:4px">Parts</h2>
+              <p class="sub" style="font-size:13px">Quick picks for now — later we wire this to a full parts DB.</p>
+
+              <label style="margin-top:10px">Wheels</label>
+              <input id="wheels" type="text" placeholder="e.g. TE37 18x9.5">
+
+              <label style="margin-top:10px">Tires</label>
+              <input id="tires" type="text" placeholder="e.g. 245/40R18 PS4S">
+
+              <label style="margin-top:10px">Suspension</label>
+              <input id="suspension" type="text" placeholder="e.g. BC Racing Coilovers">
+
+              <label style="margin-top:10px">Brakes</label>
+              <input id="brakes" type="text" placeholder="e.g. Brembo 6-pot">
+
+              <label style="margin-top:10px">Engine</label>
+              <input id="engine" type="text" placeholder="e.g. 2JZ-GTE single turbo">
+
+              <label style="margin-top:10px">Exhaust</label>
+              <input id="exhaust" type="text" placeholder="e.g. Titanium straight pipe">
+
+              <label style="margin-top:10px">Drivetrain</label>
+              <input id="drivetrain" type="text" placeholder="e.g. RWD / AWD / LSD info">
+
+              <label style="margin-top:10px">Interior</label>
+              <input id="interior" type="text" placeholder="e.g. Bride seats, Nardi wheel">
+
+              <label style="margin-top:10px">Exterior</label>
+              <input id="exterior" type="text" placeholder="e.g. Rocket Bunny kit, ducktail">
+
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <h2 style="font-size:24px;margin-bottom:4px">Don’t see your car?</h2>
+              <p class="sub" style="font-size:13px">
+                Upload a photo of your real car. We’ll add a 3D model later and keep this image as the build thumbnail.
+              </p>
+              <label style="margin-top:10px">Upload car photo</label>
+              <input id="carPhoto" type="file" accept="image/*">
+
+              <p class="sub" style="font-size:12px;margin-top:10px">
+                When you upload, we’ll log this on our side so we know which models to add next.
+              </p>
+            </div>
+
+            <div class="card" style="margin-top:16px">
+              <h2 style="font-size:24px;margin-bottom:4px">Privacy</h2>
+              <p class="sub" style="font-size:13px">You can always switch this later.</p>
+              <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                <input id="isPublic" type="checkbox" checked>
+                <span>Make this build public</span>
+              </label>
+            </div>
+
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+              <button type="submit" class="btn primary" id="saveBtn">Save build</button>
+              <a href="/garage.html" class="btn">Cancel</a>
+            </div>
+
+            <div id="formMsg" class="sub" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const authWarning = document.getElementById('authWarning');
+    const form = document.getElementById('buildForm');
+    const formMsg = document.getElementById('formMsg');
+    const saveBtn = document.getElementById('saveBtn');
+
+    let currentUser = null;
+    let carModels = [];
+
+    async function ensureUser(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user;
+      if(!user){
+        authWarning.textContent = 'Sign in to create and save builds to your garage.';
+        saveBtn.disabled = true;
+      }else{
+        authWarning.textContent = '';
+        saveBtn.disabled = false;
+      }
+    }
+
+    async function loadCarModels(){
+      const sel = document.getElementById('baseModel');
+      const { data, error } = await supabase
+        .from('car_models')
+        .select('id,name,make,model,year,is_active')
+        .eq('is_active', true)
+        .order('make', { ascending:true });
+
+      if(error){
+        console.error(error);
+        sel.innerHTML = `<option value="">Couldn’t load models</option>`;
+        return;
+      }
+      carModels = data || [];
+      sel.innerHTML = `<option value="">Select a model…</option>` + carModels.map(m=>{
+        const label = [m.year, m.make, m.model].filter(Boolean).join(' ');
+        return `<option value="${m.id}">${label || m.name}</option>`;
+      }).join('');
+    }
+
+    async function uploadPhotoIfNeeded(user){
+      const fileInput = document.getElementById('carPhoto');
+      const file = fileInput.files[0];
+      if(!file) return null;
+
+      const path = `user-${user.id}/${Date.now()}-${file.name}`;
+      const { error } = await supabase
+        .storage
+        .from('build-images')
+        .upload(path, file, { upsert:false });
+
+      if(error){
+        console.error(error);
+        formMsg.textContent = 'Photo upload failed, but the build can still be saved.';
+        return null;
+      }
+
+      const { data } = supabase
+        .storage
+        .from('build-images')
+        .getPublicUrl(path);
+
+      return data.publicUrl || null;
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      formMsg.textContent = '';
+      if(!currentUser){
+        alert('Please sign in first.');
+        return;
+      }
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      try{
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const car_model_id = document.getElementById('baseModel').value || null;
+        const color_hex = document.getElementById('colorHex').value || null;
+        const is_public = document.getElementById('isPublic').checked;
+
+        const specs = {
+          wheels: document.getElementById('wheels').value.trim() || null,
+          tires: document.getElementById('tires').value.trim() || null,
+          suspension: document.getElementById('suspension').value.trim() || null,
+          brakes: document.getElementById('brakes').value.trim() || null,
+          engine: document.getElementById('engine').value.trim() || null,
+          exhaust: document.getElementById('exhaust').value.trim() || null,
+          drivetrain: document.getElementById('drivetrain').value.trim() || null,
+          interior: document.getElementById('interior').value.trim() || null,
+          exterior: document.getElementById('exterior').value.trim() || null
+        };
+
+        const custom_image_url = await uploadPhotoIfNeeded(currentUser);
+
+        const { data, error } = await supabase
+          .from('builds')
+          .insert({
+            user_id: currentUser.id,
+            title,
+            description,
+            car_model_id,
+            color_hex,
+            custom_image_url,
+            specs,
+            is_public
+          })
+          .select('id')
+          .maybeSingle();
+
+        if(error) throw error;
+        formMsg.textContent = 'Build saved! Redirecting…';
+        window.location.href = `/build.html?id=${data.id}`;
+      }catch(err){
+        console.error(err);
+        formMsg.textContent = 'Couldn’t save build: ' + err.message;
+      }finally{
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save build';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await ensureUser();
+      await loadCarModels();
+    });
+  </script>
+</body>
+</html>
