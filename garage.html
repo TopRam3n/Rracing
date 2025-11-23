@@ -92,18 +92,41 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
         <strong>Limit reached:</strong> You’ve used your 3 free builds. Upgrade to Premium to unlock more builds plus parts discounts and mechanic deals.
       </div>
 
-      <div class="filters" role="region" aria-label="Garage filters">
+                 <div class="filters" role="region" aria-label="Garage filters">
         <input id="q" placeholder="Search builds…" aria-label="Search builds"/>
+
         <select id="vis" aria-label="Visibility">
-          <option value="public">All public</option>
+          <option value="public">Public builds</option>
           <option value="my">My builds</option>
+          <option value="all">All public (default)</option>
         </select>
+
+        <!-- New: filter by part category -->
+        <select id="partFilter" aria-label="Part category">
+          <option value="">Any part</option>
+          <option value="wheels">Wheels</option>
+          <option value="tires">Tires</option>
+          <option value="suspension">Suspension</option>
+          <option value="brakes">Brakes</option>
+          <option value="engine">Engine</option>
+          <option value="exhaust">Exhaust</option>
+          <option value="drivetrain">Drivetrain</option>
+          <option value="braces">Braces / Chassis</option>
+          <option value="interior">Interior</option>
+          <option value="exterior">Exterior</option>
+          <option value="color">Color</option>
+          <option value="other">Other</option>
+        </select>
+
         <select id="sort" aria-label="Sort">
           <option value="top">Most liked</option>
           <option value="new">Newest</option>
         </select>
+
         <button id="apply" class="btn">Apply</button>
       </div>
+
+
 
       <div id="buildsGrid" class="grid cols-3" role="list" aria-live="polite">
         <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
@@ -185,27 +208,27 @@ async function updateQuota(){
   btn.title = atLimit ? 'Upgrade to add more builds' : '';
 }
 
-/* ========= New Build (prompt MVP) ========= */
+/* ========= New Build (redirect to builder) ========= */
 document.getElementById('newBuildBtn').onclick = async ()=>{
   const { data: { user } } = await supabase.auth.getUser();
-  if(!user) return alert('Sign in first.');
-
-  // re-check quota
-  const r = await supabase.from('builds').select('id', { count: 'exact' }).eq('user_id', user.id);
-  const used = r.error ? 0 : (r.count ?? (r.data?.length || 0));
-  if(used >= 3) return alert('Free limit reached. Upgrade to add more builds.');
-
-  const title = prompt('Build title:');
-  if(!title) return;
-  const pub = confirm('Make this build public? (OK = public, Cancel = private)');
-  const { error } = await supabase.from('builds').insert({
-    title, is_public: !!pub, user_id: user.id
-  });
-  if(error) return alert('Couldn’t create build: ' + error.message);
-  alert('Build created!');
-  await updateQuota();
-  await applyFilters();
+  if(!user){
+    alert('Sign in first.');
+    return;
+  }
+  // optional: quick quota check before redirect
+  const r = await supabase
+    .from('builds')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+  const used = r.error ? 0 : (r.count ?? 0);
+  if(used >= 3){
+    alert('Free limit reached. Upgrade to add more builds.');
+    await updateQuota();
+    return;
+  }
+  location.href = '/build-edit.html';
 };
+
 
 /* ========= Filtering / pagination ========= */
 const pageSize = 12; 
@@ -244,45 +267,37 @@ function renderPage(){
 
 async function applyFilters(){
   const q = document.getElementById('q').value.trim().toLowerCase();
-  const vis = document.getElementById('vis').value; // public | my
+  const vis = document.getElementById('vis').value; // public | my | all (public)
   const sort = document.getElementById('sort').value; // top | new
+  const partCat = document.getElementById('partFilter').value; // "" or category
   const { data: { user } } = await supabase.auth.getUser();
 
   let rows = [];
-
   if(vis === 'my' && user){
     // My builds: include public + private; join counts + thumb client-side
-    const my = await supabase
-      .from('builds')
+    const my = await supabase.from('builds')
       .select('id,title,is_public,created_at')
       .eq('user_id', user.id)
       .order('created_at',{ascending:false});
     if(my.error){ console.error(my.error); }
-
     const ids = (my.data||[]).map(r => r.id);
-
-    let counts = []; 
-    let thumbs = [];
+    let counts = []; let thumbs = [];
     if(ids.length){
-      const c = await supabase
-        .from('build_like_counts')
+      const c = await supabase.from('build_like_counts')
         .select('build_id, like_count')
         .in('build_id', ids);
-      const t = await supabase
-        .from('build_primary_image')
+      const t = await supabase.from('build_primary_image')
         .select('build_id, image_url')
         .in('build_id', ids);
-      counts = c.data || []; 
-      thumbs = t.data || [];
+      counts = c.data || []; thumbs = t.data || [];
     }
-
     const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
     const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
     rows = (my.data||[]).map(b => ({
       id: b.id,
       title: b.title,
-      like_count: countMap.get(b.id) || 0,
-      thumb_url: thumbMap.get(b.id) || null,
+      like_count: countMap.get(b.id)||0,
+      thumb_url: thumbMap.get(b.id)||null,
       is_public: b.is_public,
       created_at: b.created_at
     }));
@@ -291,16 +306,38 @@ async function applyFilters(){
     const pub = await supabase
       .from('public_builds_with_like_count')
       .select('id,title,like_count,thumb_url,is_public,created_at')
-      .order('like_count', { ascending: false })
+      .order('like_count', { ascending: sort!=='top' })
       .order('id', { ascending: true });
     if(pub.error){ console.error(pub.error); }
     rows = pub.data || [];
   }
 
-  // Search filter (title only for now)
-  if(q) rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
+  // Search filter
+  if(q){
+    rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
+  }
 
-  // Sort
+  // NEW: filter by part category (builds that have at least one part in that category)
+  if(partCat){
+    const ids = rows.map(r => r.id);
+    if(ids.length){
+      const { data: partsData, error: partsError } = await supabase
+        .from('build_parts')
+        .select('build_id')
+        .in('build_id', ids)
+        .eq('category', partCat);
+      if(!partsError){
+        const allowed = new Set((partsData||[]).map(p => p.build_id));
+        rows = rows.filter(r => allowed.has(r.id));
+      }else{
+        console.error(partsError);
+      }
+    }else{
+      rows = [];
+    }
+  }
+
+  // Sort (if 'new', sort by created_at desc when available; if not, leave as-is)
   if(sort === 'new'){
     rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
   }else if(sort === 'top'){
@@ -311,8 +348,7 @@ async function applyFilters(){
   const uid = user?.id || null;
   if(uid && rows.length){
     const ids = rows.map(r=>r.id);
-    const liked = await supabase
-      .from('build_likes')
+    const liked = await supabase.from('build_likes')
       .select('build_id')
       .in('build_id', ids)
       .eq('user_id', uid);
@@ -323,7 +359,7 @@ async function applyFilters(){
   currentRows = rows;
   page = 0;
   renderPage();
-}
+} 
 
 // Like/unlike (delegated)
 document.getElementById('buildsGrid').addEventListener('click', async (e)=>{

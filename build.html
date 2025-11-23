@@ -8,7 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- 3D model viewer for supported base models -->
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
+
   /* === Supabase client === */
   const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
@@ -169,23 +172,23 @@
         { data: imgs, error: e2 },
         { data: countRow }
       ] = await Promise.all([
-        supabase
-          .from('builds')
-          .select('id,title,description,make,model,year,stage,power_goal,is_public,user_id,created_at')
-          .eq('id', buildId)
-          .maybeSingle(),
-        supabase
-          .from('build_images')
-          .select('image_url,sort_order,created_at')
-          .eq('build_id', buildId)
-          .order('sort_order',{ascending:true})
-          .order('created_at',{ascending:true}),
-        supabase
-          .from('build_like_counts')
-          .select('like_count')
-          .eq('build_id', buildId)
-          .maybeSingle()
-      ]);
+
+      supabase
+      .from('builds')
+      .select('id,title,description,make,model,year,stage,power_goal,is_public,user_id,created_at,base_model_key')
+      .eq('id', buildId).maybeSingle(),
+
+      supabase
+      .from('build_images')
+      .select('image_url,sort_order,created_at')
+      .eq('build_id', buildId).order('sort_order',{ascending:true})
+      .order('created_at',{ascending:true}),
+  
+      supabase
+      .from('build_like_counts')
+      .select('like_count').eq('build_id', buildId).maybeSingle()
+]);
+
 
       if(e1 || !build){
         console.error(e1);
@@ -246,10 +249,33 @@
         img.classList.add('active');
       });
 
-      meta.innerHTML = `
+            // Meta box (owner info + Edit when owner)
+      const { data: { user } } = await supabase.auth.getUser();
+      const isOwner = user && user.id === build.user_id;
+
+      let metaHtml = `
         <div><strong>Visibility:</strong> ${build.is_public ? 'Public' : 'Private'}</div>
-        <div class="sub" style="margin-top:6px">Only the owner can edit. (Edit page coming soon)</div>
       `;
+
+      if(isOwner){
+        metaHtml += `
+          <div class="sub" style="margin-top:6px">You own this build.</div>
+          <a href="/build-edit.html?id=${build.id}"
+             class="btn primary"
+             style="margin-top:12px;display:inline-flex">
+            Edit build
+          </a>
+        `;
+      }else{
+        metaHtml += `
+          <div class="sub" style="margin-top:6px">
+            Only the owner can edit this build.
+          </div>
+        `;
+      }
+
+      meta.innerHTML = metaHtml;
+
     }
 
     /* ========== Likes ========== */
@@ -479,15 +505,71 @@
         .subscribe();
     }
 
+    async function loadParts(){
+  const wrap = document.getElementById('partsBox');
+  if(!wrap) return;
+
+  const { data, error } = await supabase
+    .from('build_parts')
+    .select('id,category,label,brand,spec,notes,created_at')
+    .eq('build_id', buildId)
+    .order('category', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  if(error){
+    wrap.innerHTML = `<h3 style="font-size:28px">Parts</h3><div class="sub">Couldn’t load parts.</div>`;
+    return;
+  }
+  if(!data || !data.length){
+    wrap.innerHTML = `<h3 style="font-size:28px">Parts</h3><div class="sub">No parts listed yet.</div>`;
+    return;
+  }
+
+  const byCat = new Map();
+  data.forEach(p => {
+    const key = p.category || 'other';
+    if(!byCat.has(key)) byCat.set(key, []);
+    byCat.get(key).push(p);
+  });
+
+  let html = `<h3 style="font-size:28px">Parts</h3>`;
+  html += `<div class="grid" style="grid-template-columns:1fr;gap:10px;margin-top:8px">`;
+
+  for(const [cat, parts] of byCat.entries()){
+    html += `
+      <div>
+        <div class="chip" style="margin-bottom:6px">${cat[0].toUpperCase() + cat.slice(1)}</div>
+        <ul class="sub" style="list-style:none;padding:0;margin:0">
+          ${parts.map(p => `
+            <li style="margin-bottom:4px">
+              <strong>${escapeHTML(p.label || '')}</strong>
+              ${p.brand ? ` — ${escapeHTML(p.brand)}` : ''}
+              ${p.spec ? ` <span style="opacity:.9">(${escapeHTML(p.spec)})</span>` : ''}
+              ${p.notes ? `<div style="font-size:13px;margin-top:2px">${escapeHTML(p.notes)}</div>` : ''}
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+  }
+  html += `</div>`;
+
+  wrap.innerHTML = html;
+}
+
+
     /* ========== Boot ========== */
     window.addEventListener('DOMContentLoaded', async ()=>{
-      await loadBuild();
-      await refreshLikedState();
-      liveLikes();
+  await loadBuild();
+  await refreshLikedState();
+  liveLikes();
 
-      await loadComments();
-      liveComments();
-    });
+  await loadComments();
+  liveComments();
+
+  await loadParts();
+});
+
   </script>
 </body>
 </html>

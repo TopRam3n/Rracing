@@ -13,3 +13,29 @@ burn out marks
 add configuration to acceot payments and reserve tickets
 add home to events
 add a pop up headline banner for annnouncements that runs across the page
+add racing section to hero that drops down to include 
+Types of events- gives information on them and some pages to follow
+Driver feature- for each type of event
+Accomplishments
+Newsletter 
+
+remove out grage and add it to profile- limit users who only sign up yp be able to make a build
+
+Remove join newsletter from hero
+
+for all events page, all events that have ever been posted, the details and buying a ticket option should be seen
+
+There should be a shop.(coming soon)
+
+Submit event button on hedro.
+
+have a section that links back to the social media "Explore more Jamaican racing and culture with us!" and it would be the three recent flywers posted on or smn
+
+
+for models: When you’re ready to actually add more 3D models, you just:
+
+Drop GLBs into /Assets/models/…
+
+Add entries to BASE_MODEL_GLBS map
+
+Make sure your dropdown in build-edit.html uses matching keys
