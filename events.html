@@ -31,6 +31,69 @@
   .title small{color:var(--muted)}
   h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
 
+  .nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Wrap the chip + dropdown together */
+.profile-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--line);
+}
+
+.profile-chip span {
+  font-size: 16px;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  background: var(--bg1);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 40px rgba(0,0,0,.45);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  z-index: 999;
+}
+
+.dropdown a,
+.dropdown button {
+  padding: 10px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 15px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.dropdown a:hover,
+.dropdown button:hover {
+  background: #1f1f1f;
+}
+
+
+
   .section{padding:56px 0}
   .grid{display:grid;gap:24px}
   .cols-3{grid-template-columns:repeat(3,1fr)}
@@ -84,6 +147,25 @@
         <button id="addEventBtn" class="btn primary" style="display:none">+ Create Event</button>
       </div>
     </div>
+
+    <div class="nav-auth">
+  <button id="signinBtn" class="btn">Sign in</button>
+
+  <div id="profileMenu" class="profile-menu" style="display:none">
+    <div id="profileChip" class="profile-chip">
+      <span id="profileInitials">U</span>
+    </div>
+
+    <div id="dropdown" class="dropdown" style="display:none">
+      <a href="/garage.html">My Garage</a>
+      <a href="/tickets.html">My Tickets</a>
+      <a href="/likes-builds.html">Liked Builds</a>
+      <a href="/likes-sightings.html">Liked Sightings</a>
+      <button id="signoutBtn" class="btn" style="width:100%">Sign out</button>
+    </div>
+  </div>
+</div>
+
   </nav>
 
   <main class="container">
@@ -189,6 +271,75 @@
     };
     document.getElementById('signoutBtn').onclick = async ()=>{ await supabase.auth.signOut(); await refreshAuthUI(); };
     supabase.auth.onAuthStateChange(refreshAuthUI); refreshAuthUI();
+
+
+// --- Elements ---
+const signinBtn = document.getElementById("signinBtn");
+const profileMenu = document.getElementById("profileMenu");
+const profileChip = document.getElementById("profileChip");
+const dropdown = document.getElementById("dropdown");
+const initialsEl = document.getElementById("profileInitials");
+
+// --- Auth UI state ---
+async function updateAuthUI() {
+  const { data: { user }} = await supabase.auth.getUser();
+
+  if (user) {
+    signinBtn.style.display = "none";
+    profileMenu.style.display = "flex";
+
+    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
+    initialsEl.textContent = initials;
+  } else {
+    signinBtn.style.display = "inline-flex";
+    profileMenu.style.display = "none";
+    dropdown.style.display = "none";
+  }
+}
+
+// Toggle dropdown
+profileChip?.addEventListener("click", () => {
+  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+});
+document.addEventListener("click", (e) => {
+  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
+});
+
+// Sign in
+signinBtn.onclick = async () => {
+  const email = prompt("Enter your email:");
+  if (!email) return;
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: location.href }
+  });
+  if (error) alert(error.message);
+  else alert("Magic link sent! Check your inbox.");
+};
+
+// Sign out
+document.getElementById("signoutBtn")?.addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  updateAuthUI();
+});
+
+// Init
+supabase.auth.onAuthStateChange(updateAuthUI);
+updateAuthUI();
+
+// --- Access guard ---
+window.requireLogin = async function(callback){
+  const { data: { user }} = await supabase.auth.getUser();
+  if (!user) {
+    alert("Please sign in first.");
+    signinBtn.click();
+    return false;
+  }
+  if (callback) callback();
+  return true;
+};
+
+
 
     /* ========= Filters + List + RSVP badges ========= */
     const pageSize = 9; let page = 0; let cached = [];

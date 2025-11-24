@@ -70,7 +70,67 @@
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
     .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
     .nav.nav--bleed{width:100vw; margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);}
-    
+
+    .nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Wrap the chip + dropdown together */
+.profile-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--line);
+}
+
+.profile-chip span {
+  font-size: 16px;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  background: var(--bg1);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 40px rgba(0,0,0,.45);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  z-index: 999;
+}
+
+.dropdown a,
+.dropdown button {
+  padding: 10px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 15px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.dropdown a:hover,
+.dropdown button:hover {
+  background: #1f1f1f;
+}  
 
     /* Profile chip + dropdown (hero + optional in nav) */
     .profile-wrap{position:relative;display:inline-block}
@@ -86,7 +146,7 @@
     .hidden{display:none!important}
 
     /* ===== HERO ===== */
-    .hero{position:relative;padding:24px 0 24px}
+    .hero{position:relative;padding:24px 0 24px;overflow:hidden}
     .hero::before{
       content:"";position:absolute;inset:0;pointer-events:none;
       background:
@@ -105,6 +165,25 @@
       align-items:center;
       justify-items:center;
       text-align:center;
+    }
+    .hero-backdrop {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -160px;  /* push it slightly below the car */
+      width: 140vw;    /* extra wide so it bleeds off screen edges */
+      height: 360px;
+      pointer-events: none;
+      z-index: -1;
+      background:
+      radial-gradient(
+        65% 120% at 50% 0%,
+        rgba(229,9,20,0.18),
+        rgba(0,0,0,0.7) 55%,
+        #141414 100%
+        );
+      filter: blur(80px);
+      opacity: 0.9;
     }
     .headline{font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
     .headline .accent{color:var(--accent)}
@@ -216,12 +295,26 @@
         <a class="btn" role="menuitem" href="#events">Events</a>
         <a class="btn" role="menuitem" href="/garage.html">Garage</a>
         <a class="btn" role="menuitem" href="#sightings">Sightings</a>
-        <a class="btn primary" role="menuitem" href="#subscribe">Join newsletter</a>
 
         <!-- Nav auth controls -->
-        <button id="signinBtn" class="btn" type="button">Sign in</button>
-        <button id="signoutBtn" class="btn" type="button" style="display:none">Sign out</button>
-      </div>
+         <div class="nav-auth">
+        <button id="signinBtn" class="btn">Sign in</button>
+
+        <div id="profileMenu" class="profile-menu" style="display:none">
+        <div id="profileChip" class="profile-chip">
+        <span id="profileInitials">U</span>
+        </div>
+
+        <div id="dropdown" class="dropdown" style="display:none">
+        <a href="/garage.html">My Garage</a>
+        <a href="/tickets.html">My Tickets</a>
+          <a href="/likes-builds.html">Liked Builds</a>
+          <a href="/likes-sightings.html">Liked Sightings</a>
+      <button id="signoutBtn" class="btn" style="width:100%">Sign out</button>
+    </div>
+  </div>
+</div>
+
     </div>
   </nav>
 
@@ -248,7 +341,7 @@
 
           <!-- H1 for SEO/semantics -->
           <h1 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h1>
-          <p class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</p>
+          <h2 class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</h2>
           <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
             <a class="btn primary" href="#subscribe">Subscribe</a>
             <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
@@ -276,8 +369,14 @@
           <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
           <div class="floor" aria-hidden="true"></div>
         </div>
+        
+        <!--Backdrop for car stage-->
+        <div class="hero-backdrop" aria-hidden="true"></div>
       </div>
     </section>
+
+  
+
 
     <!-- 🔥 EVENTS — directly under HERO -->
     <section id="events" class="section" aria-labelledby="events-title">
@@ -459,6 +558,74 @@
     document.addEventListener('click', (e)=>{ if(!heroProfile?.contains(e.target)) closeProfileMenu(); });
     signOutFromMenu?.addEventListener('click', async ()=>{ await supabase.auth.signOut(); closeProfileMenu(); await refreshProfile(); });
 
+
+// --- Elements ---
+const signinBtn = document.getElementById("signinBtn");
+const profileMenu = document.getElementById("profileMenu");
+const profileChip = document.getElementById("profileChip");
+const dropdown = document.getElementById("dropdown");
+const initialsEl = document.getElementById("profileInitials");
+
+// --- Auth UI state ---
+async function updateAuthUI() {
+  const { data: { user }} = await supabase.auth.getUser();
+
+  if (user) {
+    signinBtn.style.display = "none";
+    profileMenu.style.display = "flex";
+
+    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
+    initialsEl.textContent = initials;
+  } else {
+    signinBtn.style.display = "inline-flex";
+    profileMenu.style.display = "none";
+    dropdown.style.display = "none";
+  }
+}
+
+// Toggle dropdown
+profileChip?.addEventListener("click", () => {
+  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+});
+document.addEventListener("click", (e) => {
+  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
+});
+
+// Sign in
+signinBtn.onclick = async () => {
+  const email = prompt("Enter your email:");
+  if (!email) return;
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: location.href }
+  });
+  if (error) alert(error.message);
+  else alert("Magic link sent! Check your inbox.");
+};
+
+// Sign out
+document.getElementById("signoutBtn")?.addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  updateAuthUI();
+});
+
+// Init
+supabase.auth.onAuthStateChange(updateAuthUI);
+updateAuthUI();
+
+// --- Access guard ---
+window.requireLogin = async function(callback){
+  const { data: { user }} = await supabase.auth.getUser();
+  if (!user) {
+    alert("Please sign in first.");
+    signinBtn.click();
+    return false;
+  }
+  if (callback) callback();
+  return true;
+};
+
+
     async function refreshProfile(){
       const { data: { user } } = await supabase.auth.getUser();
       const navSignIn = document.getElementById('signinBtn');
@@ -479,6 +646,11 @@
     }
     supabase.auth.onAuthStateChange(refreshProfile);
     document.addEventListener('DOMContentLoaded', refreshProfile);
+
+    //Auth Wriring for sign in and sign out//
+    
+
+    
 
     // ===== Top-5 public builds (from view) =====
     async function loadTopBuilds(){

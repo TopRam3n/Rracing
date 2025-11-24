@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My Tickets — ROK Racers JA</title>
+  <meta name="description" content="Your reserved tickets for ROK Racers JA events." />
+  <link rel="icon" href="/Assets/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
+
+    /* NAV */
+    .nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .title small{color:var(--muted)}
+
+    .menu{display:flex;gap:10px}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
+    .btn[disabled]{opacity:.5;pointer-events:none}
+
+    .section{padding:56px 0}
+    .grid{display:grid;gap:24px}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+    .pad{padding:18px}
+
+    .badge{border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:6px 10px;font-size:14px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+
+    /* Auth chip + dropdown */
+    .nav-auth{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+
+    .profile-chip{
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      background:var(--bg2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      cursor:pointer;
+      border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:48px;
+      background:var(--bg1);
+      border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      min-width:190px;
+      z-index:999;
+    }
+    .dropdown a,
+    .dropdown button{
+      padding:10px 16px;
+      text-align:left;
+      border:none;
+      background:transparent;
+      color:var(--fg);
+      font-size:15px;
+      width:100%;
+      cursor:pointer;
+      font-family:inherit;
+    }
+    .dropdown a:hover,
+    .dropdown button:hover{
+      background:#1f1f1f;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo-img" />
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Tickets</small>
+        </div>
+      </a>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+        </div>
+
+        <!-- Auth / profile -->
+        <div class="nav-auth">
+          <button id="signinBtn" class="btn">Sign in</button>
+
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="profileInitials">U</span>
+            </div>
+            <div id="dropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="signoutBtn" style="justify-content:flex-start">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="row" style="margin-bottom:16px">
+        <h2 style="font-size:44px">My Tickets</h2>
+        <span class="sub" id="ticketCountLabel"></span>
+      </div>
+
+      <div id="ticketsMessage" class="sub" style="margin-bottom:14px"></div>
+
+      <div id="ticketsGrid" class="grid cols-3" role="list" aria-live="polite">
+        <article class="card" role="listitem">
+          <div class="pad sub">Loading your tickets…</div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ---------- Auth widget (same pattern everywhere) ----------
+    const signinBtn   = document.getElementById("signinBtn");
+    const profileMenu = document.getElementById("profileMenu");
+    const profileChip = document.getElementById("profileChip");
+    const dropdown    = document.getElementById("dropdown");
+    const initialsEl  = document.getElementById("profileInitials");
+    const signoutBtn  = document.getElementById("signoutBtn");
+
+    async function updateAuthUI(){
+      const { data: { user }} = await supabase.auth.getUser();
+
+      if (user) {
+        if (signinBtn) signinBtn.style.display = "inline-flex";
+        if (profileMenu) profileMenu.style.display = "flex";
+        if (signinBtn) signinBtn.style.display = "none";
+
+        const base = user.user_metadata?.full_name || user.email || "U";
+        const initials = base.trim().charAt(0).toUpperCase();
+        if (initialsEl) initialsEl.textContent = initials;
+      } else {
+        if (signinBtn) signinBtn.style.display = "inline-flex";
+        if (profileMenu) profileMenu.style.display = "none";
+        if (dropdown) dropdown.style.display = "none";
+      }
+    }
+
+    profileChip?.addEventListener("click", () => {
+      if (!dropdown) return;
+      const open = dropdown.style.display === "block";
+      dropdown.style.display = open ? "none" : "block";
+      profileChip.setAttribute("aria-expanded", open ? "false" : "true");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!profileMenu || !dropdown) return;
+      if (!profileMenu.contains(e.target)) {
+        dropdown.style.display = "none";
+        profileChip?.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    signinBtn?.addEventListener("click", async () => {
+      const email = prompt("Enter your email to sign in:");
+      if (!email) return;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: location.href }
+      });
+      if (error) alert("Sign-in error: " + error.message);
+      else alert("Magic link sent! Check your email.");
+    });
+
+    signoutBtn?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      await updateAuthUI();
+      document.getElementById('ticketsGrid').innerHTML =
+        `<article class="card"><div class="pad sub">Sign in to see your tickets.</div></article>`;
+      document.getElementById('ticketCountLabel').textContent = '';
+    });
+
+    supabase.auth.onAuthStateChange(updateAuthUI);
+    updateAuthUI();
+
+    // Global guard
+    window.requireLogin = async function(callback){
+      const { data: { user }} = await supabase.auth.getUser();
+      if (!user) {
+        alert("Please sign in to see your tickets.");
+        signinBtn?.click();
+        return false;
+      }
+      if (callback) callback(user);
+      return true;
+    };
+
+    // ---------- Load tickets for current user ----------
+    async function loadTickets(){
+      const ok = await requireLogin();
+      if (!ok) {
+        document.getElementById('ticketsGrid').innerHTML =
+          `<article class="card"><div class="pad sub">Sign in to see your tickets.</div></article>`;
+        return;
+      }
+
+      const { data: { user }} = await supabase.auth.getUser();
+      const grid   = document.getElementById('ticketsGrid');
+      const msg    = document.getElementById('ticketsMessage');
+      const countL = document.getElementById('ticketCountLabel');
+
+      grid.innerHTML = `<article class="card"><div class="pad sub">Loading your tickets…</div></article>`;
+      msg.textContent = '';
+
+      // 1) Get my RSVPs where status = 'yes'
+      const rsvpRes = await supabase
+        .from('event_rsvps')
+        .select('event_id,status,created_at')
+        .eq('user_id', user.id)
+        .eq('status', 'yes')
+        .order('created_at', { ascending: false });
+
+      if (rsvpRes.error) {
+        console.error(rsvpRes.error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load tickets right now.</div></article>`;
+        return;
+      }
+
+      const rsvps = rsvpRes.data || [];
+      if (!rsvps.length) {
+        grid.innerHTML = `<article class="card"><div class="pad sub">No tickets yet. RSVP to an event and it’ll show up here.</div></article>`;
+        countL.textContent = '0 tickets';
+        return;
+      }
+
+      const ids = [...new Set(rsvps.map(r => r.event_id))];
+      const evRes = await supabase
+        .from('events')
+        .select('id,title,starts_at,location,cover_url')
+        .in('id', ids);
+
+      if (evRes.error) {
+        console.error(evRes.error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events for your tickets.</div></article>`;
+        return;
+      }
+
+      const events = evRes.data || [];
+      const map = new Map(events.map(e => [e.id, e]));
+
+      // Combine RSVPs + events; keep latest RSVP per event
+      const latestByEvent = new Map();
+      rsvps.forEach(r => {
+        const prev = latestByEvent.get(r.event_id);
+        if (!prev || new Date(r.created_at) > new Date(prev.created_at)) {
+          latestByEvent.set(r.event_id, r);
+        }
+      });
+
+      const rows = [];
+      latestByEvent.forEach((r, eventId) => {
+        const ev = map.get(eventId);
+        if (!ev) return;
+        rows.push({ rsvp: r, event: ev });
+      });
+
+      // Sort soonest event date first
+      rows.sort((a,b) => {
+        const da = a.event.starts_at ? new Date(a.event.starts_at) : new Date(0);
+        const db = b.event.starts_at ? new Date(b.event.starts_at) : new Date(0);
+        return da - db;
+      });
+
+      countL.textContent = `${rows.length} ticket${rows.length === 1 ? '' : 's'}`;
+
+      grid.innerHTML = rows.map(({ rsvp, event }) => {
+        const d = event.starts_at ? new Date(event.starts_at) : null;
+        const m = d ? d.toLocaleString("en-US",{ month:"short" }).toUpperCase() : "--";
+        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+        const when = d ? d.toLocaleString("en-US", {
+          weekday:"short", hour:"numeric", minute:"2-digit"
+        }) : "";
+        const loc = event.location
+          ? `${when ? when + " • " : ""}${event.location}`
+          : when;
+        const img = event.cover_url
+          ? `<img src="${event.cover_url}" alt="${event.title}" loading="lazy">`
+          : "";
+
+        const booked = new Date(rsvp.created_at).toLocaleString("en-US", {
+          month:"short", day:"numeric", year:"numeric"
+        });
+
+        return `
+          <article class="card" role="listitem">
+            ${img}
+            <div class="pad">
+              <div class="row" style="margin-bottom:6px">
+                <div style="display:flex;gap:10px;align-items:center">
+                  <div style="background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:60px;text-align:center">
+                    <div style="font-family:'Bebas Neue';font-size:20px">${m}</div>
+                    <div style="font-family:'Bebas Neue';font-size:24px">${day}</div>
+                  </div>
+                  <div>
+                    <strong>${event.title}</strong>
+                    ${loc ? `<div class="sub">${loc}</div>` : ''}
+                  </div>
+                </div>
+                <span class="badge">RSVP: ${rsvp.status.toUpperCase()}</span>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <span class="sub">Booked on ${booked}</span>
+                <a class="btn" href="/event.html?id=${event.id}">View event</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadTickets);
+  </script>
+</body>
+</html>

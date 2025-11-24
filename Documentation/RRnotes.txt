@@ -39,3 +39,10 @@ Drop GLBs into /Assets/models/…
 Add entries to BASE_MODEL_GLBS map
 
 Make sure your dropdown in build-edit.html uses matching keys
+
+
+add "please sign in" when trying to create a build without signing in.
+
+add a profile chip
+
+use lookout at night Kingston or a gas station for back drop.
