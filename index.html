@@ -17,7 +17,8 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
@@ -50,111 +51,128 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:var(--bg-0);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    body{
+      margin:0;
+      background:var(--bg-0);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif
+    }
     a{color:var(--fg);text-decoration:none}
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
     /* NAV */
-    .nav{position:sticky;top:0;z-index:60;transition:background .35s ease,border-color .35s ease}
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:60;
+      transition:background .35s ease,border-color .35s ease
+    }
     .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:12px}
     .logo-img{width:48px;height:48px;border-radius:8px;display:block;object-fit:contain}
     .title{line-height:1}
     .title h1{margin:0;font-family:"Bebas Neue",system-ui,sans-serif;letter-spacing:2px;font-size:22px}
     .title small{color:var(--muted)}
-    .nav--solid{background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+    .nav--solid{
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px)
+    }
     .menu{display:flex;gap:10px;align-items:center}
-    .btn{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);transition:transform .2s ease,background .2s ease}
+    .btn{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      transition:transform .2s ease,background .2s ease;
+      background:transparent;
+      color:inherit;
+      cursor:pointer;
+    }
     .btn:hover{transform:translateY(-2px)}
     .btn.primary{background:#fff;color:#000;border-color:#fff}
     .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
     .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-    .nav.nav--bleed{width:100vw; margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);}
+    .nav.nav--bleed{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);}
 
-    .nav-auth {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+    /* Nav auth */
+    .nav-auth{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+    .profile-chip{
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      background:var(--bg-2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      cursor:pointer;
+      border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px;}
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:48px;
+      background:var(--bg-1);
+      border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      min-width:190px;
+      z-index:999;
+    }
+    .dropdown a,
+    .dropdown button{
+      padding:10px 16px;
+      text-align:left;
+      border:none;
+      background:transparent;
+      color:var(--fg);
+      font-size:15px;
+      width:100%;
+      cursor:pointer;
+    }
+    .dropdown a:hover,
+    .dropdown button:hover{
+      background:#1f1f1f;
+    }
 
-/* Wrap the chip + dropdown together */
-.profile-menu {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.profile-chip {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--line);
-}
-
-.profile-chip span {
-  font-size: 16px;
-}
-
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 48px;
-  background: var(--bg1);
-  border: 1px solid var(--line);
-  box-shadow: 0 20px 40px rgba(0,0,0,.45);
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  min-width: 190px;
-  z-index: 999;
-}
-
-.dropdown a,
-.dropdown button {
-  padding: 10px 16px;
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: var(--fg);
-  font-size: 15px;
-  width: 100%;
-  cursor: pointer;
-}
-
-.dropdown a:hover,
-.dropdown button:hover {
-  background: #1f1f1f;
-}  
-
-    /* Profile chip + dropdown (hero + optional in nav) */
-    .profile-wrap{position:relative;display:inline-block}
-    .profile-chip{display:flex;align-items:center;gap:10px;background:#1b1b1b;border:1px solid var(--line);color:#fff;
-      padding:8px 12px;border-radius:999px;cursor:pointer}
-    .profile-chip .avatar{width:28px;height:28px;border-radius:50%;background:#2a2a2a;display:grid;place-items:center;font-weight:600}
-    .profile-menu{position:absolute;right:0;top:110%;min-width:210px;background:#161616;border:1px solid var(--line);
-      border-radius:14px;box-shadow:0 20px 60px -20px rgba(0,0,0,.6);overflow:hidden;display:none}
-    .profile-menu a,.profile-menu button{width:100%;text-align:left;background:transparent;border:0;color:#fff;
-      padding:12px 14px;display:flex;gap:10px;align-items:center;cursor:pointer}
-    .profile-menu a:hover,.profile-menu button:hover{background:#1d1d1d}
-    .profile-wrap.open .profile-menu{display:block}
     .hidden{display:none!important}
 
     /* ===== HERO ===== */
-    .hero{position:relative;padding:24px 0 24px;overflow:hidden}
+    .hero{
+      position:relative;
+      padding:24px 0 24px;
+      overflow:hidden;
+    }
     .hero::before{
-      content:"";position:absolute;inset:0;pointer-events:none;
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
       background:
         radial-gradient(70% 50% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
         radial-gradient(65% 45% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
     }
     .hero::after{
-      content:"";position:absolute;left:0;right:0;bottom:-1px;height:80px;pointer-events:none;
+      content:"";
+      position:absolute;
+      left:0;right:0;bottom:-1px;
+      height:80px;
+      pointer-events:none;
       background:linear-gradient(to bottom, rgba(20,20,20,0), rgba(20,20,20,1));
     }
     .hero .container{max-width:none;padding-left:0;padding-right:0}
@@ -166,35 +184,43 @@
       justify-items:center;
       text-align:center;
     }
-    .hero-backdrop {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: -160px;  /* push it slightly below the car */
-      width: 140vw;    /* extra wide so it bleeds off screen edges */
-      height: 360px;
-      pointer-events: none;
-      z-index: -1;
-      background:
-      radial-gradient(
-        65% 120% at 50% 0%,
-        rgba(229,9,20,0.18),
-        rgba(0,0,0,0.7) 55%,
-        #141414 100%
-        );
-      filter: blur(80px);
-      opacity: 0.9;
+
+    .hero-top-fade{
+      position:absolute;
+      top:0;
+      left:0;right:0;
+      height:200px;
+      background:linear-gradient(to bottom, #141414 0%, rgba(20,20,20,0) 100%);
+      pointer-events:none;
+      z-index:-2;
     }
-    .hero-top-fade {
-  position: absolute;
-  top: 0;
-  left: 0; right: 0;
-  height: 200px;
-  background: linear-gradient(to bottom, #141414 0%, rgba(20,20,20,0) 100%);
-  pointer-events: none;
-  z-index: -2;
-}
-    .headline{font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
+
+    .hero-backdrop{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:-160px;
+      width:140vw;
+      height:360px;
+      pointer-events:none;
+      z-index:-1;
+      background:
+        radial-gradient(
+          65% 120% at 50% 0%,
+          rgba(229,9,20,0.18),
+          rgba(0,0,0,0.7) 55%,
+          #141414 100%
+        );
+      filter:blur(80px);
+      opacity:0.9;
+    }
+
+    .headline{
+      font-family:"Bebas Neue",sans-serif;
+      font-size:clamp(40px,7vw,80px);
+      line-height:.95;
+      margin:0
+    }
     .headline .accent{color:var(--accent)}
     .sub{color:var(--muted);margin:14px 0 22px;max-width:65ch}
 
@@ -214,36 +240,36 @@
       display:block;
       width:min(92vw, 1420px);
       height:100%;
-      border:none;border-radius:0;background:transparent;
-      backface-visibility: hidden;
-      transform: translateZ(0);
-      contain: layout paint size;
-      --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
-      will-change: contents;
+      border:none;
+      border-radius:0;
+      background:transparent;
+      backface-visibility:hidden;
+      transform:translateZ(0);
+      contain:layout paint size;
+      --poster-color:transparent;
+      --progress-bar-color:transparent;
+      --progress-mask:none;
+      will-change:contents;
     }
-    .car-stage::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("/Assets/hero-tiremarks.png"); /* rename your image to this */
-  background-size: cover;
-  background-position: center;
-  opacity: 0.50;                /* reduces the “poster-like” feel */
-  filter: blur(1px);            /* softens edges */
-  z-index: -3;
-}
-
-    .car-stage::after {
-  content:"";
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height: 220px;
-  background: linear-gradient(to bottom, rgba(20,20,20,0) 0%, #141414 100%);
-  z-index:-1;
-}
-
-  /* image + fade-to-black combo */
-  
+    .car-stage::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:url("/Assets/hero-tiremarks.png");
+      background-size:cover;
+      background-position:center;
+      opacity:0.5;
+      filter:blur(1px);
+      z-index:-3;
+    }
+    .car-stage::after{
+      content:"";
+      position:absolute;
+      left:0;right:0;bottom:0;
+      height:220px;
+      background:linear-gradient(to bottom, rgba(20,20,20,0) 0%, #141414 100%);
+      z-index:-1;
+    }
     .car-stage .floor{
       position:absolute;left:50%;bottom:0;transform:translateX(-50%);
       width:min(92vw,1400px);height:180px;pointer-events:none;
@@ -252,7 +278,13 @@
     }
 
     /* REVEAL + PARALLAX */
-    .reveal{opacity:0;transform:translateY(22px) scale(.98);transition:opacity .6s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform,opacity}
+    .reveal{
+      opacity:0;
+      transform:translateY(22px) scale(.98);
+      transition:opacity .6s cubic-bezier(.2,.8,.2,1),
+                 transform .6s cubic-bezier(.2,.8,.2,1);
+      will-change:transform,opacity;
+    }
     .reveal.is-in{opacity:1;transform:translateY(0) scale(1)}
     [data-parallax]{will-change:transform}
 
@@ -265,15 +297,45 @@
       model-viewer{width:98vw}
       .car-stage{height:78vh}
     }
-    .card{background:var(--bg-1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
+    .card{
+      background:var(--bg-1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow-lg);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s;
+    }
     .card:hover{transform:translateY(-6px) scale(1.01)}
-    .card img{display:block;width:100%;height:auto;transition:filter .25s; aspect-ratio:16/9; object-fit:cover}
+    .card img{
+      display:block;
+      width:100%;
+      height:auto;
+      transition:filter .25s;
+      aspect-ratio:16/9;
+      object-fit:cover;
+    }
     .card:hover img{filter:brightness(1.06) contrast(1.02)}
     .pad{padding:18px}
 
     /* RSVP chips + date badge */
-    .chip{display:inline-flex;align-items:center;gap:6px;background:#1b1b1b;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
-    .date{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:64px;text-align:center}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#1b1b1b;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:14px;
+    }
+    .date{
+      background:var(--bg-2);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      min-width:64px;
+      text-align:center;
+    }
     .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}
     .date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
 
@@ -282,8 +344,18 @@
     section.section + section.section{border-top:1px solid var(--line)}
 
     /* Sponsors */
-    .sponsors{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;align-items:center}
-    .sponsors img{width:100%;opacity:.8;filter:grayscale(100%);transition:opacity .2s, transform .2s}
+    .sponsors{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:24px;
+      align-items:center;
+    }
+    .sponsors img{
+      width:100%;
+      opacity:.8;
+      filter:grayscale(100%);
+      transition:opacity .2s, transform .2s;
+    }
     .sponsors img:hover{opacity:1; transform:scale(1.02)}
 
     /* Footer */
@@ -291,16 +363,13 @@
     footer .social{display:flex;gap:12px}
     .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 
-    /*nav edit*/
-    /* NAV: tighter to the left/right edges only */
-.nav .container{
-  max-width: none;                  /* don't clamp width */
-  padding-left: max(8px, env(safe-area-inset-left));
-  padding-right: max(8px, env(safe-area-inset-right));
-}
-.nav-inner{
-  padding:10px 0;                   /* keep vertical padding slim */
-}
+    /* NAV width tweak */
+    .nav .container{
+      max-width:none;
+      padding-left:max(8px, env(safe-area-inset-left));
+      padding-right:max(8px, env(safe-area-inset-right));
+    }
+    .nav-inner{padding:10px 0;}
   </style>
 </head>
 
@@ -323,23 +392,24 @@
         <a class="btn" role="menuitem" href="#sightings">Sightings</a>
 
         <!-- Nav auth controls -->
-         <div class="nav-auth">
-        <button id="signinBtn" class="btn">Sign in</button>
+        <div class="nav-auth">
+          <button id="signinBtn" class="btn">Sign in</button>
 
-        <div id="profileMenu" class="profile-menu" style="display:none">
-        <div id="profileChip" class="profile-chip">
-        <span id="profileInitials">U</span>
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="profileInitials">U</span>
+            </div>
+
+            <div id="dropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="signoutBtn" type="button">Sign out</button>
+            </div>
+          </div>
         </div>
-
-        <div id="dropdown" class="dropdown" style="display:none">
-        <a href="/garage.html">My Garage</a>
-        <a href="/tickets.html">My Tickets</a>
-          <a href="/likes-builds.html">Liked Builds</a>
-          <a href="/likes-sightings.html">Liked Sightings</a>
-      <button id="signoutBtn" class="btn" style="width:100%">Sign out</button>
-    </div>
-  </div>
-</div>
+      </div>
 
     </div>
   </nav>
@@ -347,36 +417,23 @@
   <main id="main-content">
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-top-fade"></div>
       <div class="container hero-grid">
-        <div class="hero-top-fade"></div>
 
-        <!-- Hero content -->
+        <!-- Text block -->
         <div class="reveal" style="position:relative;width:100%;max-width:800px;margin:0 auto;text-align:center;">
-          <!-- HERO PROFILE (top-right in hero; only when signed in) -->
-          <div style="position:absolute; right:24px;top:24px;">
-            <div id="heroProfile" class="profile-wrap hidden">
-              <button id="profileChip" class="profile-chip" type="button" aria-haspopup="menu" aria-expanded="false">
-                <span class="avatar" id="profileAvatar">U</span>
-                <span id="profileEmail" class="sub"></span>
-              </button>
-              <div class="profile-menu" role="menu" aria-label="Profile">
-                <a href="/garage.html" role="menuitem">🚗 My Garage</a>
-                <a href="/tickets.html" role="menuitem">🎟️ Tickets</a>
-                <button id="signOutFromMenu" role="menuitem">↩︎ Sign out</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- H1 for SEO/semantics -->
           <h1 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h1>
-          <h2 class="sub">Discover meets, share sightings, and connect with Jamaica’s car culture. We’re building the digital home for ROC &amp; RRXNG.</h2>
+          <h2 class="sub">
+            Discover meets, share sightings, and connect with Jamaica’s car culture.
+            We’re building the digital home for ROC &amp; RRXNG.
+          </h2>
           <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
             <a class="btn primary" href="#subscribe">Subscribe</a>
             <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
           </div>
         </div>
 
-        <!-- 3D model (centered) -->
+        <!-- 3D model (centered over tire marks) -->
         <div class="car-stage" data-no-parallax>
           <model-viewer
             src="/Assets/car.glb"
@@ -397,14 +454,11 @@
           <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
           <div class="floor" aria-hidden="true"></div>
         </div>
-        
-        <!--Backdrop for car stage-->
+
+        <!-- Soft glow behind car -->
         <div class="hero-backdrop" aria-hidden="true"></div>
       </div>
     </section>
-
-  
-
 
     <!-- 🔥 EVENTS — directly under HERO -->
     <section id="events" class="section" aria-labelledby="events-title">
@@ -464,7 +518,7 @@
       </div>
     </section>
 
-    <!-- SIGHTINGS / BUILDS -->
+    <!-- SIGHTINGS -->
     <section id="sightings" class="section" aria-labelledby="sightings-title">
       <div class="container">
         <h2 id="sightings-title" class="headline reveal">Sightings</h2>
@@ -542,143 +596,119 @@
     // ===== Motion preferences =====
     const mv = document.querySelector('model-viewer');
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const applyMotionPref = () => { if (!mv) return; prefersReduced.matches ? mv.removeAttribute('auto-rotate') : mv.setAttribute('auto-rotate',''); };
-    prefersReduced.addEventListener?.('change', applyMotionPref); applyMotionPref();
+    const applyMotionPref = () => {
+      if (!mv) return;
+      prefersReduced.matches ? mv.removeAttribute('auto-rotate') : mv.setAttribute('auto-rotate','');
+    };
+    prefersReduced.addEventListener?.('change', applyMotionPref);
+    applyMotionPref();
 
     // Nav darken on scroll
     const nav = document.querySelector('.nav');
     const setSolid = () => nav.classList.toggle('nav--solid', window.scrollY > 40);
-    setSolid(); window.addEventListener('scroll', setSolid, { passive:true });
+    setSolid();
+    window.addEventListener('scroll', setSolid, { passive:true });
 
     // Reveal on scroll
-    const io = new IntersectionObserver((entries)=>{ entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); }); }, { threshold:.18 });
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); });
+    }, { threshold:.18 });
     document.querySelectorAll('.reveal:not([data-no-reveal])').forEach(el => io.observe(el));
 
     // Subscribe demo
-    function subscribe(e){ e.preventDefault(); const email = document.getElementById('email').value; document.getElementById('msg').style.display='block'; e.target.reset(); console.log('Captured email:', email); return false; }
+    function subscribe(e){
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      document.getElementById('msg').style.display='block';
+      e.target.reset();
+      console.log('Captured email:', email);
+      return false;
+    }
     window.subscribe = subscribe;
 
-    // ===== Auth mini-wiring =====
-    const $ = (sel)=>document.querySelector(sel);
-    const heroProfile = $('#heroProfile');
-    const chip = $('#profileChip');
-    const signOutFromMenu = $('#signOutFromMenu');
-    function initialsFromEmail(email){
-      if(!email) return 'U';
-      const name = email.split('@')[0].replace(/[^a-z0-9]+/gi,' ').trim();
-      const parts = name.split(' ').filter(Boolean);
-      if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    async function startSignin(){
-      const email = prompt("Enter your email to sign in:");
-      if(!email) return;
-      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
-      if(error) return alert("Sign-in error: " + error.message);
-      alert("Magic link sent! Check your email.");
-    }
-    document.getElementById('signinBtn')?.addEventListener('click', startSignin);
-    document.getElementById('signoutBtn')?.addEventListener('click', async ()=>{ await supabase.auth.signOut(); await refreshProfile(); });
+    // ===== Nav auth & profile =====
+    const signinBtn   = document.getElementById("signinBtn");
+    const profileMenu = document.getElementById("profileMenu");
+    const profileChip = document.getElementById("profileChip");
+    const dropdown    = document.getElementById("dropdown");
+    const initialsEl  = document.getElementById("profileInitials");
+    const signoutBtn  = document.getElementById("signoutBtn");
 
-    function closeProfileMenu(){ heroProfile?.classList.remove('open'); chip?.setAttribute('aria-expanded','false'); }
-    function toggleProfileMenu(e){ e?.stopPropagation?.(); heroProfile.classList.toggle('open'); chip?.setAttribute('aria-expanded', heroProfile.classList.contains('open')?'true':'false'); }
-    chip?.addEventListener('click', toggleProfileMenu);
-    document.addEventListener('click', (e)=>{ if(!heroProfile?.contains(e.target)) closeProfileMenu(); });
-    signOutFromMenu?.addEventListener('click', async ()=>{ await supabase.auth.signOut(); closeProfileMenu(); await refreshProfile(); });
-
-
-// --- Elements ---
-const signinBtn = document.getElementById("signinBtn");
-const profileMenu = document.getElementById("profileMenu");
-const profileChip = document.getElementById("profileChip");
-const dropdown = document.getElementById("dropdown");
-const initialsEl = document.getElementById("profileInitials");
-
-// --- Auth UI state ---
-async function updateAuthUI() {
-  const { data: { user }} = await supabase.auth.getUser();
-
-  if (user) {
-    signinBtn.style.display = "none";
-    profileMenu.style.display = "flex";
-
-    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
-    initialsEl.textContent = initials;
-  } else {
-    signinBtn.style.display = "inline-flex";
-    profileMenu.style.display = "none";
-    dropdown.style.display = "none";
-  }
-}
-
-// Toggle dropdown
-profileChip?.addEventListener("click", () => {
-  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-});
-document.addEventListener("click", (e) => {
-  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
-});
-
-// Sign in
-signinBtn.onclick = async () => {
-  const email = prompt("Enter your email:");
-  if (!email) return;
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: location.href }
-  });
-  if (error) alert(error.message);
-  else alert("Magic link sent! Check your inbox.");
-};
-
-// Sign out
-document.getElementById("signoutBtn")?.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  updateAuthUI();
-});
-
-// Init
-supabase.auth.onAuthStateChange(updateAuthUI);
-updateAuthUI();
-
-// --- Access guard ---
-window.requireLogin = async function(callback){
-  const { data: { user }} = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please sign in first.");
-    signinBtn.click();
-    return false;
-  }
-  if (callback) callback();
-  return true;
-};
-
-
-    async function refreshProfile(){
+    async function updateAuthUI(){
       const { data: { user } } = await supabase.auth.getUser();
-      const navSignIn = document.getElementById('signinBtn');
-      const navSignOut = document.getElementById('signoutBtn');
-      if(user){
-        heroProfile?.classList.remove('hidden');
-        const email = user.email || '';
-        const avatar = $('#profileAvatar'); const emailEl = $('#profileEmail');
-        if(avatar) avatar.textContent = initialsFromEmail(email);
-        if(emailEl) emailEl.textContent = email;
-        if(navSignIn) navSignIn.style.display = 'none';
-        if(navSignOut) navSignOut.style.display = 'inline-flex';
-      }else{
-        heroProfile?.classList.add('hidden');
-        if(navSignIn) navSignIn.style.display = 'inline-flex';
-        if(navSignOut) navSignOut.style.display = 'none';
+
+      if (user){
+        if (signinBtn) signinBtn.style.display = "none";
+        if (profileMenu) profileMenu.style.display = "flex";
+
+        if (initialsEl){
+          const raw = (user.email || "").split("@")[0] || "u";
+          const cleaned = raw.replace(/[^a-z0-9]+/gi," ").trim();
+          const parts = cleaned.split(" ").filter(Boolean);
+          let initials = "";
+          if (parts.length >= 2){
+            initials = (parts[0][0] + parts[1][0]);
+          } else {
+            initials = cleaned.slice(0,2);
+          }
+          initialsEl.textContent = initials.toUpperCase();
+        }
+      } else {
+        if (signinBtn) signinBtn.style.display = "inline-flex";
+        if (profileMenu) profileMenu.style.display = "none";
+        if (dropdown) dropdown.style.display = "none";
       }
     }
-    supabase.auth.onAuthStateChange(refreshProfile);
-    document.addEventListener('DOMContentLoaded', refreshProfile);
 
-    //Auth Wriring for sign in and sign out//
-    
+    // Toggle dropdown
+    profileChip?.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      if (!dropdown) return;
+      const current = dropdown.style.display;
+      dropdown.style.display = (current === "none" || current === "") ? "block" : "none";
+      profileChip.setAttribute("aria-expanded", dropdown.style.display === "block" ? "true" : "false");
+    });
 
-    
+    document.addEventListener("click", (e)=>{
+      if (!profileMenu?.contains(e.target)){
+        if (dropdown) dropdown.style.display = "none";
+        profileChip?.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Sign in
+    signinBtn?.addEventListener("click", async ()=>{
+      const email = prompt("Enter your email:");
+      if (!email) return;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options:{ emailRedirectTo: location.href }
+      });
+      if (error) alert("Sign-in error: " + error.message);
+      else alert("Magic link sent! Check your inbox.");
+    });
+
+    // Sign out
+    signoutBtn?.addEventListener("click", async ()=>{
+      await supabase.auth.signOut();
+      await updateAuthUI();
+    });
+
+    // Keep UI in sync with auth state
+    supabase.auth.onAuthStateChange(updateAuthUI);
+    updateAuthUI();
+
+    // Helper: require login before an action
+    window.requireLogin = async function(callback){
+      const { data: { user }} = await supabase.auth.getUser();
+      if (!user){
+        alert("Please sign in first.");
+        signinBtn?.click();
+        return false;
+      }
+      if (callback) callback();
+      return true;
+    };
 
     // ===== Top-5 public builds (from view) =====
     async function loadTopBuilds(){
@@ -711,7 +741,7 @@ window.requireLogin = async function(callback){
           .from('build_likes')
           .select('build_id')
           .in('build_id', data.map(b => b.id))
-          .eq('user_id', auth.user.id); // using user_id consistently
+          .eq('user_id', auth.user.id);
         likedSet = new Set((liked||[]).map(r => r.build_id));
       }
 
@@ -745,14 +775,17 @@ window.requireLogin = async function(callback){
         const buildId = card?.dataset.build;
         const likesEl = card.querySelector('.likes');
 
-        const { data: auth } = await supabase.auth.getUser();
-        if(!auth?.user){ alert('Sign in to like builds.'); return; }
+        const { data: auth2 } = await supabase.auth.getUser();
+        if(!auth2?.user){
+          alert('Sign in to like builds.');
+          return;
+        }
 
         const { data: existing } = await supabase
           .from('build_likes')
           .select('build_id')
           .eq('build_id', buildId)
-          .eq('user_id', auth.user.id)
+          .eq('user_id', auth2.user.id)
           .maybeSingle();
 
         if(existing){
@@ -760,7 +793,7 @@ window.requireLogin = async function(callback){
             .from('build_likes')
             .delete()
             .eq('build_id', buildId)
-            .eq('user_id', auth.user.id);
+            .eq('user_id', auth2.user.id);
           if(error) return alert('Unlike failed: ' + error.message);
           btn.textContent = '♡';
           btn.title = 'Like build';
@@ -770,7 +803,7 @@ window.requireLogin = async function(callback){
         }else{
           const { error } = await supabase
             .from('build_likes')
-            .insert({ build_id: buildId, user_id: auth.user.id });
+            .insert({ build_id: buildId, user_id: auth2.user.id });
           if(error) return alert('Like failed: ' + error.message);
           btn.textContent = '♥';
           btn.title = 'Unlike build';
@@ -808,7 +841,8 @@ window.requireLogin = async function(callback){
       const day = d ? String(d.getDate()).padStart(2,"0") : "--";
       const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" width="1200" height="675">` : "";
       const when = d ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit"}) : "";
-      const loc = e.location ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>` : (when ? `<div class="sub">${when}</div>` : "");
+      const loc = e.location ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>` :
+                               (when ? `<div class="sub">${when}</div>` : "");
       const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
 
       return `
@@ -849,7 +883,8 @@ window.requireLogin = async function(callback){
 
       const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
       const rows = (eventsRes.data||[]).map(e => ({
-        ...e, counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+        ...e,
+        counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
       }));
 
       if(!rows.length){
@@ -862,7 +897,7 @@ window.requireLogin = async function(callback){
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
-      await refreshProfile();
+      await updateAuthUI();
       await loadTopBuilds();
       setupLiveLikes();
       await loadFrontEvents();
