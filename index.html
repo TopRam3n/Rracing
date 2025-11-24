@@ -185,6 +185,15 @@
       filter: blur(80px);
       opacity: 0.9;
     }
+    .hero-top-fade {
+  position: absolute;
+  top: 0;
+  left: 0; right: 0;
+  height: 200px;
+  background: linear-gradient(to bottom, #141414 0%, rgba(20,20,20,0) 100%);
+  pointer-events: none;
+  z-index: -2;
+}
     .headline{font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,7vw,80px);line-height:.95;margin:0}
     .headline .accent{color:var(--accent)}
     .sub{color:var(--muted);margin:14px 0 22px;max-width:65ch}
@@ -212,32 +221,29 @@
       --poster-color:transparent; --progress-bar-color:transparent; --progress-mask:none;
       will-change: contents;
     }
-    .car-stage::before{
-      content:"";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:-1;
-      width:min(92vw, 1300px);height:22vh;
-      background:radial-gradient(55% 70% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
-      filter:blur(24px);opacity:.95;
-    }
+    .car-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/Assets/hero-tiremarks.png"); /* rename your image to this */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.50;                /* reduces the “poster-like” feel */
+  filter: blur(1px);            /* softens edges */
+  z-index: -3;
+}
 
-    .car-stage::after{
+    .car-stage::after {
   content:"";
   position:absolute;
-  inset:0; /* cover entire hero canvas */
-  z-index:-2; /* sits under the glow + car */
-  pointer-events:none;
+  left:0; right:0; bottom:0;
+  height: 220px;
+  background: linear-gradient(to bottom, rgba(20,20,20,0) 0%, #141414 100%);
+  z-index:-1;
+}
 
   /* image + fade-to-black combo */
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(20,20,20,0) 0%,        /* transparent at top */
-      rgba(20,20,20,0.85) 70%,    /* darkening */
-      #141414 100%                /* matches site bg */
-    ),
-    url("/Assets/hero-backdrop.png") center bottom / cover no-repeat;
   
-  opacity:0.95;
-}
     .car-stage .floor{
       position:absolute;left:50%;bottom:0;transform:translateX(-50%);
       width:min(92vw,1400px);height:180px;pointer-events:none;
@@ -342,6 +348,8 @@
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
+        <div class="hero-top-fade"></div>
+
         <!-- Hero content -->
         <div class="reveal" style="position:relative;width:100%;max-width:800px;margin:0 auto;text-align:center;">
           <!-- HERO PROFILE (top-right in hero; only when signed in) -->
@@ -381,7 +389,7 @@
             shadow-intensity="0.9"
             shadow-softness="1"
             environment-image="neutral"
-            camera-orbit="0deg 65deg 28m"
+            camera-orbit="0deg 70deg 20m"
             field-of-view="40deg"
             interaction-prompt="none"
             disable-zoom>
