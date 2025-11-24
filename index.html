@@ -199,7 +199,7 @@
       width:100vw;
       height:min(78vh, 820px);
       margin:0 calc(50% - 50vw);
-      overflow:visible;
+      overflow:hidden;
     }
     model-viewer{
       display:block;
@@ -218,6 +218,26 @@
       background:radial-gradient(55% 70% at 50% 50%, rgba(0,0,0,.55), rgba(0,0,0,0));
       filter:blur(24px);opacity:.95;
     }
+
+    .car-stage::after{
+  content:"";
+  position:absolute;
+  inset:0; /* cover entire hero canvas */
+  z-index:-2; /* sits under the glow + car */
+  pointer-events:none;
+
+  /* image + fade-to-black combo */
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(20,20,20,0) 0%,        /* transparent at top */
+      rgba(20,20,20,0.85) 70%,    /* darkening */
+      #141414 100%                /* matches site bg */
+    ),
+    url("/Assets/hero-backdrop.png") center bottom / cover no-repeat;
+  
+  opacity:0.95;
+}
     .car-stage .floor{
       position:absolute;left:50%;bottom:0;transform:translateX(-50%);
       width:min(92vw,1400px);height:180px;pointer-events:none;
