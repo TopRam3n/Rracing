@@ -436,20 +436,19 @@
         <!-- 3D model (centered over tire marks) -->
         <div class="car-stage" data-no-parallax>
           <model-viewer
-            src="/Assets/car.glb"
-            poster="/Assets/car-poster.png"
-            alt="ROK Racers JA concept car preview"
-            camera-controls
-            auto-rotate
-            rotation-per-second="8deg"
-            exposure="1.1"
-            shadow-intensity="0.9"
-            shadow-softness="1"
-            environment-image="neutral"
-            camera-orbit="0deg 70deg 20m"
-            field-of-view="40deg"
-            interaction-prompt="none"
-            disable-zoom>
+              id="driftCar"
+              src="/Assets/car.glb"
+              poster="/Assets/car-poster.png"
+              alt="ROK Racers JA concept car"
+              camera-controls
+              exposure="1.1"
+              shadow-intensity="0.9"
+              shadow-softness="1"
+              environment-image="neutral"
+              camera-orbit="0deg 70deg 20m"
+              field-of-view="40deg"
+              interaction-prompt="none"
+              disable-zoom>
           </model-viewer>
           <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
           <div class="floor" aria-hidden="true"></div>
@@ -614,6 +613,23 @@
       entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-in'); });
     }, { threshold:.18 });
     document.querySelectorAll('.reveal:not([data-no-reveal])').forEach(el => io.observe(el));
+
+    // Drift Car Image
+    const car = document.getElementById("driftCar");
+    // desired drift radius
+    let angle = 0;
+
+    function drift() {
+      angle += 0.25; // adjust speed here (0.1 slow, 0.3 fast)
+      const sway = Math.sin(angle / 12) * 2; // subtle sway effect
+      const bounce = Math.sin(angle / 6) * 0.2;
+      const orbit = `${angle}deg ${70 + sway}deg ${20 + bounce}m`;
+      car.cameraTarget = `0m ${bounce * 0.02}m 0m`;
+      car.cameraOrbit = orbit;
+      requestAnimationFrame(drift);
+}
+
+    requestAnimationFrame(drift);
 
     // Subscribe demo
     function subscribe(e){
