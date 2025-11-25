@@ -276,39 +276,6 @@
       background:radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.65), rgba(0,0,0,0));
       filter:blur(22px);opacity:.9;
     }
-    /* Drift smoke under the rear of the car */
-    .drift-smoke{
-      position:absolute;
-      bottom:40px;
-      left:50%;
-      width:420px;
-      height:220px;
-      transform:translateX(-50%);
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 20% 40%, rgba(255,255,255,0.18), transparent 60%),
-        radial-gradient(circle at 80% 40%, rgba(255,255,255,0.14), transparent 60%);
-      filter:blur(18px);
-      opacity:0;
-      animation:smoke-pulse 3.2s infinite ease-in-out;
-      z-index:-2;
-}
-
-@keyframes smoke-pulse{
-  0%, 40%{
-    opacity:0;
-    transform:translateX(-50%) translateY(0) scale(1);
-  }
-  60%{
-    opacity:0.55;
-    transform:translateX(-50%) translateY(-12px) scale(1.08);
-  }
-  100%{
-    opacity:0;
-    transform:translateX(-50%) translateY(-26px) scale(1.18);
-  }
-}
-
 
     /* REVEAL + PARALLAX */
     .reveal{
@@ -469,25 +436,22 @@
         <!-- 3D model (centered over tire marks) -->
         <div class="car-stage" data-no-parallax>
           <model-viewer
-          id="driftCar"
-          src="/Assets/car.glb"
-          poster="/Assets/car-poster.png"
-          alt="ROK Racers JA concept car preview"
-          camera-controls
-          exposure="1.1"
-          shadow-intensity="0.9"
-          shadow-softness="1"
-          environment-image="neutral"
-          camera-orbit="0deg 70deg 20m"
-          field-of-view="40deg"
-          interaction-prompt="none"
-          disable-zoom>
+              id="driftCar"
+              src="/Assets/car.glb"
+              poster="/Assets/car-poster.png"
+              alt="ROK Racers JA concept car"
+              camera-controls
+              exposure="1.1"
+              shadow-intensity="0.9"
+              shadow-softness="1"
+              environment-image="neutral"
+              camera-orbit="0deg 70deg 20m"
+              field-of-view="40deg"
+              interaction-prompt="none"
+              disable-zoom>
           </model-viewer>
-
           <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
           <div class="floor" aria-hidden="true"></div>
-          <div class="floor" aria-hidden="true"></div>
-          <div class="drift-smoke" aria-hidden="true"></div>
         </div>
 
         <!-- Soft glow behind car -->
