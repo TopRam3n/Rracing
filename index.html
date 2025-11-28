@@ -15,7 +15,7 @@
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="/auth-ui.js"></script>
+ 
 
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
@@ -23,6 +23,8 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
+
+  <script src="/auth-ui.js"></script>
 
   <!-- Open Graph -->
   <meta property="og:title" content="ROK Racers JA" />
@@ -517,7 +519,7 @@
     </div>
 
     <div style="margin-top:14px;display:flex;gap:10px">
-      <button class="btn" onclick="requireLogin(()=>location.href='/sighting-new.html')">
+      <button class="btn" onclick="authUI.requireLogin(() =>location.href='/sighting-new.html')">
         Upload a sighting
       </button>
       <a class="btn" href="/sightings.html">See all sightings</a>
@@ -739,7 +741,7 @@ function driftLoop(){
     updateAuthUI();
 
     // Helper: require login before an action
-    window.requireLogin = async function(callback){
+    window.authUI.requireLogin = async function(callback){
       const { data: { user }} = await supabase.auth.getUser();
       if (!user){
         alert("Please sign in first.");

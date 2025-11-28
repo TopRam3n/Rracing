@@ -15,6 +15,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
   window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
+<script src="/auth-ui.js"></script>
 
 <style>
 :root{
@@ -203,8 +204,6 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
     </section>
   </main>
 
-  <script src="/auth-ui.js"></script>
-
 <script>
 /* ========= Mini auth widget ========= */
 async function refreshAuthUI(){
@@ -344,7 +343,7 @@ async function updateQuota(){
 
 /* ========= New Build (redirect to builder) ========= */
 document.getElementById('newBuildBtn').onclick = () =>
-  requireLogin(async (user) => {
+  authUI.requireLogin(async (user) => {
     // re-check quota
     const r = await supabase.from('builds').select('id').eq('user_id', user.id);
     if((r.data?.length || 0) >= 3) return alert('Free limit reached. Upgrade to add more builds.');
@@ -556,7 +555,7 @@ document.getElementById('buildsGrid').addEventListener('click', async (e)=>{
   const id = card?.dataset.build;
   const likesEl = card.querySelector('.likes');
 
-  const ok = await requireLogin();
+  const ok = await authUI.requireLogin();
   if (!ok) return;
   const { data: { user } } = await supabase.auth.getUser();
   if(!user){ return alert('Sign in to like builds.'); }

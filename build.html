@@ -483,7 +483,7 @@
       likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
 
       likeBtn.onclick = async () => {
-        const ok = await window.requireLogin();
+        const ok = await window.authUI.requireLogin();
         if(!ok) return;
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -566,7 +566,7 @@
     }
 
     $('commentPostBtn').addEventListener('click', async () => {
-      const ok = await window.requireLogin();
+      const ok = await window.authUI.requireLogin();
       if(!ok) return;
 
       const input = $('commentInput');

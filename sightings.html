@@ -14,6 +14,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
   window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
+<script src="/auth-ui.js"></script>
 <style>
 :root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
 *{box-sizing:border-box}
@@ -84,14 +85,14 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
   </section>
 </main>
 
-<script src="/auth-ui.js"></script>
+
 
 <script>
 const postBtn = document.getElementById('postSightingBtn');
 postBtn.onclick = () => {
   // use the same guard we defined on index
   if (window.requireLogin){
-    requireLogin(()=> location.href='/sighting-new.html');
+    authUI.requireLogin(() => location.href='/sighting-new.html');
   } else {
     alert('Please sign in on the homepage first.');
   }

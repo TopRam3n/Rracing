@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Events — ROK Racers JA</title>
+  <link rel="icon" href="/Assets/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <script src="/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    .title small{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.small{padding:6px 10px;font-size:14px}
+    .btn[disabled]{opacity:.5;pointer-events:none}
+
+    .section{padding:40px 0 56px}
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin-bottom:20px;
+    }
+    .grid{display:grid;gap:16px}
+    .cols-2{grid-template-columns:2fr 3fr}
+    @media(max-width:1000px){.cols-2{grid-template-columns:1fr}}
+
+    label{display:block;font-size:14px;margin-bottom:4px}
+    input[type="text"],
+    input[type="datetime-local"],
+    textarea{
+      width:100%;background:var(--bg2);border:1px solid var(--line);
+      border-radius:10px;padding:8px 10px;color:#fff;font:inherit;outline:none;
+    }
+    textarea{min-height:80px;resize:vertical}
+
+    .pill{
+      display:inline-flex;align-items:center;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid var(--line);background:var(--bg2);
+      font-size:12px;margin-right:6px;margin-top:4px;
+    }
+
+    .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;border:none;background:transparent;color:var(--fg);
+      text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+  </style>
+</head>
+<body>
+  <nav class="nav" role="navigation">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" class="logo-img" alt="">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Admin Events</small>
+        </div>
+      </a>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="menu">
+          <a class="btn" href="/events.html">Events</a>
+          <a class="btn" href="/profile.html">Profile</a>
+        </div>
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/profile.html">My Profile</a>
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/admin-events.html">Admin Events</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="row" style="margin-bottom:12px">
+        <div>
+          <h2 style="font-size:40px">Event admin</h2>
+          <p class="sub">Promoters can create and manage events that show in the public Events hub.</p>
+        </div>
+        <span id="adminStatus" class="pill">Checking…</span>
+      </div>
+
+      <div id="authMessage" class="sub" style="margin-bottom:12px"></div>
+
+      <div id="promoterApplyCard" class="card" style="display:none">
+        <h3 style="font-family:'Bebas Neue';letter-spacing:2px;margin:0;font-size:26px">Sign in as Promoter</h3>
+        <p class="sub" style="margin-top:4px">
+          This links your account as an event promoter. You’ll be able to create and edit events.
+        </p>
+        <button id="promoterApplyBtn" class="btn primary" type="button">Become a promoter</button>
+        <div id="promoterApplyMsg" class="sub" style="margin-top:6px"></div>
+      </div>
+
+      <div id="adminPanels" style="display:none;margin-top:10px">
+        <div class="grid cols-2">
+          <!-- Create / edit -->
+          <div>
+            <div class="card">
+              <h3 style="font-family:'Bebas Neue';letter-spacing:2px;margin:0;font-size:26px">Create event</h3>
+              <p class="sub" style="margin-top:4px">Fill in the details and publish to the Events hub.</p>
+
+              <form id="eventForm" style="margin-top:10px;display:grid;gap:10px">
+                <input type="hidden" id="eventId">
+
+                <div>
+                  <label for="evTitle">Title</label>
+                  <input id="evTitle" type="text" placeholder="e.g. RRXNG Night Meet @ Kingston" required>
+                </div>
+
+                <div>
+                  <label for="evLocation">Location</label>
+                  <input id="evLocation" type="text" placeholder="Venue / address">
+                </div>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div>
+                    <label for="evStart">Starts</label>
+                    <input id="evStart" type="datetime-local">
+                  </div>
+                  <div>
+                    <label for="evEnd">Ends</label>
+                    <input id="evEnd" type="datetime-local">
+                  </div>
+                </div>
+
+                <div>
+                  <label for="evCover">Cover image URL</label>
+                  <input id="evCover" type="text" placeholder="https://…">
+                </div>
+
+                <div>
+                  <label for="evDesc">Description</label>
+                  <textarea id="evDesc" placeholder="Event details, rules, schedule…"></textarea>
+                </div>
+
+                <div class="row" style="margin-top:4px">
+                  <button id="evSaveBtn" class="btn primary" type="submit">Publish event</button>
+                  <button id="evResetBtn" class="btn small" type="button">Reset form</button>
+                </div>
+                <div id="evFormMsg" class="sub" style="margin-top:4px"></div>
+              </form>
+            </div>
+          </div>
+
+          <!-- List -->
+          <div>
+            <div class="card">
+              <h3 style="font-family:'Bebas Neue';letter-spacing:2px;margin:0;font-size:26px">Your events</h3>
+              <p class="sub" style="margin-top:4px">Click an event to load it into the editor above.</p>
+              <div id="eventsList" style="margin-top:10px" class="sub">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    if (!window.requireLogin) {
+      window.requireLogin = async function(callback){
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          const email = prompt("Enter your email to sign in:");
+          if (!email) return false;
+          const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: { emailRedirectTo: location.href }
+          });
+          if (error) { alert("Sign-in error: " + error.message); return false; }
+          alert("Magic link sent. Check your email, then reload.");
+          return false;
+        }
+        if (callback) callback(user);
+        return true;
+      };
+    }
+
+    const $ = (id)=>document.getElementById(id);
+
+    function escapeHTML(s){
+      return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    let currentUser = null;
+    let isAdmin = false;
+
+    async function initAdminPage(){
+      const ok = await window.requireLogin();
+      if(!ok){
+        $('authMessage').textContent = 'Sign in to manage events.';
+        $('adminStatus').textContent = 'Not signed in';
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user;
+      $('authMessage').textContent = currentUser?.email || '';
+
+      await checkAdmin();
+    }
+
+    async function checkAdmin(){
+      $('adminStatus').textContent = 'Checking…';
+
+      const email = currentUser?.email;
+      if(!email){
+        $('adminStatus').textContent = 'Not signed in';
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('event_admins')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .maybeSingle();
+
+      if(error){
+        console.error(error);
+        $('adminStatus').textContent = 'Error checking role';
+        return;
+      }
+
+      isAdmin = !!data;
+      if(isAdmin){
+        $('adminStatus').textContent = 'Promoter';
+        $('adminStatus').style.background = '#0f5132';
+        $('adminStatus').style.borderColor = '#198754';
+        $('promoterApplyCard').style.display = 'none';
+        $('adminPanels').style.display = 'block';
+        loadEventsList();
+      }else{
+        $('adminStatus').textContent = 'Regular user';
+        $('promoterApplyCard').style.display = 'block';
+        $('adminPanels').style.display = 'none';
+      }
+    }
+
+    // Become promoter (adds email to event_admins)
+    $('promoterApplyBtn').addEventListener('click', async ()=>{
+      if(!currentUser || !currentUser.email){
+        $('promoterApplyMsg').textContent = 'Sign in first.';
+        return;
+      }
+      $('promoterApplyBtn').disabled = true;
+      $('promoterApplyMsg').textContent = 'Linking your account as promoter…';
+
+      const email = currentUser.email.toLowerCase();
+
+      const { error } = await supabase
+        .from('event_admins')
+        .insert({ email });
+
+      if(error){
+        // If unique-violation, user is already in list
+        console.error(error);
+        if(error.code === '23505'){
+          $('promoterApplyMsg').textContent = 'You are already registered as a promoter.';
+          await checkAdmin();
+        }else{
+          $('promoterApplyMsg').textContent = 'Could not register as promoter: ' + error.message;
+        }
+        $('promoterApplyBtn').disabled = false;
+        return;
+      }
+
+      $('promoterApplyMsg').textContent = 'Done! Reloading role…';
+      $('promoterApplyBtn').disabled = false;
+      await checkAdmin();
+    });
+
+    // Event form
+    $('eventForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!isAdmin){
+        $('evFormMsg').textContent = 'You must be a promoter to create events.';
+        return;
+      }
+
+      const title = $('evTitle').value.trim();
+      const loc   = $('evLocation').value.trim() || null;
+      const start = $('evStart').value;
+      const end   = $('evEnd').value;
+      const cover = $('evCover').value.trim() || null;
+      const desc  = $('evDesc').value.trim() || null;
+      const existingId = $('eventId').value || null;
+
+      if(!title){
+        $('evFormMsg').textContent = 'Title is required.';
+        return;
+      }
+
+      const payload = {
+        title,
+        location: loc,
+        cover_url: cover,
+        description: desc,
+        created_by: currentUser?.id || null
+      };
+      if(start) payload.starts_at = new Date(start).toISOString();
+      if(end)   payload.ends_at   = new Date(end).toISOString();
+
+      $('evSaveBtn').disabled = true;
+      $('evSaveBtn').textContent = existingId ? 'Saving…' : 'Publishing…';
+      $('evFormMsg').textContent = '';
+
+      try{
+        if(existingId){
+          const { error } = await supabase
+            .from('events')
+            .update(payload)
+            .eq('id', existingId);
+          if(error) throw error;
+          $('evFormMsg').textContent = 'Event updated.';
+        }else{
+          const { data, error } = await supabase
+            .from('events')
+            .insert(payload)
+            .select('id')
+            .maybeSingle();
+          if(error) throw error;
+          $('evFormMsg').textContent = 'Event created.';
+          $('eventId').value = data.id;
+        }
+        await loadEventsList();
+      }catch(err){
+        console.error(err);
+        $('evFormMsg').textContent = 'Error: ' + err.message;
+      }finally{
+        $('evSaveBtn').disabled = false;
+        $('evSaveBtn').textContent = existingId ? 'Save changes' : 'Publish event';
+      }
+    });
+
+    $('evResetBtn').addEventListener('click', ()=>{
+      $('eventId').value = '';
+      $('evTitle').value = '';
+      $('evLocation').value = '';
+      $('evStart').value = '';
+      $('evEnd').value = '';
+      $('evCover').value = '';
+      $('evDesc').value = '';
+      $('evFormMsg').textContent = '';
+      $('evSaveBtn').textContent = 'Publish event';
+    });
+
+    async function loadEventsList(){
+      const list = $('eventsList');
+      list.textContent = 'Loading…';
+
+      const { data, error } = await supabase
+        .from('events')
+        .select('id,title,starts_at,location,created_by')
+        .order('starts_at',{ascending:false})
+        .limit(50);
+
+      if(error){
+        console.error(error);
+        list.textContent = 'Could not load events.';
+        return;
+      }
+      if(!data || !data.length){
+        list.textContent = 'No events yet.';
+        return;
+      }
+
+      list.innerHTML = data.map(ev=>{
+        const d = ev.starts_at ? new Date(ev.starts_at) : null;
+        const when = d ? d.toLocaleString("en-US",{month:"short",day:"2-digit",hour:"numeric",minute:"2-digit"}) : "";
+        return `
+          <div class="row" style="padding:6px 0;border-bottom:1px solid var(--line);cursor:pointer" data-id="${ev.id}">
+            <div>
+              <strong>${escapeHTML(ev.title)}</strong>
+              ${when || ev.location ? `<div class="sub">${escapeHTML([when,ev.location].filter(Boolean).join(' • '))}</div>` : ''}
+            </div>
+            <a href="/event.html?id=${ev.id}" class="btn small">View</a>
+          </div>`;
+      }).join('');
+
+      // Click to load into editor
+      list.querySelectorAll('[data-id]').forEach(row=>{
+        row.addEventListener('click', async (e)=>{
+          if(e.target.closest('a')) return; // ignore clicks on View button
+          const id = row.getAttribute('data-id');
+          await loadEventIntoForm(id);
+        });
+      });
+    }
+
+    async function loadEventIntoForm(id){
+      const { data, error } = await supabase
+        .from('events')
+        .select('id,title,location,starts_at,ends_at,cover_url,description')
+        .eq('id', id)
+        .maybeSingle();
+
+      if(error || !data){
+        console.error(error);
+        $('evFormMsg').textContent = 'Could not load event.';
+        return;
+      }
+
+      $('eventId').value = data.id;
+      $('evTitle').value = data.title || '';
+      $('evLocation').value = data.location || '';
+      $('evCover').value = data.cover_url || '';
+      $('evDesc').value = data.description || '';
+
+      if(data.starts_at){
+        const dt = new Date(data.starts_at);
+        $('evStart').value = dt.toISOString().slice(0,16);
+      }else{
+        $('evStart').value = '';
+      }
+
+      if(data.ends_at){
+        const dt = new Date(data.ends_at);
+        $('evEnd').value = dt.toISOString().slice(0,16);
+      }else{
+        $('evEnd').value = '';
+      }
+
+      $('evSaveBtn').textContent = 'Save changes';
+      $('evFormMsg').textContent = 'Editing existing event.';
+    }
+
+    window.addEventListener('DOMContentLoaded', initAdminPage);
+    window.addEventListener('DOMContentLoaded', async () => {
+  const statusEl = document.getElementById('adminStatus');
+  const panels = document.getElementById('adminPanels');
+  const applyCard = document.getElementById('promoterApplyCard');
+  const applyBtn = document.getElementById('promoterApplyBtn');
+  const applyMsg = document.getElementById('promoterApplyMsg');
+
+  statusEl.textContent = 'Checking…';
+
+  // 1) Make sure user is signed in
+  const ok = await authUI.requireLogin();
+  if (!ok) {
+    statusEl.textContent = 'Not signed in';
+    return;
+  }
+
+  // 2) Check if already promoter
+  if (authUI.isPromoter()) {
+    statusEl.textContent = 'Promoter';
+    applyCard.style.display = 'none';
+    panels.style.display = 'block';
+    await loadEventsList(); // your existing function
+    return;
+  }
+
+  // 3) Not promoter: show unified "become promoter" card
+  statusEl.textContent = 'Regular user';
+  applyCard.style.display = 'block';
+  panels.style.display = 'none';
+
+  applyBtn.onclick = async () => {
+    applyBtn.disabled = true;
+    applyMsg.textContent = 'Linking your account as promoter…';
+
+    const res = await authUI.ensurePromoter({
+      autoOffer: true,
+      signInMessage: 'Please sign in to manage events.',
+      confirmText: 'Turn this account into an event promoter?',
+    });
+
+    applyBtn.disabled = false;
+
+    if (res.promoter) {
+      applyMsg.textContent = 'You are now a promoter.';
+      statusEl.textContent = 'Promoter';
+      applyCard.style.display = 'none';
+      panels.style.display = 'block';
+      await loadEventsList();
+    } else if (res.declined) {
+      applyMsg.textContent = 'You can upgrade to promoter at any time.';
+    } else if (res.error) {
+      applyMsg.textContent = 'Error: ' + res.error.message;
+    } else {
+      applyMsg.textContent = 'Couldn’t become promoter right now.';
+    }
+  };
+});
+
+  </script>
+</body>
+</html>
