@@ -69,3 +69,5 @@ add shop for rok merch
 
 add an events-user differential from regular user so that events coordinators can post their events with images, time, description, location, etc. have this email that they register with to be able to see all users that RSVPed and  builds that are responded with. Make a verified driver tag- to prevent spam/fake responses with fake builds. figure out a system for that
 
+V1 finished.
+
