@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Sightings — ROK Racers JA</title>
+<meta name="description" content="Community car sightings across Jamaica."/>
+<link rel="icon" href="/Assets/og.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+:root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--fg);text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:8px}
+h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+.sub{color:var(--muted)}
+.section{padding:56px 0}
+.grid{display:grid;gap:24px}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.card:hover{transform:translateY(-6px) scale(1.01)}
+.card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.pad{padding:18px}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
+.btn.primary{background:#fff;color:#000;border-color:#fff}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;min-width:160px}
+.badge{border:1px solid var(--line);background:var(--bg2);padding:6px 10px;border-radius:999px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="brand">
+      <img src="/Assets/logo.png" alt="" class="logo">
+      <div><h1>ROK RACERS JA</h1><small class="sub">Sightings</small></div>
+    </a>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button id="postSightingBtn" class="btn primary">➕ Upload sighting</button>
+      <a class="btn" href="/garage.html">Garage</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+  <section class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <h2 style="font-size:44px">Sightings feed</h2>
+      <span id="countBadge" class="badge sub">0 sightings</span>
+    </div>
+
+    <div class="filters" aria-label="Sightings filters">
+      <input id="q" placeholder="Search title or location…">
+      <select id="parish">
+        <option value="">All parishes</option>
+        <option value="Kingston">Kingston</option>
+        <option value="St. Andrew">St. Andrew</option>
+        <option value="St. James">St. James</option>
+        <!-- add the rest later -->
+      </select>
+      <select id="sort">
+        <option value="new">Newest</option>
+        <option value="top">Most liked</option>
+      </select>
+      <button id="apply" class="btn">Apply</button>
+    </div>
+
+    <div id="sightingsGrid" class="grid cols-3" role="list" aria-live="polite">
+      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+    </div>
+  </section>
+</main>
+
+<script>
+const postBtn = document.getElementById('postSightingBtn');
+postBtn.onclick = () => {
+  // use the same guard we defined on index
+  if (window.requireLogin){
+    requireLogin(()=> location.href='/sighting-new.html');
+  } else {
+    alert('Please sign in on the homepage first.');
+  }
+};
+
+let rows = [];
+function renderGrid(pageRows){
+  const grid = document.getElementById('sightingsGrid');
+  if(!pageRows.length){
+    grid.innerHTML = `<article class="card"><div class="pad sub">No sightings found.</div></article>`;
+    return;
+  }
+  grid.innerHTML = pageRows.map(s => {
+    const img = s.image_url
+      ? `<img src="${s.image_url}" alt="${s.title}" loading="lazy">`
+      : "";
+    const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
+    return `
+      <article class="card" role="listitem" data-sighting="${s.id}">
+        <a href="/sighting.html?id=${s.id}">
+          ${img}
+          <div class="pad">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <strong>${s.title}</strong>
+              <small class="sub">${new Date(s.created_at).toLocaleDateString()}</small>
+            </div>
+            ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
+            <div class="sub" style="margin-top:8px">♥ <span class="likes">${s.like_count||0}</span></div>
+          </div>
+        </a>
+      </article>
+    `;
+  }).join('');
+}
+
+async function applyFilters(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const parish = document.getElementById('parish').value;
+  const sort = document.getElementById('sort').value;
+
+  let { data, error } = await supabase
+    .from('sightings_with_like_count')
+    .select('id,title,location,parish,image_url,created_at,like_count');
+
+  if(error){
+    console.error(error);
+    document.getElementById('sightingsGrid').innerHTML =
+      `<article class="card"><div class="pad sub">Couldn’t load sightings.</div></article>`;
+    return;
+  }
+
+  rows = data || [];
+
+  if(q){
+    rows = rows.filter(s =>
+      (s.title||'').toLowerCase().includes(q) ||
+      (s.location||'').toLowerCase().includes(q)
+    );
+  }
+  if(parish){
+    rows = rows.filter(s => s.parish === parish);
+  }
+
+  if(sort === 'top'){
+    rows.sort((a,b)=> (b.like_count||0) - (a.like_count||0));
+  } else {
+    rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+  }
+
+  document.getElementById('countBadge').textContent = `${rows.length} sightings`;
+  renderGrid(rows);
+}
+
+document.getElementById('apply').addEventListener('click', applyFilters);
+window.addEventListener('DOMContentLoaded', applyFilters);
+</script>
+</body>
+</html>

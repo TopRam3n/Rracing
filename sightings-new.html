@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Upload Sighting — ROK Racers JA</title>
+<meta name="description" content="Share a car sighting with the ROK Racers JA community."/>
+<link rel="icon" href="/Assets/og.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+:root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--fg);text-decoration:none}
+.container{max-width:800px;margin:0 auto;padding:0 24px}
+.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:8px}
+h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+.sub{color:var(--muted)}
+.section{padding:40px 0 56px}
+.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.pad{padding:20px}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
+.btn.primary{background:#fff;color:#000;border-color:#fff}
+.input, textarea.input, select.input{
+  width:100%;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;
+  outline:none;font-family:inherit;font-size:15px
+}
+label{display:block;margin-bottom:6px;font-size:14px}
+.field{margin-bottom:14px}
+.notice{font-size:14px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="brand">
+      <img src="/Assets/logo.png" alt="" class="logo">
+      <div><h1>ROK RACERS JA</h1><small class="sub">Upload sighting</small></div>
+    </a>
+    <a class="btn" href="/sightings.html">Back to sightings</a>
+  </div>
+</nav>
+
+<main class="container">
+  <section class="section">
+    <div class="card">
+      <div class="pad">
+        <h2 style="font-size:38px;margin-bottom:10px">Share a sighting</h2>
+        <p class="sub" style="margin-bottom:16px">
+          Drop a clean shot of something you spotted on the island. Keep it respectful, no plates in focus.
+        </p>
+
+        <div id="authGate" class="sub" style="margin-bottom:16px;display:none">
+          You need to sign in first. 
+          <button id="signinBtn" class="btn" style="margin-left:8px">Sign in</button>
+        </div>
+
+        <form id="sightingForm">
+          <div class="field">
+            <label for="title">Title *</label>
+            <input id="title" class="input" required placeholder="e.g. Pink E36 at Barbican" />
+          </div>
+
+          <div class="field">
+            <label for="parish">Parish</label>
+            <select id="parish" class="input">
+              <option value="">Select parish (optional)</option>
+              <option>Kingston</option>
+              <option>St. Andrew</option>
+              <option>St. James</option>
+              <option>St. Ann</option>
+              <option>St. Catherine</option>
+              <!-- add full list later -->
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="location">Location</label>
+            <input id="location" class="input" placeholder="e.g. Constant Spring Road" />
+          </div>
+
+          <div class="field">
+            <label for="image">Photo *</label>
+            <input id="image" type="file" accept="image/*" class="input" required />
+            <div class="notice">JPEG/PNG preferred. We’ll compress on upload.</div>
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" class="input" rows="4"
+              placeholder="Anything special about the build, moment, or driver?"></textarea>
+          </div>
+
+          <button id="submitBtn" type="submit" class="btn primary">Upload sighting</button>
+          <span id="status" class="sub" style="margin-left:10px"></span>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const form = document.getElementById('sightingForm');
+const statusEl = document.getElementById('status');
+const authGate = document.getElementById('authGate');
+const signinBtn = document.getElementById('signinBtn');
+const submitBtn = document.getElementById('submitBtn');
+
+async function ensureAuth(){
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user){
+    authGate.style.display = 'block';
+    form.style.display = 'none';
+  }else{
+    authGate.style.display = 'none';
+    form.style.display = 'block';
+  }
+}
+
+signinBtn?.addEventListener('click', async ()=>{
+  const email = prompt('Enter your email to sign in:');
+  if(!email) return;
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options:{ emailRedirectTo: location.href }
+  });
+  if(error) return alert('Sign-in error: ' + error.message);
+  alert('Magic link sent. Check your email and open this page again after signing in.');
+});
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  statusEl.textContent = '';
+  submitBtn.disabled = true;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user){
+    alert('Please sign in first.');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  const title = document.getElementById('title').value.trim();
+  const parish = document.getElementById('parish').value || null;
+  const locationText = document.getElementById('location').value.trim() || null;
+  const description = document.getElementById('description').value.trim() || null;
+  const fileInput = document.getElementById('image');
+  const file = fileInput.files[0];
+
+  if(!title || !file){
+    alert('Title and photo are required.');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  try{
+    statusEl.textContent = 'Uploading image…';
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/${Date.now()}.${ext || 'jpg'}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('sightings')
+      .upload(path, file, { upsert:false });
+
+    if(uploadError) throw uploadError;
+
+    const { data: publicData } = supabase.storage
+      .from('sightings')
+      .getPublicUrl(path);
+
+    const imageUrl = publicData?.publicUrl || null;
+    if(!imageUrl) throw new Error('Could not get public URL.');
+
+    statusEl.textContent = 'Saving…';
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('sightings')
+      .insert({
+        user_id: user.id,
+        title,
+        parish,
+        location: locationText,
+        description,
+        image_url: imageUrl
+      })
+      .select('id')
+      .maybeSingle();
+
+    if(insertError) throw insertError;
+
+    statusEl.textContent = 'Done!';
+    alert('Sighting uploaded!');
+    if(inserted?.id){
+      location.href = `/sighting.html?id=${inserted.id}`;
+    }else{
+      location.href = '/sightings.html';
+    }
+  }catch(err){
+    console.error(err);
+    alert('Upload failed: ' + (err.message || err));
+    statusEl.textContent = 'Error. Try again.';
+  }finally{
+    submitBtn.disabled = false;
+  }
+});
+
+window.addEventListener('DOMContentLoaded', ensureAuth);
+</script>
+</body>
+</html>

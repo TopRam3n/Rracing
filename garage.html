@@ -130,7 +130,7 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
     </div>
 
     <div id="dropdown" class="dropdown" style="display:none">
-      <a href="/garage.html">My Garage</a>
+      <a href="/garage.html?view=my">My Garage</a>
       <a href="/tickets.html">My Tickets</a>
       <a href="/likes-builds.html">Liked Builds</a>
       <a href="/likes-sightings.html">Liked Sightings</a>
@@ -567,9 +567,20 @@ function setupLiveLikes(){
 }
 
 /* ========= Boot ========= */
+function initDefaultViewFromQuery(){
+  const params = new URLSearchParams(location.search);
+  const view = params.get('view');
+  if(view === 'my'){
+    const visSel = document.getElementById('vis');
+    if(visSel) visSel.value = 'my';
+  }
+}
+
 document.getElementById('apply').addEventListener('click', applyFilters);
 document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; renderPage(); }});
 document.getElementById('next').addEventListener('click', ()=>{ page++; renderPage(); });
+
+
 
 window.addEventListener('DOMContentLoaded', async ()=>{
   await refreshAuthUI();

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Liked Sightings — ROK Racers JA</title>
+<meta name="description" content="Sightings you’ve liked in the ROK Racers JA feed."/>
+<link rel="icon" href="/Assets/og.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+:root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--fg);text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:8px}
+h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+.sub{color:var(--muted)}
+.section{padding:40px 0 56px}
+.grid{display:grid;gap:24px}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.card:hover{transform:translateY(-6px) scale(1.01)}
+.card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.pad{padding:18px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="brand">
+      <img src="/Assets/logo.png" alt="" class="logo">
+      <div><h1>ROK RACERS JA</h1><small class="sub">Liked Sightings</small></div>
+    </a>
+    <a class="btn" href="/sightings.html" style="border:1px solid var(--line);border-radius:14px;padding:8px 12px">Back to sightings</a>
+  </div>
+</nav>
+
+<main class="container">
+  <section class="section">
+    <h2 style="font-size:40px;margin-bottom:10px">Sightings you liked</h2>
+    <p id="gate" class="sub" style="margin-bottom:14px;display:none">Sign in to see your liked sightings.</p>
+    <div id="likedGrid" class="grid cols-3" role="list" aria-live="polite">
+      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+    </div>
+  </section>
+</main>
+
+<script>
+async function loadLikedSightings(){
+  const gate = document.getElementById('gate');
+  const grid = document.getElementById('likedGrid');
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user){
+    gate.style.display = 'block';
+    grid.innerHTML = '';
+    return;
+  }
+
+  gate.style.display = 'none';
+  grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+
+  const { data: likes, error: likesErr } = await supabase
+    .from('sighting_likes')
+    .select('sighting_id')
+    .eq('user_id', user.id);
+
+  if(likesErr){
+    console.error(likesErr);
+    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load likes.</div></article>`;
+    return;
+  }
+
+  const ids = (likes || []).map(l => l.sighting_id);
+  if(!ids.length){
+    grid.innerHTML = `<article class="card"><div class="pad sub">You haven’t liked any sightings yet.</div></article>`;
+    return;
+  }
+
+  const { data: rows, error: rowsErr } = await supabase
+    .from('sightings_with_like_count')
+    .select('id,title,location,parish,image_url,like_count,created_at')
+    .in('id', ids);
+
+  if(rowsErr){
+    console.error(rowsErr);
+    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load sightings.</div></article>`;
+    return;
+  }
+
+  grid.innerHTML = rows.map(s => {
+    const img = s.image_url
+      ? `<img src="${s.image_url}" alt="${s.title}" loading="lazy">`
+      : '';
+    const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
+    return `
+      <article class="card" role="listitem">
+        <a href="/sighting.html?id=${s.id}">
+          ${img}
+          <div class="pad">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <strong>${s.title}</strong>
+              <small class="sub">${new Date(s.created_at).toLocaleDateString()}</small>
+            </div>
+            ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
+            <div class="sub" style="margin-top:8px">♥ ${s.like_count || 0}</div>
+          </div>
+        </a>
+      </article>
+    `;
+  }).join('');
+}
+
+window.addEventListener('DOMContentLoaded', loadLikedSightings);
+</script>
+</body>
+</html>

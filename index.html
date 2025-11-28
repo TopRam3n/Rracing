@@ -488,67 +488,41 @@
     </section>
 
     <!-- HIGHLIGHTS -->
-    <section class="section" aria-labelledby="highlights-title">
-      <div class="container">
-        <h2 id="highlights-title" class="headline reveal">Highlights</h2>
-        <div class="grid cols-3">
-          <article class="card reveal">
-            <img loading="lazy" src="/Assets/highlight1.jpg" width="1200" height="675" alt="News highlight (placeholder)" />
-            <div class="pad">
-              <h3 style="margin:0 0 6px">News</h3>
-              <p class="sub" style="margin:0">ROC launch roadmap &amp; early partner program.</p>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img loading="lazy" src="/Assets/highlight2.jpg" width="1200" height="675" alt="Events highlight (placeholder)" />
-            <div class="pad">
-              <h3 style="margin:0 0 6px">Events</h3>
-              <p class="sub" style="margin:0">Fresh meets dropping across Kingston &amp; MoBay.</p>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img loading="lazy" src="/Assets/highlight3.jpg" width="1200" height="675" alt="Merch highlight (placeholder)" />
-            <div class="pad">
-              <h3 style="margin:0 0 6px">Merch</h3>
-              <p class="sub" style="margin:0">RRXNG Club stickers &amp; plates coming soon.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+    <!-- HIGHLIGHTS -->
+<section class="section" aria-labelledby="highlights-title">
+  <div class="container">
+    <h2 id="highlights-title" class="headline reveal">Highlights</h2>
+    <div id="highlightsGrid" class="grid cols-3" role="list" aria-live="polite">
+      <article class="card reveal" role="listitem">
+        <div class="pad sub">Loading…</div>
+      </article>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <a class="btn" href="/highlights.html">See all highlights</a>
+    </div>
+  </div>
+</section>
 
     <!-- SIGHTINGS -->
-    <section id="sightings" class="section" aria-labelledby="sightings-title">
-      <div class="container">
-        <h2 id="sightings-title" class="headline reveal">Sightings</h2>
-        <div class="grid cols-3">
-          <article class="card reveal">
-            <img loading="lazy" src="/Assets/sighting1.jpg" width="1200" height="675" alt="Sighting in Kingston (placeholder)" />
-            <div class="pad">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong>@e36king</strong><small class="sub">Kingston</small>
-              </div>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img loading="lazy" src="/Assets/sighting2.jpg" width="1200" height="675" alt="Sighting in Montego Bay (placeholder)" />
-            <div class="pad">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong>@rotaryja</strong><small class="sub">Montego Bay</small>
-              </div>
-            </div>
-          </article>
-          <article class="card reveal">
-            <img loading="lazy" src="/Assets/sighting3.jpg" width="1200" height="675" alt="Sighting in Ocho Rios (placeholder)" />
-            <div class="pad">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong>@boosted876</strong><small class="sub">Ocho Rios</small>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+<section id="sightings" class="section" aria-labelledby="sightings-title">
+  <div class="container">
+    <h2 id="sightings-title" class="headline reveal">Sightings</h2>
+
+    <div id="sightingsGrid" class="grid cols-3" role="list" aria-live="polite">
+      <article class="card reveal" role="listitem">
+        <div class="pad sub">Loading…</div>
+      </article>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <button class="btn" onclick="requireLogin(()=>location.href='/sighting-new.html')">
+        Upload a sighting
+      </button>
+      <a class="btn" href="/sightings.html">See all sightings</a>
+    </div>
+  </div>
+</section>
+
 
     <!-- SPONSORS -->
     <section class="section" aria-labelledby="sponsors-title">
@@ -598,32 +572,31 @@
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     let driftFrameId = null;
-    let driftAngle = 0;
+let driftAngle = 0;
 
-    function driftLoop(){
-      if (!mv) return;
+function driftLoop(){
+  if (!mv) return;
 
-      driftAngle += 0.22;                               // base spin speed
-      const yaw   = driftAngle + Math.sin(driftAngle/8) * 5;   // sideways “swerve”
-      const pitch = 70 + Math.sin(driftAngle/14) * 1.6;        // nose dip / rise
-      const radius = 20 + Math.sin(driftAngle/10) * 0.5;       // in/out “bounce”
+  driftAngle += 0.22;                               // spin speed
+  const yaw   = driftAngle + Math.sin(driftAngle/8) * 5;
+  const pitch = 70 + Math.sin(driftAngle/14) * 1.6;
+  const radius = 20 + Math.sin(driftAngle/10) * 0.5;
 
-      // Camera orbit around the car → makes it look like the rear is swinging
-      mv.cameraOrbit = `${yaw}deg ${pitch}deg ${radius}m`;
+  // camera orbits around a mostly-fixed front of the car
+  mv.cameraOrbit = `${yaw}deg ${pitch}deg ${radius}m`;
 
-      // Tiny FOV breathing (feels like throttle pulses)
-      const fov = 40 + Math.sin(driftAngle/16) * 1.4;
-      mv.fieldOfView = `${fov}deg`;
+  // tiny FOV breathing only (no container transform)
+  const fov = 40 + Math.sin(driftAngle/16) * 1.4;
+  mv.fieldOfView = `${fov}deg`;
 
-      // Subtle “suspension” shake on the whole stage
-      if (carStage){
-        const shakeX = Math.sin(driftAngle * 1.3) * 1.5;    // px
-        const shakeY = Math.sin(driftAngle * 1.7) * 0.8;
-        carStage.style.transform = `translate3d(${shakeX}px, ${shakeY}px, 0)`;
-      }
+  // keep stage fixed so it doesn't glitch on scroll
+  if (carStage){
+    carStage.style.transform = 'translate3d(0,0,0)';
+  }
 
-      driftFrameId = requestAnimationFrame(driftLoop);
-    }
+  driftFrameId = requestAnimationFrame(driftLoop);
+}
+
 
     function enableDrift(){
       if (driftFrameId) cancelAnimationFrame(driftFrameId);
@@ -960,12 +933,120 @@
       grid.innerHTML = rows.map(renderEventCard).join('');
     }
 
+    // ===== Sightings (front page preview) =====
+function renderSightingCard(s){
+  const img = s.image_url
+    ? `<img loading="lazy" src="${s.image_url}" width="1200" height="675" alt="${s.title}"/>`
+    : "";
+  const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
+  return `
+    <article class="card reveal" role="listitem" data-sighting="${s.id}">
+      <a href="/sighting.html?id=${s.id}">
+        ${img}
+        <div class="pad">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <strong>${s.title}</strong>
+            <small class="sub">${new Date(s.created_at).toLocaleDateString()}</small>
+          </div>
+          ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
+          <div class="sub" style="margin-top:8px">
+            ♥ <span class="likes">${s.like_count || 0}</span>
+          </div>
+        </div>
+      </a>
+    </article>
+  `;
+}
+
+async function loadFrontSightings(){
+  const grid = document.getElementById('sightingsGrid');
+  if(!grid) return;
+  grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+
+  const { data, error } = await supabase
+    .from('sightings_with_like_count')
+    .select('id,title,location,parish,image_url,created_at,like_count')
+    .order('created_at', { ascending:false })
+    .limit(3);
+
+  if(error){
+    console.error(error);
+    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load sightings.</div></article>`;
+    return;
+  }
+
+  if(!data?.length){
+    grid.innerHTML = `<article class="card"><div class="pad sub">No sightings yet — be the first.</div></article>`;
+    return;
+  }
+
+  grid.innerHTML = data.map(renderSightingCard).join('');
+}
+
+// ===== Highlights (front page preview) =====
+function renderHighlightCard(h){
+  const img = h.image_url
+    ? `<img loading="lazy" src="${h.image_url}" width="1200" height="675" alt="${h.title}">`
+    : "";
+  const cat = h.category ? `<span class="chip" style="margin-bottom:6px">${h.category}</span>` : "";
+  const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : "";
+
+  return `
+    <article class="card reveal" role="listitem" data-highlight="${h.id}">
+      ${img}
+      <div class="pad">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <strong>${h.title}</strong>
+          <small class="sub">${dateStr}</small>
+        </div>
+        ${cat}
+        <p class="sub" style="margin:6px 0 8px;max-height:3.6em;overflow:hidden">
+          ${(h.body || '').slice(0,140)}${(h.body && h.body.length > 140) ? '…' : ''}
+        </p>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span class="sub">♥ ${h.like_count || 0}</span>
+          <a class="btn" href="/highlight.html?id=${h.id}">Read</a>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+async function loadFrontHighlights(){
+  const grid = document.getElementById('highlightsGrid');
+  if(!grid) return;
+  grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+
+  const { data, error } = await supabase
+    .from('highlights_with_like_count')
+    .select('id,title,category,image_url,body,created_at,like_count')
+    .order('created_at', { ascending:false })
+    .limit(3);
+
+  if(error){
+    console.error(error);
+    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load highlights.</div></article>`;
+    return;
+  }
+
+  if(!data?.length){
+    grid.innerHTML = `<article class="card"><div class="pad sub">No highlights yet.</div></article>`;
+    return;
+  }
+
+  grid.innerHTML = data.map(renderHighlightCard).join('');
+}
+
+
+
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
       await updateAuthUI();
       await loadTopBuilds();
       setupLiveLikes();
       await loadFrontEvents();
+      await loadFrontSightings();
+      await loadFrontHighlights(); 
     });
   </script>
 
