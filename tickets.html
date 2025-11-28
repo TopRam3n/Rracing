@@ -6,6 +6,7 @@
   <title>My Tickets — ROK Racers JA</title>
   <meta name="description" content="Your reserved tickets for ROK Racers JA events." />
   <link rel="icon" href="/Assets/og.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
@@ -26,20 +27,31 @@
       --shadow:0 40px 120px -30px rgba(0,0,0,.6);
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    body{
+      margin:0;background:var(--bg);color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
     a{color:var(--fg);text-decoration:none}
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
     .sub{color:var(--muted)}
 
     /* NAV */
-    .nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;
+    }
     .brand{display:flex;align-items:center;gap:12px}
     .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
     h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
     .title small{color:var(--muted)}
 
-    .menu{display:flex;gap:10px}
+    .menu{display:flex;gap:10px;align-items:center}
     .btn{
       display:inline-flex;gap:8px;align-items:center;
       padding:10px 14px;border-radius:14px;
@@ -68,22 +80,30 @@
     .card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
     .pad{padding:18px}
 
-    .badge{border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:6px 10px;font-size:14px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .badge{
+      border:1px solid var(--line);
+      background:var(--bg2);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:14px;
+    }
+    .row{
+      display:flex;gap:10px;
+      align-items:center;flex-wrap:wrap;
+      justify-content:space-between;
+    }
 
-    /* Auth chip + dropdown */
+    /* Auth chip + dropdown (shared pattern) */
     .nav-auth{
       display:flex;
       align-items:center;
       gap:10px;
     }
-
     .profile-menu{
       position:relative;
       display:flex;
       align-items:center;
     }
-
     .profile-chip{
       width:40px;
       height:40px;
@@ -97,7 +117,6 @@
       border:1px solid var(--line);
     }
     .profile-chip span{font-size:16px}
-
     .dropdown{
       position:absolute;
       right:0;
@@ -148,20 +167,20 @@
           <a class="btn" role="menuitem" href="/garage.html">Garage</a>
         </div>
 
-        <!-- Auth / profile -->
+        <!-- Auth / profile (shared IDs for auth-ui.js) -->
         <div class="nav-auth">
-          <button id="signinBtn" class="btn">Sign in</button>
+          <button id="navSignInBtn" class="btn">Sign in</button>
 
-          <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="profileInitials">U</span>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
             </div>
-            <div id="dropdown" class="dropdown" style="display:none">
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
               <a href="/garage.html">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
-              <button id="signoutBtn" style="justify-content:flex-start">Sign out</button>
+              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
             </div>
           </div>
         </div>
@@ -186,95 +205,25 @@
     </section>
   </main>
 
+  <!-- shared auth UI -->
+  <script src="/auth-ui.js"></script>
+
   <script>
-    // ---------- Auth widget (same pattern everywhere) ----------
-    const signinBtn   = document.getElementById("signinBtn");
-    const profileMenu = document.getElementById("profileMenu");
-    const profileChip = document.getElementById("profileChip");
-    const dropdown    = document.getElementById("dropdown");
-    const initialsEl  = document.getElementById("profileInitials");
-    const signoutBtn  = document.getElementById("signoutBtn");
-
-    async function updateAuthUI(){
-      const { data: { user }} = await supabase.auth.getUser();
-
-      if (user) {
-        if (signinBtn) signinBtn.style.display = "inline-flex";
-        if (profileMenu) profileMenu.style.display = "flex";
-        if (signinBtn) signinBtn.style.display = "none";
-
-        const base = user.user_metadata?.full_name || user.email || "U";
-        const initials = base.trim().charAt(0).toUpperCase();
-        if (initialsEl) initialsEl.textContent = initials;
-      } else {
-        if (signinBtn) signinBtn.style.display = "inline-flex";
-        if (profileMenu) profileMenu.style.display = "none";
-        if (dropdown) dropdown.style.display = "none";
-      }
-    }
-
-    profileChip?.addEventListener("click", () => {
-      if (!dropdown) return;
-      const open = dropdown.style.display === "block";
-      dropdown.style.display = open ? "none" : "block";
-      profileChip.setAttribute("aria-expanded", open ? "false" : "true");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!profileMenu || !dropdown) return;
-      if (!profileMenu.contains(e.target)) {
-        dropdown.style.display = "none";
-        profileChip?.setAttribute("aria-expanded", "false");
-      }
-    });
-
-    signinBtn?.addEventListener("click", async () => {
-      const email = prompt("Enter your email to sign in:");
-      if (!email) return;
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: location.href }
-      });
-      if (error) alert("Sign-in error: " + error.message);
-      else alert("Magic link sent! Check your email.");
-    });
-
-    signoutBtn?.addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      await updateAuthUI();
-      document.getElementById('ticketsGrid').innerHTML =
-        `<article class="card"><div class="pad sub">Sign in to see your tickets.</div></article>`;
-      document.getElementById('ticketCountLabel').textContent = '';
-    });
-
-    supabase.auth.onAuthStateChange(updateAuthUI);
-    updateAuthUI();
-
-    // Global guard
-    window.requireLogin = async function(callback){
-      const { data: { user }} = await supabase.auth.getUser();
-      if (!user) {
-        alert("Please sign in to see your tickets.");
-        signinBtn?.click();
-        return false;
-      }
-      if (callback) callback(user);
-      return true;
-    };
-
-    // ---------- Load tickets for current user ----------
     async function loadTickets(){
-      const ok = await requireLogin();
+      const ok = await window.requireLogin();
+      const grid   = document.getElementById('ticketsGrid');
+      const msg    = document.getElementById('ticketsMessage');
+      const countL = document.getElementById('ticketCountLabel');
+
       if (!ok) {
-        document.getElementById('ticketsGrid').innerHTML =
+        grid.innerHTML =
           `<article class="card"><div class="pad sub">Sign in to see your tickets.</div></article>`;
+        msg.textContent = '';
+        countL.textContent = '';
         return;
       }
 
       const { data: { user }} = await supabase.auth.getUser();
-      const grid   = document.getElementById('ticketsGrid');
-      const msg    = document.getElementById('ticketsMessage');
-      const countL = document.getElementById('ticketCountLabel');
 
       grid.innerHTML = `<article class="card"><div class="pad sub">Loading your tickets…</div></article>`;
       msg.textContent = '';
@@ -289,13 +238,16 @@
 
       if (rsvpRes.error) {
         console.error(rsvpRes.error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load tickets right now.</div></article>`;
+        grid.innerHTML =
+          `<article class="card"><div class="pad sub">Couldn’t load tickets right now.</div></article>`;
+        countL.textContent = '';
         return;
       }
 
       const rsvps = rsvpRes.data || [];
       if (!rsvps.length) {
-        grid.innerHTML = `<article class="card"><div class="pad sub">No tickets yet. RSVP to an event and it’ll show up here.</div></article>`;
+        grid.innerHTML =
+          `<article class="card"><div class="pad sub">No tickets yet. RSVP to an event and it’ll show up here.</div></article>`;
         countL.textContent = '0 tickets';
         return;
       }
@@ -308,14 +260,16 @@
 
       if (evRes.error) {
         console.error(evRes.error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events for your tickets.</div></article>`;
+        grid.innerHTML =
+          `<article class="card"><div class="pad sub">Couldn’t load events for your tickets.</div></article>`;
+        countL.textContent = '';
         return;
       }
 
       const events = evRes.data || [];
       const map = new Map(events.map(e => [e.id, e]));
 
-      // Combine RSVPs + events; keep latest RSVP per event
+      // Keep latest RSVP per event
       const latestByEvent = new Map();
       rsvps.forEach(r => {
         const prev = latestByEvent.get(r.event_id);

@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="/auth-ui.js"></script>
+
 <script>
   const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
@@ -358,31 +360,37 @@ window.requireLogin = async function(callback){
         document.getElementById('next').disabled = true;
         return;
       }
-      const start = page*pageSize; const slice = rows.slice(start, start+pageSize);
-      list.innerHTML = slice.map(e=>{
-        const d = e.starts_at ? new Date(e.starts_at) : null;
-        const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-        const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : "";
-        const loc = e.location ? `<div class="sub">${e.location}</div>` : "";
-        const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
-        return `
-          <article class="card" role="listitem">
-            ${img}
-            <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-              <div class="date">
-                <div class="m">${m}</div><div class="d">${day}</div>
-              </div>
-              <div><strong>${e.title}</strong>${loc}</div>
-            </div>
-            <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <span class="chip">✅ ${counts.yes_count}</span>
-              <span class="chip">🤔 ${counts.maybe_count}</span>
-              <span class="chip">❌ ${counts.no_count}</span>
-              <a class="btn" href="event.html?id=${e.id}" style="margin-left:auto">Details</a>
-            </div>
-          </article>`;
-      }).join("");
+      
+      function renderEventListCard(e, counts){
+  const d = e.starts_at ? new Date(e.starts_at) : null;
+  const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+  const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+  const when = d ? d.toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit"}) : "";
+  const loc = e.location ? `${when ? when + " • " : ""}${e.location}` : when;
+
+  return `
+    <article class="card" role="listitem">
+      ${e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : ""}
+      <div class="pad">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
+          <div class="date">
+            <div class="m">${m}</div>
+            <div class="d">${day}</div>
+          </div>
+          <div>
+            <strong>${e.title}</strong>
+            ${loc ? `<div class="sub">${loc}</div>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="chip">✅ ${counts.yes_count}</span>
+          <span class="chip">🤔 ${counts.maybe_count}</span>
+          <span class="chip">❌ ${counts.no_count}</span>
+          <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details / RSVP</a>
+        </div>
+      </div>
+    </article>`;
+}
       document.getElementById('prev').disabled = page===0;
       document.getElementById('next').disabled = (start+pageSize)>=rows.length;
     }

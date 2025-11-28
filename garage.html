@@ -203,6 +203,8 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
     </section>
   </main>
 
+  <script src="/auth-ui.js"></script>
+
 <script>
 /* ========= Mini auth widget ========= */
 async function refreshAuthUI(){
@@ -381,10 +383,52 @@ let currentRows = [];
 function renderPage(){
   const grid = document.getElementById('buildsGrid');
   if(!currentRows.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">No builds found.</div></article>`;
-    document.getElementById('prev').disabled = true;
-    document.getElementById('next').disabled = true;
-    return;
+    /*build grid*/
+  function renderBuildCard(b){
+  const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
+  const type = b.build_type || 'owned';
+  const typeLabel = {
+    owned: 'Owned',
+    dream: 'Dream',
+    for_sale: 'For sale'
+  }[type] || 'Build';
+
+  const stageLabel = b.stage ? ({
+    stock: 'Stock/OEM+',
+    stage_1: 'Stage 1',
+    stage_2: 'Stage 2',
+    track: 'Track/Drift',
+    other: 'Custom'
+  }[b.stage] || b.stage) : null;
+
+  const power = b.power_goal ? `${b.power_goal} hp` : null;
+
+  const visibility = b.is_public ? 'Public' : 'Private';
+
+  const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
+
+  return `
+    <article class="card" role="listitem">
+      <a href="/build.html?id=${b.id}" style="display:block">
+        <img src="${img}" alt="${b.title}" loading="lazy">
+      </a>
+      <div class="pad">
+        <strong>${b.title}</strong>
+        ${carLabel ? `<div class="sub">${carLabel}</div>` : ''}
+
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge">${typeLabel}</span>
+          ${stageLabel ? `<span class="badge subtle">${stageLabel}</span>` : ''}
+          ${power ? `<span class="badge subtle">${power}</span>` : ''}
+          <span class="badge" style="border-color:${b.is_public ? 'var(--accent)' : 'var(--line)'}">
+            ${visibility}
+          </span>
+        </div>
+      </div>
+    </article>`;
+}
+
+    
   }
   const start = page * pageSize;
   const slice = currentRows.slice(start, start + pageSize);
@@ -565,6 +609,27 @@ function setupLiveLikes(){
     })
     .subscribe();
 }
+async function loadGarage(){
+  const grid = document.getElementById('garageGrid');
+  grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+
+  const { data, error } = await supabase
+    .from('builds')
+    .select('*')
+    .order('created_at', { ascending:false });
+
+  if(error){
+    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
+    return;
+  }
+  if(!data || !data.length){
+    grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet. Create one to get started.</div></article>`;
+    return;
+  }
+
+  grid.innerHTML = data.map(renderBuildCard).join('');
+}
+
 
 /* ========= Boot ========= */
 function initDefaultViewFromQuery(){
@@ -584,7 +649,8 @@ document.getElementById('next').addEventListener('click', ()=>{ page++; renderPa
 
 window.addEventListener('DOMContentLoaded', async ()=>{
   await refreshAuthUI();
-  setupLiveLikes();
+  await loadGarage();
+  setupLiveLikes(); 
   await applyFilters();
 });
 </script>

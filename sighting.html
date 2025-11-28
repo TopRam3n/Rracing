@@ -1,347 +1,410 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Sighting — ROK Racers JA</title>
-<meta name="description" content="Sighting details from the ROK Racers JA community."/>
-<link rel="icon" href="/Assets/og.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sighting — ROK Racers JA</title>
+  <link rel="icon" href="/Assets/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-<style>
-:root{
-  --bg:#141414;--bg1:#161616;--bg2:#1b1b1b;
-  --fg:#fff;--muted:#bdbdbd;--accent:#e50914;
-  --line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-a{color:var(--fg);text-decoration:none}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
+  <script src="/auth-ui.js"></script>
 
-/* NAV */
-.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:44px;height:44px;border-radius:8px}
-h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-.sub{color:var(--muted)}
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:900px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
 
-/* LAYOUT */
-.section{padding:56px 0}
-.grid{display:grid;gap:24px}
-.cols-2{grid-template-columns:1.3fr .7fr}
-@media(max-width:980px){.cols-2{grid-template-columns:1fr}}
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    .title small{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.small{padding:6px 10px;font-size:14px}
+    .btn[disabled]{opacity:.5;pointer-events:none}
 
-/* CARDS */
-.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
-.pad{padding:18px}
-.heroimg{width:100%;aspect-ratio:16/9;object-fit:cover;background:#0f0f0f;display:block}
+    .section{padding:48px 0}
 
-/* META */
-.chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
-.btn.primary{background:#fff;color:#000;border-color:#fff}
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .hero-img{
+      width:100%;border-radius:16px;border:1px solid var(--line);
+      overflow:hidden;background:#000;aspect-ratio:4/3;
+    }
+    .hero-img img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* COMMENTS */
-.comment{border-top:1px solid var(--line);padding:12px 0}
-</style>
+    .pill{
+      display:inline-flex;align-items:center;
+      padding:4px 8px;border-radius:999px;
+      border:1px solid var(--line);background:var(--bg2);
+      font-size:12px;margin-right:6px;margin-top:4px;
+    }
+
+    .comment-card{border-top:1px solid var(--line);padding:10px 0}
+    .comment-meta{font-size:12px;color:var(--muted);margin-bottom:4px}
+
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;border:none;background:transparent;color:var(--fg);
+      text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    textarea.input{
+      width:100%;background:var(--bg2);border:1px solid var(--line);
+      border-radius:12px;padding:10px 12px;color:#fff;font:inherit;min-height:60px;resize:vertical;
+    }
+  </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="container nav-inner">
-    <a href="/" class="brand" aria-label="ROK Racers JA home">
-      <img src="/Assets/logo.png" alt="" class="logo">
-      <div><h1>ROK RACERS JA</h1><small class="sub">Sighting</small></div>
-    </a>
-    <div class="row">
-      <a class="btn" href="/sightings.html">Sightings</a>
-    </div>
-  </div>
-</nav>
+  <nav class="nav" role="navigation">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" class="logo-img" alt="">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Sighting</small>
+        </div>
+      </a>
 
-<main class="container">
-  <section class="section">
-    <div class="grid cols-2">
-      <!-- LEFT: image + text -->
-      <article id="sightingCard" class="card">
-        <div class="pad sub">Loading…</div>
-      </article>
-
-      <!-- RIGHT: likes + meta -->
-      <aside class="card">
-        <div class="pad" id="metaBox">Loading…</div>
-        <div class="pad" id="likeBox" style="border-top:1px solid var(--line)">
-          <div class="row" style="justify-content:space-between">
-            <div><strong>Likes:</strong> <span id="likeCount">0</span></div>
-            <button id="likeBtn" class="btn" title="Like">♡</button>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="menu">
+          <a class="btn" href="/events.html">Events</a>
+          <a class="btn" href="/garage.html">Garage</a>
+          <a class="btn" href="/sightings.html">Sightings</a>
+        </div>
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
           </div>
         </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- COMMENTS -->
-  <section class="section">
-    <h2 style="font-size:40px">Comments</h2>
-    <div id="commentFormWrap" class="row" style="margin:10px 0 16px; display:none">
-      <textarea id="commentText" rows="3" placeholder="Share your thoughts…"
-        style="flex:1;min-width:220px;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;font-family:inherit"></textarea>
-      <button id="commentPost" class="btn primary">Post</button>
-    </div>
-    <div id="comments" class="card"><div class="pad sub">Loading comments…</div></div>
-  </section>
-</main>
-
-<script>
-const sightingId = new URLSearchParams(location.search).get('id');
-const $ = (id)=>document.getElementById(id);
-const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => (
-  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-));
-let currentUserId = null;
-let currentLikeCount = 0;
-
-/* AUTH (for comments + like) */
-async function refreshAuth(){
-  const { data: { user } } = await supabase.auth.getUser();
-  currentUserId = user?.id || null;
-  $('commentFormWrap').style.display = user ? 'flex' : 'none';
-  await refreshLikedState();
-}
-supabase.auth.onAuthStateChange(refreshAuth);
-refreshAuth();
-
-/* LOAD SIGHTING */
-async function loadSighting(){
-  const card = $('sightingCard');
-  const meta = $('metaBox');
-  if(!sightingId){
-    card.innerHTML = `<div class="pad sub">Missing sighting ID.</div>`;
-    meta.innerHTML = '';
-    return;
-  }
-
-  // pull from view with like_count if you have it
-  const { data: s, error } = await supabase
-    .from('sightings_with_like_count')
-    .select('id,title,parish,location,description,image_url,like_count,created_at')
-    .eq('id', sightingId)
-    .maybeSingle();
-
-  if(error || !s){
-    console.error(error);
-    card.innerHTML = `<div class="pad sub">Sighting not found or not visible.</div>`;
-    meta.innerHTML = '';
-    return;
-  }
-
-  document.title = `${s.title} — ROK Racers JA`;
-  currentLikeCount = s.like_count || 0;
-  $('likeCount').textContent = currentLikeCount;
-
-  const hero = s.image_url || '/Assets/og.png';
-  const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
-  const dateStr = s.created_at ? new Date(s.created_at).toLocaleString() : '';
-
-  card.innerHTML = `
-    <img src="${hero}" alt="${escapeHTML(s.title)}" class="heroimg">
-    <div class="pad">
-      <h2 style="font-size:44px">${escapeHTML(s.title)}</h2>
-      <div class="row" style="margin:8px 0 10px">
-        ${locLine ? `<span class="chip">${escapeHTML(locLine)}</span>` : ''}
-        ${dateStr ? `<span class="chip">${escapeHTML(dateStr)}</span>` : ''}
-      </div>
-      <div class="sub">
-        ${s.description ? escapeHTML(s.description).replace(/\n/g,'<br>') : 'No description yet.'}
       </div>
     </div>
-  `;
+  </nav>
 
-  meta.innerHTML = `
-    <div><strong>Location:</strong> ${locLine || 'Not specified'}</div>
-    <div class="sub" style="margin-top:6px">
-      Shared ${dateStr || '—'}
-    </div>
-  `;
-}
+  <main class="container">
+    <section class="section">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+        <div>
+          <h2 id="title" style="font-size:40px">Loading sighting…</h2>
+          <div id="meta" class="sub" style="margin-top:4px"></div>
+        </div>
+        <div class="row">
+          <button id="likeBtn" class="btn" type="button" disabled>♥ 0</button>
+          <a href="/sightings.html" class="btn small">← Back to sightings</a>
+        </div>
+      </div>
 
-/* LIKES */
-async function refreshLikedState(){
-  if(!sightingId) return;
-  const btn = $('likeBtn');
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    btn.textContent = '♡';
-    btn.title = 'Sign in to like';
-    return;
-  }
-  const { data } = await supabase
-    .from('sighting_likes')
-    .select('sighting_id')
-    .eq('sighting_id', sightingId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+      <div id="error" class="sub" style="color:#ffb3b3;margin-bottom:8px"></div>
 
-  if(data){
-    btn.textContent = '♥';
-    btn.title = 'Unlike';
-  }else{
-    btn.textContent = '♡';
-    btn.title = 'Like';
-  }
-}
+      <div class="card">
+        <div class="hero-img" id="heroImg"><span class="sub">Loading…</span></div>
+        <p id="caption" class="sub" style="margin-top:12px"></p>
+        <div id="badgeRow" style="margin-top:6px"></div>
+      </div>
+    </section>
 
-$('likeBtn').addEventListener('click', async ()=>{
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    alert('Sign in to like sightings.');
-    return;
-  }
-  const btn = $('likeBtn');
-  const { data: existing } = await supabase
-    .from('sighting_likes')
-    .select('sighting_id')
-    .eq('sighting_id', sightingId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+    <section class="section">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <h2 style="font-size:32px">Comments</h2>
+      </div>
 
-  if(existing){
-    const { error } = await supabase
-      .from('sighting_likes')
-      .delete()
-      .eq('sighting_id', sightingId)
-      .eq('user_id', user.id);
-    if(error) return alert('Unlike failed: ' + error.message);
-    btn.textContent = '♡';
-    btn.title = 'Like';
-    currentLikeCount = Math.max(0, currentLikeCount - 1);
-    $('likeCount').textContent = currentLikeCount;
-  }else{
-    const { error } = await supabase
-      .from('sighting_likes')
-      .insert({ sighting_id: sightingId, user_id: user.id });
-    if(error) return alert('Like failed: ' + error.message);
-    btn.textContent = '♥';
-    btn.title = 'Unlike';
-    currentLikeCount += 1;
-    $('likeCount').textContent = currentLikeCount;
-  }
-});
+      <div id="commentFormRow" class="row" style="margin-bottom:10px;display:none">
+        <textarea id="commentInput" class="input" placeholder="Drop a line about this sighting…"></textarea>
+        <button id="commentPostBtn" class="btn primary" type="button">Post</button>
+      </div>
 
-// realtime like updates (optional but nice)
-let likeChannel;
-function liveLikes(){
-  likeChannel?.unsubscribe();
-  likeChannel = supabase.channel(`sighting-like-${sightingId}`)
-    .on('postgres_changes',{
-      event:'INSERT',schema:'public',table:'sighting_likes',
-      filter:`sighting_id=eq.${sightingId}`
-    }, () => {
-      currentLikeCount += 1;
-      $('likeCount').textContent = currentLikeCount;
-    })
-    .on('postgres_changes',{
-      event:'DELETE',schema:'public',table:'sighting_likes',
-      filter:`sighting_id=eq.${sightingId}`
-    }, () => {
-      currentLikeCount = Math.max(0, currentLikeCount - 1);
-      $('likeCount').textContent = currentLikeCount;
-    })
-    .subscribe();
-}
+      <div id="commentsCard" class="card">
+        <div id="commentsInner" class="sub">Loading comments…</div>
+      </div>
+    </section>
+  </main>
 
-/* COMMENTS (light: no inline edit, just post + list for now) */
-function renderComment(c){
-  const dt = new Date(c.created_at).toLocaleString();
-  return `
-    <div class="comment">
-      <div class="sub" style="margin-bottom:4px">${escapeHTML(dt)}</div>
-      <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
-    </div>
-  `;
-}
+  <script>
+    const sightingId = new URLSearchParams(location.search).get('id');
+    const $ = (id)=>document.getElementById(id);
 
-async function loadComments(){
-  const wrap = $('comments');
-  const { data, error } = await supabase
-    .from('sighting_comments')
-    .select('id, body, created_at, profile_id')
-    .eq('sighting_id', sightingId)
-    .order('created_at', { ascending:true });
+    let currentUser = null;
+    let liked = false;
+    let likeCount = 0;
 
-  if(error){
-    console.error(error);
-    wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
-    return;
-  }
-  if(!data?.length){
-    wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
-    return;
-  }
-  wrap.innerHTML = `<div class="pad" id="commentsInner">` +
-    data.map(renderComment).join('') +
-    `</div>`;
-}
+    function escapeHTML(s){
+      return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
 
-$('commentPost').addEventListener('click', async ()=>{
-  const input = $('commentText');
-  const text = input.value.trim();
-  if(!text) return;
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user) return alert('Sign in first.');
+    if (!window.requireLogin) {
+      window.requireLogin = async function(callback){
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          const email = prompt("Enter your email to sign in:");
+          if (!email) return false;
+          const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: { emailRedirectTo: location.href }
+          });
+          if (error) { alert("Sign-in error: " + error.message); return false; }
+          alert("Magic link sent. Check your email, then reload.");
+          return false;
+        }
+        if (callback) callback(user);
+        return true;
+      };
+    }
 
-  const { error } = await supabase
-    .from('sighting_comments')
-    .insert({ sighting_id: sightingId, body: text, profile_id: user.id });
-
-  if(error){
-    alert('Couldn’t post: ' + error.message);
-    return;
-  }
-  input.value = '';
-  // realtime will append
-});
-
-// realtime comment stream
-let commentsChannel;
-function liveComments(){
-  commentsChannel?.unsubscribe();
-  commentsChannel = supabase.channel(`sighting-comments-${sightingId}`)
-    .on('postgres_changes',{
-      event:'INSERT',schema:'public',table:'sighting_comments',
-      filter:`sighting_id=eq.${sightingId}`
-    }, (p)=>{
-      const c = p.new;
-      const wrap = $('comments');
-      if(wrap.textContent.includes('No comments yet')){
-        wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
+    async function loadSighting(){
+      if(!sightingId){
+        $('error').textContent = 'Missing sighting ID.';
+        return;
       }
-      const inner = $('commentsInner') || (()=>{
-        wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-        return $('commentsInner');
-      })();
-      inner.insertAdjacentHTML('beforeend', renderComment(c));
-    })
-    .subscribe();
-}
 
-/* BOOT */
-window.addEventListener('DOMContentLoaded', async ()=>{
-  await loadSighting();
-  liveLikes();
-  await loadComments();
-  liveComments();
-});
-</script>
+      const { data, error } = await supabase
+        .from('sightings')
+        .select('*')
+        .eq('id', sightingId)
+        .maybeSingle();
+
+      if(error || !data){
+        console.error(error);
+        $('error').textContent = 'Sighting not found.';
+        $('title').textContent = 'Sighting not found';
+        $('heroImg').innerHTML = '';
+        return;
+      }
+
+      document.title = `${data.title || 'Sighting'} — ROK Racers JA`;
+      $('title').textContent = data.title || 'Untitled sighting';
+
+      const d = data.created_at ? new Date(data.created_at) : null;
+      const when = d ? d.toLocaleString("en-US", {
+        month:"short", day:"2-digit", year:"numeric", hour:"numeric", minute:"2-digit"
+      }) : "";
+      const pieces = [];
+      if(when) pieces.push(when);
+      if(data.location) pieces.push(data.location);
+      if(data.parish) pieces.push(data.parish);
+      $('meta').textContent = pieces.join(' • ');
+
+      $('heroImg').innerHTML = `<img src="${escapeHTML(data.image_url)}" alt="${escapeHTML(data.title || 'Car sighting')}">`;
+      $('caption').innerHTML = escapeHTML(data.title || '').replace(/\n/g,'<br>');
+
+      let badges = '';
+      if(data.parish) badges += `<span class="pill">${escapeHTML(data.parish)}</span>`;
+      if(data.location) badges += `<span class="pill">${escapeHTML(data.location)}</span>`;
+      if(when) badges += `<span class="pill">${escapeHTML(when)}</span>`;
+      $('badgeRow').innerHTML = badges;
+
+      await loadLikes();
+    }
+
+    async function loadLikes(){
+      const likeBtn = $('likeBtn');
+
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
+
+      const { count, error } = await supabase
+        .from('sighting_likes')
+        .select('*', { count:'exact', head:true })
+        .eq('sighting_id', sightingId);
+
+      if(error){
+        console.error(error);
+        likeCount = 0;
+      }else{
+        likeCount = count || 0;
+      }
+
+      if(user){
+        const { data: existing } = await supabase
+          .from('sighting_likes')
+          .select('id')
+          .eq('sighting_id', sightingId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        liked = !!existing;
+      }else{
+        liked = false;
+      }
+
+      likeBtn.disabled = false;
+      likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+      likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+
+      likeBtn.onclick = async ()=>{
+        const ok = await window.requireLogin();
+        if(!ok) return;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if(!user) return;
+        likeBtn.disabled = true;
+
+        const { data: existing } = await supabase
+          .from('sighting_likes')
+          .select('id')
+          .eq('sighting_id', sightingId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if(existing){
+          const { error } = await supabase
+            .from('sighting_likes')
+            .delete()
+            .eq('id', existing.id);
+          if(!error){
+            liked = false;
+            likeCount = Math.max(0, likeCount - 1);
+          }
+        }else{
+          const { error } = await supabase
+            .from('sighting_likes')
+            .insert({ sighting_id: sightingId, user_id: user.id });
+          if(!error){
+            liked = true;
+            likeCount += 1;
+          }
+        }
+
+        likeBtn.disabled = false;
+        likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+        likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      };
+    }
+
+    // COMMENTS
+    function renderComment(c){
+      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
+      return `
+        <div class="comment-card">
+          <div class="comment-meta">${escapeHTML(dt)}</div>
+          <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
+        </div>`;
+    }
+
+    async function loadComments(){
+      const wrap = $('commentsInner');
+      const { data, error } = await supabase
+        .from('comments')
+        .select('id,body,created_at,user_id')
+        .eq('sighting_id', sightingId)
+        .order('created_at', { ascending:true });
+
+      if(error){
+        console.error(error);
+        wrap.textContent = 'Couldn’t load comments.';
+        return;
+      }
+      if(!data || !data.length){
+        wrap.textContent = 'No comments yet — be the first.';
+        return;
+      }
+      wrap.innerHTML = data.map(renderComment).join('');
+    }
+
+    async function initCommentAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
+      $('commentFormRow').style.display = user ? 'flex' : 'none';
+    }
+
+    $('commentPostBtn').addEventListener('click', async ()=>{
+      const ok = await window.requireLogin();
+      if(!ok) return;
+
+      const input = $('commentInput');
+      const text = input.value.trim();
+      if(!text) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          sighting_id: sightingId,
+          body: text,
+          user_id: user.id
+        });
+
+      if(error){
+        alert('Could not post comment: ' + error.message);
+        return;
+      }
+      input.value = '';
+      await loadComments();
+    });
+
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      if(!sightingId){
+        $('error').textContent = 'Missing sighting ID in URL.';
+        return;
+      }
+      await loadSighting();
+      await initCommentAuth();
+      await loadComments();
+      supabase.auth.onAuthStateChange(initCommentAuth);
+    });
+  </script>
 </body>
 </html>

@@ -46,3 +46,26 @@ add "please sign in" when trying to create a build without signing in.
 add a profile chip
 
 use lookout at night Kingston or a gas station for back drop.
+
+add a reddish glow under the carbig radial glow. The top of the gradient has a soft red-ish highlight
+
+It quickly drops to a dark base and ends in the same #141414 as your body
+
+So as you scroll down, it feels like the car is emerging from a pool of light that smoothly blends into the rest of the page
+
+
+add news page - turn highlights into news 
+add a clubs section- teamstreetz-info section with photos, runroadco, classic cars club with links to their sites-apply for team section where it links to a google form that the team creates for any position 
+
+email section for requests
+
+add a marketplace to sell cars and car parts
+
+add shop for rok merch
+
+'Rok Racer- jamrock meets speed....work on that
+
+"please add water mark to your sights" - prompt.
+
+add an events-user differential from regular user so that events coordinators can post their events with images, time, description, location, etc. have this email that they register with to be able to see all users that RSVPed and  builds that are responded with. Make a verified driver tag- to prevent spam/fake responses with fake builds. figure out a system for that
+

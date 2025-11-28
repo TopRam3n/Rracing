@@ -1,272 +1,226 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Event — ROK Racers JA</title>
-<meta name="description" content="Event details for the Jamaican car community." />
-<link rel="icon" href="/Assets/og.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<style>
-  :root{--bg:#141414;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08)}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  a{color:var(--fg);text-decoration:none}
-  .container{max-width:900px;margin:0 auto;padding:0 24px}
-  .nav{position:sticky;top:0;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px);z-index:10}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:40px;height:40px;border-radius:8px}
-  h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-  .sub{color:var(--muted)}
-  .section{padding:48px 0}
-  .card{background:#161616;border:1px solid var(--line);border-radius:20px;overflow:hidden}
-  .pad{padding:18px}
-  .meta{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 0}
-  .chip{background:#1b1b1b;border:1px solid var(--line);border-radius:999px;padding:8px 12px}
-  .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
-  .btn.primary{background:#fff;color:#000;border-color:#fff}
-  .row{display:flex;gap:18px;align-items:center}
-  .input{width:100%;background:#1b1b1b;border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none}
-  .comment{border-top:1px solid var(--line);padding:14px 0}
-  .comment .actions{display:flex;gap:8px;margin-top:8px}
-  .presence{display:flex;gap:8px;align-items:center}
-  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .grid{display:grid;gap:12px}
-  .cols-2{grid-template-columns:1fr 1fr}
-  @media(max-width:760px){.cols-2{grid-template-columns:1fr}}
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Event — ROK Racers JA</title>
+  <meta name="description" content="Event details for the Jamaican car community." />
+  <link rel="icon" href="/Assets/og.png" />
 
-  .nav-auth {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-/* Wrap the chip + dropdown together */
-.profile-menu {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-.profile-chip {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--line);
-}
+  <style>
+    :root{
+      --bg:#141414;--fg:#fff;--muted:#bdbdbd;
+      --accent:#e50914;--line:rgba(255,255,255,.08);
+      --bg1:#161616;--bg2:#1b1b1b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif
+    }
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:900px;margin:0 auto;padding:0 24px}
 
-.profile-chip span {
-  font-size: 16px;
-}
+    /* NAV */
+    .nav{
+      position:sticky;top:0;z-index:10;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 0;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:40px;height:40px;border-radius:8px}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .sub{color:var(--muted)}
 
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 48px;
-  background: var(--bg1);
-  border: 1px solid var(--line);
-  box-shadow: 0 20px 40px rgba(0,0,0,.45);
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  min-width: 190px;
-  z-index: 999;
-}
+    .menu{display:flex;gap:10px;align-items:center}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);
+      cursor:pointer;background:transparent;color:var(--fg);
+      font-family:inherit;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
 
-.dropdown a,
-.dropdown button {
-  padding: 10px 16px;
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: var(--fg);
-  font-size: 15px;
-  width: 100%;
-  cursor: pointer;
-}
+    .section{padding:48px 0}
+    .card{background:#161616;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+    .pad{padding:18px}
+    .meta{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 0}
+    .chip{background:#1b1b1b;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:14px}
+    .row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+    .input{
+      width:100%;background:#1b1b1b;border:1px solid var(--line);
+      color:#fff;padding:12px;border-radius:12px;outline:none;
+      font-family:inherit;
+    }
+    textarea.input{resize:vertical}
+    .comment{border-top:1px solid var(--line);padding:14px 0}
+    .comment .actions{display:flex;gap:8px;margin-top:8px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .grid{display:grid;gap:12px}
+    .cols-2{grid-template-columns:1fr 1fr}
+    @media(max-width:760px){.cols-2{grid-template-columns:1fr}}
 
-.dropdown a:hover,
-.dropdown button:hover {
-  background: #1f1f1f;
-}
+    /* presence */
+    .presence{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
 
-</style>
+    /* nav auth (shared pattern) */
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:15px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+  </style>
 </head>
 <body>
   <nav class="nav">
     <div class="container nav-inner">
       <a href="/events.html" class="brand" aria-label="Back to events">
         <img src="/Assets/logo.png" class="logo" alt="">
-        <div><h1>ROK RACERS JA</h1><small class="sub">Event</small></div>
+        <div>
+          <h1>ROK RACERS JA</h1>
+          <small class="sub">Event</small>
+        </div>
       </a>
-      <div style="display:flex;gap:10px;align-items:center">
-        <span class="presence sub">👀 <span id="viewerCount">0</span> viewing</span>
-        <span id="userBadge" class="sub"></span>
-        <button id="signinBtn" class="btn">Sign in</button>
-        <button id="signoutBtn" class="btn" style="display:none">Sign out</button>
-        <a class="btn" href="/events.html">All events</a>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="presence">👀 <span id="viewerCount">0</span> viewing</span>
+
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+        </div>
+
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="navSignOutBtn" type="button" style="justify-content:flex-start">Sign out</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
 
   <main class="container">
     <section class="section">
-      <div id="eventCard" class="card"><div class="pad sub">Loading…</div></div>
+      <div id="eventCard" class="card">
+        <div class="pad sub">Loading…</div>
+      </div>
     </section>
 
     <!-- Comments -->
     <section class="section">
       <h2 style="font-size:36px">Comments</h2>
       <div id="commentForm" class="row" style="margin:10px 0 16px; display:none">
-        <input id="commentText" class="input" placeholder="Share your thoughts…" />
+        <input id="commentText" class="input" placeholder="Share your thoughts…"/>
         <button id="commentPost" class="btn primary">Post</button>
       </div>
-      <div id="comments" class="card"><div class="pad sub">Loading comments…</div></div>
+      <div id="comments" class="card">
+        <div class="pad sub">Loading comments…</div>
+      </div>
     </section>
   </main>
 
+  <!-- shared auth UI (nav + requireLogin) -->
+  <script src="/auth-ui.js"></script>
+
   <script>
-    // ===== auth mini-widget (email OTP)
-    let currentUserId = null;
-
-    async function refreshAuthUI(){
-      const { data: { user } } = await supabase.auth.getUser();
-      const badge = document.getElementById('userBadge');
-      const si = document.getElementById('signinBtn');
-      const so = document.getElementById('signoutBtn');
-      const form = document.getElementById('commentForm');
-      if(user){
-        badge.textContent = user.email;
-        si.style.display = 'none';
-        so.style.display = 'inline-flex';
-        form.style.display = 'flex';
-      }else{
-        badge.textContent = '';
-        si.style.display = 'inline-flex';
-        so.style.display = 'none';
-        form.style.display = 'none';
-      }
-      currentUserId = user?.id || null;
-    }
-    document.getElementById('signinBtn').onclick = async ()=>{
-      const email = prompt("Enter your email to sign in:");
-      if(!email) return;
-      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
-      if(error) return alert("Sign-in error: " + error.message);
-      alert("Magic link sent! Check your email.");
-    };
-    document.getElementById('signoutBtn').onclick = async ()=>{
-      await supabase.auth.signOut();
-      await refreshAuthUI();
-    };
-    supabase.auth.onAuthStateChange(refreshAuthUI); refreshAuthUI();
-
-
-// --- Elements ---
-const signinBtn = document.getElementById("signinBtn");
-const profileMenu = document.getElementById("profileMenu");
-const profileChip = document.getElementById("profileChip");
-const dropdown = document.getElementById("dropdown");
-const initialsEl = document.getElementById("profileInitials");
-
-// --- Auth UI state ---
-async function updateAuthUI() {
-  const { data: { user }} = await supabase.auth.getUser();
-
-  if (user) {
-    signinBtn.style.display = "none";
-    profileMenu.style.display = "flex";
-
-    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
-    initialsEl.textContent = initials;
-  } else {
-    signinBtn.style.display = "inline-flex";
-    profileMenu.style.display = "none";
-    dropdown.style.display = "none";
-  }
-}
-
-// Toggle dropdown
-profileChip?.addEventListener("click", () => {
-  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-});
-document.addEventListener("click", (e) => {
-  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
-});
-
-// Sign in
-signinBtn.onclick = async () => {
-  const email = prompt("Enter your email:");
-  if (!email) return;
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: location.href }
-  });
-  if (error) alert(error.message);
-  else alert("Magic link sent! Check your inbox.");
-};
-
-// Sign out
-document.getElementById("signoutBtn")?.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  updateAuthUI();
-});
-
-// Init
-supabase.auth.onAuthStateChange(updateAuthUI);
-updateAuthUI();
-
-// --- Access guard ---
-window.requireLogin = async function(callback){
-  const { data: { user }} = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please sign in first.");
-    signinBtn.click();
-    return false;
-  }
-  if (callback) callback();
-  return true;
-};
-
-
-
-    // ===== helpers
     const eventId = new URLSearchParams(location.search).get('id');
     const el = (id)=>document.getElementById(id);
-    const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
     function fmt(d){
       if(!d) return "";
       const dt = new Date(d);
-      return dt.toLocaleString(undefined,{weekday:'short',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+      return dt.toLocaleString(undefined,{
+        weekday:'short',month:'short',day:'2-digit',
+        hour:'2-digit',minute:'2-digit'
+      });
     }
 
-    // ===== event loader + creator tools
+    let currentUserId = null;
+
+    async function syncPageAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUserId = user?.id || null;
+      const form = el('commentForm');
+      if(form) form.style.display = user ? 'flex' : 'none';
+    }
+
+    supabase.auth.onAuthStateChange(syncPageAuth);
+
+    // ===== Event loader + owner tools + RSVP =====
     async function loadEvent(){
       const card = el('eventCard');
-      if(!eventId){ card.innerHTML = `<div class="pad sub">Missing event ID.</div>`; return; }
+      if(!eventId){
+        card.innerHTML = `<div class="pad sub">Missing event ID.</div>`;
+        return;
+      }
 
       const { data, error } = await supabase.from('events')
         .select('id,title,starts_at,ends_at,location,description,cover_url,created_by')
         .eq('id', eventId).maybeSingle();
 
-      if(error || !data){ card.innerHTML = `<div class="pad sub">Event not found.</div>`; return; }
+      if(error || !data){
+        card.innerHTML = `<div class="pad sub">Event not found.</div>`;
+        return;
+      }
 
       document.title = `${data.title} — ROK Racers JA`;
-      const time = `${fmt(data.starts_at)}${data.ends_at?` — ${fmt(data.ends_at)}`:""}`;
-
+      const time = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
       const canEdit = !!(currentUserId && data.created_by && data.created_by === currentUserId);
 
       card.innerHTML = `
@@ -277,7 +231,9 @@ window.requireLogin = async function(callback){
             <span class="chip">🕒 ${escapeHTML(time)}</span>
             ${data.location ? `<span class="chip">📍 ${escapeHTML(data.location)}</span>` : ""}
           </div>
-          <p style="margin-top:14px">${escapeHTML(data.description||"").replace(/\n/g,'<br>')}</p>
+          <p style="margin-top:14px">
+            ${escapeHTML(data.description||"").replace(/\n/g,'<br>')}
+          </p>
 
           <div class="toolbar" id="ownerToolbar" style="${canEdit?'':'display:none'}">
             <button class="btn" id="editBtn">Edit</button>
@@ -299,7 +255,7 @@ window.requireLogin = async function(callback){
             </div>
           </div>
 
-          <!-- hidden inline editor -->
+          <!-- inline edit form (owner only) -->
           <div id="editForm" style="display:none;margin-top:14px" class="grid cols-2">
             <input id="e_title" class="input" placeholder="Title" value="${escapeHTML(data.title)}">
             <input id="e_location" class="input" placeholder="Location" value="${escapeHTML(data.location||'')}">
@@ -314,9 +270,9 @@ window.requireLogin = async function(callback){
           </div>
         </div>`;
 
-      // RSVP buttons
+      // RSVP buttons (guarded by login)
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
-        btn.addEventListener('click', ()=> requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
+        btn.addEventListener('click', ()=> window.requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
       });
 
       // Owner controls
@@ -359,17 +315,17 @@ window.requireLogin = async function(callback){
       await loadMyRsvp();
     }
 
-    // ===== comments (render + post + live)
+    // ===== Comments (table: comments with event_id, user_id, body) =====
     function renderComment(c){
       const dt = new Date(c.created_at).toLocaleString();
       const isOwner = currentUserId && (c.user_id === currentUserId);
       return `
-        <div class="comment" data-id="${c.id}" data-user="${c.user_id}">
+        <div class="comment" data-id="${c.id}">
           <div class="sub" style="margin-bottom:6px">${escapeHTML(dt)}</div>
           <div class="body" data-mode="view">${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
           ${isOwner ? `
             <div class="actions">
-              <button class="btn btn-edit" data-action="edit">Edit</button>
+              <button class="btn" data-action="edit">Edit</button>
               <button class="btn" data-action="delete">Delete</button>
             </div>` : ``}
         </div>`;
@@ -383,7 +339,10 @@ window.requireLogin = async function(callback){
         .eq('event_id', eventId)
         .order('created_at', { ascending: true });
 
-      if(error){ wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`; return; }
+      if(error){
+        wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
+        return;
+      }
       if(!data || !data.length){
         wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
         return;
@@ -392,22 +351,23 @@ window.requireLogin = async function(callback){
       el('commentsInner').innerHTML = data.map(renderComment).join('');
     }
 
-    // Post
-    document.getElementById('commentPost').onclick = async ()=>{
+    el('commentPost').onclick = async ()=>{
       const input = el('commentText');
       const text = input.value.trim();
       if(!text) return;
       const { data: { user } } = await supabase.auth.getUser();
       if(!user){ alert("Please sign in first."); return; }
+
       const { error } = await supabase.from('comments').insert({
-        event_id: eventId, body: text, user_id: user.id     /* <-- fixed */
+        event_id: eventId,
+        body: text,
+        user_id: user.id
       });
       if(error){ alert("Couldn’t post: " + error.message); return; }
       input.value = "";
       // realtime will append
     };
 
-    // Edit/Delete via event delegation
     el('comments').addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action]');
       if(!btn) return;
@@ -423,18 +383,15 @@ window.requireLogin = async function(callback){
 
       if(action === 'edit'){
         const bodyDiv = commentEl.querySelector('.body');
-        const mode = bodyDiv.dataset.mode;
-        if(mode === 'view'){
-          const text = bodyDiv.innerText;
-          bodyDiv.dataset.mode = 'edit';
-          bodyDiv.innerHTML = `<textarea class="input" rows="3">${escapeHTML(text)}</textarea>
-                               <div style="display:flex;gap:8px;margin-top:8px">
-                                 <button class="btn primary" data-action="save">Save</button>
-                                 <button class="btn" data-action="cancel">Cancel</button>
-                               </div>`;
-          btn.textContent = 'Editing…';
-          btn.disabled = true;
-        }
+        if(bodyDiv.dataset.mode !== 'view') return;
+        const text = bodyDiv.innerText;
+        bodyDiv.dataset.mode = 'edit';
+        bodyDiv.innerHTML = `
+          <textarea class="input" rows="3">${escapeHTML(text)}</textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn primary" data-action="save">Save</button>
+            <button class="btn" data-action="cancel">Cancel</button>
+          </div>`;
       }
 
       if(action === 'cancel'){
@@ -462,34 +419,34 @@ window.requireLogin = async function(callback){
       commentsChannel?.unsubscribe();
       commentsChannel = supabase.channel(`comments-${eventId}`)
         .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
-            (payload) => {
-              const c = payload.new;
-              const wrap = el('comments');
-              if (wrap.textContent.includes('No comments yet')) {
-                wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-              }
-              const inner = el('commentsInner') || (()=>{ wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`; return el('commentsInner'); })();
-              inner.insertAdjacentHTML('beforeend', renderComment(c));
-            })
+          { event: 'INSERT', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+          (payload) => {
+            const c = payload.new;
+            const wrap = el('comments');
+            if (wrap.textContent.includes('No comments yet')) {
+              wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
+            }
+            const inner = el('commentsInner') || (()=>{ wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`; return el('commentsInner'); })();
+            inner.insertAdjacentHTML('beforeend', renderComment(c));
+          })
         .on('postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
-            (payload) => {
-              const c = payload.new;
-              const node = document.querySelector(`.comment[data-id="${c.id}"]`);
-              if(node){ node.outerHTML = renderComment(c); }
-            })
+          { event: 'UPDATE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+          (payload) => {
+            const c = payload.new;
+            const node = document.querySelector(`.comment[data-id="${c.id}"]`);
+            if(node){ node.outerHTML = renderComment(c); }
+          })
         .on('postgres_changes',
-            { event: 'DELETE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
-            (payload) => {
-              const id = payload.old.id;
-              const node = document.querySelector(`.comment[data-id="${id}"]`);
-              node?.remove();
-              const inner = el('commentsInner');
-              if(inner && !inner.children.length){
-                el('comments').innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
-              }
-            })
+          { event: 'DELETE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+          (payload) => {
+            const id = payload.old.id;
+            const node = document.querySelector(`.comment[data-id="${id}"]`);
+            node?.remove();
+            const inner = el('commentsInner');
+            if(inner && !inner.children.length){
+              el('comments').innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
+            }
+          })
         .subscribe();
     }
 
@@ -498,14 +455,17 @@ window.requireLogin = async function(callback){
     async function setupPresence(){
       const { data: { user } } = await supabase.auth.getUser();
       const key = user?.id || `anon-${crypto.getRandomValues(new Uint32Array(1))[0]}`;
+
       presenceChannel?.unsubscribe();
       presenceChannel = supabase.channel(`presence-event-${eventId}`, {
         config: { presence: { key } }
       });
+
       presenceChannel
         .on('presence', { event: 'sync' }, () => {
           const state = presenceChannel.presenceState();
-          let count = 0; for (const _k in state) count++;
+          let count = 0;
+          for (const _k in state) count++;
           el('viewerCount').textContent = count;
         })
         .subscribe(async (status) => {
@@ -515,62 +475,86 @@ window.requireLogin = async function(callback){
         });
     }
 
-    // RSVP helpers
+    // RSVP helpers (table: event_rsvps with user_id)
     async function loadMyBuilds(){
       const { data: { user } } = await supabase.auth.getUser();
       const sel = el('attachBuild');
       if(!user || !sel) return;
+
       const { data, error } = await supabase
         .from('builds')
         .select('id,title,is_public')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      if(error) { console.error(error); return; }
+
+      if(error){ console.error(error); return; }
+
       sel.innerHTML = `<option value="">— None —</option>` + (data||[]).map(b =>
         `<option value="${b.id}">${escapeHTML(b.title)}${b.is_public? '':' (private)'}</option>`
       ).join("");
     }
 
-    async function loadMyRsvp(){
-      const { data: { user } } = await supabase.auth.getUser();
-      const badge = el('rsvpStatus');
-      const sel = el('attachBuild');
-      if(!user){ if(badge) badge.textContent=''; return; }
-      const { data, error } = await supabase
-        .from('rsvps')
-        .select('status, build_id')
-        .eq('event_id', eventId)
-        .eq('profile_id', user.id)
-        .maybeSingle();
-      if(error){ console.error(error); return; }
-      if(data){
-        if(badge) badge.textContent = `Your RSVP: ${data.status}`;
-        if(sel && data.build_id) sel.value = data.build_id;
-      }else{
-        if(badge) badge.textContent = 'No RSVP yet';
-        if(sel) sel.value = '';
-      }
-    }
+    // === RSVP helpers (use event_rsvps + user_id) ===
+async function loadMyRsvp(){
+  const { data: { user } } = await supabase.auth.getUser();
+  const badge = el('rsvpStatus');
+  const sel = el('attachBuild');
+  if(!user){
+    if(badge) badge.textContent = '';
+    return;
+  }
 
-    async function upsertRsvp(newStatus){
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ alert('Sign in first.'); return; }
-      const buildId = el('attachBuild')?.value || null;
-      const { error } = await supabase
-        .from('rsvps')
-        .upsert({
-          event_id: eventId,
-          profile_id: user.id,
-          status: newStatus,
-          build_id: buildId || null
-        }, { onConflict: 'event_id,profile_id' });
-      if(error){ alert('RSVP failed: ' + error.message); return; }
-      await loadMyRsvp();
-      alert('Saved!');
-    }
+  const { data, error } = await supabase
+    .from('event_rsvps')
+    .select('status, build_id')
+    .eq('event_id', eventId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if(error){
+    console.error(error);
+    return;
+  }
+  if(data){
+    if(badge) badge.textContent = `Your RSVP: ${data.status}`;
+    if(sel && data.build_id) sel.value = data.build_id;
+  }else{
+    if(badge) badge.textContent = 'No RSVP yet';
+    if(sel) sel.value = '';
+  }
+}
+
+async function upsertRsvp(newStatus){
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user){
+    alert('Sign in first.');
+    return;
+  }
+  const buildId = el('attachBuild')?.value || null;
+
+  const { error } = await supabase
+    .from('event_rsvps')
+    .upsert({
+      event_id: eventId,
+      user_id: user.id,
+      status: newStatus,
+      build_id: buildId || null
+    }, {
+      onConflict: 'event_id,user_id'
+    });
+
+  if(error){
+    alert('RSVP failed: ' + error.message);
+    return;
+  }
+  await loadMyRsvp();
+  alert('Saved!');
+}
+
 
     // boot
     window.addEventListener('DOMContentLoaded', async ()=>{
+      await syncPageAuth();
       await loadEvent();
       await loadComments();
       setupLiveComments();

@@ -1,722 +1,609 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Build — ROK Racers JA</title>
-<meta name="description" content="Build details from the ROK Racers JA garage." />
-<link rel="icon" href="/Assets/og.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<!-- 3D model viewer for supported base models -->
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-<script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Build — ROK Racers JA</title>
+  <meta name="description" content="Build details in the ROK Racers JA garage." />
+  <link rel="icon" href="/Assets/og.png" />
 
-  /* === Supabase client === */
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<style>
-  :root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08)}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  a{color:var(--fg);text-decoration:none}
-  .container{max-width:1100px;margin:0 auto;padding:0 24px}
-  .nav{position:sticky;top:0;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px);z-index:10}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:44px;height:44px;border-radius:8px}
-  h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-  .sub{color:var(--muted)}
-  .section{padding:56px 0}
-  .card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden}
-  .pad{padding:18px}
-  .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer;background:transparent;color:var(--fg)}
-  .btn.primary{background:#fff;color:#000;border-color:#fff}
-  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
-  .row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-  .grid{display:grid;gap:24px}
-  .cols-2{grid-template-columns:1.2fr .8fr}
-  @media(max-width:980px){.cols-2{grid-template-columns:1fr}}
-  .input, textarea.input{width:100%;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;font-family:inherit}
-  .thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-  .thumbs img{width:90px;height:70px;object-fit:cover;border:1px solid var(--line);border-radius:10px;cursor:pointer;opacity:.9}
-  .thumbs img.active{outline:2px solid #fff;opacity:1}
-  .heroimg{width:100%;aspect-ratio:16/9;object-fit:cover;background:#0f0f0f;display:block}
-  .meta{display:flex;gap:10px;flex-wrap:wrap}
-  .comment{border-top:1px solid var(--line);padding:12px 0}
-  .comment .actions{display:flex;gap:8px;margin-top:8px}
-  .nav-auth {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-/* Wrap the chip + dropdown together */
-.profile-menu {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-.profile-chip {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--line);
-}
+  <!-- Shared auth helper for nav/sign-in + requireLogin -->
+  <script src="/auth-ui.js"></script>
 
-.profile-chip span {
-  font-size: 16px;
-}
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
 
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 48px;
-  background: var(--bg1);
-  border: 1px solid var(--line);
-  box-shadow: 0 20px 40px rgba(0,0,0,.45);
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  min-width: 190px;
-  z-index: 999;
-}
+    /* NAV */
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .title small{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;font-size:15px;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.small{padding:6px 10px;font-size:14px}
+    .btn[disabled]{opacity:.5;pointer-events:none}
 
-.dropdown a,
-.dropdown button {
-  padding: 10px 16px;
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: var(--fg);
-  font-size: 15px;
-  width: 100%;
-  cursor: pointer;
-}
+    .section{padding:48px 0}
+    .grid{display:grid;gap:20px}
+    .cols-2{grid-template-columns:1.4fr 1fr}
+    @media(max-width:960px){.cols-2{grid-template-columns:1fr}}
 
-.dropdown a:hover,
-.dropdown button:hover {
-  background: #1f1f1f;
-}
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .gallery-main{
+      width:100%;border-radius:16px;overflow:hidden;
+      border:1px solid var(--line);
+      background:#000;
+      aspect-ratio:16/9;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .gallery-main img{
+      width:100%;height:100%;object-fit:cover;display:block;
+    }
+    .thumb-row{
+      display:flex;gap:8px;margin-top:8px;overflow-x:auto;padding-bottom:4px;
+    }
+    .thumb{
+      flex:0 0 auto;width:90px;height:60px;border-radius:10px;
+      overflow:hidden;border:1px solid var(--line);cursor:pointer;
+      opacity:.7;transition:opacity .15s,transform .15s;
+    }
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .thumb.active{opacity:1;transform:translateY(-2px);border-color:var(--accent)}
 
-</style>
+    .badge{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--bg2);font-size:13px;margin-right:6px;margin-top:4px;
+    }
+    .badge.subtle{opacity:.8}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+
+    .spec-grid{
+      display:grid;gap:8px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+    @media(max-width:760px){.spec-grid{grid-template-columns:1fr}}
+    .spec-item{
+      padding:8px 10px;border-radius:12px;
+      background:var(--bg2);border:1px solid var(--line);
+      font-size:13px;
+    }
+    .spec-label{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+
+    .comment-card{
+      border-top:1px solid var(--line);
+      padding:10px 0;
+    }
+    .comment-meta{
+      font-size:12px;color:var(--muted);margin-bottom:4px;
+    }
+
+    /* Nav auth chip (same IDs as tickets.html for auth-ui.js) */
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:15px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+  </style>
 </head>
 <body>
   <!-- NAV -->
-  <nav class="nav">
+  <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
-      <a href="/" class="brand" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" class="logo" alt="">
-        <div><h1>ROK RACERS JA</h1><small class="sub">Build</small></div>
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo-img" />
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Build</small>
+        </div>
       </a>
-      <div class="row">
-        <span id="userBadge" class="sub"></span>
-        <button id="signinBtn" class="btn">Sign in</button>
-        <button id="signoutBtn" class="btn" style="display:none">Sign out</button>
-        <a class="btn" href="/garage.html">Garage</a>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+        </div>
+
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="nav-auth">
-  <button id="signinBtn" class="btn">Sign in</button>
-
-  <div id="profileMenu" class="profile-menu" style="display:none">
-    <div id="profileChip" class="profile-chip">
-      <span id="profileInitials">U</span>
-    </div>
-
-    <div id="dropdown" class="dropdown" style="display:none">
-      <a href="/garage.html">My Garage</a>
-      <a href="/tickets.html">My Tickets</a>
-      <a href="/likes-builds.html">Liked Builds</a>
-      <a href="/likes-sightings.html">Liked Sightings</a>
-      <button id="signoutBtn" class="btn" style="width:100%">Sign out</button>
-    </div>
-  </div>
-</div>
-
   </nav>
 
   <main class="container">
     <section class="section">
-      <div class="grid cols-2">
-        <!-- LEFT: gallery + content -->
-        <article id="buildCard" class="card">
-          <div class="pad sub">Loading…</div>
-        </article>
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <h2 id="buildTitle" style="font-size:44px">Loading build…</h2>
+          <div id="buildMeta" class="meta-row"></div>
+        </div>
+        <div class="row">
+          <button id="likeBtn" class="btn" type="button" disabled>♥ 0</button>
+          <a href="/garage.html" class="btn small">← Back to garage</a>
+        </div>
+      </div>
 
-        <!-- RIGHT: meta + like + privacy -->
-        <aside class="card">
-          <div id="metaBox" class="pad sub">Loading…</div>
-          <div class="pad" id="likeBox" style="border-top:1px solid var(--line)">
-            <div class="row" style="justify-content:space-between">
-              <div><strong>Likes:</strong> <span id="likeCount">0</span></div>
-              <button id="likeBtn" class="btn" title="Like">♡</button>
-            </div>
+      <div id="buildError" class="sub" style="margin-bottom:12px;color:#ffb3b3"></div>
+
+      <div class="grid cols-2">
+        <!-- LEFT: gallery + description -->
+        <div class="card">
+          <div id="galleryMain" class="gallery-main">
+            <span class="sub">Loading…</span>
           </div>
-        </aside>
+          <div id="galleryThumbs" class="thumb-row"></div>
+
+          <p id="buildDescription" style="margin-top:14px" class="sub"></p>
+        </div>
+
+        <!-- RIGHT: specs + meta -->
+        <div class="card">
+          <h3 style="font-size:24px;margin-bottom:8px">Build info</h3>
+          <div id="buildBadges" class="meta-row" style="margin-bottom:10px"></div>
+
+          <div id="specBlock" style="margin-top:10px">
+            <h3 style="font-size:20px;margin-bottom:6px">Specs</h3>
+            <div id="specGrid" class="spec-grid"></div>
+          </div>
+
+          <div style="margin-top:16px;font-size:13px" class="sub" id="buildFooterMeta"></div>
+        </div>
       </div>
     </section>
 
     <!-- COMMENTS -->
     <section class="section">
-      <h2 style="font-size:40px">Comments</h2>
-      <div id="commentForm" class="row" style="margin:10px 0 16px; display:none">
-        <textarea id="commentText" class="input" rows="3" placeholder="Share your thoughts…"></textarea>
-        <button id="commentPost" class="btn primary">Post</button>
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 style="font-size:32px">Comments</h3>
       </div>
-      <div id="comments" class="card"><div class="pad sub">Loading comments…</div></div>
+
+      <div id="commentFormRow" class="row" style="margin-bottom:10px;display:none">
+        <textarea id="commentInput" class="input" placeholder="Drop your thoughts on this build…" style="flex:1;min-height:60px"></textarea>
+        <button id="commentPostBtn" class="btn primary" type="button">Post</button>
+      </div>
+
+      <div id="commentsCard" class="card">
+        <div id="commentsInner" class="sub">Loading comments…</div>
+      </div>
     </section>
   </main>
 
   <script>
-    /* ========== Small helpers ========== */
     const buildId = new URLSearchParams(location.search).get('id');
-    const el = (id)=>document.getElementById(id);
-    const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    let currentUserId = null;
+    const $ = (id)=>document.getElementById(id);
 
-    function fmtKV(label, value){
-      if(!value) return '';
-      return `<div><strong>${escapeHTML(label)}:</strong> ${escapeHTML(String(value))}</div>`;
+    let currentUser = null;
+    let liked = false;
+    let likeCount = 0;
+
+    function escapeHTML(s){
+      return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    /* ========== Auth mini widget ========== */
-    async function refreshAuthUI(){
-      const { data: { user } } = await supabase.auth.getUser();
-      const badge = el('userBadge');
-      const si = el('signinBtn');
-      const so = el('signoutBtn');
-      const form = el('commentForm');
-      if(user){
-        badge.textContent = user.email;
-        si.style.display = 'none';
-        so.style.display = 'inline-flex';
-        form.style.display = 'flex';
-      }else{
-        badge.textContent = '';
-        si.style.display = 'inline-flex';
-        so.style.display = 'none';
-        form.style.display = 'none';
+    function setGallery(images, fallbackUrl){
+      const main = $('galleryMain');
+      const thumbs = $('galleryThumbs');
+      let list = images && images.length ? images.map(im => im.image_url) : [];
+
+      if(!list.length && fallbackUrl){
+        list = [fallbackUrl];
       }
-      currentUserId = user?.id || null;
-      // after auth change, refresh “liked?” state
-      if(buildId) await refreshLikedState();
+
+      if(!list.length){
+        main.innerHTML = `<span class="sub">No media yet.</span>`;
+        thumbs.innerHTML = '';
+        return;
+      }
+
+      let current = list[0];
+      main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
+
+      if (list.length === 1){
+        thumbs.innerHTML = '';
+        return;
+      }
+
+      thumbs.innerHTML = '';
+      list.forEach((url, idx) => {
+        const div = document.createElement('div');
+        div.className = 'thumb' + (idx === 0 ? ' active' : '');
+        div.innerHTML = `<img src="${escapeHTML(url)}" alt="Thumbnail ${idx+1}">`;
+        div.addEventListener('click', () => {
+          current = url;
+          main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
+          thumbs.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+          div.classList.add('active');
+        });
+        thumbs.appendChild(div);
+      });
     }
 
-    el('signinBtn').onclick = async ()=>{
-      const email = prompt("Enter your email to sign in:");
-      if(!email) return;
-      const { error } = await supabase.auth.signInWithOtp({ 
-        email, 
-        options:{ emailRedirectTo: location.href } 
-      });
-      if(error) return alert("Sign-in error: " + error.message);
-      alert("Magic link sent! Check your email.");
-    };
+    function renderBadges(build){
+      const wrap = $('buildBadges');
+      const badges = [];
 
-    el('signoutBtn').onclick = async ()=>{
-      await supabase.auth.signOut(); 
-      await refreshAuthUI();
-    };
+      const type = build.build_type || 'owned';
+      const mapType = {
+        owned: 'Owned',
+        dream: 'Dream build',
+        for_sale: 'For sale'
+      };
+      badges.push(`<span class="badge">${mapType[type] || 'Build'}</span>`);
 
-    supabase.auth.onAuthStateChange(() => {
-      refreshAuthUI();
-    });
-    refreshAuthUI();
+      if(build.stage){
+        const label = {
+          stock: 'Stage: Stock/OEM+',
+          stage_1: 'Stage 1 (bolt-ons)',
+          stage_2: 'Stage 2 (boost)',
+          track: 'Track / Drift',
+          other: 'Stage: Custom'
+        }[build.stage] || `Stage: ${build.stage}`;
+        badges.push(`<span class="badge subtle">${escapeHTML(label)}</span>`);
+      }
 
-// --- Elements ---
-const signinBtn = document.getElementById("signinBtn");
-const profileMenu = document.getElementById("profileMenu");
-const profileChip = document.getElementById("profileChip");
-const dropdown = document.getElementById("dropdown");
-const initialsEl = document.getElementById("profileInitials");
+      if(build.power_goal){
+        badges.push(`<span class="badge subtle">Power goal: ${build.power_goal} hp</span>`);
+      }
 
-// --- Auth UI state ---
-async function updateAuthUI() {
-  const { data: { user }} = await supabase.auth.getUser();
+      badges.push(
+        `<span class="badge" style="border-color:${build.is_public ? 'var(--accent)' : 'var(--line)'}">
+           ${build.is_public ? 'Public build' : 'Private (only you)'}
+         </span>`
+      );
 
-  if (user) {
-    signinBtn.style.display = "none";
-    profileMenu.style.display = "flex";
+      wrap.innerHTML = badges.join('');
+    }
 
-    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
-    initialsEl.textContent = initials;
-  } else {
-    signinBtn.style.display = "inline-flex";
-    profileMenu.style.display = "none";
-    dropdown.style.display = "none";
-  }
-}
+    function renderSpecs(specs){
+      const grid = $('specGrid');
+      if(!specs){
+        grid.innerHTML = `<div class="sub">No specs added yet.</div>`;
+        return;
+      }
+      const pairs = [
+        ['wheels','Wheels'],
+        ['tires','Tires'],
+        ['suspension','Suspension'],
+        ['brakes','Brakes'],
+        ['engine','Engine'],
+        ['exhaust','Exhaust'],
+        ['drivetrain','Drivetrain'],
+        ['interior','Interior'],
+        ['exterior','Exterior'],
+      ];
 
-// Toggle dropdown
-profileChip?.addEventListener("click", () => {
-  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-});
-document.addEventListener("click", (e) => {
-  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
-});
+      const rows = pairs
+        .map(([key,label]) => {
+          const v = specs[key];
+          if(!v) return '';
+          return `
+            <div class="spec-item">
+              <span class="spec-label">${label}</span>
+              <span>${escapeHTML(v)}</span>
+            </div>`;
+        })
+        .filter(Boolean);
 
-// Sign in
-signinBtn.onclick = async () => {
-  const email = prompt("Enter your email:");
-  if (!email) return;
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: location.href }
-  });
-  if (error) alert(error.message);
-  else alert("Magic link sent! Check your inbox.");
-};
-
-// Sign out
-document.getElementById("signoutBtn")?.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  updateAuthUI();
-});
-
-// Init
-supabase.auth.onAuthStateChange(updateAuthUI);
-updateAuthUI();
-
-// --- Access guard ---
-window.requireLogin = async function(callback){
-  const { data: { user }} = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please sign in first.");
-    signinBtn.click();
-    return false;
-  }
-  if (callback) callback();
-  return true;
-};
-
-
-
-    /* ========== Load build + images ========== */
-    let currentImages = [];
-    let currentLikeCount = 0;
+      if(!rows.length){
+        grid.innerHTML = `<div class="sub">No specs added yet.</div>`;
+      }else{
+        grid.innerHTML = rows.join('');
+      }
+    }
 
     async function loadBuild(){
-      const card = el('buildCard');
-      const meta = el('metaBox');
       if(!buildId){
-        card.innerHTML = `<div class="pad sub">Missing build ID.</div>`;
-        meta.innerHTML='';
+        $('buildError').textContent = 'Missing build ID.';
         return;
       }
 
-      const [
-        { data: build, error: e1 },
-        { data: imgs, error: e2 },
-        { data: countRow }
-      ] = await Promise.all([
+      // main build row
+      const { data: build, error } = await supabase
+        .from('builds')
+        .select('*')
+        .eq('id', buildId)
+        .maybeSingle();
 
-      supabase
-      .from('builds')
-      .select('id,title,description,make,model,year,stage,power_goal,is_public,user_id,created_at,base_model_key')
-      .eq('id', buildId).maybeSingle(),
-
-      supabase
-      .from('build_images')
-      .select('image_url,sort_order,created_at')
-      .eq('build_id', buildId).order('sort_order',{ascending:true})
-      .order('created_at',{ascending:true}),
-  
-      supabase
-      .from('build_like_counts')
-      .select('like_count').eq('build_id', buildId).maybeSingle()
-]);
-
-
-      if(e1 || !build){
-        console.error(e1);
-        card.innerHTML = `<div class="pad sub">Build not found or you don't have access.</div>`;
-        meta.innerHTML = '';
+      if(error || !build){
+        console.error(error);
+        $('buildError').textContent = 'Build not found.';
+        $('buildTitle').textContent = 'Build not found';
         return;
       }
 
+      // title + meta
       document.title = `${build.title} — ROK Racers JA`;
-      currentImages = imgs || [];
-      currentLikeCount = countRow?.like_count || 0;
-      el('likeCount').textContent = currentLikeCount;
+      $('buildTitle').textContent = build.title || 'Untitled build';
 
-      const hero = currentImages[0]?.image_url || '/Assets/og.png';
-      const thumbs = (currentImages||[]).map((im,i)=>`
-        <img src="${im.image_url}" data-idx="${i}" class="${i===0?'active':''}" alt="thumb ${i+1}">
-      `).join('');
+      const created = build.created_at ? new Date(build.created_at) : null;
+      const when = created ? created.toLocaleString('en-US', {
+        month:'short', day:'2-digit', year:'numeric'
+      }) : '';
 
-      card.innerHTML = `
-        ${hero ? `<img id="heroImg" src="${hero}" alt="${escapeHTML(build.title)}" class="heroimg">` : ''}
-        <div class="pad">
-          <h2 style="font-size:44px">${escapeHTML(build.title)}</h2>
-          <div class="meta" style="margin-top:8px">
-            <span class="chip">${build.is_public ? 'Public' : 'Private'}</span>
-            <span class="chip">Posted ${new Date(build.created_at).toLocaleDateString()}</span>
-          </div>
+      const metaBits = [];
+      if(build.make || build.model || build.year){
+        const carLabel = [build.year, build.make, build.model].filter(Boolean).join(' ');
+        if(carLabel) metaBits.push(`<span class="sub">${escapeHTML(carLabel)}</span>`);
+      }
+      if(build.color_hex){
+        metaBits.push(
+          `<span class="badge subtle"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${build.color_hex};margin-right:4px;"></span> Paint</span>`
+        );
+      }
+      if(when){
+        metaBits.push(`<span class="sub">Added ${escapeHTML(when)}</span>`);
+      }
+      $('buildMeta').innerHTML = metaBits.join(' • ');
 
-          <div class="thumbs" id="thumbs">${thumbs}</div>
+      // description
+      $('buildDescription').innerHTML = escapeHTML(build.description || '')
+        .replace(/\n/g,'<br>');
 
-          <div style="margin-top:16px">${
-            build.description 
-              ? escapeHTML(build.description).replace(/\n/g,'<br>') 
-              : '<span class="sub">No description yet.</span>'
-          }</div>
-
-          <div class="card" style="margin-top:16px">
-            <div class="pad">
-              <h3 style="font-size:28px">Specs</h3>
-              <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px">
-                ${fmtKV('Make', build.make)}
-                ${fmtKV('Model', build.model)}
-                ${fmtKV('Year', build.year)}
-                ${fmtKV('Stage', build.stage)}
-                ${fmtKV('Power goal', build.power_goal)}
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.getElementById('thumbs')?.addEventListener('click', (e)=>{
-        const img = e.target.closest('img[data-idx]'); 
-        if(!img) return;
-        const idx = Number(img.dataset.idx);
-        const heroEl = document.getElementById('heroImg');
-        heroEl.src = currentImages[idx].image_url;
-        document.querySelectorAll('#thumbs img').forEach(n=>n.classList.remove('active'));
-        img.classList.add('active');
-      });
-
-            // Meta box (owner info + Edit when owner)
-      const { data: { user } } = await supabase.auth.getUser();
-      const isOwner = user && user.id === build.user_id;
-
-      let metaHtml = `
-        <div><strong>Visibility:</strong> ${build.is_public ? 'Public' : 'Private'}</div>
-      `;
-
-      if(isOwner){
-        metaHtml += `
-          <div class="sub" style="margin-top:6px">You own this build.</div>
-          <a href="/build-edit.html?id=${build.id}"
-             class="btn primary"
-             style="margin-top:12px;display:inline-flex">
-            Edit build
-          </a>
-        `;
+      // footer meta
+      const footer = [];
+      if(build.is_public){
+        footer.push('Visible in your public garage and eligible for Top 5.');
       }else{
-        metaHtml += `
-          <div class="sub" style="margin-top:6px">
-            Only the owner can edit this build.
-          </div>
-        `;
+        footer.push('Only visible to you (private build).');
       }
+      $('buildFooterMeta').textContent = footer.join(' ');
 
-      meta.innerHTML = metaHtml;
+      // gallery: try build_images, else custom_image_url
+      const { data: images } = await supabase
+        .from('build_images')
+        .select('id,image_url')
+        .eq('build_id', buildId)
+        .order('created_at', { ascending:true });
 
+      setGallery(images || [], build.custom_image_url || build.thumb_url || null);
+
+      // specs (JSON column)
+      renderSpecs(build.specs || null);
+
+      // badges
+      renderBadges(build);
+
+      // likes
+      await loadLikes();
     }
 
-    /* ========== Likes ========== */
-    async function refreshLikedState(){
-      if(!buildId) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      const btn = el('likeBtn');
-      if(!user){
-        btn.textContent = '♡'; 
-        btn.title='Sign in to like';
-        return;
-      }
-      const { data: row } = await supabase
+    async function loadLikes(){
+      const likeBtn = $('likeBtn');
+
+      const { data: { user }} = await supabase.auth.getUser();
+      currentUser = user || null;
+
+      // total like count
+      const { data: agg, error: aggErr } = await supabase
         .from('build_likes')
-        .select('build_id')
-        .eq('build_id', buildId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if(row){
-        btn.textContent='♥'; 
-        btn.title='Unlike';
-      } else {
-        btn.textContent='♡'; 
-        btn.title='Like';
+        .select('build_id', { count:'exact', head:true })
+        .eq('build_id', buildId);
+
+      if(aggErr){
+        console.error(aggErr);
+        likeCount = 0;
+      }else{
+        likeCount = agg?.length ? agg.length : (aggErr ? 0 : agg);
+        // Supabase count with head:true returns in the response.count, not data.length, but this is simple
       }
-    }
 
-    el('likeBtn').addEventListener('click', async ()=>{
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user) return alert('Sign in to like builds.');
-
-      const { data: row } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .eq('build_id', buildId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if(row){
-        const { error } = await supabase
+      // did I like it?
+      if(user){
+        const { data: existing } = await supabase
           .from('build_likes')
-          .delete()
+          .select('build_id')
           .eq('build_id', buildId)
-          .eq('user_id', user.id);
-        if(error) return alert('Unlike failed: ' + error.message);
-        el('likeBtn').textContent='♡'; 
-        el('likeBtn').title='Like';
+          .eq('user_id', user.id)
+          .maybeSingle();
+        liked = !!existing;
       }else{
-        const { error } = await supabase
-          .from('build_likes')
-          .insert({ build_id: buildId, user_id: user.id });
-        if(error) return alert('Like failed: ' + error.message);
-        el('likeBtn').textContent='♥'; 
-        el('likeBtn').title='Unlike';
+        liked = false;
       }
-    });
 
-    // Live like count
-    let likeChannel;
-    function liveLikes(){
-      likeChannel?.unsubscribe();
-      likeChannel = supabase.channel(`build-like-${buildId}`)
-        .on('postgres_changes',{
-          event:'INSERT',
-          schema:'public',
-          table:'build_likes',
-          filter:`build_id=eq.${buildId}`
-        }, ()=>{
-          const n = Number(el('likeCount').textContent||0);
-          el('likeCount').textContent = n+1;
-        })
-        .on('postgres_changes',{
-          event:'DELETE',
-          schema:'public',
-          table:'build_likes',
-          filter:`build_id=eq.${buildId}`
-        }, ()=>{
-          const n = Number(el('likeCount').textContent||0);
-          el('likeCount').textContent = Math.max(0, n-1);
-        })
-        .subscribe();
+      likeBtn.disabled = false;
+      likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+      likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+
+      likeBtn.onclick = async () => {
+        const ok = await window.requireLogin();
+        if(!ok) return;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if(!user) return;
+
+        likeBtn.disabled = true;
+
+        const { data: existing } = await supabase
+          .from('build_likes')
+          .select('build_id')
+          .eq('build_id', buildId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if(existing){
+          const { error } = await supabase
+            .from('build_likes')
+            .delete()
+            .eq('build_id', buildId)
+            .eq('user_id', user.id);
+          if(!error){
+            liked = false;
+            likeCount = Math.max(0, likeCount - 1);
+          }
+        }else{
+          const { error } = await supabase
+            .from('build_likes')
+            .insert({ build_id: buildId, user_id: user.id });
+          if(!error){
+            liked = true;
+            likeCount += 1;
+          }
+        }
+
+        likeBtn.disabled = false;
+        likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+        likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      };
     }
 
-    /* ========== Comments (using build_comments) ========== */
+    // COMMENTS (using comments table with build_id)
     function renderComment(c){
-      const dt = new Date(c.created_at).toLocaleString();
-      const isOwner = currentUserId && (c.profile_id === currentUserId);
+      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
       return `
-        <div class="comment" data-id="${c.id}">
-          <div class="sub" style="margin-bottom:6px">${escapeHTML(dt)}</div>
-          <div class="body" data-mode="view">${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
-          ${isOwner ? `
-            <div class="actions">
-              <button class="btn" data-action="edit">Edit</button>
-              <button class="btn" data-action="delete">Delete</button>
-            </div>
-          `:''}
-        </div>
-      `;
+        <div class="comment-card">
+          <div class="comment-meta">${escapeHTML(dt)}</div>
+          <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
+        </div>`;
     }
 
     async function loadComments(){
-      const wrap = el('comments');
+      const wrap = $('commentsInner');
       const { data, error } = await supabase
-        .from('build_comments')
-        .select('id, body, created_at, profile_id')
+        .from('comments')
+        .select('id,body,created_at,user_id')
         .eq('build_id', buildId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending:true });
 
       if(error){
         console.error(error);
-        wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
+        wrap.textContent = 'Couldn’t load comments.';
         return;
       }
       if(!data || !data.length){
-        wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
+        wrap.textContent = 'No comments yet — be the first.';
         return;
       }
-
-      wrap.innerHTML = `<div class="pad" id="commentsInner">` + data.map(renderComment).join('') + `</div>`;
+      wrap.innerHTML = data.map(renderComment).join('');
     }
 
-    el('commentPost').onclick = async ()=>{
-      const input = el('commentText');
+    async function initCommentsAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
+      const formRow = $('commentFormRow');
+      if(user){
+        formRow.style.display = 'flex';
+      }else{
+        formRow.style.display = 'none';
+      }
+    }
+
+    $('commentPostBtn').addEventListener('click', async () => {
+      const ok = await window.requireLogin();
+      if(!ok) return;
+
+      const input = $('commentInput');
       const text = input.value.trim();
       if(!text) return;
+
       const { data: { user } } = await supabase.auth.getUser();
-      if(!user) return alert("Please sign in first.");
+      if(!user) return;
 
-      const { error } = await supabase.from('build_comments').insert({
-        build_id: buildId, body: text, profile_id: user.id
-      });
-      if(error) return alert("Couldn’t post: " + error.message);
-      input.value = "";
-      // realtime will append
-    };
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          build_id: buildId,
+          body: text,
+          user_id: user.id
+        });
 
-    // Edit/Delete handlers
-    el('comments').addEventListener('click', async (e)=>{
-      const btn = e.target.closest('button[data-action]');
-      if(!btn) return;
-      const node = e.target.closest('.comment');
-      const id = node?.dataset.id;
-      const action = btn.dataset.action;
-
-      if(action === 'delete'){
-        if(!confirm('Delete this comment?')) return;
-        const { error } = await supabase.from('build_comments').delete().eq('id', id);
-        if(error) return alert('Delete failed: ' + error.message);
+      if(error){
+        alert('Could not post comment: ' + error.message);
+        return;
       }
-
-      if(action === 'edit'){
-        const body = node.querySelector('.body');
-        if(body.dataset.mode !== 'view') return;
-        const current = body.innerText;
-        body.dataset.mode = 'edit';
-        body.innerHTML = `
-          <textarea class="input" rows="3">${escapeHTML(current)}</textarea>
-          <div class="row" style="margin-top:8px">
-            <button class="btn primary" data-action="save">Save</button>
-            <button class="btn" data-action="cancel">Cancel</button>
-          </div>
-        `;
-      }
-
-      if(action === 'cancel'){
-        const { data, error } = await supabase.from('build_comments').select('*').eq('id', id).maybeSingle();
-        if(!error && data){ node.outerHTML = renderComment(data); }
-      }
-
-      if(action === 'save'){
-        const ta = node.querySelector('textarea');
-        const newText = (ta?.value || '').trim();
-        if(!newText) return alert('Comment cannot be empty.');
-        const { error } = await supabase.from('build_comments').update({ body: newText }).eq('id', id);
-        if(error) return alert('Update failed: ' + error.message);
-        // realtime will update and re-render
-      }
+      input.value = '';
+      await loadComments();
     });
 
-    // Live comments
-    let commentsChannel;
-    function liveComments(){
-      commentsChannel?.unsubscribe();
-      commentsChannel = supabase.channel(`build-comments-${buildId}`)
-        .on('postgres_changes',{
-          event:'INSERT',
-          schema:'public',
-          table:'build_comments',
-          filter:`build_id=eq.${buildId}`
-        }, (p)=>{
-          const c = p.new;
-          const wrap = el('comments');
-          if (wrap.textContent.includes('No comments yet')) {
-            wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-          }
-          const inner = el('commentsInner') || (()=>{ 
-            wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`; 
-            return el('commentsInner'); 
-          })();
-          inner.insertAdjacentHTML('beforeend', renderComment(c));
-        })
-        .on('postgres_changes',{
-          event:'UPDATE',
-          schema:'public',
-          table:'build_comments',
-          filter:`build_id=eq.${buildId}`
-        }, (p)=>{
-          const c = p.new;
-          const node = document.querySelector(`.comment[data-id="${c.id}"]`);
-          if(node){ node.outerHTML = renderComment(c); }
-        })
-        .on('postgres_changes',{
-          event:'DELETE',
-          schema:'public',
-          table:'build_comments',
-          filter:`build_id=eq.${buildId}`
-        }, (p)=>{
-          const id = p.old.id;
-          const node = document.querySelector(`.comment[data-id="${id}"]`);
-          node?.remove();
-          const inner = el('commentsInner');
-          if(inner && !inner.children.length){
-            el('comments').innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
-          }
-        })
-        .subscribe();
-    }
-
-    async function loadParts(){
-  const wrap = document.getElementById('partsBox');
-  if(!wrap) return;
-
-  const { data, error } = await supabase
-    .from('build_parts')
-    .select('id,category,label,brand,spec,notes,created_at')
-    .eq('build_id', buildId)
-    .order('category', { ascending: true })
-    .order('created_at', { ascending: true });
-
-  if(error){
-    wrap.innerHTML = `<h3 style="font-size:28px">Parts</h3><div class="sub">Couldn’t load parts.</div>`;
-    return;
-  }
-  if(!data || !data.length){
-    wrap.innerHTML = `<h3 style="font-size:28px">Parts</h3><div class="sub">No parts listed yet.</div>`;
-    return;
-  }
-
-  const byCat = new Map();
-  data.forEach(p => {
-    const key = p.category || 'other';
-    if(!byCat.has(key)) byCat.set(key, []);
-    byCat.get(key).push(p);
-  });
-
-  let html = `<h3 style="font-size:28px">Parts</h3>`;
-  html += `<div class="grid" style="grid-template-columns:1fr;gap:10px;margin-top:8px">`;
-
-  for(const [cat, parts] of byCat.entries()){
-    html += `
-      <div>
-        <div class="chip" style="margin-bottom:6px">${cat[0].toUpperCase() + cat.slice(1)}</div>
-        <ul class="sub" style="list-style:none;padding:0;margin:0">
-          ${parts.map(p => `
-            <li style="margin-bottom:4px">
-              <strong>${escapeHTML(p.label || '')}</strong>
-              ${p.brand ? ` — ${escapeHTML(p.brand)}` : ''}
-              ${p.spec ? ` <span style="opacity:.9">(${escapeHTML(p.spec)})</span>` : ''}
-              ${p.notes ? `<div style="font-size:13px;margin-top:2px">${escapeHTML(p.notes)}</div>` : ''}
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-    `;
-  }
-  html += `</div>`;
-
-  wrap.innerHTML = html;
-}
-
-
-    /* ========== Boot ========== */
     window.addEventListener('DOMContentLoaded', async ()=>{
-  await loadBuild();
-  await refreshLikedState();
-  liveLikes();
+      if(!buildId){
+        $('buildError').textContent = 'Missing build ID in URL.';
+        return;
+      }
+      await loadBuild();
+      await initCommentsAuth();
+      await loadComments();
 
-  await loadComments();
-  liveComments();
-
-  await loadParts();
-});
-
+      // also re-toggle comment form on auth state change
+      supabase.auth.onAuthStateChange(initCommentsAuth);
+    });
   </script>
 </body>
 </html>
