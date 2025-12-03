@@ -205,125 +205,27 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
   </main>
 
 <script>
-/* ========= Mini auth widget ========= */
-async function refreshAuthUI(){
-  const { data: { user } } = await supabase.auth.getUser();
-  const badge = document.getElementById('userBadge');
-  const si = document.getElementById('signinBtn');
-  const so = document.getElementById('signoutBtn');
-  if(user){
-    badge.textContent = user.email;
-    si.style.display = 'none'; 
-    so.style.display = 'inline-flex';
-  }else{
-    badge.textContent = '';
-    si.style.display = 'inline-flex'; 
-    so.style.display = 'none';
-  }
-  await updateQuota();
-}
+/* ========= Auth + Nav UI ========= */
+const userBadge   = document.getElementById('userBadge');
+const signinBtn   = document.getElementById('signinBtn');
+const signoutBtn  = document.getElementById('signoutBtn');
+const profileMenu = document.getElementById('profileMenu');
+const profileChip = document.getElementById('profileChip');
+const dropdown    = document.getElementById('dropdown');
+const initialsEl  = document.getElementById('profileInitials');
 
-document.getElementById('signinBtn').onclick = async ()=>{
-  const email = prompt("Enter your email to sign in:");
-  if(!email) return;
-  const { error } = await supabase.auth.signInWithOtp({ 
-    email, 
-    options:{ emailRedirectTo: location.href } 
-  });
-  if(error) return alert("Sign-in error: " + error.message);
-  alert("Magic link sent! Check your email.");
-};
+const buildQuotaEl   = document.getElementById('buildQuota');
+const upgradeBanner  = document.getElementById('upgradeBanner');
+const newBuildBtn    = document.getElementById('newBuildBtn');
 
-document.getElementById('signoutBtn').onclick = async ()=>{
-  await supabase.auth.signOut();
-  await refreshAuthUI();
-};
-
-supabase.auth.onAuthStateChange(() => {
-  refreshAuthUI();
-});
-refreshAuthUI();
-
-// --- Elements ---
-const signinBtn = document.getElementById("signinBtn");
-const profileMenu = document.getElementById("profileMenu");
-const profileChip = document.getElementById("profileChip");
-const dropdown = document.getElementById("dropdown");
-const initialsEl = document.getElementById("profileInitials");
-
-// --- Auth UI state ---
-async function updateAuthUI() {
-  const { data: { user }} = await supabase.auth.getUser();
-
-  if (user) {
-    signinBtn.style.display = "none";
-    profileMenu.style.display = "flex";
-
-    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
-    initialsEl.textContent = initials;
-  } else {
-    signinBtn.style.display = "inline-flex";
-    profileMenu.style.display = "none";
-    dropdown.style.display = "none";
-  }
-}
-
-// Toggle dropdown
-profileChip?.addEventListener("click", () => {
-  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-});
-document.addEventListener("click", (e) => {
-  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
-});
-
-// Sign in
-signinBtn.onclick = async () => {
-  const email = prompt("Enter your email:");
-  if (!email) return;
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: location.href }
-  });
-  if (error) alert(error.message);
-  else alert("Magic link sent! Check your inbox.");
-};
-
-// Sign out
-document.getElementById("signoutBtn")?.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  updateAuthUI();
-});
-
-// Init
-supabase.auth.onAuthStateChange(updateAuthUI);
-updateAuthUI();
-
-// --- Access guard ---
-window.requireLogin = async function(callback){
-  const { data: { user }} = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please sign in first.");
-    signinBtn.click();
-    return false;
-  }
-  if (callback) callback();
-  return true;
-};
-
-
-
-/* ========= Quota (3 free builds) ========= */
 async function updateQuota(){
   const { data: { user } } = await supabase.auth.getUser();
-  const quota = document.getElementById('buildQuota');
-  const banner = document.getElementById('upgradeBanner');
-  const btn = document.getElementById('newBuildBtn');
 
   if(!user){
-    quota.textContent = '0/3 builds used';
-    banner.style.display = 'none';
-    btn.disabled = true; 
-    btn.title = 'Sign in to add a build';
+    buildQuotaEl.textContent = '0/3 builds used';
+    upgradeBanner.style.display = 'none';
+    newBuildBtn.disabled = true;
+    newBuildBtn.title = 'Sign in to add a build';
     return;
   }
 
@@ -333,57 +235,159 @@ async function updateQuota(){
     .eq('user_id', user.id);
 
   const used = error ? 0 : (count ?? 0);
+  buildQuotaEl.textContent = `${used}/3 builds used`;
 
-  quota.textContent = `${used}/3 builds used`;
   const atLimit = used >= 3;
-  banner.style.display = atLimit ? 'block' : 'none';
-  btn.disabled = atLimit; 
-  btn.title = atLimit ? 'Upgrade to add more builds' : '';
+  upgradeBanner.style.display = atLimit ? 'block' : 'none';
+  newBuildBtn.disabled = atLimit;
+  newBuildBtn.title = atLimit
+    ? 'Free limit reached. Upgrade to unlock more builds, parts discounts and mechanic deals.'
+    : '';
 }
 
-/* ========= New Build (redirect to builder) ========= */
-document.getElementById('newBuildBtn').onclick = () =>
-  authUI.requireLogin(async (user) => {
-    // re-check quota
-    const r = await supabase.from('builds').select('id').eq('user_id', user.id);
-    if((r.data?.length || 0) >= 3) return alert('Free limit reached. Upgrade to add more builds.');
+async function updateAuthUI(){
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const title = prompt('Build title:');
-    if(!title) return;
-    const pub = confirm('Make this build public? (OK = public, Cancel = private)');
-    const { error } = await supabase.from('builds').insert({
-      title, is_public: !!pub, user_id: user.id
-    });
-    if(error) return alert('Couldn’t create build: ' + error.message);
-    alert('Build created!');
-    await updateQuota();
-    await applyFilters();
+  if(user){
+    userBadge.textContent = user.email || '';
+    signinBtn.style.display = 'none';
+    signoutBtn.style.display = 'inline-flex';
+    profileMenu.style.display = 'flex';
+
+    const raw = (user.email || '').split('@')[0] || 'u';
+    const cleaned = raw.replace(/[^a-z0-9]+/gi," ").trim();
+    const parts = cleaned.split(" ").filter(Boolean);
+    let initials = "";
+    if (parts.length >= 2){
+      initials = (parts[0][0] + parts[1][0]);
+    } else {
+      initials = cleaned.slice(0,2);
+    }
+    initialsEl.textContent = initials.toUpperCase();
+  }else{
+    userBadge.textContent = '';
+    signinBtn.style.display = 'inline-flex';
+    signoutBtn.style.display = 'none';
+    profileMenu.style.display = 'none';
+    dropdown.style.display = 'none';
+    initialsEl.textContent = 'U';
+  }
+
+  await updateQuota();
+}
+
+// Toggle dropdown
+profileChip?.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  if (!dropdown) return;
+  const current = dropdown.style.display;
+  dropdown.style.display = (current === "none" || current === "") ? "block" : "none";
+});
+
+document.addEventListener("click", (e)=>{
+  if (!profileMenu?.contains(e.target)){
+    if (dropdown) dropdown.style.display = "none";
+  }
+});
+
+// Sign in (magic link)
+signinBtn?.addEventListener("click", async ()=>{
+  const email = prompt("Enter your email to get a magic link:");
+  if (!email) return;
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options:{ emailRedirectTo: location.href }
   });
 
-  // optional: quick quota check before redirect
-  const r = await supabase
-    .from('builds')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id);
-  const used = r.error ? 0 : (r.count ?? 0);
-  if(used >= 3){
-    alert('Free limit reached. Upgrade to add more builds.');
-    await updateQuota();
-    return;
+  if (error){
+    console.error(error);
+    alert("Couldn’t send your magic link. Please check the email and try again.");
+  } else {
+    alert("Magic link sent! Check your inbox and come back to the grid.");
   }
-  location.href = '/build-edit.html';
+});
 
+// Sign out
+signoutBtn?.addEventListener("click", async ()=>{
+  await supabase.auth.signOut();
+  await updateAuthUI();
+});
 
-/* ========= Filtering / pagination ========= */
-const pageSize = 12; 
-let page = 0; 
+supabase.auth.onAuthStateChange(() => {
+  updateAuthUI();
+});
+
+/* Helper: require login via shared auth-ui.js */
+window.requireLogin = async function(callback){
+  const { data: { user }} = await supabase.auth.getUser();
+  if (!user) {
+    alert("Please sign in first.");
+    signinBtn?.click();
+    return false;
+  }
+  if (callback) callback();
+  return true;
+};
+
+/* ========= New Build (3-build quota) ========= */
+newBuildBtn?.addEventListener('click', () =>
+  authUI.requireLogin(async ()=>{
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Re-check quota
+    const { count, error } = await supabase
+      .from('builds')
+      .select('id', { count:'exact', head:true })
+      .eq('user_id', user.id);
+
+    const used = error ? 0 : (count ?? 0);
+    if(used >= 3){
+      alert('Free limit reached. Upgrade to add more builds and unlock perks.');
+      await updateQuota();
+      return;
+    }
+
+    const title = prompt('Name this build:');
+    if(!title) return;
+
+    const pub = confirm('Make this build public? (OK = public, Cancel = private)');
+    const { data, error: insErr } = await supabase.from('builds').insert({
+      title,
+      is_public: !!pub,
+      user_id: user.id
+    }).select('id').single();
+
+    if(insErr){
+      console.error(insErr);
+      alert('Couldn’t create build. Try again in a few seconds.');
+      return;
+    }
+
+    alert('Build created! Let’s set it up.');
+    await updateQuota();
+
+    // Go straight to editor for that build
+    if (data?.id){
+      location.href = `/build-edit.html?id=${data.id}`;
+    } else {
+      // Fallback: generic editor
+      location.href = `/build-edit.html`;
+    }
+  })
+);
+
+/* ========= Builds listing + filters + pagination ========= */
+const pageSize = 12;
+let page = 0;
 let currentRows = [];
 
-function renderPage(){
-  const grid = document.getElementById('buildsGrid');
-  if(!currentRows.length){
-    /*build grid*/
-  function renderBuildCard(b){
+const buildsGrid = document.getElementById('buildsGrid');
+const prevBtn    = document.getElementById('prev');
+const nextBtn    = document.getElementById('next');
+
+function renderBuildCard(b){
   const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
   const type = b.build_type || 'owned';
   const typeLabel = {
@@ -401,13 +405,14 @@ function renderPage(){
   }[b.stage] || b.stage) : null;
 
   const power = b.power_goal ? `${b.power_goal} hp` : null;
-
   const visibility = b.is_public ? 'Public' : 'Private';
-
   const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
 
+  const liked = !!b._liked;
+  const heart = liked ? '♥' : '♡';
+
   return `
-    <article class="card" role="listitem">
+    <article class="card" role="listitem" data-build="${b.id}">
       <a href="/build.html?id=${b.id}" style="display:block">
         <img src="${img}" alt="${b.title}" loading="lazy">
       </a>
@@ -417,179 +422,232 @@ function renderPage(){
 
         <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
           <span class="badge">${typeLabel}</span>
-          ${stageLabel ? `<span class="badge subtle">${stageLabel}</span>` : ''}
-          ${power ? `<span class="badge subtle">${power}</span>` : ''}
+          ${stageLabel ? `<span class="badge">${stageLabel}</span>` : ''}
+          ${power ? `<span class="badge">${power}</span>` : ''}
           <span class="badge" style="border-color:${b.is_public ? 'var(--accent)' : 'var(--line)'}">
             ${visibility}
           </span>
+        </div>
+
+        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span class="sub">♥ <span class="likes">${Number(b.like_count || 0)}</span></span>
+          <button class="btn" data-like
+            aria-pressed="${liked ? 'true':'false'}"
+            aria-label="${liked ? 'Remove boost from this build' : 'Boost this build'}"
+            title="${liked ? 'Remove boost from this build' : 'Boost this build'}">
+            ${heart}
+          </button>
         </div>
       </div>
     </article>`;
 }
 
-    
+function renderEmptyState(message){
+  buildsGrid.innerHTML = `
+    <article class="card">
+      <div class="pad sub">${message}</div>
+    </article>`;
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
+}
+
+function renderPage(){
+  if(!currentRows.length){
+    const vis = document.getElementById('vis').value;
+    const msg = vis === 'my'
+      ? "You don’t have any builds yet. Start your first one to put your car on the grid."
+      : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
+    renderEmptyState(msg);
+    return;
   }
+
   const start = page * pageSize;
   const slice = currentRows.slice(start, start + pageSize);
-  grid.innerHTML = slice.map(b => {
-    const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy">` : '';
-    return `
-      <article class="card" role="listitem" data-build="${b.id}">
-        <a href="/build.html?id=${b.id}">
-          ${img}
-          <div class="pad">
-            <strong>${b.title}</strong>
-            <div class="sub">♥ <span class="likes">${Number(b.like_count||0)}</span></div>
-          </div>
-        </a>
-        <div class="pad" style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn" data-like>${b._liked ? '♥' : '♡'}</button>
-        </div>
-      </article>`;
-  }).join('');
-  document.getElementById('prev').disabled = page===0;
-  document.getElementById('next').disabled = (start + pageSize) >= currentRows.length;
+
+  buildsGrid.innerHTML = slice.map(renderBuildCard).join('');
+
+  prevBtn.disabled = page === 0;
+  nextBtn.disabled = (start + pageSize) >= currentRows.length;
 }
 
 async function applyFilters(){
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const vis = document.getElementById('vis').value; // public | my | all (public)
-  const sort = document.getElementById('sort').value; // top | new
+  const q       = document.getElementById('q').value.trim().toLowerCase();
+  const vis     = document.getElementById('vis').value;       // public | my | all
+  const sort    = document.getElementById('sort').value;      // top | new
   const partCat = document.getElementById('partFilter').value; // "" or category
+
   const { data: { user } } = await supabase.auth.getUser();
 
   let rows = [];
-  if(vis === 'my' && user){
-    // My builds: include public + private; join counts + thumb client-side
-    const my = await supabase.from('builds')
-      .select('id,title,is_public,created_at')
-      .eq('user_id', user.id)
-      .order('created_at',{ascending:false});
-    if(my.error){ console.error(my.error); }
-    const ids = (my.data||[]).map(r => r.id);
-    let counts = []; let thumbs = [];
-    if(ids.length){
-      const c = await supabase.from('build_like_counts')
-        .select('build_id, like_count')
-        .in('build_id', ids);
-      const t = await supabase.from('build_primary_image')
-        .select('build_id, image_url')
-        .in('build_id', ids);
-      counts = c.data || []; thumbs = t.data || [];
+
+  try{
+    if (vis === 'my' && user){
+      // My builds (public + private), then join counts + thumbs client-side
+      const my = await supabase.from('builds')
+        .select('id,title,is_public,created_at')
+        .eq('user_id', user.id)
+        .order('created_at',{ascending:false});
+
+      if(my.error) throw my.error;
+
+      const ids = (my.data||[]).map(r => r.id);
+      let counts = []; let thumbs = [];
+      if(ids.length){
+        const c = await supabase
+          .from('build_like_counts')
+          .select('build_id, like_count')
+          .in('build_id', ids);
+        const t = await supabase
+          .from('build_primary_image')
+          .select('build_id, image_url')
+          .in('build_id', ids);
+        if(c.error) throw c.error;
+        if(t.error) throw t.error;
+        counts = c.data || [];
+        thumbs = t.data || [];
+      }
+
+      const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
+      const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
+      rows = (my.data||[]).map(b => ({
+        id: b.id,
+        title: b.title,
+        like_count: countMap.get(b.id)||0,
+        thumb_url: thumbMap.get(b.id)||null,
+        is_public: b.is_public,
+        created_at: b.created_at
+      }));
+    } else {
+      // Public listing (view already has like_count + thumb_url)
+      const pub = await supabase
+        .from('public_builds_with_like_count')
+        .select('id,title,like_count,thumb_url,is_public,created_at')
+        .order('like_count', { ascending: sort!=='top' })
+        .order('id', { ascending: true });
+
+      if(pub.error) throw pub.error;
+      rows = pub.data || [];
     }
-    const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
-    const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
-    rows = (my.data||[]).map(b => ({
-      id: b.id,
-      title: b.title,
-      like_count: countMap.get(b.id)||0,
-      thumb_url: thumbMap.get(b.id)||null,
-      is_public: b.is_public,
-      created_at: b.created_at
-    }));
-  }else{
-    // Public listing (view already contains like_count + thumb)
-    const pub = await supabase
-      .from('public_builds_with_like_count')
-      .select('id,title,like_count,thumb_url,is_public,created_at')
-      .order('like_count', { ascending: sort!=='top' })
-      .order('id', { ascending: true });
-    if(pub.error){ console.error(pub.error); }
-    rows = pub.data || [];
-  }
 
-  // Search filter
-  if(q){
-    rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
-  }
+    // Search filter
+    if(q){
+      rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
+    }
 
-  // NEW: filter by part category (builds that have at least one part in that category)
-  if(partCat){
-    const ids = rows.map(r => r.id);
-    if(ids.length){
-      const { data: partsData, error: partsError } = await supabase
-        .from('build_parts')
-        .select('build_id')
-        .in('build_id', ids)
-        .eq('category', partCat);
-      if(!partsError){
+    // Filter by part category
+    if(partCat){
+      const ids = rows.map(r => r.id);
+      if(ids.length){
+        const { data: partsData, error: partsError } = await supabase
+          .from('build_parts')
+          .select('build_id')
+          .in('build_id', ids)
+          .eq('category', partCat);
+        if(partsError) throw partsError;
+
         const allowed = new Set((partsData||[]).map(p => p.build_id));
         rows = rows.filter(r => allowed.has(r.id));
       }else{
-        console.error(partsError);
+        rows = [];
       }
-    }else{
-      rows = [];
     }
+
+    // Sort
+    if(sort === 'new'){
+      rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+    }else if(sort === 'top'){
+      rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
+    }
+
+    // Mark liked hearts
+    const uid = user?.id || null;
+    if(uid && rows.length){
+      const ids = rows.map(r=>r.id);
+      const liked = await supabase.from('build_likes')
+        .select('build_id')
+        .in('build_id', ids)
+        .eq('user_id', uid);
+      if(liked.error) throw liked.error;
+      const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
+      rows.forEach(r => { r._liked = likedSet.has(r.id); });
+    }
+
+    currentRows = rows;
+    page = 0;
+    renderPage();
+  }catch(err){
+    console.error(err);
+    renderEmptyState("We couldn’t load builds just now. Refresh the page or try again in a few seconds.");
   }
+}
 
-  // Sort (if 'new', sort by created_at desc when available; if not, leave as-is)
-  if(sort === 'new'){
-    rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
-  }else if(sort === 'top'){
-    rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
-  }
-
-  // Mark liked hearts
-  const uid = user?.id || null;
-  if(uid && rows.length){
-    const ids = rows.map(r=>r.id);
-    const liked = await supabase.from('build_likes')
-      .select('build_id')
-      .in('build_id', ids)
-      .eq('user_id', uid);
-    const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
-    rows.forEach(r => { r._liked = likedSet.has(r.id); });
-  }
-
-  currentRows = rows;
-  page = 0;
-  renderPage();
-} 
-
-// Like/unlike (delegated)
-document.getElementById('buildsGrid').addEventListener('click', async (e)=>{
+/* ========= Like / Unlike ========= */
+buildsGrid.addEventListener('click', async (e)=>{
   const btn = e.target.closest('button[data-like]');
   if(!btn) return;
+
   const card = e.target.closest('article.card');
-  const id = card?.dataset.build;
+  const id   = card?.dataset.build;
   const likesEl = card.querySelector('.likes');
+  if(!id || !likesEl) return;
 
   const ok = await authUI.requireLogin();
   if (!ok) return;
+
   const { data: { user } } = await supabase.auth.getUser();
-  if(!user){ return alert('Sign in to like builds.'); }
+  if(!user){
+    alert('Sign in to boost builds and save your favourites.');
+    return;
+  }
 
-
-
-
-  const existing = await supabase
+  const { data: existing, error: existingErr } = await supabase
     .from('build_likes')
     .select('build_id')
     .eq('build_id', id)
     .eq('user_id', user.id)
     .maybeSingle();
 
-  if(existing.data){
-    const del = await supabase
+  if(existingErr){
+    console.error(existingErr);
+    alert('That move stalled. Try again in a few seconds.');
+    return;
+  }
+
+  if(existing){
+    const { error: delErr } = await supabase
       .from('build_likes')
       .delete()
       .eq('build_id', id)
       .eq('user_id', user.id);
-    if(del.error) return alert('Unlike failed: ' + del.error.message);
+    if(delErr){
+      console.error(delErr);
+      alert('Unboost failed. Try again in a few seconds.');
+      return;
+    }
     btn.textContent = '♡';
+    btn.setAttribute('aria-pressed','false');
+    btn.setAttribute('aria-label','Boost this build');
+    btn.title = 'Boost this build';
     likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
   }else{
-    const ins = await supabase
+    const { error: insErr } = await supabase
       .from('build_likes')
       .insert({ build_id: id, user_id: user.id });
-    if(ins.error) return alert('Like failed: ' + ins.error.message);
+
+    if(insErr){
+      console.error(insErr);
+      alert('Couldn’t boost this build. Try again in a few seconds.');
+      return;
+    }
     btn.textContent = '♥';
+    btn.setAttribute('aria-pressed','true');
+    btn.setAttribute('aria-label','Remove boost from this build');
+    btn.title = 'Remove boost from this build';
     likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
   }
 });
 
-// Live likes channel
+/* ========= Live like updates ========= */
 let likesChannel;
 function setupLiveLikes(){
   likesChannel?.unsubscribe();
@@ -608,29 +666,8 @@ function setupLiveLikes(){
     })
     .subscribe();
 }
-async function loadGarage(){
-  const grid = document.getElementById('garageGrid');
-  grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
 
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .order('created_at', { ascending:false });
-
-  if(error){
-    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
-    return;
-  }
-  if(!data || !data.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet. Create one to get started.</div></article>`;
-    return;
-  }
-
-  grid.innerHTML = data.map(renderBuildCard).join('');
-}
-
-
-/* ========= Boot ========= */
+/* ========= Init ========= */
 function initDefaultViewFromQuery(){
   const params = new URLSearchParams(location.search);
   const view = params.get('view');
@@ -641,17 +678,29 @@ function initDefaultViewFromQuery(){
 }
 
 document.getElementById('apply').addEventListener('click', applyFilters);
-document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; renderPage(); }});
-document.getElementById('next').addEventListener('click', ()=>{ page++; renderPage(); });
-
-
+prevBtn.addEventListener('click', ()=>{
+  if(page>0){
+    page--;
+    renderPage();
+  }
+});
+nextBtn.addEventListener('click', ()=>{
+  const maxPage = Math.floor((currentRows.length - 1) / pageSize);
+  if(page < maxPage){
+    page++;
+    renderPage();
+  }
+});
 
 window.addEventListener('DOMContentLoaded', async ()=>{
-  await refreshAuthUI();
-  await loadGarage();
-  setupLiveLikes(); 
+  initDefaultViewFromQuery();
+  await updateAuthUI();
+  setupLiveLikes();
   await applyFilters();
 });
 </script>
+
+
+
 </body>
 </html>

@@ -20,10 +20,10 @@ Priority scale:
 The landing hero and drift backdrop need tighter, intentional behavior on mobile and tablet. Text, CTAs, and visual elements must be readable and cinematic across breakpoints.
 
 **Tasks:**
-- [ ] Adjust hero padding/margins on small screens to bring content closer to edges without breaking layout
-- [ ] Ensure hero text scales (font-size, line-height) for < 400px width devices
-- [ ] Fix drift backdrop alignment/overflow on mobile (no scrollbars or clipping)
-- [ ] Verify layout on common breakpoints (320, 375, 414, 768, 1024)
+- [DONE ] Adjust hero padding/margins on small screens to bring content closer to edges without breaking layout
+- [DONE] Ensure hero text scales (font-size, line-height) for < 400px width devices
+- [DONE] Fix drift backdrop alignment/overflow on mobile (no scrollbars or clipping)
+- [DONE] Verify layout on common breakpoints (320, 375, 414, 768, 1024)
 - [ ] Regression test hero on desktop
 
 **Acceptance Criteria:**

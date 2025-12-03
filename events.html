@@ -247,248 +247,298 @@
     </div>
   </div>
 
-  <script>
-    /* ========= Auth mini-widget ========= */
+    <script>
+    /* ========= Auth mini-widget (header) ========= */
     async function refreshAuthUI(){
       const { data: { user } } = await supabase.auth.getUser();
       const badge = document.getElementById('userBadge');
-      const si = document.getElementById('signinBtn');
-      const so = document.getElementById('signoutBtn');
-      const add = document.getElementById('addEventBtn');
-      if(user){
+      const si    = document.getElementById('signinBtn');
+      const so    = document.getElementById('signoutBtn');
+      const add   = document.getElementById('addEventBtn');
+
+      if (user){
         badge.textContent = user.email;
-        si.style.display = 'none'; so.style.display = 'inline-flex';
-        add.style.display = 'inline-flex';
-      }else{
+        if (si)  si.style.display  = 'none';
+        if (so)  so.style.display  = 'inline-flex';
+        if (add) add.style.display = 'inline-flex';
+      } else {
         badge.textContent = '';
-        si.style.display = 'inline-flex'; so.style.display = 'none';
-        add.style.display = 'none';
+        if (si)  si.style.display  = 'inline-flex';
+        if (so)  so.style.display  = 'none';
+        if (add) add.style.display = 'none';
       }
     }
-    document.getElementById('signinBtn').onclick = async ()=>{
+
+    document.getElementById('signinBtn').onclick = async () => {
       const email = prompt("Enter your email to sign in:");
-      if(!email) return;
-      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
-      if(error) return alert("Sign-in error: " + error.message);
-      alert("Magic link sent! Check your email.");
+      if (!email) return;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options:{ emailRedirectTo: location.href }
+      });
+      if (error){
+        alert("Sign-in error: " + error.message);
+      } else {
+        alert("Magic link sent — check your inbox.");
+      }
     };
-    document.getElementById('signoutBtn').onclick = async ()=>{ await supabase.auth.signOut(); await refreshAuthUI(); };
-    supabase.auth.onAuthStateChange(refreshAuthUI); refreshAuthUI();
+
+    document.getElementById('signoutBtn').onclick = async () => {
+      await supabase.auth.signOut();
+      await refreshAuthUI();
+    };
+
+    supabase.auth.onAuthStateChange(refreshAuthUI);
+    refreshAuthUI();
 
 
-// --- Elements ---
-const signinBtn = document.getElementById("signinBtn");
-const profileMenu = document.getElementById("profileMenu");
-const profileChip = document.getElementById("profileChip");
-const dropdown = document.getElementById("dropdown");
-const initialsEl = document.getElementById("profileInitials");
+    /* ========= Events list, filters & pagination ========= */
 
-// --- Auth UI state ---
-async function updateAuthUI() {
-  const { data: { user }} = await supabase.auth.getUser();
-
-  if (user) {
-    signinBtn.style.display = "none";
-    profileMenu.style.display = "flex";
-
-    const initials = user.email?.charAt(0)?.toUpperCase() || "U";
-    initialsEl.textContent = initials;
-  } else {
-    signinBtn.style.display = "inline-flex";
-    profileMenu.style.display = "none";
-    dropdown.style.display = "none";
-  }
-}
-
-// Toggle dropdown
-profileChip?.addEventListener("click", () => {
-  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-});
-document.addEventListener("click", (e) => {
-  if (!profileMenu.contains(e.target)) dropdown.style.display = "none";
-});
-
-// Sign in
-signinBtn.onclick = async () => {
-  const email = prompt("Enter your email:");
-  if (!email) return;
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: location.href }
-  });
-  if (error) alert(error.message);
-  else alert("Magic link sent! Check your inbox.");
-};
-
-// Sign out
-document.getElementById("signoutBtn")?.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  updateAuthUI();
-});
-
-// Init
-supabase.auth.onAuthStateChange(updateAuthUI);
-updateAuthUI();
-
-// --- Access guard ---
-window.authUI.requireLogin() = async function(callback){
-  const { data: { user }} = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please sign in first.");
-    signinBtn.click();
-    return false;
-  }
-  if (callback) callback();
-  return true;
-};
-
-
-
-    /* ========= Filters + List + RSVP badges ========= */
-    const pageSize = 9; let page = 0; let cached = [];
+    const pageSize = 9;
+    let page      = 0;
+    let cached    = [];  // all events from DB
+    let filtered  = [];  // filtered view based on search/month/when
 
     function withinMonth(dateStr, monthIndex){
-      if(monthIndex===""||monthIndex==null) return true;
-      const d = new Date(dateStr); return d.getMonth()===Number(monthIndex);
+      if (monthIndex === "" || monthIndex == null) return true;
+      const d = new Date(dateStr);
+      return d.getMonth() === Number(monthIndex);
     }
-    function isUpcoming(dateStr){ return new Date(dateStr) >= new Date(); }
 
-    function render(rows){
-      const list = document.getElementById('eventsList');
-      if(!rows.length){
-        list.innerHTML = `<article class="card"><div class="pad sub">No events found.</div></article>`;
-        document.getElementById('prev').disabled = true;
-        document.getElementById('next').disabled = true;
+    function isUpcoming(dateStr){
+      const now = new Date();
+      const d   = new Date(dateStr);
+      return d >= now;
+    }
+
+    function renderEventListCard(e){
+      const d   = e.starts_at ? new Date(e.starts_at) : null;
+      const m   = d ? d.toLocaleString("en-US",{ month:"short" }).toUpperCase() : "--";
+      const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+      const when = d
+        ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
+        : "";
+      const loc  = e.location
+        ? `${when ? when + " • " : ""}${e.location}`
+        : when;
+
+      const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+
+      return `
+        <article class="card" role="listitem">
+          ${e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : ""}
+          <div class="pad">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
+              <div class="date">
+                <div class="m">${m}</div>
+                <div class="d">${day}</div>
+              </div>
+              <div>
+                <strong>${e.title}</strong>
+                ${loc ? `<div class="sub">${loc}</div>` : ""}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="chip">✅ ${counts.yes_count}</span>
+              <span class="chip">🤔 ${counts.maybe_count}</span>
+              <span class="chip">❌ ${counts.no_count}</span>
+              <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">
+                Details / Tickets
+              </a>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function renderCurrentPage(){
+      const listEl = document.getElementById('eventsList');
+      const prevEl = document.getElementById('prev');
+      const nextEl = document.getElementById('next');
+
+      if (!filtered.length){
+        listEl.innerHTML =
+          `<article class="card"><div class="pad sub">
+            No events match these filters yet. Try clearing search or switching to “All”.
+          </div></article>`;
+        if (prevEl) prevEl.disabled = true;
+        if (nextEl) nextEl.disabled = true;
         return;
       }
-      
-      function renderEventListCard(e, counts){
-  const d = e.starts_at ? new Date(e.starts_at) : null;
-  const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-  const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-  const when = d ? d.toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit"}) : "";
-  const loc = e.location ? `${when ? when + " • " : ""}${e.location}` : when;
 
-  return `
-    <article class="card" role="listitem">
-      ${e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : ""}
-      <div class="pad">
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
-          <div class="date">
-            <div class="m">${m}</div>
-            <div class="d">${day}</div>
-          </div>
-          <div>
-            <strong>${e.title}</strong>
-            ${loc ? `<div class="sub">${loc}</div>` : ''}
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <span class="chip">✅ ${counts.yes_count}</span>
-          <span class="chip">🤔 ${counts.maybe_count}</span>
-          <span class="chip">❌ ${counts.no_count}</span>
-          <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details / RSVP</a>
-        </div>
-      </div>
-    </article>`;
-}
-      document.getElementById('prev').disabled = page===0;
-      document.getElementById('next').disabled = (start+pageSize)>=rows.length;
+      const start = page * pageSize;
+      const slice = filtered.slice(start, start + pageSize);
+
+      listEl.innerHTML = slice.map(renderEventListCard).join('');
+
+      if (prevEl) prevEl.disabled = (page === 0);
+      if (nextEl) nextEl.disabled = (start + pageSize) >= filtered.length;
+    }
+
+    function applyFilters(){
+      const q     = document.getElementById('q').value.trim().toLowerCase();
+      const month = document.getElementById('month').value;
+      const when  = document.getElementById('when').value;
+
+      let rows = cached.slice(0);
+
+      // When: upcoming / past / all
+      if (when === 'upcoming'){
+        rows = rows.filter(r => r.starts_at && isUpcoming(r.starts_at));
+      } else if (when === 'past'){
+        rows = rows.filter(r => r.starts_at && !isUpcoming(r.starts_at));
+      }
+
+      // Month filter
+      if (month !== ""){
+        rows = rows.filter(r => r.starts_at && withinMonth(r.starts_at, month));
+      }
+
+      // Search (title + location)
+      if (q){
+        rows = rows.filter(r =>
+          (`${r.title || ""} ${r.location || ""}`).toLowerCase().includes(q)
+        );
+      }
+
+      filtered = rows;
+      page = 0;
+      renderCurrentPage();
     }
 
     async function fetchAll(){
       const list = document.getElementById('eventsList');
-      list.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+      list.innerHTML =
+        `<article class="card"><div class="pad sub">Loading events…</div></article>`;
+
       const [eventsRes, countsRes] = await Promise.all([
-        supabase.from('events')
+        supabase
+          .from('events')
           .select('id,title,starts_at,location,cover_url')
-          .order('starts_at',{ascending:true}),
-        supabase.from('event_rsvp_counts')
+          .order('starts_at',{ ascending:true }),
+        supabase
+          .from('event_rsvp_counts')
           .select('event_id,yes_count,maybe_count,no_count')
       ]);
+
       if (eventsRes.error){
         console.error(eventsRes.error);
-        list.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
+        list.innerHTML =
+          `<article class="card"><div class="pad sub">
+             Couldn’t load events right now. Refresh the page in a bit.
+           </div></article>`;
         return [];
       }
-      const counts = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
-      return (eventsRes.data||[]).map(e => ({...e, counts: counts.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }}));
-    }
 
-    function applyFilters(){
-      const q = document.getElementById('q').value.trim().toLowerCase();
-      const month = document.getElementById('month').value;
-      const when = document.getElementById('when').value;
-      let rows = cached.slice(0);
+      const countsMap = new Map((countsRes.data || []).map(c => [c.event_id, c]));
 
-      if(when==='upcoming') rows = rows.filter(r=>r.starts_at && isUpcoming(r.starts_at));
-      else if(when==='past') rows = rows.filter(r=>r.starts_at && !isUpcoming(r.starts_at));
-      if(month!=="") rows = rows.filter(r=>r.starts_at && withinMonth(r.starts_at, month));
-      if(q) rows = rows.filter(r => (`${r.title||""} ${r.location||""}`).toLowerCase().includes(q));
-
-      page = 0; render(rows);
+      return (eventsRes.data || []).map(e => ({
+        ...e,
+        counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+      }));
     }
 
     document.getElementById('apply').addEventListener('click', applyFilters);
-    document.getElementById('prev').addEventListener('click', ()=>{ if(page>0){ page--; applyFilters(); }});
-    document.getElementById('next').addEventListener('click', ()=>{ page++; applyFilters(); });
 
-    window.addEventListener('DOMContentLoaded', async ()=>{ cached = await fetchAll(); applyFilters(); });
+    document.getElementById('prev').addEventListener('click', () => {
+      if (page > 0){
+        page--;
+        renderCurrentPage();
+      }
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      if ((page + 1) * pageSize < filtered.length){
+        page++;
+        renderCurrentPage();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      cached = await fetchAll();
+      filtered = cached.slice(0);
+      page = 0;
+      renderCurrentPage();
+    });
+
 
     /* ========= Create Event Modal ========= */
-    const backdrop = document.getElementById('modalBackdrop');
-    const openModal = ()=>{ backdrop.style.display = 'flex'; backdrop.setAttribute('aria-hidden','false'); };
-    const closeModal = ()=>{ backdrop.style.display = 'none'; backdrop.setAttribute('aria-hidden','true'); };
 
-    document.getElementById('addEventBtn').addEventListener('click', async ()=>{
+    const backdrop   = document.getElementById('modalBackdrop');
+    const addEventBtn = document.getElementById('addEventBtn');
+
+    const openModal = () => {
+      backdrop.style.display = 'flex';
+      backdrop.setAttribute('aria-hidden','false');
+    };
+
+    const closeModal = () => {
+      backdrop.style.display = 'none';
+      backdrop.setAttribute('aria-hidden','true');
+    };
+
+    addEventBtn.addEventListener('click', async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ alert("Sign in first."); return; }
+      if (!user){
+        alert("Sign in to create an event.");
+        document.getElementById('signinBtn')?.click();
+        return;
+      }
       openModal();
     });
+
     document.getElementById('modalClose').addEventListener('click', closeModal);
     document.getElementById('modalCancel').addEventListener('click', closeModal);
-    backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) closeModal(); });
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeModal();
+    });
 
     function toISO(localDT){
-      if(!localDT) return null;
-      // Interpret as local time
+      if (!localDT) return null;
       const [date, time] = localDT.split('T');
       return new Date(`${date}T${time}:00`).toISOString();
-      // (If you want exact local without TZ shift, we can store as text; ISO is fine here.)
     }
 
-    document.getElementById('modalCreate').addEventListener('click', async ()=>{
+    document.getElementById('modalCreate').addEventListener('click', async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ alert("Sign in first."); return; }
+      if (!user){
+        alert("Sign in to create an event.");
+        return;
+      }
 
-      const title = document.getElementById('f_title').value.trim();
-      const starts = document.getElementById('f_starts').value;
-      const ends = document.getElementById('f_ends').value;
+      const title      = document.getElementById('f_title').value.trim();
+      const startsRaw  = document.getElementById('f_starts').value;
+      const endsRaw    = document.getElementById('f_ends').value;
       const locationTxt = document.getElementById('f_location').value.trim() || null;
-      const cover = document.getElementById('f_cover').value.trim() || null;
-      const desc = document.getElementById('f_desc').value.trim() || null;
+      const cover      = document.getElementById('f_cover').value.trim() || null;
+      const desc       = document.getElementById('f_desc').value.trim()  || null;
 
-      if(!title || !starts){ alert("Title and start time are required."); return; }
+      if (!title || !startsRaw){
+        alert("Title and start time are required.");
+        return;
+      }
 
       const row = {
         title,
-        starts_at: toISO(starts),
-        ends_at: ends ? toISO(ends) : null,
-        location: locationTxt,
+        starts_at: toISO(startsRaw),
+        ends_at:   endsRaw ? toISO(endsRaw) : null,
+        location:  locationTxt,
         cover_url: cover,
         description: desc,
         created_by: user.id
       };
 
       const { error } = await supabase.from('events').insert(row);
-      if(error){ alert("Couldn’t create event: " + error.message); return; }
+      if (error){
+        alert("Couldn’t create event: " + error.message);
+        return;
+      }
 
       closeModal();
-      // Refresh list (keeps filters)
       cached = await fetchAll();
-      applyFilters();
-      alert("Event created!");
+      applyFilters(); // re-applies current filters on fresh data
+      alert("Event created and added to the board.");
     });
   </script>
+
 </body>
 </html>

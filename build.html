@@ -246,364 +246,439 @@
     </section>
   </main>
 
-  <script>
-    const buildId = new URLSearchParams(location.search).get('id');
-    const $ = (id)=>document.getElementById(id);
+<script>
+  const buildId = new URLSearchParams(location.search).get('id');
+  const $ = (id) => document.getElementById(id);
 
-    let currentUser = null;
-    let liked = false;
-    let likeCount = 0;
+  let currentUser = null;
+  let liked = false;
+  let likeCount = 0;
 
-    function escapeHTML(s){
-      return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function escapeHTML(s){
+    return (s || "").replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  function showBuildError(msg){
+    $('buildError').textContent = msg;
+  }
+
+  function clearBuildUIForError(titleText){
+    $('buildTitle').textContent = titleText;
+    $('buildMeta').innerHTML = '';
+    $('galleryMain').innerHTML = `<span class="sub">Nothing to show here.</span>`;
+    $('galleryThumbs').innerHTML = '';
+    $('buildDescription').textContent = '';
+    $('buildBadges').innerHTML = '';
+    $('specGrid').innerHTML = `<div class="sub">No specs available.</div>`;
+    $('buildFooterMeta').textContent = '';
+    $('likeBtn').disabled = true;
+    $('commentFormRow').style.display = 'none';
+    $('commentsInner').textContent = 'Comments are not available for this build.';
+  }
+
+  /* ===== Gallery ===== */
+  function setGallery(images, fallbackUrl){
+    const main   = $('galleryMain');
+    const thumbs = $('galleryThumbs');
+    let list = images && images.length ? images.map(im => im.image_url) : [];
+
+    if(!list.length && fallbackUrl){
+      list = [fallbackUrl];
     }
 
-    function setGallery(images, fallbackUrl){
-      const main = $('galleryMain');
-      const thumbs = $('galleryThumbs');
-      let list = images && images.length ? images.map(im => im.image_url) : [];
-
-      if(!list.length && fallbackUrl){
-        list = [fallbackUrl];
-      }
-
-      if(!list.length){
-        main.innerHTML = `<span class="sub">No media yet.</span>`;
-        thumbs.innerHTML = '';
-        return;
-      }
-
-      let current = list[0];
-      main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
-
-      if (list.length === 1){
-        thumbs.innerHTML = '';
-        return;
-      }
-
+    if(!list.length){
+      main.innerHTML = `<span class="sub">No media yet — owner hasn’t dropped visuals for this build.</span>`;
       thumbs.innerHTML = '';
-      list.forEach((url, idx) => {
-        const div = document.createElement('div');
-        div.className = 'thumb' + (idx === 0 ? ' active' : '');
-        div.innerHTML = `<img src="${escapeHTML(url)}" alt="Thumbnail ${idx+1}">`;
-        div.addEventListener('click', () => {
-          current = url;
-          main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
-          thumbs.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-          div.classList.add('active');
-        });
-        thumbs.appendChild(div);
+      return;
+    }
+
+    let current = list[0];
+    main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
+
+    if(list.length === 1){
+      thumbs.innerHTML = '';
+      return;
+    }
+
+    thumbs.innerHTML = '';
+    list.forEach((url, idx) => {
+      const div = document.createElement('div');
+      div.className = 'thumb' + (idx === 0 ? ' active' : '');
+      div.innerHTML = `<img src="${escapeHTML(url)}" alt="Thumbnail ${idx+1}">`;
+      div.addEventListener('click', () => {
+        current = url;
+        main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
+        thumbs.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+        div.classList.add('active');
       });
+      thumbs.appendChild(div);
+    });
+  }
+
+  /* ===== Badges + Specs ===== */
+  function renderBadges(build){
+    const wrap = $('buildBadges');
+    const badges = [];
+
+    const type = build.build_type || 'owned';
+    const typeMap = {
+      owned: 'Owned',
+      dream: 'Dream build',
+      for_sale: 'For sale'
+    };
+    badges.push(`<span class="badge">${typeMap[type] || 'Build'}</span>`);
+
+    if(build.stage){
+      const stageLabel = {
+        stock: 'Stage: Stock/OEM+',
+        stage_1: 'Stage 1 (bolt-ons)',
+        stage_2: 'Stage 2 (boost)',
+        track: 'Track / Drift',
+        other: 'Stage: Custom'
+      }[build.stage] || `Stage: ${build.stage}`;
+      badges.push(`<span class="badge subtle">${escapeHTML(stageLabel)}</span>`);
     }
 
-    function renderBadges(build){
-      const wrap = $('buildBadges');
-      const badges = [];
-
-      const type = build.build_type || 'owned';
-      const mapType = {
-        owned: 'Owned',
-        dream: 'Dream build',
-        for_sale: 'For sale'
-      };
-      badges.push(`<span class="badge">${mapType[type] || 'Build'}</span>`);
-
-      if(build.stage){
-        const label = {
-          stock: 'Stage: Stock/OEM+',
-          stage_1: 'Stage 1 (bolt-ons)',
-          stage_2: 'Stage 2 (boost)',
-          track: 'Track / Drift',
-          other: 'Stage: Custom'
-        }[build.stage] || `Stage: ${build.stage}`;
-        badges.push(`<span class="badge subtle">${escapeHTML(label)}</span>`);
-      }
-
-      if(build.power_goal){
-        badges.push(`<span class="badge subtle">Power goal: ${build.power_goal} hp</span>`);
-      }
-
-      badges.push(
-        `<span class="badge" style="border-color:${build.is_public ? 'var(--accent)' : 'var(--line)'}">
-           ${build.is_public ? 'Public build' : 'Private (only you)'}
-         </span>`
-      );
-
-      wrap.innerHTML = badges.join('');
+    if(build.power_goal){
+      badges.push(`<span class="badge subtle">Power goal: ${build.power_goal} hp</span>`);
     }
 
-    function renderSpecs(specs){
-      const grid = $('specGrid');
-      if(!specs){
-        grid.innerHTML = `<div class="sub">No specs added yet.</div>`;
-        return;
-      }
-      const pairs = [
-        ['wheels','Wheels'],
-        ['tires','Tires'],
-        ['suspension','Suspension'],
-        ['brakes','Brakes'],
-        ['engine','Engine'],
-        ['exhaust','Exhaust'],
-        ['drivetrain','Drivetrain'],
-        ['interior','Interior'],
-        ['exterior','Exterior'],
-      ];
+    badges.push(
+      `<span class="badge" style="border-color:${build.is_public ? 'var(--accent)' : 'var(--line)'}">
+        ${build.is_public ? 'Public build' : 'Private (only you)'}
+      </span>`
+    );
 
-      const rows = pairs
-        .map(([key,label]) => {
-          const v = specs[key];
-          if(!v) return '';
-          return `
-            <div class="spec-item">
-              <span class="spec-label">${label}</span>
-              <span>${escapeHTML(v)}</span>
-            </div>`;
-        })
-        .filter(Boolean);
+    wrap.innerHTML = badges.join('');
+  }
 
-      if(!rows.length){
-        grid.innerHTML = `<div class="sub">No specs added yet.</div>`;
-      }else{
-        grid.innerHTML = rows.join('');
-      }
+  function renderSpecs(specs){
+    const grid = $('specGrid');
+    if(!specs){
+      grid.innerHTML = `<div class="sub">No specs added yet — this build’s story is still being written.</div>`;
+      return;
     }
 
-    async function loadBuild(){
-      if(!buildId){
-        $('buildError').textContent = 'Missing build ID.';
-        return;
-      }
+    const pairs = [
+      ['wheels','Wheels'],
+      ['tires','Tires'],
+      ['suspension','Suspension'],
+      ['brakes','Brakes'],
+      ['engine','Engine'],
+      ['exhaust','Exhaust'],
+      ['drivetrain','Drivetrain'],
+      ['interior','Interior'],
+      ['exterior','Exterior'],
+    ];
 
-      // main build row
-      const { data: build, error } = await supabase
-        .from('builds')
-        .select('*')
-        .eq('id', buildId)
+    const rows = pairs
+      .map(([key,label]) => {
+        const v = specs[key];
+        if(!v) return '';
+        return `
+          <div class="spec-item">
+            <span class="spec-label">${label}</span>
+            <span>${escapeHTML(v)}</span>
+          </div>`;
+      })
+      .filter(Boolean);
+
+    if(!rows.length){
+      grid.innerHTML = `<div class="sub">No specs added yet — owner hasn’t logged the parts list.</div>`;
+    }else{
+      grid.innerHTML = rows.join('');
+    }
+  }
+
+  /* ===== Likes ===== */
+  async function loadLikes(){
+    const likeBtn = $('likeBtn');
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user || null;
+
+    // total like count from view if available, else count table
+    let total = 0;
+    let aggErr = null;
+
+    const { data: likeAgg, error: likeAggErr } = await supabase
+      .from('build_like_counts')
+      .select('like_count')
+      .eq('build_id', buildId)
+      .maybeSingle();
+
+    if(likeAggErr){
+      aggErr = likeAggErr;
+      console.error(likeAggErr);
+    }else{
+      total = Number(likeAgg?.like_count || 0);
+    }
+
+    likeCount = total;
+
+    // Did current user like it?
+    if(user){
+      const { data: existing, error: existingErr } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .eq('build_id', buildId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if(existingErr){
+        console.error(existingErr);
+      }
+      liked = !!existing;
+    }else{
+      liked = false;
+    }
+
+    likeBtn.disabled = false;
+    likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+    likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+
+    likeBtn.onclick = async () => {
+      const ok = await window.authUI.requireLogin();
+      if(!ok) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      likeBtn.disabled = true;
+
+      const { data: existing, error: existingErr2 } = await supabase
+        .from('build_likes')
+        .select('build_id')
+        .eq('build_id', buildId)
+        .eq('user_id', user.id)
         .maybeSingle();
 
-      if(error || !build){
-        console.error(error);
-        $('buildError').textContent = 'Build not found.';
-        $('buildTitle').textContent = 'Build not found';
+      if(existingErr2){
+        console.error(existingErr2);
+        alert('That move stalled. Try again in a few seconds.');
+        likeBtn.disabled = false;
         return;
       }
 
-      // title + meta
-      document.title = `${build.title} — ROK Racers JA`;
-      $('buildTitle').textContent = build.title || 'Untitled build';
-
-      const created = build.created_at ? new Date(build.created_at) : null;
-      const when = created ? created.toLocaleString('en-US', {
-        month:'short', day:'2-digit', year:'numeric'
-      }) : '';
-
-      const metaBits = [];
-      if(build.make || build.model || build.year){
-        const carLabel = [build.year, build.make, build.model].filter(Boolean).join(' ');
-        if(carLabel) metaBits.push(`<span class="sub">${escapeHTML(carLabel)}</span>`);
-      }
-      if(build.color_hex){
-        metaBits.push(
-          `<span class="badge subtle"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${build.color_hex};margin-right:4px;"></span> Paint</span>`
-        );
-      }
-      if(when){
-        metaBits.push(`<span class="sub">Added ${escapeHTML(when)}</span>`);
-      }
-      $('buildMeta').innerHTML = metaBits.join(' • ');
-
-      // description
-      $('buildDescription').innerHTML = escapeHTML(build.description || '')
-        .replace(/\n/g,'<br>');
-
-      // footer meta
-      const footer = [];
-      if(build.is_public){
-        footer.push('Visible in your public garage and eligible for Top 5.');
-      }else{
-        footer.push('Only visible to you (private build).');
-      }
-      $('buildFooterMeta').textContent = footer.join(' ');
-
-      // gallery: try build_images, else custom_image_url
-      const { data: images } = await supabase
-        .from('build_images')
-        .select('id,image_url')
-        .eq('build_id', buildId)
-        .order('created_at', { ascending:true });
-
-      setGallery(images || [], build.custom_image_url || build.thumb_url || null);
-
-      // specs (JSON column)
-      renderSpecs(build.specs || null);
-
-      // badges
-      renderBadges(build);
-
-      // likes
-      await loadLikes();
-    }
-
-    async function loadLikes(){
-      const likeBtn = $('likeBtn');
-
-      const { data: { user }} = await supabase.auth.getUser();
-      currentUser = user || null;
-
-      // total like count
-      const { data: agg, error: aggErr } = await supabase
-        .from('build_likes')
-        .select('build_id', { count:'exact', head:true })
-        .eq('build_id', buildId);
-
-      if(aggErr){
-        console.error(aggErr);
-        likeCount = 0;
-      }else{
-        likeCount = agg?.length ? agg.length : (aggErr ? 0 : agg);
-        // Supabase count with head:true returns in the response.count, not data.length, but this is simple
-      }
-
-      // did I like it?
-      if(user){
-        const { data: existing } = await supabase
+      if(existing){
+        const { error: delErr } = await supabase
           .from('build_likes')
-          .select('build_id')
+          .delete()
           .eq('build_id', buildId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        liked = !!existing;
+          .eq('user_id', user.id);
+        if(delErr){
+          console.error(delErr);
+          alert('Unboost failed. Try again shortly.');
+        }else{
+          liked = false;
+          likeCount = Math.max(0, likeCount - 1);
+        }
       }else{
-        liked = false;
+        const { error: insErr } = await supabase
+          .from('build_likes')
+          .insert({ build_id: buildId, user_id: user.id });
+        if(insErr){
+          console.error(insErr);
+          alert('Couldn’t boost this build. Try again shortly.');
+        }else{
+          liked = true;
+          likeCount += 1;
+        }
       }
 
       likeBtn.disabled = false;
       likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
       likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    };
+  }
 
-      likeBtn.onclick = async () => {
-        const ok = await window.authUI.requireLogin();
-        if(!ok) return;
-
-        const { data: { user } } = await supabase.auth.getUser();
-        if(!user) return;
-
-        likeBtn.disabled = true;
-
-        const { data: existing } = await supabase
-          .from('build_likes')
-          .select('build_id')
-          .eq('build_id', buildId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if(existing){
-          const { error } = await supabase
-            .from('build_likes')
-            .delete()
-            .eq('build_id', buildId)
-            .eq('user_id', user.id);
-          if(!error){
-            liked = false;
-            likeCount = Math.max(0, likeCount - 1);
-          }
-        }else{
-          const { error } = await supabase
-            .from('build_likes')
-            .insert({ build_id: buildId, user_id: user.id });
-          if(!error){
-            liked = true;
-            likeCount += 1;
-          }
-        }
-
-        likeBtn.disabled = false;
-        likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
-        likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
-      };
+  /* ===== Build load ===== */
+  async function loadBuild(){
+    if(!buildId){
+      showBuildError('No build selected. Head back to the garage and pick one.');
+      clearBuildUIForError('No build selected');
+      return false;
     }
 
-    // COMMENTS (using comments table with build_id)
-    function renderComment(c){
-      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
-      return `
-        <div class="comment-card">
-          <div class="comment-meta">${escapeHTML(dt)}</div>
-          <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
-        </div>`;
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user || null;
+
+    const { data: build, error } = await supabase
+      .from('builds')
+      .select('*')
+      .eq('id', buildId)
+      .maybeSingle();
+
+    if(error || !build){
+      console.error(error);
+      showBuildError('We couldn’t find this build. It may have been deleted or moved.');
+      clearBuildUIForError('Build not found');
+      return false;
     }
 
-    async function loadComments(){
-      const wrap = $('commentsInner');
-      const { data, error } = await supabase
-        .from('comments')
-        .select('id,body,created_at,user_id')
-        .eq('build_id', buildId)
-        .order('created_at', { ascending:true });
-
-      if(error){
-        console.error(error);
-        wrap.textContent = 'Couldn’t load comments.';
-        return;
-      }
-      if(!data || !data.length){
-        wrap.textContent = 'No comments yet — be the first.';
-        return;
-      }
-      wrap.innerHTML = data.map(renderComment).join('');
+    // Respect private builds: only owner can view
+    if(!build.is_public && (!user || user.id !== build.user_id)){
+      showBuildError('This build is private. Ask the owner to share a public build or check their garage.');
+      clearBuildUIForError('Private build');
+      return false;
     }
 
-    async function initCommentsAuth(){
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
-      const formRow = $('commentFormRow');
-      if(user){
-        formRow.style.display = 'flex';
-      }else{
-        formRow.style.display = 'none';
-      }
+    // Title + document title
+    document.title = `${build.title || 'Build'} — ROK Racers JA`;
+    $('buildTitle').textContent = build.title || 'Untitled build';
+
+    // Meta (car info + created date)
+    const created = build.created_at ? new Date(build.created_at) : null;
+    const when = created ? created.toLocaleString('en-US', {
+      month:'short', day:'2-digit', year:'numeric'
+    }) : '';
+
+    const metaBits = [];
+    if(build.make || build.model || build.year){
+      const carLabel = [build.year, build.make, build.model].filter(Boolean).join(' ');
+      if(carLabel) metaBits.push(`<span class="sub">${escapeHTML(carLabel)}</span>`);
+    }
+    if(build.color_hex){
+      metaBits.push(`
+        <span class="badge subtle">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${build.color_hex};margin-right:4px;"></span>
+          Paint
+        </span>
+      `);
+    }
+    if(when){
+      metaBits.push(`<span class="sub">Added ${escapeHTML(when)}</span>`);
+    }
+    $('buildMeta').innerHTML = metaBits.join(' • ');
+
+    // Description
+    if(build.description){
+      $('buildDescription').innerHTML = escapeHTML(build.description).replace(/\n/g,'<br>');
+    }else{
+      $('buildDescription').innerHTML = `<span class="sub">No description yet — owner hasn’t told this build’s story.</span>`;
     }
 
-    $('commentPostBtn').addEventListener('click', async () => {
-      const ok = await window.authUI.requireLogin();
-      if(!ok) return;
+    // Footer meta
+    const footer = [];
+    if(build.is_public){
+      footer.push('Visible in your public garage and eligible for Top 5.');
+    }else{
+      footer.push('Only visible to you (private build).');
+    }
+    $('buildFooterMeta').textContent = footer.join(' ');
 
-      const input = $('commentInput');
-      const text = input.value.trim();
-      if(!text) return;
+    // Gallery images
+    const { data: images, error: imgErr } = await supabase
+      .from('build_images')
+      .select('id,image_url')
+      .eq('build_id', buildId)
+      .order('created_at', { ascending:true });
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user) return;
+    if(imgErr){
+      console.error(imgErr);
+      setGallery([], build.custom_image_url || build.thumb_url || null);
+    }else{
+      setGallery(images || [], build.custom_image_url || build.thumb_url || null);
+    }
 
-      const { error } = await supabase
-        .from('comments')
-        .insert({
-          build_id: buildId,
-          body: text,
-          user_id: user.id
-        });
+    // Specs (JSON column)
+    renderSpecs(build.specs || null);
 
-      if(error){
-        alert('Could not post comment: ' + error.message);
-        return;
-      }
-      input.value = '';
-      await loadComments();
-    });
+    // Badges
+    renderBadges(build);
 
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      if(!buildId){
-        $('buildError').textContent = 'Missing build ID in URL.';
-        return;
-      }
-      await loadBuild();
-      await initCommentsAuth();
-      await loadComments();
+    // Likes
+    await loadLikes();
 
-      // also re-toggle comment form on auth state change
-      supabase.auth.onAuthStateChange(initCommentsAuth);
-    });
-  </script>
+    return true;
+  }
+
+  /* ===== Comments ===== */
+  function renderComment(c){
+    const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
+    return `
+      <div class="comment-card">
+        <div class="comment-meta">${escapeHTML(dt)}</div>
+        <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
+      </div>`;
+  }
+
+  async function loadComments(){
+    const wrap = $('commentsInner');
+    const { data, error } = await supabase
+      .from('comments')
+      .select('id,body,created_at,user_id')
+      .eq('build_id', buildId)
+      .order('created_at', { ascending:true });
+
+    if(error){
+      console.error(error);
+      wrap.textContent = 'We couldn’t load comments just now. Refresh to try again.';
+      return;
+    }
+    if(!data || !data.length){
+      wrap.textContent = 'No comments yet — be the first to drop your thoughts on this build.';
+      return;
+    }
+    wrap.innerHTML = data.map(renderComment).join('');
+  }
+
+  async function updateCommentFormVisibility(){
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user || null;
+    const formRow = $('commentFormRow');
+    if(user){
+      formRow.style.display = 'flex';
+    }else{
+      formRow.style.display = 'none';
+    }
+  }
+
+  $('commentPostBtn').addEventListener('click', async () => {
+    const ok = await window.authUI.requireLogin();
+    if(!ok) return;
+
+    const input = $('commentInput');
+    const text = input.value.trim();
+    if(!text) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if(!user) return;
+
+    const { error } = await supabase
+      .from('comments')
+      .insert({
+        build_id: buildId,
+        body: text,
+        user_id: user.id
+      });
+
+    if(error){
+      console.error(error);
+      alert('Could not post comment. Try again in a few seconds.');
+      return;
+    }
+    input.value = '';
+    await loadComments();
+  });
+
+  /* ===== Init ===== */
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    if(!buildId){
+      showBuildError('No build selected. Head back to the garage and pick one.');
+      clearBuildUIForError('No build selected');
+      return;
+    }
+
+    const canView = await loadBuild();
+    if(!canView) return;
+
+    await updateCommentFormVisibility();
+    await loadComments();
+
+    supabase.auth.onAuthStateChange(updateCommentFormVisibility);
+  });
+</script>
+
 </body>
 </html>

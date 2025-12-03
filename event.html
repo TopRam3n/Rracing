@@ -183,6 +183,7 @@
     const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[m]));
+
     function fmt(d){
       if(!d) return "";
       const dt = new Date(d);
@@ -194,6 +195,7 @@
 
     let currentUserId = null;
 
+    /* ========== Auth → show/hide comment box ========== */
     async function syncPageAuth(){
       const { data: { user } } = await supabase.auth.getUser();
       currentUserId = user?.id || null;
@@ -201,9 +203,32 @@
       if(form) form.style.display = user ? 'flex' : 'none';
     }
 
-    supabase.auth.onAuthStateChange(syncPageAuth);
+    supabase.auth.onAuthStateChange(async () => {
+      await syncPageAuth();
+      await loadMyRsvp();
+      await loadMyBuilds();
+    });
 
-    // ===== Event loader + owner tools + RSVP =====
+    /* ========== RSVP count helper ========== */
+    async function refreshRsvpCounts(){
+      const countsEl = el('rsvpCounts');
+      if(!countsEl || !eventId) return;
+
+      const { data, error } = await supabase
+        .from('event_rsvp_counts')
+        .select('yes_count,maybe_count,no_count')
+        .eq('event_id', eventId)
+        .maybeSingle();
+
+      if(error || !data){
+        countsEl.textContent = '';
+        return;
+      }
+
+      countsEl.textContent = `✅ ${data.yes_count} going • 🤔 ${data.maybe_count} maybe • ❌ ${data.no_count} not going`;
+    }
+
+    /* ========== Event loader + owner tools + RSVP ========== */
     async function loadEvent(){
       const card = el('eventCard');
       if(!eventId){
@@ -213,7 +238,8 @@
 
       const { data, error } = await supabase.from('events')
         .select('id,title,starts_at,ends_at,location,description,cover_url,created_by')
-        .eq('id', eventId).maybeSingle();
+        .eq('id', eventId)
+        .maybeSingle();
 
       if(error || !data){
         card.innerHTML = `<div class="pad sub">Event not found.</div>`;
@@ -221,6 +247,7 @@
       }
 
       document.title = `${data.title} — ROK Racers JA`;
+
       const time = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
       const canEdit = !!(currentUserId && data.created_by && data.created_by === currentUserId);
 
@@ -248,11 +275,14 @@
                 <option value="">— None —</option>
               </select>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-              <button class="btn" data-rsvp="yes">RSVP: Yes</button>
-              <button class="btn" data-rsvp="maybe">Maybe</button>
-              <button class="btn" data-rsvp="no">No</button>
-              <span id="rsvpStatus" class="sub" style="margin-left:8px"></span>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <button class="btn" data-rsvp="yes">RSVP: Yes</button>
+                <button class="btn" data-rsvp="maybe">Maybe</button>
+                <button class="btn" data-rsvp="no">No</button>
+                <span id="rsvpStatus" class="sub" style="margin-left:8px"></span>
+              </div>
+              <span id="rsvpCounts" class="sub" style="font-size:13px"></span>
             </div>
           </div>
 
@@ -314,11 +344,12 @@
 
       await loadMyBuilds();
       await loadMyRsvp();
+      await refreshRsvpCounts();
     }
 
-    // ===== Comments (table: comments with event_id, user_id, body) =====
+    /* ========== Comments ========== */
     function renderComment(c){
-      const dt = new Date(c.created_at).toLocaleString();
+      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
       const isOwner = currentUserId && (c.user_id === currentUserId);
       return `
         <div class="comment" data-id="${c.id}">
@@ -356,15 +387,22 @@
       const input = el('commentText');
       const text = input.value.trim();
       if(!text) return;
+
       const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ alert("Please sign in first."); return; }
+      if(!user){
+        alert("Please sign in first.");
+        return;
+      }
 
       const { error } = await supabase.from('comments').insert({
         event_id: eventId,
         body: text,
         user_id: user.id
       });
-      if(error){ alert("Couldn’t post: " + error.message); return; }
+      if(error){
+        alert("Couldn’t post: " + error.message);
+        return;
+      }
       input.value = "";
       // realtime will append
     };
@@ -451,9 +489,10 @@
         .subscribe();
     }
 
-    // presence (viewers)
+    /* ========== Presence (viewers) ========== */
     let presenceChannel;
     async function setupPresence(){
+      if(!eventId) return;
       const { data: { user } } = await supabase.auth.getUser();
       const key = user?.id || `anon-${crypto.getRandomValues(new Uint32Array(1))[0]}`;
 
@@ -476,7 +515,7 @@
         });
     }
 
-    // RSVP helpers (table: event_rsvps with user_id)
+    /* ========== Builds for RSVP attach ========== */
     async function loadMyBuilds(){
       const { data: { user } } = await supabase.auth.getUser();
       const sel = el('attachBuild');
@@ -488,72 +527,76 @@
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if(error){ console.error(error); return; }
+      if(error){
+        console.error(error);
+        return;
+      }
 
       sel.innerHTML = `<option value="">— None —</option>` + (data||[]).map(b =>
         `<option value="${b.id}">${escapeHTML(b.title)}${b.is_public? '':' (private)'}</option>`
       ).join("");
     }
 
-    // === RSVP helpers (use event_rsvps + user_id) ===
-async function loadMyRsvp(){
-  const { data: { user } } = await supabase.auth.getUser();
-  const badge = el('rsvpStatus');
-  const sel = el('attachBuild');
-  if(!user){
-    if(badge) badge.textContent = '';
-    return;
-  }
+    /* ========== RSVP state (per user) ========== */
+    async function loadMyRsvp(){
+      const { data: { user } } = await supabase.auth.getUser();
+      const badge = el('rsvpStatus');
+      const sel = el('attachBuild');
+      if(!user){
+        if(badge) badge.textContent = '';
+        if(sel) sel.value = '';
+        return;
+      }
 
-  const { data, error } = await supabase
-    .from('event_rsvps')
-    .select('status, build_id')
-    .eq('event_id', eventId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select('status, build_id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-  if(error){
-    console.error(error);
-    return;
-  }
-  if(data){
-    if(badge) badge.textContent = `Your RSVP: ${data.status}`;
-    if(sel && data.build_id) sel.value = data.build_id;
-  }else{
-    if(badge) badge.textContent = 'No RSVP yet';
-    if(sel) sel.value = '';
-  }
-}
+      if(error){
+        console.error(error);
+        return;
+      }
+      if(data){
+        if(badge) badge.textContent = `Your RSVP: ${data.status}`;
+        if(sel && data.build_id) sel.value = data.build_id;
+      }else{
+        if(badge) badge.textContent = 'No RSVP yet';
+        if(sel) sel.value = '';
+      }
+    }
 
-async function upsertRsvp(newStatus){
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    alert('Sign in first.');
-    return;
-  }
-  const buildId = el('attachBuild')?.value || null;
+    async function upsertRsvp(newStatus){
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        alert('Sign in first.');
+        return;
+      }
+      const buildId = el('attachBuild')?.value || null;
 
-  const { error } = await supabase
-    .from('event_rsvps')
-    .upsert({
-      event_id: eventId,
-      user_id: user.id,
-      status: newStatus,
-      build_id: buildId || null
-    }, {
-      onConflict: 'event_id,user_id'
-    });
+      const { error } = await supabase
+        .from('event_rsvps')
+        .upsert({
+          event_id: eventId,
+          user_id: user.id,
+          status: newStatus,
+          build_id: buildId || null
+        }, {
+          onConflict: 'event_id,user_id'
+        });
 
-  if(error){
-    alert('RSVP failed: ' + error.message);
-    return;
-  }
-  await loadMyRsvp();
-  alert('Saved!');
-}
+      if(error){
+        alert('RSVP failed: ' + error.message);
+        return;
+      }
+      await loadMyRsvp();
+      await refreshRsvpCounts();
+      alert('RSVP saved.');
+    }
 
-
-    // boot
+    /* ========== Boot ========== */
     window.addEventListener('DOMContentLoaded', async ()=>{
       await syncPageAuth();
       await loadEvent();
@@ -562,5 +605,6 @@ async function upsertRsvp(newStatus){
       setupPresence();
     });
   </script>
+
 </body>
 </html>

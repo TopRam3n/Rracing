@@ -159,9 +159,18 @@
     /* ===== HERO ===== */
     .hero{
       position:relative;
-      padding:24px 0 24px;
+      padding: 24px 12px 28px;
       overflow:hidden;
     }
+    .hero-copy{
+      position:relative;
+      width:100%;
+      max-width:800px;
+      margin:0 auto;
+      text-align:center;
+    }
+
+    
     .hero::before{
       content:"";
       position:absolute;
@@ -221,12 +230,12 @@
 
     .headline{
       font-family:"Bebas Neue",sans-serif;
-      font-size:clamp(40px,7vw,80px);
+      font-size:clamp(34px,8vw,52px);
       line-height:.95;
       margin:0
     }
     .headline .accent{color:var(--accent)}
-    .sub{color:var(--muted);margin:14px 0 22px;max-width:65ch}
+    .sub{font-size: 0.95rem;color:var(--muted);margin:14px 0 22px;max-width:65ch}
 
     /* 3D area */
     .car-stage{
@@ -296,10 +305,10 @@
     .grid{display:grid;gap:24px}
     .cols-3{grid-template-columns:repeat(3,1fr)}
     .cols-2{grid-template-columns:repeat(2,1fr)}
-    @media(max-width:960px){
+    @media(max-width:600px){
       .cols-3,.cols-2{grid-template-columns:1fr}
       model-viewer{width:98vw}
-      .car-stage{height:78vh}
+      .car-stage{height:64vh}
     }
     .card{
       background:var(--bg-1);
@@ -425,7 +434,7 @@
       <div class="container hero-grid">
 
         <!-- Text block -->
-        <div class="reveal" style="position:relative;width:100%;max-width:800px;margin:0 auto;text-align:center;">
+        <div class="hero-copy reveal" style="position:relative;width:100%;max-width:800px;margin:0 auto;text-align:center;">
           <h1 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h1>
           <h2 class="sub">
             Discover meets, share sightings, and connect with Jamaica’s car culture.
@@ -473,7 +482,9 @@
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px">
-          <a class="btn" href="/events.html">See all events</a>
+          <a class="btn primary" href="/events.html">See all events</a>
+          <a class="btn" href="#subscribe">Join the club</a>
+          <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
         </div>
       </div>
     </section>
@@ -640,23 +651,6 @@ function driftLoop(){
     }, { threshold:.18 });
     document.querySelectorAll('.reveal:not([data-no-reveal])').forEach(el => io.observe(el));
 
-    // Drift Car Image
-    const car = document.getElementById("driftCar");
-    // desired drift radius
-    let angle = 0;
-
-    function drift() {
-      angle += 0.25; // adjust speed here (0.1 slow, 0.3 fast)
-      const sway = Math.sin(angle / 12) * 2; // subtle sway effect
-      const bounce = Math.sin(angle / 6) * 0.2;
-      const orbit = `${angle}deg ${70 + sway}deg ${20 + bounce}m`;
-      car.cameraTarget = `0m ${bounce * 0.02}m 0m`;
-      car.cameraOrbit = orbit;
-      requestAnimationFrame(drift);
-}
-
-    requestAnimationFrame(drift);
-
     // Subscribe demo
     function subscribe(e){
       e.preventDefault();
@@ -753,108 +747,139 @@ function driftLoop(){
     };
 
     // ===== Top-5 public builds (from view) =====
-    async function loadTopBuilds(){
-      const grid = document.getElementById('top-builds-grid');
-      if(!grid) return;
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+async function loadTopBuilds(){
+  const grid = document.getElementById('top-builds-grid');
+  if(!grid) return;
+  grid.innerHTML = `
+    <article class="card">
+      <div class="pad sub">Warming up the dyno…</div>
+    </article>`;
 
-      const { data, error } = await supabase
-        .from('public_builds_with_like_count')
-        .select('id,title,like_count,thumb_url')
-        .order('like_count', { ascending: false })
-        .order('id', { ascending: true })
-        .limit(5);
+  const { data, error } = await supabase
+    .from('public_builds_with_like_count')
+    .select('id,title,like_count,thumb_url')
+    .order('like_count', { ascending: false })
+    .order('id', { ascending: true })
+    .limit(5);
 
-      if (error){
-        console.error(error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
-        return;
-      }
-      if (!data?.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet.</div></article>`;
-        return;
-      }
+  if (error){
+    console.error(error);
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          Couldn’t load builds right now. Refresh in a bit and try again.
+        </div>
+      </article>`;
+    return;
+  }
 
-      // Which of these did I like?
-      const { data: auth } = await supabase.auth.getUser();
-      let likedSet = new Set();
-      if (auth?.user?.id){
-        const { data: liked } = await supabase
-          .from('build_likes')
-          .select('build_id')
-          .in('build_id', data.map(b => b.id))
-          .eq('user_id', auth.user.id);
-        likedSet = new Set((liked||[]).map(r => r.build_id));
-      }
+  if (!data?.length){
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          No public builds are on the grid yet. When the first one drops, you’ll see it here.
+        </div>
+      </article>`;
+    return;
+  }
 
-      grid.innerHTML = data.map(b => {
-        const isLiked = likedSet.has(b.id);
-        const heart = isLiked ? '♥' : '♡';
-        const likeTitle = auth?.user ? (isLiked ? 'Unlike build' : 'Like build') : 'Sign in to like';
-        const img = b.thumb_url ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" width="1200" height="675">` : '';
-        return `
-          <article class="card" role="listitem" data-build="${b.id}">
-            ${img}
-            <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <strong>${b.title}</strong>
-                <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
-              </div>
-              <button class="btn" data-like
-                aria-pressed="${isLiked ? 'true':'false'}"
-                aria-label="${likeTitle}"
-                title="${likeTitle}">${heart}</button>
-            </div>
-          </article>`;
-      }).join('');
+  // Which of these did I like?
+  const { data: auth } = await supabase.auth.getUser();
+  let likedSet = new Set();
+  if (auth?.user?.id){
+    const { data: liked } = await supabase
+      .from('build_likes')
+      .select('build_id')
+      .in('build_id', data.map(b => b.id))
+      .eq('user_id', auth.user.id);
+    likedSet = new Set((liked||[]).map(r => r.build_id));
+  }
 
-      // Like / Unlike with ARIA updates
-      grid.addEventListener('click', async (e)=>{
-        const btn = e.target.closest('button[data-like]');
-        if(!btn) return;
+  grid.innerHTML = data.map(b => {
+    const isLiked = likedSet.has(b.id);
+    const heart = isLiked ? '♥' : '♡';
+    const likeTitle = auth?.user
+      ? (isLiked ? 'Remove boost from this build' : 'Boost this build')
+      : 'Sign in to boost builds';
+    const img = b.thumb_url
+      ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" width="1200" height="675">`
+      : '';
 
-        const card = e.target.closest('article.card');
-        const buildId = card?.dataset.build;
-        const likesEl = card.querySelector('.likes');
+    return `
+      <article class="card" role="listitem" data-build="${b.id}">
+        ${img}
+        <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <strong>${b.title}</strong>
+            <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
+          </div>
+          <button class="btn" data-like
+            aria-pressed="${isLiked ? 'true':'false'}"
+            aria-label="${likeTitle}"
+            title="${likeTitle}">
+            ${heart}
+          </button>
+        </div>
+      </article>`;
+  }).join('');
 
-        const { data: auth2 } = await supabase.auth.getUser();
-        if(!auth2?.user){
-          alert('Sign in to like builds.');
-          return;
-        }
+  // Like / Unlike with ARIA updates
+  grid.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('button[data-like]');
+    if(!btn) return;
 
-        const { data: existing } = await supabase
-          .from('build_likes')
-          .select('build_id')
-          .eq('build_id', buildId)
-          .eq('user_id', auth2.user.id)
-          .maybeSingle();
+    const card = e.target.closest('article.card');
+    const buildId = card?.dataset.build;
+    const likesEl = card.querySelector('.likes');
 
-        if(existing){
-          const { error } = await supabase
-            .from('build_likes')
-            .delete()
-            .eq('build_id', buildId)
-            .eq('user_id', auth2.user.id);
-          if(error) return alert('Unlike failed: ' + error.message);
-          btn.textContent = '♡';
-          btn.title = 'Like build';
-          btn.setAttribute('aria-label','Like build');
-          btn.setAttribute('aria-pressed','false');
-          likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-        }else{
-          const { error } = await supabase
-            .from('build_likes')
-            .insert({ build_id: buildId, user_id: auth2.user.id });
-          if(error) return alert('Like failed: ' + error.message);
-          btn.textContent = '♥';
-          btn.title = 'Unlike build';
-          btn.setAttribute('aria-label','Unlike build');
-          btn.setAttribute('aria-pressed','true');
-          likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
-        }
-      });
+    const { data: auth2 } = await supabase.auth.getUser();
+    if(!auth2?.user){
+      alert('Sign in to boost builds and save your favourites.');
+      return;
     }
+
+    const { data: existing } = await supabase
+      .from('build_likes')
+      .select('build_id')
+      .eq('build_id', buildId)
+      .eq('user_id', auth2.user.id)
+      .maybeSingle();
+
+    if(existing){
+      const { error } = await supabase
+        .from('build_likes')
+        .delete()
+        .eq('build_id', buildId)
+        .eq('user_id', auth2.user.id);
+      if(error){
+        console.error(error);
+        alert('That unboost stalled. Try again in a few seconds.');
+        return;
+      }
+      btn.textContent = '♡';
+      btn.title = 'Boost this build';
+      btn.setAttribute('aria-label','Boost this build');
+      btn.setAttribute('aria-pressed','false');
+      likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+    }else{
+      const { error } = await supabase
+        .from('build_likes')
+        .insert({ build_id: buildId, user_id: auth2.user.id });
+      if(error){
+        console.error(error);
+        alert('Couldn’t boost this build. Try again in a few seconds.');
+        return;
+      }
+      btn.textContent = '♥';
+      btn.title = 'Remove boost from this build';
+      btn.setAttribute('aria-label','Remove boost from this build');
+      btn.setAttribute('aria-pressed','true');
+      likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+    }
+  });
+}
+
+
 
     // Live like count updates (multi-user)
     let likesChannel;
@@ -877,72 +902,102 @@ function driftLoop(){
     }
 
     // ===== Events (with RSVP counts) =====
-    function renderEventCard(e){
-      const d = e.starts_at ? new Date(e.starts_at) : null;
-      const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-      const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-      const img = e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" width="1200" height="675">` : "";
-      const when = d ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit"}) : "";
-      const loc = e.location ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>` :
-                               (when ? `<div class="sub">${when}</div>` : "");
-      const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+function renderEventCard(e){
+  const d = e.starts_at ? new Date(e.starts_at) : null;
+  const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+  const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+  const img = e.cover_url
+    ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" width="1200" height="675">`
+    : "";
+  const when = d
+    ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit"})
+    : "";
+  const loc = e.location
+    ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>`
+    : (when ? `<div class="sub">${when}</div>` : "");
+  const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
 
-      return `
-        <article class="card reveal" role="listitem">
-          ${img}
-          <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px; min-height:64px">
-            <div class="date"><div class="m">${m}</div><div class="d">${day}</div></div>
-            <div><strong>${e.title}</strong>${loc}</div>
-          </div>
-          <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <span class="chip">✅ ${counts.yes_count}</span>
-            <span class="chip">🤔 ${counts.maybe_count}</span>
-            <span class="chip">❌ ${counts.no_count}</span>
-            <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Details</a>
-          </div>
-        </article>`;
-    }
+  return `
+    <article class="card reveal" role="listitem">
+      ${img}
+      <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px; min-height:64px">
+        <div class="date">
+          <div class="m">${m}</div>
+          <div class="d">${day}</div>
+        </div>
+        <div>
+          <strong>${e.title}</strong>
+          ${loc}
+        </div>
+      </div>
+      <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="chip">✅ ${counts.yes_count}</span>
+        <span class="chip">🤔 ${counts.maybe_count}</span>
+        <span class="chip">❌ ${counts.no_count}</span>
+        <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Event details</a>
+      </div>
+    </article>`;
+}
 
-    async function loadFrontEvents(){
-      const grid = document.getElementById('eventsGrid');
-      grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+async function loadFrontEvents(){
+  const grid = document.getElementById('eventsGrid');
+  if(!grid) return;
 
-      const [eventsRes, countsRes] = await Promise.all([
-        supabase.from('events')
-          .select('id,title,starts_at,location,cover_url')
-          .gte('starts_at', new Date().toISOString())
-          .order('starts_at', { ascending: true })
-          .limit(3),
-        supabase.from('event_rsvp_counts')
-          .select('event_id,yes_count,maybe_count,no_count')
-      ]);
+  grid.innerHTML = `
+    <article class="card reveal">
+      <div class="pad sub">Dialing in the next meet…</div>
+    </article>`;
 
-      if(eventsRes.error){
-        console.error(eventsRes.error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events.</div></article>`;
-        return;
-      }
+  const [eventsRes, countsRes] = await Promise.all([
+    supabase.from('events')
+      .select('id,title,starts_at,location,cover_url')
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(3),
+    supabase.from('event_rsvp_counts')
+      .select('event_id,yes_count,maybe_count,no_count')
+  ]);
 
-      const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
-      const rows = (eventsRes.data||[]).map(e => ({
-        ...e,
-        counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
-      }));
+  if(eventsRes.error){
+    console.error(eventsRes.error);
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          Track went quiet — we couldn’t load events. Refresh or check back in a bit.
+        </div>
+      </article>`;
+    return;
+  }
 
-      if(!rows.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">No upcoming events yet.</div></article>`;
-        return;
-      }
+  const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
+  const rows = (eventsRes.data||[]).map(e => ({
+    ...e,
+    counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+  }));
 
-      grid.innerHTML = rows.map(renderEventCard).join('');
-    }
+  if(!rows.length){
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          No upcoming events are on the calendar yet. Follow @rrxngclub for drops and new meets.
+        </div>
+      </article>`;
+    return;
+  }
+
+  grid.innerHTML = rows.map(renderEventCard).join('');
+}
+
 
     // ===== Sightings (front page preview) =====
+// ===== Sightings (front page preview) =====
 function renderSightingCard(s){
   const img = s.image_url
     ? `<img loading="lazy" src="${s.image_url}" width="1200" height="675" alt="${s.title}"/>`
     : "";
   const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
+  const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
+
   return `
     <article class="card reveal" role="listitem" data-sighting="${s.id}">
       <a href="/sighting.html?id=${s.id}">
@@ -950,7 +1005,7 @@ function renderSightingCard(s){
         <div class="pad">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
             <strong>${s.title}</strong>
-            <small class="sub">${new Date(s.created_at).toLocaleDateString()}</small>
+            <small class="sub">${dateStr}</small>
           </div>
           ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
           <div class="sub" style="margin-top:8px">
@@ -958,14 +1013,17 @@ function renderSightingCard(s){
           </div>
         </div>
       </a>
-    </article>
-  `;
+    </article>`;
 }
 
 async function loadFrontSightings(){
   const grid = document.getElementById('sightingsGrid');
   if(!grid) return;
-  grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+
+  grid.innerHTML = `
+    <article class="card reveal">
+      <div class="pad sub">Pulling the latest island sightings…</div>
+    </article>`;
 
   const { data, error } = await supabase
     .from('sightings_with_like_count')
@@ -975,12 +1033,22 @@ async function loadFrontSightings(){
 
   if(error){
     console.error(error);
-    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load sightings.</div></article>`;
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          Couldn’t load sightings. Refresh to try again, or check back later.
+        </div>
+      </article>`;
     return;
   }
 
   if(!data?.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">No sightings yet — be the first.</div></article>`;
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          No sightings on the map yet — be the first to drop a shot from the streets.
+        </div>
+      </article>`;
     return;
   }
 
@@ -992,8 +1060,14 @@ function renderHighlightCard(h){
   const img = h.image_url
     ? `<img loading="lazy" src="${h.image_url}" width="1200" height="675" alt="${h.title}">`
     : "";
-  const cat = h.category ? `<span class="chip" style="margin-bottom:6px">${h.category}</span>` : "";
-  const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : "";
+  const cat = h.category
+    ? `<span class="chip" style="margin-bottom:6px">${h.category}</span>`
+    : "";
+  const dateStr = h.created_at
+    ? new Date(h.created_at).toLocaleDateString()
+    : "";
+  const teaser = (h.body || '').slice(0,140);
+  const more = (h.body && h.body.length > 140) ? '…' : '';
 
   return `
     <article class="card reveal" role="listitem" data-highlight="${h.id}">
@@ -1005,21 +1079,24 @@ function renderHighlightCard(h){
         </div>
         ${cat}
         <p class="sub" style="margin:6px 0 8px;max-height:3.6em;overflow:hidden">
-          ${(h.body || '').slice(0,140)}${(h.body && h.body.length > 140) ? '…' : ''}
+          ${teaser}${more}
         </p>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
           <span class="sub">♥ ${h.like_count || 0}</span>
           <a class="btn" href="/highlight.html?id=${h.id}">Read</a>
         </div>
       </div>
-    </article>
-  `;
+    </article>`;
 }
 
 async function loadFrontHighlights(){
   const grid = document.getElementById('highlightsGrid');
   if(!grid) return;
-  grid.innerHTML = `<article class="card reveal"><div class="pad sub">Loading…</div></article>`;
+
+  grid.innerHTML = `
+    <article class="card reveal">
+      <div class="pad sub">Loading the latest from the paddock…</div>
+    </article>`;
 
   const { data, error } = await supabase
     .from('highlights_with_like_count')
@@ -1029,19 +1106,27 @@ async function loadFrontHighlights(){
 
   if(error){
     console.error(error);
-    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load highlights.</div></article>`;
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          Couldn’t load highlights right now. Refresh and try again in a bit.
+        </div>
+      </article>`;
     return;
   }
 
   if(!data?.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">No highlights yet.</div></article>`;
+    grid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">
+          No highlights yet — the feed’s quiet. New stories and drops will land here soon.
+        </div>
+      </article>`;
     return;
   }
 
   grid.innerHTML = data.map(renderHighlightCard).join('');
 }
-
-
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
