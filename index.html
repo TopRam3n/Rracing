@@ -1525,22 +1525,33 @@
     }
 
     function applyMotionPref(){
-      if (!mv) return;
-      if (prefersReduced.matches){
-        disableDrift();
-      } else {
-        enableDrift();
-      }
-    }
-    prefersReduced.addEventListener?.('change', applyMotionPref);
-    applyMotionPref();
+  if (!mv) return;
+  if (prefersReduced.matches){
+    disableDrift();
+  } else {
+    enableDrift();
+  }
+}
 
-    if (mv){
-      mv.addEventListener('interaction-start', disableDrift);
-      mv.addEventListener('interaction-end', () => {
-        if (!prefersReduced.matches) enableDrift();
-      });
-    }
+prefersReduced.addEventListener?.('change', applyMotionPref);
+applyMotionPref();
+
+
+if (mv) {
+  mv.addEventListener('interaction-start', () => disableDrift());
+  mv.addEventListener('interaction-end', () => {
+    if (!prefersReduced.matches) enableDrift();
+  });
+
+  mv.addEventListener('pointerdown', () => disableDrift());
+  mv.addEventListener('pointerup', () => {
+    if (!prefersReduced.matches) enableDrift();
+  });
+  mv.addEventListener('pointercancel', () => {
+    if (!prefersReduced.matches) enableDrift();
+  });
+}
+
 
     // ===== Nav solid on scroll =====
     const navWrapper = document.getElementById('navWrapper');
