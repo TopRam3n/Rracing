@@ -945,7 +945,7 @@
                   src="/Assets/car.glb"
                   poster="/Assets/car-poster.png"
                   alt="ROK Racers JA concept car"
-                  camera-controls
+                  camera-controls = "true"
                   exposure="1.1"
                   shadow-intensity="0.9"
                   shadow-softness="1"
@@ -1132,6 +1132,29 @@
         enableDrift();
       }
     }
+
+    prefersReduced.addEventListener?.('change', applyMotionPref);
+applyMotionPref();
+
+// 🔥 Pause drift while user drags / taps the car
+if (mv) {
+  mv.addEventListener('interaction-start', () => {
+    disableDrift();
+  });
+  mv.addEventListener('interaction-end', () => {
+    if (!prefersReduced.matches) enableDrift();
+  });
+  mv.addEventListener('pointerdown', () => {
+    disableDrift();
+  });
+  mv.addEventListener('pointerup', () => {
+    if (!prefersReduced.matches) enableDrift();
+  });
+  mv.addEventListener('pointercancel', () => {
+    if (!prefersReduced.matches) enableDrift();
+  });
+}
+
 
     prefersReduced.addEventListener?.('change', applyMotionPref);
     applyMotionPref();
