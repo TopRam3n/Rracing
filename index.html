@@ -21,7 +21,7 @@
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
-  <!-- Optional central auth helper if you keep using /auth-ui.js on other pages -->
+  <!-- Central auth helper -->
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -30,8 +30,8 @@
       --bg-alt: #111111;
       --bg-card: #141414;
       --accent-main: #E50914;
-      --accent-secondary: #FFD93B; /* yellow */
-      --accent-cyan: #FFD93B;      /* repurposed as yellow */
+      --accent-secondary: #FFD93B;
+      --accent-cyan: #FFD93B;
       --text-main: #ffffff;
       --text-muted: #bdbdbd;
       --border-subtle: rgba(255, 255, 255, 0.06);
@@ -81,7 +81,6 @@
       overflow:hidden;
     }
 
-    /* Layout helpers */
     .page {
       min-height: 100vh;
       display: flex;
@@ -99,7 +98,6 @@
       }
     }
 
-    /* Glow bottom gradient */
     .page::after {
       content: "";
       position: fixed;
@@ -284,7 +282,7 @@
       box-shadow: 0 0 8px rgba(255,217,59,0.9);
     }
 
-    /* Nav auth profile */
+    /* Nav auth profile (standard IDs) */
     .profile-menu{
       position:relative;
       display:flex;
@@ -1180,21 +1178,21 @@
           <a href="#brand">About</a>
         </nav>
 
-        <div class="nav-cta">
-          <button id="loginBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
-          <button id="joinBtn" class="btn btn-primary btn-pill-sm">Join the Grid</button>
+        <div class="nav-cta nav-auth">
+          <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
+          <button id="navJoinBtn" class="btn btn-primary btn-pill-sm">Join the Grid</button>
 
-          <!-- Profile / dropdown -->
-          <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="profileInitials">U</span>
+          <!-- Profile / dropdown (standard IDs for auth-ui.js) -->
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
             </div>
-            <div id="dropdown" class="dropdown" style="display:none">
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
               <a href="/garage.html">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
-              <button id="signoutBtn" type="button">Sign out</button>
+              <button id="navSignOutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
@@ -1275,7 +1273,7 @@
       </div>
     </main>
 
-    <!-- EVENTS SECTION (dynamic from Supabase) -->
+    <!-- EVENTS SECTION -->
     <section id="events" class="section">
       <div class="container">
         <div class="section-header">
@@ -1299,7 +1297,7 @@
       </div>
     </section>
 
-    <!-- TOP BUILDS SECTION (Top 5 from Supabase) -->
+    <!-- TOP BUILDS SECTION -->
     <section id="garage" class="section">
       <div class="container">
         <div class="section-header">
@@ -1324,7 +1322,7 @@
       </div>
     </section>
 
-    <!-- COMMUNITY / SIGHTINGS SECTION (Supabase preview) -->
+    <!-- COMMUNITY / SIGHTINGS SECTION -->
     <section id="community" class="section">
       <div class="container">
         <div class="section-header">
@@ -1334,13 +1332,12 @@
               Gas station link-ups, toll runs, late-night pulls — see what’s been spotted in real time.
             </p>
           </div>
-          <button class="btn btn-ghost btn-pill-sm" onclick="authUI.requireLogin(()=>location.href='/sighting-new.html')">
+          <button class="btn btn-ghost btn-pill-sm" onclick="authUI.requireLogin(()=>location.href='/sightings-new.html')">
             Upload a Sighting
           </button>
         </div>
 
         <div class="sightings-grid">
-          <!-- Main sighting slot -->
           <article id="sightingMain" class="sighting-main">
             <div class="sighting-media">
               <div class="sighting-badge">Loading…</div>
@@ -1359,7 +1356,6 @@
             </div>
           </article>
 
-          <!-- Side panel -->
           <aside class="sighting-side-card">
             <div class="sighting-meta-top">
               <span>Island feed</span>
@@ -1433,7 +1429,7 @@
       </div>
     </section>
 
-    <!-- OPTIONAL: Highlights preview -->
+    <!-- HIGHLIGHTS PREVIEW -->
     <section class="section">
       <div class="container">
         <div class="section-header">
@@ -1494,7 +1490,7 @@
   </div>
 
   <script>
-    // ===== Drift camera animation =====
+    // ===== Drift camera animation (40% faster) =====
     const mv = document.getElementById('driftCar');
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     let driftFrameId = null;
@@ -1502,7 +1498,7 @@
 
     function driftLoop(){
       if (!mv) return;
-      driftAngle += 0.22;
+      driftAngle += 0.31; // was 0.22 → ~40% faster
       const yaw   = driftAngle + Math.sin(driftAngle/8) * 5;
       const pitch = 70 + Math.sin(driftAngle/14) * 1.6;
       const radius = 20 + Math.sin(driftAngle/10) * 0.5;
@@ -1525,33 +1521,31 @@
     }
 
     function applyMotionPref(){
-  if (!mv) return;
-  if (prefersReduced.matches){
-    disableDrift();
-  } else {
-    enableDrift();
-  }
-}
+      if (!mv) return;
+      if (prefersReduced.matches){
+        disableDrift();
+      } else {
+        enableDrift();
+      }
+    }
 
-prefersReduced.addEventListener?.('change', applyMotionPref);
-applyMotionPref();
+    prefersReduced.addEventListener?.('change', applyMotionPref);
+    applyMotionPref();
 
+    if (mv) {
+      mv.addEventListener('interaction-start', () => disableDrift());
+      mv.addEventListener('interaction-end', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
 
-if (mv) {
-  mv.addEventListener('interaction-start', () => disableDrift());
-  mv.addEventListener('interaction-end', () => {
-    if (!prefersReduced.matches) enableDrift();
-  });
-
-  mv.addEventListener('pointerdown', () => disableDrift());
-  mv.addEventListener('pointerup', () => {
-    if (!prefersReduced.matches) enableDrift();
-  });
-  mv.addEventListener('pointercancel', () => {
-    if (!prefersReduced.matches) enableDrift();
-  });
-}
-
+      mv.addEventListener('pointerdown', () => disableDrift());
+      mv.addEventListener('pointerup', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
+      mv.addEventListener('pointercancel', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
+    }
 
     // ===== Nav solid on scroll =====
     const navWrapper = document.getElementById('navWrapper');
@@ -1571,100 +1565,6 @@ if (mv) {
       return false;
     }
     window.subscribe = subscribe;
-
-    // ===== Auth UI =====
-    const loginBtn   = document.getElementById("loginBtn");
-    const joinBtn    = document.getElementById("joinBtn");
-    const profileMenu = document.getElementById("profileMenu");
-    const profileChip = document.getElementById("profileChip");
-    const dropdown    = document.getElementById("dropdown");
-    const initialsEl  = document.getElementById("profileInitials");
-    const signoutBtn  = document.getElementById("signoutBtn");
-
-    async function updateAuthUI(){
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user){
-        if (loginBtn) loginBtn.style.display = "none";
-        if (joinBtn) joinBtn.style.display = "none";
-        if (profileMenu) profileMenu.style.display = "flex";
-
-        if (initialsEl){
-          const raw = (user.email || "").split("@")[0] || "u";
-          const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
-          const parts = cleaned.split(" ").filter(Boolean);
-          let initials = "";
-          if (parts.length >= 2){
-            initials = (parts[0][0] + parts[1][0]);
-          } else {
-            initials = cleaned.slice(0,2);
-          }
-          initialsEl.textContent = initials.toUpperCase();
-        }
-      } else {
-        if (loginBtn) loginBtn.style.display = "inline-flex";
-        if (joinBtn) joinBtn.style.display = "inline-flex";
-        if (profileMenu) profileMenu.style.display = "none";
-        if (dropdown) dropdown.style.display = "none";
-      }
-    }
-
-    profileChip?.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      if (!dropdown) return;
-      const current = dropdown.style.display;
-      dropdown.style.display = (current === "none" || current === "") ? "block" : "none";
-      profileChip.setAttribute("aria-expanded", dropdown.style.display === "block" ? "true" : "false");
-    });
-
-    document.addEventListener("click", (e)=>{
-      if (!profileMenu?.contains(e.target)){
-        if (dropdown) dropdown.style.display = "none";
-        profileChip?.setAttribute("aria-expanded", "false");
-      }
-    });
-
-    loginBtn?.addEventListener("click", async ()=>{
-      const email = prompt("Enter your email:");
-      if (!email) return;
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options:{ emailRedirectTo: location.href }
-      });
-      if (error) alert("Sign-in error: " + error.message);
-      else alert("Magic link sent! Check your inbox.");
-    });
-
-    joinBtn?.addEventListener("click", async ()=>{
-      const email = prompt("Enter your email to join the grid:");
-      if (!email) return;
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options:{ emailRedirectTo: location.href }
-      });
-      if (error) alert("Sign-up error: " + error.message);
-      else alert("Magic link sent! Check your inbox.");
-    });
-
-    signoutBtn?.addEventListener("click", async ()=>{
-      await supabase.auth.signOut();
-      await updateAuthUI();
-    });
-
-    supabase.auth.onAuthStateChange(updateAuthUI);
-
-    // Expose requireLogin like before
-    window.authUI = window.authUI || {};
-    window.authUI.requireLogin = async function(callback){
-      const { data: { user }} = await supabase.auth.getUser();
-      if (!user){
-        alert("Please sign in first.");
-        loginBtn?.click();
-        return false;
-      }
-      if (callback) callback();
-      return true;
-    };
 
     // ===== Top 5 builds =====
     async function loadTopBuilds(){
@@ -1843,7 +1743,7 @@ if (mv) {
         .subscribe();
     }
 
-    // ===== Events (last 5 events by date, same table as events.html) =====
+    // ===== Events =====
     function renderEventCard(e){
       const d = e.starts_at ? new Date(e.starts_at) : null;
       const whenLabel = d
@@ -1890,7 +1790,6 @@ if (mv) {
       const strip = document.getElementById('eventsStrip');
       if (!strip) return;
 
-      // Last 5 events by starts_at (no future filter so homepage always shows something)
       const [eventsRes, countsRes] = await Promise.all([
         supabase.from('events')
           .select('id,title,starts_at,location,tag,status,promoter_handle')
@@ -1931,7 +1830,6 @@ if (mv) {
 
       strip.innerHTML = rows.map(renderEventCard).join('');
 
-      // Event strip click handling
       strip.onclick = function(e){
         const card = e.target.closest('.event-card');
         if (!card) return;
@@ -1949,7 +1847,6 @@ if (mv) {
           return;
         }
 
-        // Plain card click
         location.href = `/event.html?id=${id}`;
       };
     }
@@ -2101,7 +1998,7 @@ if (mv) {
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
-      await updateAuthUI();
+      // auth-ui.js should handle nav init & authUI.requireLogin
       await loadTopBuilds();
       setupLiveLikes();
       await loadFrontEvents();
