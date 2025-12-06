@@ -15,7 +15,6 @@
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
- 
 
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
@@ -42,79 +41,209 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Preload hero poster for fast LCP -->
   <link rel="preload" as="image" href="/Assets/car-poster.png" imagesrcset="/Assets/car-poster.png 1x">
 
   <style>
     :root{
-      --bg-0:#141414; --bg-1:#161616; --bg-2:#1b1b1b;
-      --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --line:rgba(255,255,255,.08);
-      --shadow-lg:0 40px 120px -30px rgba(0,0,0,.6);
+      --bg-0:#050508;
+      --bg-1:#101015;
+      --bg-2:#16161b;
+      --bg-card:#141418;
+      --fg:#ffffff;
+      --muted:#bdbdbd;
+      --accent:#e50914;
+      --accent-secondary:#FFD93B; /* yellow */
+      --accent-cyan:#FFD93B;      /* repurposed as yellow */
+      --line:rgba(255,255,255,.08);
+      --shadow-lg:0 30px 80px rgba(0,0,0,.85);
+      --radius-lg:24px;
+      --radius-md:18px;
+      --nav-height:76px;
+      --transition-fast:0.18s ease-out;
+      --transition-med:0.25s ease-out;
     }
-    *{box-sizing:border-box}
+
+    *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
+
     body{
       margin:0;
-      background:var(--bg-0);
+      background:
+        radial-gradient(circle at top, #181820 0, #050508 55%, #000 100%);
       color:var(--fg);
-      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
     }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-    /* NAV */
+    a{color:inherit;text-decoration:none}
+
+    .container{
+      width:min(1200px, 100% - 32px);
+      margin:0 auto;
+    }
+
+    @media (min-width:1280px){
+      .container{
+        width:min(1280px, 100% - 64px);
+      }
+    }
+
+    /* Soft bottom glow */
+    body::after{
+      content:"";
+      position:fixed;
+      left:0;right:0;
+      bottom:-120px;
+      height:220px;
+      background:radial-gradient(circle at bottom, rgba(229,9,20,0.28), transparent 60%);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* ========== NAV ========== */
     .nav{
       position:sticky;
       top:0;
       z-index:60;
-      transition:background .35s ease,border-color .35s ease
+      width:100vw;
+      margin-left:calc(50% - 50vw);
+      margin-right:calc(50% - 50vw);
+      transition:background .35s ease,border-color .35s ease, box-shadow .35s ease;
+      backdrop-filter:blur(16px);
+      background:linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+      border-bottom:1px solid rgba(255,255,255,0.04);
     }
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo-img{width:48px;height:48px;border-radius:8px;display:block;object-fit:contain}
-    .title{line-height:1}
-    .title h1{margin:0;font-family:"Bebas Neue",system-ui,sans-serif;letter-spacing:2px;font-size:22px}
-    .title small{color:var(--muted)}
+
+    .nav-inner{
+      height:var(--nav-height);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      padding:0 max(8px, env(safe-area-inset-left));
+    }
+
     .nav--solid{
-      background:rgba(18,18,18,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px)
+      background:rgba(5,5,8,0.98);
+      border-bottom-color:rgba(255,255,255,0.10);
+      box-shadow:0 18px 40px rgba(0,0,0,0.7);
     }
-    .menu{display:flex;gap:10px;align-items:center}
-    .btn{
-      display:inline-flex;
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo-img{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:block;
+      object-fit:cover;
+      box-shadow:0 0 16px rgba(229,9,20,0.6);
+      border:1px solid rgba(229,9,20,0.8);
+      background:#050508;
+    }
+
+    .title{
+      line-height:1;
+    }
+
+    .title h1{
+      margin:0;
+      font-family:"Bebas Neue",system-ui,sans-serif;
+      letter-spacing:0.18em;
+      font-size:20px;
+      text-transform:uppercase;
+    }
+
+    .title small{
+      color:var(--accent-cyan);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.16em;
+    }
+
+    .menu{
+      display:flex;
       gap:10px;
       align-items:center;
-      padding:10px 14px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      transition:transform .2s ease,background .2s ease;
-      background:transparent;
-      color:inherit;
-      cursor:pointer;
     }
-    .btn:hover{transform:translateY(-2px)}
-    .btn.primary{background:#fff;color:#000;border-color:#fff}
-    .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
-    .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-    .nav.nav--bleed{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);}
 
-    /* Nav auth */
     .nav-auth{
       display:flex;
       align-items:center;
       gap:10px;
     }
+
+    /* Buttons / pills */
+    .btn{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(10,10,14,0.55);
+      color:inherit;
+      cursor:pointer;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.16em;
+      transition:
+        background var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,0.04);
+      border-color:rgba(255,255,255,0.24);
+      box-shadow:0 10px 24px rgba(0,0,0,0.7);
+    }
+
+    .btn.primary{
+      background:radial-gradient(circle at top left, #ff6b6b, var(--accent));
+      color:#fff;
+      border-color:rgba(255,255,255,0.15);
+      box-shadow:0 0 24px rgba(229,9,20,0.7);
+    }
+
+    .btn.primary:hover{
+      box-shadow:0 0 32px rgba(229,9,20,0.9);
+      background:radial-gradient(circle at top left, #ff8a8a, #ff1a0a);
+    }
+
+    .btn.icon{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      padding:0;
+    }
+
+    .btn:focus-visible{
+      outline:2px solid var(--accent);
+      outline-offset:2px;
+    }
+
+    /* Nav auth profile */
     .profile-menu{
       position:relative;
       display:flex;
       align-items:center;
     }
+
     .profile-chip{
-      width:40px;
-      height:40px;
+      width:38px;
+      height:38px;
       border-radius:50%;
       background:var(--bg-2);
       display:flex;
@@ -122,22 +251,32 @@
       justify-content:center;
       font-weight:600;
       cursor:pointer;
-      border:1px solid var(--line);
+      border:1px solid rgba(255,255,255,0.18);
+      transition:box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
     }
-    .profile-chip span{font-size:16px;}
+
+    .profile-chip span{font-size:15px;}
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,0.32);
+      box-shadow:0 0 16px rgba(255,217,59,0.6);
+      transform:translateY(-1px);
+    }
+
     .dropdown{
       position:absolute;
       right:0;
       top:48px;
-      background:var(--bg-1);
+      background:rgba(10,10,14,0.96);
       border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
+      border-radius:16px;
       display:flex;
       flex-direction:column;
       min-width:190px;
       z-index:999;
+      backdrop-filter:blur(16px);
     }
+
     .dropdown a,
     .dropdown button{
       padding:10px 16px;
@@ -145,57 +284,28 @@
       border:none;
       background:transparent;
       color:var(--fg);
-      font-size:15px;
+      font-size:13px;
       width:100%;
       cursor:pointer;
     }
+
     .dropdown a:hover,
     .dropdown button:hover{
-      background:#1f1f1f;
+      background:rgba(255,255,255,0.06);
     }
 
     .hidden{display:none!important}
 
-    /* ===== HERO ===== */
+    /* ========== HERO ========== */
+
     .hero{
       position:relative;
-      padding: 24px 12px 28px;
-      overflow:hidden;
-    }
-    .hero-copy{
-      position:relative;
-      width:100%;
-      max-width:800px;
-      margin:0 auto;
-      text-align:center;
-    }
-
-    
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(70% 50% at 70% 55%, rgba(229,9,20,.06), transparent 60%),
-        radial-gradient(65% 45% at 70% 65%, rgba(0,0,0,.35), transparent 70%);
-    }
-    .hero::after{
-      content:"";
-      position:absolute;
-      left:0;right:0;bottom:-1px;
-      height:80px;
-      pointer-events:none;
-      background:linear-gradient(to bottom, rgba(20,20,20,0), rgba(20,20,20,1));
-    }
-    .hero .container{max-width:none;padding-left:0;padding-right:0}
-    .hero-grid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:24px;
+      min-height:calc(100vh - var(--nav-height));
+      display:flex;
       align-items:center;
-      justify-items:center;
-      text-align:center;
+      padding:32px 0 40px;
+      overflow:hidden;
+      z-index:1;
     }
 
     .hero-top-fade{
@@ -203,58 +313,183 @@
       top:0;
       left:0;right:0;
       height:200px;
-      background:linear-gradient(to bottom, #141414 0%, rgba(20,20,20,0) 100%);
+      background:linear-gradient(to bottom, #050508 0%, rgba(5,5,8,0) 100%);
       pointer-events:none;
       z-index:-2;
     }
 
-    .hero-backdrop{
+    .hero::before{
+      content:"";
       position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:-160px;
-      width:140vw;
-      height:360px;
+      inset:0;
       pointer-events:none;
-      z-index:-1;
       background:
-        radial-gradient(
-          65% 120% at 50% 0%,
-          rgba(229,9,20,0.18),
-          rgba(0,0,0,0.7) 55%,
-          #141414 100%
-        );
-      filter:blur(80px);
+        radial-gradient(70% 55% at 75% 40%, rgba(229,9,20,0.20), transparent 65%),
+        radial-gradient(60% 50% at 0% 100%, rgba(255,217,59,0.16), transparent 70%);
       opacity:0.9;
+      z-index:-3;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:minmax(0, 1.1fr) minmax(0, 1.1fr);
+      gap:40px;
+      align-items:center;
+    }
+
+    @media (max-width:900px){
+      .hero{
+        padding:24px 0 32px;
+      }
+      .hero-grid{
+        grid-template-columns:minmax(0,1fr);
+        gap:24px;
+      }
+    }
+
+    .hero-copy{
+      position:relative;
+      width:100%;
+      max-width:520px;
+      text-align:left;
+    }
+
+    @media (max-width:900px){
+      .hero-copy{
+        margin:0 auto;
+        text-align:center;
+      }
     }
 
     .headline{
       font-family:"Bebas Neue",sans-serif;
-      font-size:clamp(34px,8vw,52px);
-      line-height:.95;
-      margin:0
+      font-size:clamp(34px, 7vw, 60px);
+      line-height:0.92;
+      margin:0;
+      text-transform:uppercase;
     }
-    .headline .accent{color:var(--accent)}
-    .sub{font-size: 0.95rem;color:var(--muted);margin:14px 0 22px;max-width:65ch}
 
-    /* 3D area */
-    .car-stage{
+    .headline .accent{
+      background:linear-gradient(120deg, #ff7373, #ff2a00, #ffd93b);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow:0 0 18px rgba(229,9,20,0.6);
+    }
+
+    .sub{
+      font-size:0.95rem;
+      color:var(--muted);
+      margin:14px 0 22px;
+      max-width:65ch;
+    }
+
+    .hero-kicker{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+
+    .hero-kicker-line{
+      width:28px;
+      height:1px;
+      background:linear-gradient(to right, var(--accent), var(--accent-secondary));
+    }
+
+    .hero-kicker span{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.18em;
+      color:var(--accent-secondary);
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:4px;
+    }
+
+    @media (max-width:900px){
+      .hero-actions{
+        justify-content:center;
+      }
+    }
+
+    .hero-meta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:14px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      color:var(--muted);
+    }
+
+    .hero-meta-pill{
+      padding:5px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.10);
+    }
+
+    /* 3D side */
+
+    .hero-right{
       position:relative;
-      isolation:isolate;
       display:flex;
       align-items:center;
       justify-content:center;
-      width:100vw;
-      height:min(78vh, 820px);
-      margin:0 calc(50% - 50vw);
-      overflow:hidden;
     }
+
+    .hero-3d-card{
+      position:relative;
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(255,255,255,0.08);
+      background:radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(8,8,12,0.98));
+      box-shadow:var(--shadow-lg);
+      padding:10px 10px 14px;
+      isolation:isolate;
+      width:100%;
+      max-width:540px;
+    }
+
+    .hero-3d-card::before{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background:
+        radial-gradient(circle at 12% 0, rgba(255,217,59,0.3), transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(229,9,20,0.5), transparent 55%);
+      opacity:0.7;
+      z-index:-1;
+    }
+
+    .car-stage{
+      position:relative;
+      isolation:isolate;
+      width:100%;
+      height:340px;
+      margin:0;
+      overflow:hidden;
+      border-radius:18px;
+      background:radial-gradient(circle at top, #262629, #050508);
+    }
+
+    @media (max-width:600px){
+      .car-stage{
+        height:260px;
+      }
+    }
+
     model-viewer{
       display:block;
-      width:min(92vw, 1420px);
+      width:100%;
       height:100%;
       border:none;
-      border-radius:0;
+      border-radius:inherit;
       background:transparent;
       backface-visibility:hidden;
       transform:translateZ(0);
@@ -264,33 +499,71 @@
       --progress-mask:none;
       will-change:contents;
     }
-    .car-stage::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image:url("/Assets/hero-backdrop.png");
-      background-size:cover;
-      background-position:center;
-      opacity:0.5;
-      filter:blur(1px);
-      z-index:-3;
-    }
-    .car-stage::after{
-      content:"";
-      position:absolute;
-      left:0;right:0;bottom:0;
-      height:220px;
-      background:linear-gradient(to bottom, rgba(20,20,20,0) 0%, #141414 100%);
-      z-index:-1;
-    }
+
     .car-stage .floor{
-      position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-      width:min(92vw,1400px);height:180px;pointer-events:none;
-      background:radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,.65), rgba(0,0,0,0));
-      filter:blur(22px);opacity:.9;
+      position:absolute;
+      left:50%;
+      bottom:-10px;
+      transform:translateX(-50%);
+      width:120%;
+      height:180px;
+      pointer-events:none;
+      background:radial-gradient(50% 60% at 50% 40%, rgba(0,0,0,0.8), rgba(0,0,0,0));
+      filter:blur(26px);
+      opacity:0.95;
     }
 
-    /* REVEAL + PARALLAX */
+    .hero-3d-bottom{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding-top:10px;
+      gap:10px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      color:var(--muted);
+      flex-wrap:wrap;
+    }
+
+    .hero-3d-meta{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .hero-3d-meta span strong{
+      color:var(--fg);
+      margin-left:4px;
+    }
+
+    .hero-3d-tag{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.18em;
+      padding:4px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(0,0,0,0.35);
+      color:var(--accent-secondary);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .hero-3d-tag-dot{
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--accent-secondary);
+      box-shadow:0 0 8px rgba(255,217,59,1);
+    }
+
+    .hero-backdrop{
+      display:none;
+    }
+
+    /* Reveal animation */
     .reveal{
       opacity:0;
       transform:translateY(22px) scale(.98);
@@ -299,48 +572,101 @@
       will-change:transform,opacity;
     }
     .reveal.is-in{opacity:1;transform:translateY(0) scale(1)}
-    [data-parallax]{will-change:transform}
 
-    /* CARDS + GRIDS */
-    .grid{display:grid;gap:24px}
-    .cols-3{grid-template-columns:repeat(3,1fr)}
-    .cols-2{grid-template-columns:repeat(2,1fr)}
-    @media(max-width:600px){
-      .cols-3,.cols-2{grid-template-columns:1fr}
-      model-viewer{width:98vw}
-      .car-stage{height:64vh}
+    /* ========== SECTIONS / GRIDS / CARDS ========== */
+
+    section.section{
+      padding:48px 0;
+      position:relative;
+      z-index:1;
     }
+
+    section.section + section.section{
+      border-top:1px solid rgba(255,255,255,0.04);
+      box-shadow:0 -20px 40px rgba(0,0,0,0.8);
+    }
+
+    .grid{
+      display:grid;
+      gap:18px;
+    }
+
+    .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+    @media (max-width:900px){
+      .cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:640px){
+      .cols-3,.cols-2{grid-template-columns:minmax(0,1fr)}
+    }
+
+    .section--filmstrip{
+      position:relative;
+    }
+
+    /* left + right gradient fade over the strip */
+    .section--filmstrip::before,
+    .section--filmstrip::after{
+      content:"";
+      position:absolute;
+      top:96px;
+      bottom:0;
+      width:40px;
+      pointer-events:none;
+      z-index:2;
+    }
+
+    /* left fade */
+    .section--filmstrip::before{
+      left:0;
+      background:linear-gradient(to right,
+        rgba(5,5,8,1) 0%,
+        rgba(5,5,8,0.0) 100%
+      );
+    }
+
+    /* right fade */
+    .section--filmstrip::after{
+      right:0;
+      background:linear-gradient(to left,
+        rgba(5,5,8,1) 0%,
+        rgba(5,5,8,0.0) 100%
+      );
+    }
+
     .card{
-      background:var(--bg-1);
-      border:1px solid var(--line);
-      border-radius:20px;
+      background:radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(10,10,14,0.98));
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:var(--radius-md);
       overflow:hidden;
       box-shadow:var(--shadow-lg);
-      transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s;
+      transition:
+        transform var(--transition-med),
+        box-shadow var(--transition-med),
+        border-color var(--transition-med),
+        background 0.28s ease-out;
     }
-    .card:hover{transform:translateY(-6px) scale(1.01)}
+
+    .card:hover{
+      transform:translateY(-4px) translateZ(0);
+      border-color:rgba(255,217,59,0.7);
+      box-shadow:0 22px 44px rgba(0,0,0,0.9);
+      background:radial-gradient(circle at top, rgba(255,217,59,0.14), rgba(10,10,14,1));
+    }
+
     .card img{
       display:block;
       width:100%;
       height:auto;
-      transition:filter .25s;
       aspect-ratio:16/9;
       object-fit:cover;
+      filter:saturate(1.1) contrast(1.03);
     }
-    .card:hover img{filter:brightness(1.06) contrast(1.02)}
-    .pad{padding:18px}
 
-    /* RSVP chips + date badge */
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      background:#1b1b1b;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:14px;
-    }
+    .pad{padding:16px 16px 14px;}
+
+    /* Date chip used by events */
     .date{
       background:var(--bg-2);
       border:1px solid var(--line);
@@ -349,47 +675,193 @@
       min-width:64px;
       text-align:center;
     }
-    .date .m{font-family:"Bebas Neue";font-size:22px;line-height:1}
-    .date .d{font-family:"Bebas Neue";font-size:26px;line-height:1}
+    .date .m{
+      font-family:"Bebas Neue";
+      font-size:20px;
+      line-height:1;
+      letter-spacing:0.16em;
+    }
+    .date .d{
+      font-family:"Bebas Neue";
+      font-size:26px;
+      line-height:1.1;
+    }
 
-    /* SECTION */
-    section.section{padding:64px 0}
-    section.section + section.section{border-top:1px solid var(--line)}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(0,0,0,0.6);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      color:var(--muted);
+    }
 
-    /* Sponsors */
+    /* EVENTS FILM STRIP */
+    #eventsGrid{
+      display:flex;
+      flex-wrap:nowrap;
+      gap:14px;
+      overflow-x:auto;
+      padding-bottom:6px;
+      scroll-snap-type:x mandatory;
+      scrollbar-width:none;
+      scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    #eventsGrid::-webkit-scrollbar{
+      height:0;
+    }
+    #eventsGrid::-webkit-scrollbar-track{
+      background:transparent;
+    }
+    #eventsGrid::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.22);
+      border-radius:999px;
+    }
+
+    #eventsGrid > .card{
+      flex:0 0 min(280px,80vw);
+      scroll-snap-align:start;
+    }
+
+    @media (min-width:1024px){
+      #eventsGrid > .card{
+        flex-basis:320px;
+      }
+    }
+
+    /* Sponsors row */
     .sponsors{
       display:grid;
-      grid-template-columns:repeat(6,1fr);
+      grid-template-columns:repeat(6,minmax(0,1fr));
       gap:24px;
       align-items:center;
     }
+
     .sponsors img{
       width:100%;
       opacity:.8;
       filter:grayscale(100%);
-      transition:opacity .2s, transform .2s;
+      transition:opacity .2s, transform .2s, filter .2s;
     }
-    .sponsors img:hover{opacity:1; transform:scale(1.02)}
+
+    .sponsors img:hover{
+      opacity:1;
+      transform:scale(1.04);
+      filter:grayscale(0%);
+    }
+
+    @media (max-width:800px){
+      .sponsors{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+    @media (max-width:500px){
+      .sponsors{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
+    /* Subscribe field */
+    .subscribe-input{
+      flex:1;
+      min-width:220px;
+      background:rgba(5,5,10,0.9);
+      border:1px solid rgba(255,255,255,0.10);
+      color:#fff;
+      padding:12px 16px;
+      border-radius:999px;
+      outline:none;
+      font-size:14px;
+      transition:border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    }
+
+    .subscribe-input:focus-visible{
+      border-color:var(--accent-secondary);
+      box-shadow:0 0 0 1px rgba(255,217,59,0.5);
+      background:rgba(5,5,10,1);
+    }
 
     /* Footer */
-    footer{padding:48px 0;border-top:1px solid var(--line);margin-top:64px}
-    footer .social{display:flex;gap:12px}
-    .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-
-    /* NAV width tweak */
-    .nav .container{
-      max-width:none;
-      padding-left:max(8px, env(safe-area-inset-left));
-      padding-right:max(8px, env(safe-area-inset-right));
+    footer.container{
+      padding:24px 0 32px;
+      border-top:1px solid rgba(255,255,255,0.08);
+      margin-top:24px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
     }
-    .nav-inner{padding:10px 0;}
+
+    .social{
+      display:flex;
+      gap:10px;
+    }
+
+    .sr-only{
+      position:absolute;
+      left:-9999px;
+      width:1px;
+      height:1px;
+      overflow:hidden;
+    }
+
+    /* Simple heading re-use in sections */
+    #events-title,
+    #top-builds-title,
+    #highlights-title,
+    #sightings-title,
+    #subscribe-title{
+      font-size:22px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+
+    /* ===== MOBILE TWEAKS ===== */
+    @media (max-width:600px){
+      .nav-inner{
+        height:64px;
+      }
+      .title h1{
+        font-size:16px;
+        letter-spacing:0.12em;
+      }
+      .title small{
+        font-size:9px;
+        letter-spacing:0.12em;
+      }
+      .btn{
+        padding:6px 10px;
+        font-size:10px;
+        letter-spacing:0.14em;
+      }
+      .headline{
+        font-size:30px;
+      }
+      .sub{
+        font-size:0.9rem;
+        margin-bottom:18px;
+      }
+      section.section{
+        padding:36px 0;
+      }
+      .pad{
+        padding:14px 12px 12px;
+      }
+    }
   </style>
 </head>
 
 <body>
   <!-- NAV -->
   <nav class="nav nav--bleed" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
+    <div class="nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
         <img src="/Assets/logo.png" alt="" class="logo-img" />
         <div class="title">
@@ -406,7 +878,7 @@
 
         <!-- Nav auth controls -->
         <div class="nav-auth">
-          <button id="signinBtn" class="btn">Sign in</button>
+          <button id="signinBtn" class="btn primary">Sign in</button>
 
           <div id="profileMenu" class="profile-menu" style="display:none">
             <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
@@ -425,6 +897,8 @@
       </div>
 
     </div>
+    <!-- thin red->yellow line under nav -->
+    <div style="height:1px;width:100%;background:linear-gradient(to right, rgba(229,9,20,0.8), rgba(255,217,59,0.9));opacity:0.8;"></div>
   </nav>
 
   <main id="main-content">
@@ -434,46 +908,75 @@
       <div class="container hero-grid">
 
         <!-- Text block -->
-        <div class="hero-copy reveal" style="position:relative;width:100%;max-width:800px;margin:0 auto;text-align:center;">
-          <h1 id="hero-title" class="headline">Built for the <span class="accent">streets.</span></h1>
+        <div class="hero-copy reveal">
+          <div class="hero-kicker">
+            <div class="hero-kicker-line"></div>
+            <span>Jamaica · Motorsport · Night Shift</span>
+          </div>
+          <h1 id="hero-title" class="headline">
+            Jamaica’s<br>
+            <span class="accent">motorsport grid</span><br>
+            in one place.
+          </h1>
           <h2 class="sub">
             Discover meets, share sightings, and connect with Jamaica’s car culture.
-            We’re building the digital home for ROC &amp; RRXNG.
+            ROK Racers JA is the digital home for ROC, RRXNG, and everyone who lives for the next pull.
           </h2>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-            <a class="btn primary" href="#subscribe">Subscribe</a>
+          <div class="hero-actions">
+            <a class="btn primary" href="#events">View upcoming events</a>
             <a class="btn" href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">Follow @rrxngclub</a>
+          </div>
+          <div class="hero-meta">
+            <div class="hero-meta-pill">
+              Live in: Kingston · Montego Bay · Ocho Rios
+            </div>
+            <div>
+              120+ builds · 20+ promoters · 1 island
+            </div>
           </div>
         </div>
 
-        <!-- 3D model (centered over tire marks) -->
-        <div class="car-stage" data-no-parallax>
-          <model-viewer
-              id="driftCar"
-              src="/Assets/car.glb"
-              poster="/Assets/car-poster.png"
-              alt="ROK Racers JA concept car"
-              camera-controls
-              exposure="1.1"
-              shadow-intensity="0.9"
-              shadow-softness="1"
-              environment-image="neutral"
-              camera-orbit="0deg 98deg 20m"
-              field-of-view="40deg"
-              interaction-prompt="none"
-              disable-zoom>
-          </model-viewer>
-          <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
-          <div class="floor" aria-hidden="true"></div>
+        <!-- 3D model side -->
+        <div class="hero-right">
+          <div class="hero-3d-card">
+            <div class="car-stage" data-no-parallax>
+              <model-viewer
+                  id="driftCar"
+                  src="/Assets/car.glb"
+                  poster="/Assets/car-poster.png"
+                  alt="ROK Racers JA concept car"
+                  camera-controls
+                  exposure="1.1"
+                  shadow-intensity="0.9"
+                  shadow-softness="1"
+                  environment-image="neutral"
+                  camera-orbit="0deg 200deg 40m"
+                  field-of-view="40deg"
+                  interaction-prompt="none"
+                  disable-zoom>
+              </model-viewer>
+              <img src="/Assets/car-poster.png" alt="BMW M4 F82" fetchpriority="high" style="display:none">
+              <div class="floor" aria-hidden="true"></div>
+            </div>
+            <div class="hero-3d-bottom">
+              <div class="hero-3d-meta">
+                <span>Build <strong>Street Spec · Concept</strong></span>
+                <span>Power <strong>480 HP</strong></span>
+                <span>Parish <strong>St. Andrew</strong></span>
+              </div>
+              <div class="hero-3d-tag">
+                <span class="hero-3d-tag-dot"></span>
+                Live 3D build
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Soft glow behind car -->
-        <div class="hero-backdrop" aria-hidden="true"></div>
       </div>
     </section>
 
-    <!-- 🔥 EVENTS — directly under HERO -->
-    <section id="events" class="section" aria-labelledby="events-title">
+    <!-- 🔥 EVENTS — film strip -->
+    <section id="events" class="section section--filmstrip" aria-labelledby="events-title">
       <div class="container">
         <h2 id="events-title" class="headline reveal">Upcoming Events</h2>
 
@@ -481,7 +984,7 @@
           <article class="card reveal" role="listitem"><div class="pad sub">Loading…</div></article>
         </div>
 
-        <div style="margin-top:14px;display:flex;gap:10px">
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
           <a class="btn primary" href="/events.html">See all events</a>
         </div>
       </div>
@@ -490,56 +993,54 @@
     <!-- 🏆 TOP BUILDS -->
     <section id="top-builds" class="section" aria-labelledby="top-builds-title">
       <div class="container">
-        <h2 id="top-builds-title" class="headline">Top 5 Builds</h2>
+        <h2 id="top-builds-title" class="headline reveal">Top 5 Builds</h2>
         <div class="grid cols-3" id="top-builds-grid" role="list" aria-live="polite">
           <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
         </div>
         <div style="margin-top:14px">
-          <a class="btn" href="/garage.html">See more</a>
+          <a class="btn primary" href="/garage.html">See more</a>
         </div>
       </div>
     </section>
 
     <!-- HIGHLIGHTS -->
-    <!-- HIGHLIGHTS -->
-<section class="section" aria-labelledby="highlights-title">
-  <div class="container">
-    <h2 id="highlights-title" class="headline reveal">Highlights</h2>
-    <div id="highlightsGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card reveal" role="listitem">
-        <div class="pad sub">Loading…</div>
-      </article>
-    </div>
-    <div style="margin-top:14px;display:flex;gap:10px">
-      <a class="btn" href="/highlights.html">See all highlights</a>
-    </div>
-  </div>
-</section>
+    <section class="section" aria-labelledby="highlights-title">
+      <div class="container">
+        <h2 id="highlights-title" class="headline reveal">Highlights</h2>
+        <div id="highlightsGrid" class="grid cols-3" role="list" aria-live="polite">
+          <article class="card reveal" role="listitem">
+            <div class="pad sub">Loading…</div>
+          </article>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn primary" href="/highlights.html">See all highlights</a>
+        </div>
+      </div>
+    </section>
 
     <!-- SIGHTINGS -->
-<section id="sightings" class="section" aria-labelledby="sightings-title">
-  <div class="container">
-    <h2 id="sightings-title" class="headline reveal">Sightings</h2>
+    <section id="sightings" class="section" aria-labelledby="sightings-title">
+      <div class="container">
+        <h2 id="sightings-title" class="headline reveal">Sightings</h2>
 
-    <div id="sightingsGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card reveal" role="listitem">
-        <div class="pad sub">Loading…</div>
-      </article>
-    </div>
+        <div id="sightingsGrid" class="grid cols-3" role="list" aria-live="polite">
+          <article class="card reveal" role="listitem">
+            <div class="pad sub">Loading…</div>
+          </article>
+        </div>
 
-    <div style="margin-top:14px;display:flex;gap:10px">
-      <button class="btn" onclick="authUI.requireLogin(() =>location.href='/sighting-new.html')">
-        Upload a sighting
-      </button>
-      <a class="btn" href="/sightings.html">See all sightings</a>
-    </div>
-  </div>
-</section>
-
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" onclick="authUI.requireLogin(() =>location.href='/sighting-new.html')">
+            Upload a sighting
+          </button>
+          <a class="btn" href="/sightings.html">See all sightings</a>
+        </div>
+      </div>
+    </section>
 
     <!-- SPONSORS -->
     <section class="section" aria-labelledby="sponsors-title">
-      <div class="container reveal" data-parallax="0.06">
+      <div class="container reveal">
         <h2 id="sponsors-title" class="headline">Partners &amp; Sponsors</h2>
         <div class="sponsors" style="margin-top:16px">
           <img loading="lazy" src="/Assets/sponsors/brand1.png" alt="Brand 1" />
@@ -561,7 +1062,7 @@
           <label for="email" class="sr-only">Email address</label>
           <input id="email" name="email" type="email" placeholder="you@email.com" required
                  autocomplete="email"
-                 style="flex:1;min-width:220px;background:var(--bg-1);border:1px solid var(--line);color:#fff;padding:14px;border-radius:12px;outline:none">
+                 class="subscribe-input">
           <button type="submit" class="btn primary">Subscribe</button>
         </form>
         <p id="msg" class="sub" style="margin-top:10px;display:none" role="status">Thanks! We’ll send updates soon.</p>
@@ -585,31 +1086,30 @@
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     let driftFrameId = null;
-let driftAngle = 0;
+    let driftAngle = 0;
 
-function driftLoop(){
-  if (!mv) return;
+    function driftLoop(){
+      if (!mv) return;
 
-  driftAngle += 0.22;                               // spin speed
-  const yaw   = driftAngle + Math.sin(driftAngle/8) * 5;
-  const pitch = 70 + Math.sin(driftAngle/14) * 1.6;
-  const radius = 20 + Math.sin(driftAngle/10) * 0.5;
+      driftAngle += 0.22;                               // spin speed
+      const yaw   = driftAngle + Math.sin(driftAngle/8) * 5;
+      const pitch = 70 + Math.sin(driftAngle/14) * 1.6;
+      const radius = 20 + Math.sin(driftAngle/10) * 0.5;
 
-  // camera orbits around a mostly-fixed front of the car
-  mv.cameraOrbit = `${yaw}deg ${pitch}deg ${radius}m`;
+      // camera orbits around a mostly-fixed front of the car
+      mv.cameraOrbit = `${yaw}deg ${pitch}deg ${radius}m`;
 
-  // tiny FOV breathing only (no container transform)
-  const fov = 40 + Math.sin(driftAngle/16) * 1.4;
-  mv.fieldOfView = `${fov}deg`;
+      // tiny FOV breathing only (no container transform)
+      const fov = 40 + Math.sin(driftAngle/16) * 1.4;
+      mv.fieldOfView = `${fov}deg`;
 
-  // keep stage fixed so it doesn't glitch on scroll
-  if (carStage){
-    carStage.style.transform = 'translate3d(0,0,0)';
-  }
+      // keep stage fixed so it doesn't glitch on scroll
+      if (carStage){
+        carStage.style.transform = 'translate3d(0,0,0)';
+      }
 
-  driftFrameId = requestAnimationFrame(driftLoop);
-}
-
+      driftFrameId = requestAnimationFrame(driftLoop);
+    }
 
     function enableDrift(){
       if (driftFrameId) cancelAnimationFrame(driftFrameId);
@@ -635,7 +1135,6 @@ function driftLoop(){
 
     prefersReduced.addEventListener?.('change', applyMotionPref);
     applyMotionPref();
-
 
     // Nav darken on scroll
     const nav = document.querySelector('.nav');
@@ -745,139 +1244,137 @@ function driftLoop(){
     };
 
     // ===== Top-5 public builds (from view) =====
-async function loadTopBuilds(){
-  const grid = document.getElementById('top-builds-grid');
-  if(!grid) return;
-  grid.innerHTML = `
-    <article class="card">
-      <div class="pad sub">Warming up the dyno…</div>
-    </article>`;
+    async function loadTopBuilds(){
+      const grid = document.getElementById('top-builds-grid');
+      if(!grid) return;
+      grid.innerHTML = `
+        <article class="card">
+          <div class="pad sub">Warming up the dyno…</div>
+        </article>`;
 
-  const { data, error } = await supabase
-    .from('public_builds_with_like_count')
-    .select('id,title,like_count,thumb_url')
-    .order('like_count', { ascending: false })
-    .order('id', { ascending: true })
-    .limit(5);
+      const { data, error } = await supabase
+        .from('public_builds_with_like_count')
+        .select('id,title,like_count,thumb_url')
+        .order('like_count', { ascending: false })
+        .order('id', { ascending: true })
+        .limit(5);
 
-  if (error){
-    console.error(error);
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          Couldn’t load builds right now. Refresh in a bit and try again.
-        </div>
-      </article>`;
-    return;
-  }
-
-  if (!data?.length){
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          No public builds are on the grid yet. When the first one drops, you’ll see it here.
-        </div>
-      </article>`;
-    return;
-  }
-
-  // Which of these did I like?
-  const { data: auth } = await supabase.auth.getUser();
-  let likedSet = new Set();
-  if (auth?.user?.id){
-    const { data: liked } = await supabase
-      .from('build_likes')
-      .select('build_id')
-      .in('build_id', data.map(b => b.id))
-      .eq('user_id', auth.user.id);
-    likedSet = new Set((liked||[]).map(r => r.build_id));
-  }
-
-  grid.innerHTML = data.map(b => {
-    const isLiked = likedSet.has(b.id);
-    const heart = isLiked ? '♥' : '♡';
-    const likeTitle = auth?.user
-      ? (isLiked ? 'Remove boost from this build' : 'Boost this build')
-      : 'Sign in to boost builds';
-    const img = b.thumb_url
-      ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" width="1200" height="675">`
-      : '';
-
-    return `
-      <article class="card" role="listitem" data-build="${b.id}">
-        ${img}
-        <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <strong>${b.title}</strong>
-            <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
-          </div>
-          <button class="btn" data-like
-            aria-pressed="${isLiked ? 'true':'false'}"
-            aria-label="${likeTitle}"
-            title="${likeTitle}">
-            ${heart}
-          </button>
-        </div>
-      </article>`;
-  }).join('');
-
-  // Like / Unlike with ARIA updates
-  grid.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('button[data-like]');
-    if(!btn) return;
-
-    const card = e.target.closest('article.card');
-    const buildId = card?.dataset.build;
-    const likesEl = card.querySelector('.likes');
-
-    const { data: auth2 } = await supabase.auth.getUser();
-    if(!auth2?.user){
-      alert('Sign in to boost builds and save your favourites.');
-      return;
-    }
-
-    const { data: existing } = await supabase
-      .from('build_likes')
-      .select('build_id')
-      .eq('build_id', buildId)
-      .eq('user_id', auth2.user.id)
-      .maybeSingle();
-
-    if(existing){
-      const { error } = await supabase
-        .from('build_likes')
-        .delete()
-        .eq('build_id', buildId)
-        .eq('user_id', auth2.user.id);
-      if(error){
+      if (error){
         console.error(error);
-        alert('That unboost stalled. Try again in a few seconds.');
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              Couldn’t load builds right now. Refresh in a bit and try again.
+            </div>
+          </article>`;
         return;
       }
-      btn.textContent = '♡';
-      btn.title = 'Boost this build';
-      btn.setAttribute('aria-label','Boost this build');
-      btn.setAttribute('aria-pressed','false');
-      likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-    }else{
-      const { error } = await supabase
-        .from('build_likes')
-        .insert({ build_id: buildId, user_id: auth2.user.id });
-      if(error){
-        console.error(error);
-        alert('Couldn’t boost this build. Try again in a few seconds.');
+
+      if (!data?.length){
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              No public builds are on the grid yet. When the first one drops, you’ll see it here.
+            </div>
+          </article>`;
         return;
       }
-      btn.textContent = '♥';
-      btn.title = 'Remove boost from this build';
-      btn.setAttribute('aria-label','Remove boost from this build');
-      btn.setAttribute('aria-pressed','true');
-      likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+
+      // Which of these did I like?
+      const { data: auth } = await supabase.auth.getUser();
+      let likedSet = new Set();
+      if (auth?.user?.id){
+        const { data: liked } = await supabase
+          .from('build_likes')
+          .select('build_id')
+          .in('build_id', data.map(b => b.id))
+          .eq('user_id', auth.user.id);
+        likedSet = new Set((liked||[]).map(r => r.build_id));
+      }
+
+      grid.innerHTML = data.map(b => {
+        const isLiked = likedSet.has(b.id);
+        const heart = isLiked ? '♥' : '♡';
+        const likeTitle = auth?.user
+          ? (isLiked ? 'Remove boost from this build' : 'Boost this build')
+          : 'Sign in to boost builds';
+        const img = b.thumb_url
+          ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" width="1200" height="675">`
+          : '';
+
+        return `
+          <article class="card" role="listitem" data-build="${b.id}">
+            ${img}
+            <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <strong>${b.title}</strong>
+                <div class="sub">♥ <span class="likes">${b.like_count||0}</span></div>
+              </div>
+              <button class="btn" data-like
+                aria-pressed="${isLiked ? 'true':'false'}"
+                aria-label="${likeTitle}"
+                title="${likeTitle}">
+                ${heart}
+              </button>
+            </div>
+          </article>`;
+      }).join('');
+
+      // Like / Unlike with ARIA updates
+      grid.addEventListener('click', async (e)=>{
+        const btn = e.target.closest('button[data-like]');
+        if(!btn) return;
+
+        const card = e.target.closest('article.card');
+        const buildId = card?.dataset.build;
+        const likesEl = card.querySelector('.likes');
+
+        const { data: auth2 } = await supabase.auth.getUser();
+        if(!auth2?.user){
+          alert('Sign in to boost builds and save your favourites.');
+          return;
+        }
+
+        const { data: existing } = await supabase
+          .from('build_likes')
+          .select('build_id')
+          .eq('build_id', buildId)
+          .eq('user_id', auth2.user.id)
+          .maybeSingle();
+
+        if(existing){
+          const { error } = await supabase
+            .from('build_likes')
+            .delete()
+            .eq('build_id', buildId)
+            .eq('user_id', auth2.user.id);
+          if(error){
+            console.error(error);
+            alert('That unboost stalled. Try again in a few seconds.');
+            return;
+          }
+          btn.textContent = '♡';
+          btn.title = 'Boost this build';
+          btn.setAttribute('aria-label','Boost this build');
+          btn.setAttribute('aria-pressed','false');
+          likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+        }else{
+          const { error } = await supabase
+            .from('build_likes')
+            .insert({ build_id: buildId, user_id: auth2.user.id });
+          if(error){
+            console.error(error);
+            alert('Couldn’t boost this build. Try again in a few seconds.');
+            return;
+          }
+          btn.textContent = '♥';
+          btn.title = 'Remove boost from this build';
+          btn.setAttribute('aria-label','Remove boost from this build');
+          btn.setAttribute('aria-pressed','true');
+          likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+        }
+      });
     }
-  });
-}
-
-
 
     // Live like count updates (multi-user)
     let likesChannel;
@@ -900,231 +1397,229 @@ async function loadTopBuilds(){
     }
 
     // ===== Events (with RSVP counts) =====
-function renderEventCard(e){
-  const d = e.starts_at ? new Date(e.starts_at) : null;
-  const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-  const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-  const img = e.cover_url
-    ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" width="1200" height="675">`
-    : "";
-  const when = d
-    ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit"})
-    : "";
-  const loc = e.location
-    ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>`
-    : (when ? `<div class="sub">${when}</div>` : "");
-  const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+    function renderEventCard(e){
+      const d = e.starts_at ? new Date(e.starts_at) : null;
+      const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+      const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+      const img = e.cover_url
+        ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy" width="1200" height="675">`
+        : "";
+      const when = d
+        ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit"})
+        : "";
+      const loc = e.location
+        ? `<div class="sub">${when ? when + " • " : ""}${e.location}</div>`
+        : (when ? `<div class="sub">${when}</div>` : "");
+      const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
 
-  return `
-    <article class="card reveal" role="listitem">
-      ${img}
-      <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px; min-height:64px">
-        <div class="date">
-          <div class="m">${m}</div>
-          <div class="d">${day}</div>
-        </div>
-        <div>
-          <strong>${e.title}</strong>
-          ${loc}
-        </div>
-      </div>
-      <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <span class="chip">✅ ${counts.yes_count}</span>
-        <span class="chip">🤔 ${counts.maybe_count}</span>
-        <span class="chip">❌ ${counts.no_count}</span>
-        <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Event details</a>
-      </div>
-    </article>`;
-}
+      return `
+        <article class="card reveal" role="listitem">
+          ${img}
+          <div class="pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px; min-height:64px">
+            <div class="date">
+              <div class="m">${m}</div>
+              <div class="d">${day}</div>
+            </div>
+            <div>
+              <strong>${e.title}</strong>
+              ${loc}
+            </div>
+          </div>
+          <div class="pad" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="chip">✅ ${counts.yes_count}</span>
+            <span class="chip">🤔 ${counts.maybe_count}</span>
+            <span class="chip">❌ ${counts.no_count}</span>
+            <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">Event details</a>
+          </div>
+        </article>`;
+    }
 
-async function loadFrontEvents(){
-  const grid = document.getElementById('eventsGrid');
-  if(!grid) return;
+    async function loadFrontEvents(){
+      const grid = document.getElementById('eventsGrid');
+      if(!grid) return;
 
-  grid.innerHTML = `
-    <article class="card reveal">
-      <div class="pad sub">Dialing in the next meet…</div>
-    </article>`;
+      grid.innerHTML = `
+        <article class="card reveal">
+          <div class="pad sub">Dialing in the next meet…</div>
+        </article>`;
 
-  const [eventsRes, countsRes] = await Promise.all([
-    supabase.from('events')
-      .select('id,title,starts_at,location,cover_url')
-      .gte('starts_at', new Date().toISOString())
-      .order('starts_at', { ascending: true })
-      .limit(3),
-    supabase.from('event_rsvp_counts')
-      .select('event_id,yes_count,maybe_count,no_count')
-  ]);
+      const [eventsRes, countsRes] = await Promise.all([
+        supabase.from('events')
+          .select('id,title,starts_at,location,cover_url')
+          .gte('starts_at', new Date().toISOString())
+          .order('starts_at', { ascending: true })
+          .limit(3),
+        supabase.from('event_rsvp_counts')
+          .select('event_id,yes_count,maybe_count,no_count')
+      ]);
 
-  if(eventsRes.error){
-    console.error(eventsRes.error);
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          Track went quiet — we couldn’t load events. Refresh or check back in a bit.
-        </div>
-      </article>`;
-    return;
-  }
+      if(eventsRes.error){
+        console.error(eventsRes.error);
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              Track went quiet — we couldn’t load events. Refresh or check back in a bit.
+            </div>
+          </article>`;
+        return;
+      }
 
-  const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
-  const rows = (eventsRes.data||[]).map(e => ({
-    ...e,
-    counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
-  }));
+      const countsMap = new Map((countsRes.data||[]).map(c => [c.event_id, c]));
+      const rows = (eventsRes.data||[]).map(e => ({
+        ...e,
+        counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+      }));
 
-  if(!rows.length){
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          No upcoming events are on the calendar yet. Follow @rrxngclub for drops and new meets.
-        </div>
-      </article>`;
-    return;
-  }
+      if(!rows.length){
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              No upcoming events are on the calendar yet. Follow @rrxngclub for drops and new meets.
+            </div>
+          </article>`;
+        return;
+      }
 
-  grid.innerHTML = rows.map(renderEventCard).join('');
-}
-
+      grid.innerHTML = rows.map(renderEventCard).join('');
+    }
 
     // ===== Sightings (front page preview) =====
-// ===== Sightings (front page preview) =====
-function renderSightingCard(s){
-  const img = s.image_url
-    ? `<img loading="lazy" src="${s.image_url}" width="1200" height="675" alt="${s.title}"/>`
-    : "";
-  const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
-  const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
+    function renderSightingCard(s){
+      const img = s.image_url
+        ? `<img loading="lazy" src="${s.image_url}" width="1200" height="675" alt="${s.title}"/>`
+        : "";
+      const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
+      const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
 
-  return `
-    <article class="card reveal" role="listitem" data-sighting="${s.id}">
-      <a href="/sighting.html?id=${s.id}">
-        ${img}
-        <div class="pad">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-            <strong>${s.title}</strong>
-            <small class="sub">${dateStr}</small>
+      return `
+        <article class="card reveal" role="listitem" data-sighting="${s.id}">
+          <a href="/sighting.html?id=${s.id}">
+            ${img}
+            <div class="pad">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <strong>${s.title}</strong>
+                <small class="sub">${dateStr}</small>
+              </div>
+              ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
+              <div class="sub" style="margin-top:8px">
+                ♥ <span class="likes">${s.like_count || 0}</span>
+              </div>
+            </div>
+          </a>
+        </article>`;
+    }
+
+    async function loadFrontSightings(){
+      const grid = document.getElementById('sightingsGrid');
+      if(!grid) return;
+
+      grid.innerHTML = `
+        <article class="card reveal">
+          <div class="pad sub">Pulling the latest island sightings…</div>
+        </article>`;
+
+      const { data, error } = await supabase
+        .from('sightings_with_like_count')
+        .select('id,title,location,parish,image_url,created_at,like_count')
+        .order('created_at', { ascending:false })
+        .limit(3);
+
+      if(error){
+        console.error(error);
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              Couldn’t load sightings. Refresh to try again, or check back later.
+            </div>
+          </article>`;
+        return;
+      }
+
+      if(!data?.length){
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              No sightings on the map yet — be the first to drop a shot from the streets.
+            </div>
+          </article>`;
+        return;
+      }
+
+      grid.innerHTML = data.map(renderSightingCard).join('');
+    }
+
+    // ===== Highlights (front page preview) =====
+    function renderHighlightCard(h){
+      const img = h.image_url
+        ? `<img loading="lazy" src="${h.image_url}" width="1200" height="675" alt="${h.title}">`
+        : "";
+      const cat = h.category
+        ? `<span class="chip" style="margin-bottom:6px">${h.category}</span>`
+        : "";
+      const dateStr = h.created_at
+        ? new Date(h.created_at).toLocaleDateString()
+        : "";
+      const teaser = (h.body || '').slice(0,140);
+      const more = (h.body && h.body.length > 140) ? '…' : '';
+
+      return `
+        <article class="card reveal" role="listitem" data-highlight="${h.id}">
+          ${img}
+          <div class="pad">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <strong>${h.title}</strong>
+              <small class="sub">${dateStr}</small>
+            </div>
+            ${cat}
+            <p class="sub" style="margin:6px 0 8px;max-height:3.6em;overflow:hidden">
+              ${teaser}${more}
+            </p>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span class="sub">♥ ${h.like_count || 0}</span>
+              <a class="btn" href="/highlight.html?id=${h.id}">Read</a>
+            </div>
           </div>
-          ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
-          <div class="sub" style="margin-top:8px">
-            ♥ <span class="likes">${s.like_count || 0}</span>
-          </div>
-        </div>
-      </a>
-    </article>`;
-}
+        </article>`;
+    }
 
-async function loadFrontSightings(){
-  const grid = document.getElementById('sightingsGrid');
-  if(!grid) return;
+    async function loadFrontHighlights(){
+      const grid = document.getElementById('highlightsGrid');
+      if(!grid) return;
 
-  grid.innerHTML = `
-    <article class="card reveal">
-      <div class="pad sub">Pulling the latest island sightings…</div>
-    </article>`;
+      grid.innerHTML = `
+        <article class="card reveal">
+          <div class="pad sub">Loading the latest from the paddock…</div>
+        </article>`;
 
-  const { data, error } = await supabase
-    .from('sightings_with_like_count')
-    .select('id,title,location,parish,image_url,created_at,like_count')
-    .order('created_at', { ascending:false })
-    .limit(3);
+      const { data, error } = await supabase
+        .from('highlights_with_like_count')
+        .select('id,title,category,image_url,body,created_at,like_count')
+        .order('created_at', { ascending:false })
+        .limit(3);
 
-  if(error){
-    console.error(error);
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          Couldn’t load sightings. Refresh to try again, or check back later.
-        </div>
-      </article>`;
-    return;
-  }
+      if(error){
+        console.error(error);
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              Couldn’t load highlights right now. Refresh and try again in a bit.
+            </div>
+          </article>`;
+        return;
+      }
 
-  if(!data?.length){
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          No sightings on the map yet — be the first to drop a shot from the streets.
-        </div>
-      </article>`;
-    return;
-  }
+      if(!data?.length){
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">
+              No highlights yet — the feed’s quiet. New stories and drops will land here soon.
+            </div>
+          </article>`;
+        return;
+      }
 
-  grid.innerHTML = data.map(renderSightingCard).join('');
-}
-
-// ===== Highlights (front page preview) =====
-function renderHighlightCard(h){
-  const img = h.image_url
-    ? `<img loading="lazy" src="${h.image_url}" width="1200" height="675" alt="${h.title}">`
-    : "";
-  const cat = h.category
-    ? `<span class="chip" style="margin-bottom:6px">${h.category}</span>`
-    : "";
-  const dateStr = h.created_at
-    ? new Date(h.created_at).toLocaleDateString()
-    : "";
-  const teaser = (h.body || '').slice(0,140);
-  const more = (h.body && h.body.length > 140) ? '…' : '';
-
-  return `
-    <article class="card reveal" role="listitem" data-highlight="${h.id}">
-      ${img}
-      <div class="pad">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <strong>${h.title}</strong>
-          <small class="sub">${dateStr}</small>
-        </div>
-        ${cat}
-        <p class="sub" style="margin:6px 0 8px;max-height:3.6em;overflow:hidden">
-          ${teaser}${more}
-        </p>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <span class="sub">♥ ${h.like_count || 0}</span>
-          <a class="btn" href="/highlight.html?id=${h.id}">Read</a>
-        </div>
-      </div>
-    </article>`;
-}
-
-async function loadFrontHighlights(){
-  const grid = document.getElementById('highlightsGrid');
-  if(!grid) return;
-
-  grid.innerHTML = `
-    <article class="card reveal">
-      <div class="pad sub">Loading the latest from the paddock…</div>
-    </article>`;
-
-  const { data, error } = await supabase
-    .from('highlights_with_like_count')
-    .select('id,title,category,image_url,body,created_at,like_count')
-    .order('created_at', { ascending:false })
-    .limit(3);
-
-  if(error){
-    console.error(error);
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          Couldn’t load highlights right now. Refresh and try again in a bit.
-        </div>
-      </article>`;
-    return;
-  }
-
-  if(!data?.length){
-    grid.innerHTML = `
-      <article class="card">
-        <div class="pad sub">
-          No highlights yet — the feed’s quiet. New stories and drops will land here soon.
-        </div>
-      </article>`;
-    return;
-  }
-
-  grid.innerHTML = data.map(renderHighlightCard).join('');
-}
+      grid.innerHTML = data.map(renderHighlightCard).join('');
+    }
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1133,7 +1628,7 @@ async function loadFrontHighlights(){
       setupLiveLikes();
       await loadFrontEvents();
       await loadFrontSightings();
-      await loadFrontHighlights(); 
+      await loadFrontHighlights();
     });
   </script>
 
