@@ -125,7 +125,7 @@
       font-size:12px;color:var(--muted);margin-bottom:4px;
     }
 
-    /* Nav auth chip (same IDs as tickets.html for auth-ui.js) */
+    /* Nav auth chip */
     .nav-auth{display:flex;align-items:center;gap:10px}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
@@ -148,6 +148,18 @@
       width:100%;cursor:pointer;font-family:inherit;
     }
     .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    textarea.input{
+      width:100%;
+      background:var(--bg2);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      color:#fff;
+      font:inherit;
+      min-height:60px;
+      resize:vertical;
+    }
   </style>
 </head>
 <body>
@@ -193,6 +205,8 @@
       <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:16px">
         <div>
           <h2 id="buildTitle" style="font-size:44px">Loading build…</h2>
+          <!-- NEW: owner line -->
+          <div id="buildOwner" class="sub" style="margin-top:4px"></div>
           <div id="buildMeta" class="meta-row"></div>
         </div>
         <div class="row">
@@ -260,12 +274,37 @@
     }[m]));
   }
 
+  // Fallback requireLogin if auth-ui.js didn't wire it up
+  if (!window.authUI) window.authUI = {};
+  if (!window.authUI.requireLogin) {
+    window.authUI.requireLogin = async function(callback){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        const email = prompt("Enter your email to sign in:");
+        if (!email) return false;
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: location.href }
+        });
+        if (error) {
+          alert("Sign-in error: " + error.message);
+          return false;
+        }
+        alert("Magic link sent. Check your email, then reload.");
+        return false;
+      }
+      if (callback) callback(user);
+      return true;
+    };
+  }
+
   function showBuildError(msg){
     $('buildError').textContent = msg;
   }
 
   function clearBuildUIForError(titleText){
     $('buildTitle').textContent = titleText;
+    $('buildOwner').textContent = '';
     $('buildMeta').innerHTML = '';
     $('galleryMain').innerHTML = `<span class="sub">Nothing to show here.</span>`;
     $('galleryThumbs').innerHTML = '';
@@ -392,15 +431,50 @@
     }
   }
 
+  /* ===== Owner / profile ===== */
+  async function loadOwnerMeta(build){
+    const ownerEl = $('buildOwner');
+    ownerEl.textContent = '';
+
+    try{
+      const { data, error } = await supabase
+        .from('profiles')                // <-- adjust table name if needed
+        .select('id, handle, display_name')
+        .eq('id', build.user_id)
+        .maybeSingle();
+
+      if(error){
+        console.error('Owner lookup error', error);
+        return;
+      }
+      if(!data) return;
+
+      const handle = (data.handle || '').trim();
+      const name   = (data.display_name || '').trim();
+
+      let html = '';
+
+      if(handle){
+        const safeHandle = escapeHTML(handle);
+        const href = `/u/${encodeURIComponent(handle)}`;
+        html = `Built by <a href="${href}" style="text-decoration:underline">@${safeHandle}</a>`;
+      }else if(name){
+        html = `Built by ${escapeHTML(name)}`;
+      }
+
+      ownerEl.innerHTML = html;
+    }catch(err){
+      console.error('Owner meta exception', err);
+    }
+  }
+
   /* ===== Likes ===== */
   async function loadLikes(){
     const likeBtn = $('likeBtn');
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user || null;
 
-    // total like count from view if available, else count table
     let total = 0;
-    let aggErr = null;
 
     const { data: likeAgg, error: likeAggErr } = await supabase
       .from('build_like_counts')
@@ -409,7 +483,6 @@
       .maybeSingle();
 
     if(likeAggErr){
-      aggErr = likeAggErr;
       console.error(likeAggErr);
     }else{
       total = Number(likeAgg?.like_count || 0);
@@ -417,7 +490,6 @@
 
     likeCount = total;
 
-    // Did current user like it?
     if(user){
       const { data: existing, error: existingErr } = await supabase
         .from('build_likes')
@@ -516,18 +588,16 @@
       return false;
     }
 
-    // Respect private builds: only owner can view
+    // Respect private builds
     if(!build.is_public && (!user || user.id !== build.user_id)){
       showBuildError('This build is private. Ask the owner to share a public build or check their garage.');
       clearBuildUIForError('Private build');
       return false;
     }
 
-    // Title + document title
     document.title = `${build.title || 'Build'} — ROK Racers JA`;
     $('buildTitle').textContent = build.title || 'Untitled build';
 
-    // Meta (car info + created date)
     const created = build.created_at ? new Date(build.created_at) : null;
     const when = created ? created.toLocaleString('en-US', {
       month:'short', day:'2-digit', year:'numeric'
@@ -551,14 +621,12 @@
     }
     $('buildMeta').innerHTML = metaBits.join(' • ');
 
-    // Description
     if(build.description){
       $('buildDescription').innerHTML = escapeHTML(build.description).replace(/\n/g,'<br>');
     }else{
       $('buildDescription').innerHTML = `<span class="sub">No description yet — owner hasn’t told this build’s story.</span>`;
     }
 
-    // Footer meta
     const footer = [];
     if(build.is_public){
       footer.push('Visible in your public garage and eligible for Top 5.');
@@ -567,7 +635,6 @@
     }
     $('buildFooterMeta').textContent = footer.join(' ');
 
-    // Gallery images
     const { data: images, error: imgErr } = await supabase
       .from('build_images')
       .select('id,image_url')
@@ -581,13 +648,12 @@
       setGallery(images || [], build.custom_image_url || build.thumb_url || null);
     }
 
-    // Specs (JSON column)
     renderSpecs(build.specs || null);
-
-    // Badges
     renderBadges(build);
 
-    // Likes
+    // NEW: owner meta
+    await loadOwnerMeta(build);
+
     await loadLikes();
 
     return true;
@@ -627,11 +693,7 @@
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user || null;
     const formRow = $('commentFormRow');
-    if(user){
-      formRow.style.display = 'flex';
-    }else{
-      formRow.style.display = 'none';
-    }
+    formRow.style.display = user ? 'flex' : 'none';
   }
 
   $('commentPostBtn').addEventListener('click', async () => {

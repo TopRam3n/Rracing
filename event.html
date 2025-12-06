@@ -18,62 +18,91 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
+
+  <!-- Shared auth (nav + requireLogin) -->
   <script src="/auth-ui.js"></script>
 
   <style>
     :root{
-      --bg:#141414;--fg:#fff;--muted:#bdbdbd;
-      --accent:#e50914;--line:rgba(255,255,255,.08);
-      --bg1:#161616;--bg2:#1b1b1b;
+      --bg:#050508;
+      --bg1:#141414;
+      --bg2:#1b1b1b;
+      --fg:#fff;
+      --muted:#bdbdbd;
+      --accent:#e50914;
+      --accent-yellow:#FFD93B;
+      --line:rgba(255,255,255,.08);
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      background:var(--bg);
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
       color:var(--fg);
       font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif
     }
     a{color:var(--fg);text-decoration:none}
     .container{max-width:900px;margin:0 auto;padding:0 24px}
 
-    /* NAV */
+    /* NAV (aligned with events/index) */
     .nav{
-      position:sticky;top:0;z-index:10;
-      background:rgba(18,18,18,.9);
+      position:sticky;top:0;z-index:20;
+      background:rgba(5,5,8,.9);
       border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px);
+      backdrop-filter:saturate(140%) blur(12px);
     }
     .nav-inner{
       display:flex;
       align-items:center;
       justify-content:space-between;
       padding:14px 0;
+      gap:16px;
     }
     .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:40px;height:40px;border-radius:8px}
+    .logo{width:40px;height:40px;border-radius:10px;object-fit:cover}
     h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .sub{color:var(--muted)}
+    .sub{color:var(--muted);font-size:12px}
 
-    .menu{display:flex;gap:10px;align-items:center}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
     .btn{
       display:inline-flex;gap:8px;align-items:center;
-      padding:10px 14px;border-radius:14px;
+      padding:8px 14px;border-radius:999px;
       border:1px solid var(--line);
       cursor:pointer;background:transparent;color:var(--fg);
-      font-family:inherit;
+      font-family:inherit;font-size:13px;
     }
-    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.primary{
+      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+      color:#fff;border-color:rgba(229,9,20,.9);
+      box-shadow:0 0 18px rgba(229,9,20,.5);
+    }
+    .btn.primary:hover{
+      box-shadow:0 0 26px rgba(229,9,20,.7);
+      transform:translateY(-1px);
+    }
 
-    .section{padding:48px 0}
-    .card{background:#161616;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+    .section{padding:40px 0 52px}
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:0 40px 120px -30px rgba(0,0,0,.7);
+    }
     .pad{padding:18px}
-    .meta{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 0}
-    .chip{background:#1b1b1b;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:14px}
+    .meta{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 0}
+    .chip{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:13px;
+    }
     .row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
     .input{
-      width:100%;background:#1b1b1b;border:1px solid var(--line);
+      width:100%;background:var(--bg2);border:1px solid var(--line);
       color:#fff;padding:12px;border-radius:12px;outline:none;
-      font-family:inherit;
+      font-family:inherit;font-size:14px;
     }
     textarea.input{resize:vertical}
     .comment{border-top:1px solid var(--line);padding:14px 0}
@@ -84,35 +113,46 @@
     @media(max-width:760px){.cols-2{grid-template-columns:1fr}}
 
     /* presence */
-    .presence{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+    .presence{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
 
     /* nav auth (shared pattern) */
-    .nav-auth{display:flex;align-items:center;gap:10px}
+    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
     .profile-menu{
       position:relative;
       display:flex;
       align-items:center;
     }
     .profile-chip{
-      width:40px;height:40px;border-radius:50%;
+      width:32px;height:32px;border-radius:50%;
       background:var(--bg2);
       display:flex;align-items:center;justify-content:center;
       font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-size:13px;
     }
-    .profile-chip span{font-size:16px}
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 16px rgba(255,217,59,.6);
+      transform:translateY(-1px);
+    }
     .dropdown{
-      position:absolute;right:0;top:48px;
+      position:absolute;right:0;top:40px;
       background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;display:flex;flex-direction:column;
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border-radius:16px;display:flex;flex-direction:column;
       min-width:190px;z-index:999;
     }
     .dropdown a,.dropdown button{
       padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:15px;
+      background:transparent;color:var(--fg);font-size:13px;
       width:100%;cursor:pointer;font-family:inherit;
     }
     .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    @media(max-width:640px){
+      .nav-inner{flex-wrap:wrap}
+      .menu{order:3;width:100%;justify-content:flex-start}
+      .nav-auth{order:2;width:100%;justify-content:flex-end}
+    }
   </style>
 </head>
 <body>
@@ -126,7 +166,7 @@
         </div>
       </a>
 
-      <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
         <span class="presence">👀 <span id="viewerCount">0</span> viewing</span>
 
         <div class="menu" role="menubar" aria-label="Main menu">
@@ -136,7 +176,10 @@
         </div>
 
         <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Sign in</button>
+          <!-- shared nav buttons (auth-ui.js controls these) -->
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
@@ -146,7 +189,7 @@
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
-              <button id="navSignOutBtn" type="button" style="justify-content:flex-start">Sign out</button>
+              <button id="navSignOutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
@@ -163,7 +206,7 @@
 
     <!-- Comments -->
     <section class="section">
-      <h2 style="font-size:36px">Comments</h2>
+      <h2 style="font-size:36px;letter-spacing:2px;text-transform:uppercase;">Comments</h2>
       <div id="commentForm" class="row" style="margin:10px 0 16px; display:none">
         <input id="commentText" class="input" placeholder="Share your thoughts…"/>
         <button id="commentPost" class="btn primary">Post</button>
@@ -173,9 +216,6 @@
       </div>
     </section>
   </main>
-
-  <!-- shared auth UI (nav + requireLogin) -->
-  <script src="/auth-ui.js"></script>
 
   <script>
     const eventId = new URLSearchParams(location.search).get('id');
@@ -194,6 +234,20 @@
     }
 
     let currentUserId = null;
+
+    // wrapper that prefers central authUI.requireLogin but falls back to direct check
+    async function requireLogin(callback){
+      if (window.authUI && typeof authUI.requireLogin === 'function'){
+        return authUI.requireLogin(callback);
+      }
+      const { data: { user } = {} } = await supabase.auth.getUser();
+      if (!user){
+        alert("Please sign in first.");
+        return false;
+      }
+      if (callback) callback(user);
+      return true;
+    }
 
     /* ========== Auth → show/hide comment box ========== */
     async function syncPageAuth(){
@@ -254,7 +308,7 @@
       card.innerHTML = `
         ${data.cover_url ? `<img src="${escapeHTML(data.cover_url)}" alt="${escapeHTML(data.title)}" style="width:100%;display:block">` : ""}
         <div class="pad">
-          <h2 style="font-size:42px">${escapeHTML(data.title)}</h2>
+          <h2 style="font-size:42px;letter-spacing:2px;text-transform:uppercase;">${escapeHTML(data.title)}</h2>
           <div class="meta">
             <span class="chip">🕒 ${escapeHTML(time)}</span>
             ${data.location ? `<span class="chip">📍 ${escapeHTML(data.location)}</span>` : ""}
@@ -301,9 +355,9 @@
           </div>
         </div>`;
 
-      // RSVP buttons (guarded by login)
+      // RSVP buttons → central auth
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
-        btn.addEventListener('click', ()=> window.authUI.requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
+        btn.addEventListener('click', ()=> requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
       });
 
       // Owner controls
@@ -383,7 +437,7 @@
       el('commentsInner').innerHTML = data.map(renderComment).join('');
     }
 
-    el('commentPost').onclick = async ()=>{
+    async function postComment(){
       const input = el('commentText');
       const text = input.value.trim();
       if(!text) return;
@@ -405,7 +459,9 @@
       }
       input.value = "";
       // realtime will append
-    };
+    }
+
+    el('commentPost').onclick = ()=> requireLogin(postComment);
 
     el('comments').addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action]');

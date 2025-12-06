@@ -1,163 +1,252 @@
 <!doctype html> 
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Garage — ROK Racers JA</title>
-<meta name="description" content="Explore builds from Jamaica’s car community. Like, filter, and share your own." />
-<link rel="icon" href="/Assets/og.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Garage — ROK Racers JA</title>
+  <meta name="description" content="Explore builds from Jamaica’s car community. Like, filter, and share your own." />
+  <link rel="icon" href="/Assets/og.png" />
 
-<!-- Supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<script src="/auth-ui.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-<style>
-:root{
-  --bg:#141414; --bg1:#161616; --bg2:#1b1b1b; --fg:#fff; --muted:#bdbdbd;
-  --accent:#e50914; --line:rgba(255,255,255,.08); --shadow:0 40px 120px -30px rgba(0,0,0,.6)
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-a{color:var(--fg);text-decoration:none}
-.container{max-width:1200px;margin:0 auto;padding:0 24px}
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:48px;height:48px;border-radius:8px}
-h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-.title small{color:var(--muted)}
-.sub{color:var(--muted)}
+  <!-- Shared auth UI (nav + requireLogin) -->
+  <script src="/auth-ui.js"></script>
 
-.nav-auth {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  <style>
+    :root{
+      --bg:#050508;
+      --bg1:#141414;
+      --bg2:#1b1b1b;
+      --fg:#fff;
+      --muted:#bdbdbd;
+      --accent:#e50914;
+      --accent-yellow:#FFD93B;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-.profile-chip {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--line);
-}
+    /* NAV (aligned with events/event pages) */
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(5,5,8,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(12px);
+    }
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 0;
+      gap:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:10px;object-fit:cover}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .title small,.sub{color:var(--muted);font-size:12px}
 
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 48px;
-  background: var(--bg1);
-  border: 1px solid var(--line);
-  box-shadow: 0 20px 40px rgba(0,0,0,.45);
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  min-width: 180px;
-  z-index: 999;
-}
+    .menu{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
 
-.dropdown a,
-.dropdown button {
-  padding: 12px 16px;
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: var(--fg);
-  font-size: 15px;
-  width: 100%;
-  cursor: pointer;
-}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 14px;border-radius:999px;
+      border:1px solid var(--line);
+      cursor:pointer;background:transparent;color:var(--fg);
+      font-family:inherit;font-size:13px;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .btn.primary{
+      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+      color:#fff;border-color:rgba(229,9,20,.9);
+      box-shadow:0 0 18px rgba(229,9,20,.5);
+    }
+    .btn.primary:hover{
+      box-shadow:0 0 26px rgba(229,9,20,.7);
+      transform:translateY(-1px);
+    }
 
-.dropdown a:hover,
-.dropdown button:hover {
-  background: #1f1f1f;
-}
+    .section{padding:56px 0}
+    .grid{display:grid;gap:24px}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
 
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .card img{display:block;width:100%;height:auto}
+    .pad{padding:18px}
 
-.section{padding:56px 0}
-.grid{display:grid;gap:24px}
-.cols-3{grid-template-columns:repeat(3,1fr)}
-@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+    .filters{
+      display:flex;gap:10px;flex-wrap:wrap;
+      margin:14px 0 18px;
+    }
+    input,select{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      color:#fff;padding:12px;border-radius:12px;
+      outline:none;min-width:160px;
+      font-family:inherit;font-size:14px;
+    }
 
-.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
-.card:hover{transform:translateY(-6px) scale(1.01)}
-.card img{display:block;width:100%;height:auto}
-.pad{padding:18px}
+    .btn.ghost{background:transparent}
 
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
-input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;min-width:160px}
-.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer;background:transparent;color:var(--fg)}
-.btn.primary{background:#fff;color:#000;border-color:#fff}
-.btn.ghost{background:transparent}
+    .browse-head{
+      display:flex;gap:10px;align-items:center;
+      justify-content:space-between;flex-wrap:wrap;
+    }
+    .badge{
+      border:1px solid var(--line);
+      background:var(--bg2);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
-.browse-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.badge{border:1px solid var(--line);background:var(--bg2);padding:6px 10px;border-radius:999px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
+    .pagination .btn[disabled]{opacity:.5;pointer-events:none}
 
-.pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
-.pagination .btn[disabled]{opacity:.5;pointer-events:none}
+    .banner{
+      border:1px dashed rgba(255,255,255,.25);
+      background:rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:14px;
+      font-size:13px;
+    }
+    .banner strong{color:#fff}
 
-.banner{border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.03);border-radius:16px;padding:14px}
-.banner strong{color:#fff}
-</style>
+    /* nav auth (shared pattern) */
+    .nav-auth{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+    .profile-chip{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-size:13px;
+    }
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 16px rgba(255,217,59,.6);
+      transform:translateY(-1px);
+    }
+    .dropdown{
+      position:absolute;right:0;top:40px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border-radius:16px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:13px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    @media(max-width:640px){
+      .nav-inner{flex-wrap:wrap}
+      .menu{order:3;width:100%;justify-content:flex-start}
+      .nav-auth{order:2;width:100%;justify-content:flex-end}
+    }
+  </style>
 </head>
 <body>
   <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
         <img src="/Assets/logo.png" alt="" class="logo">
-        <div class="title"><h1>ROK RACERS JA</h1><small>Garage</small></div>
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Garage</small>
+        </div>
       </a>
-      <div class="row">
-        <span id="userBadge" class="sub"></span>
-      <div class="nav-auth"></div>
-  <button id="signinBtn" class="btn">Sign in</button>
-  <div id="profileMenu" class="profile-menu" style="display:none">
-    <div id="profileChip" class="profile-chip">
-      <span id="profileInitials">U</span>
-    </div>
 
-    <div id="dropdown" class="dropdown" style="display:none">
-      <a href="/garage.html?view=my">My Garage</a>
-      <a href="/tickets.html">My Tickets</a>
-      <a href="/likes-builds.html">Liked Builds</a>
-      <a href="/likes-sightings.html">Liked Sightings</a>
-      <button id="signoutBtn" class="btn" style="width:100%">Sign out</button>
-        <a class="btn" href="/events.html">Events</a>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+        </div>
+
+        <div class="nav-auth">
+          <!-- Shared nav buttons controlled by auth-ui.js -->
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html?view=my">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-</div>
   </nav>
 
   <main class="container">
     <section class="section">
       <div class="browse-head">
-        <h2 style="font-size:44px">Garage</h2>
+        <h2 style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">Garage</h2>
 
         <div class="row">
           <button id="newBuildBtn" class="btn primary">➕ New Build</button>
-          <span id="buildQuota" class="badge sub">0/3 builds used</span>
+          <span id="buildQuota" class="badge">0/3 builds used</span>
         </div>
       </div>
 
-      <div id="upgradeBanner" class="banner sub" style="display:none;margin-top:10px">
+      <div id="upgradeBanner" class="banner" style="display:none;margin-top:10px">
         <strong>Limit reached:</strong> You’ve used your 3 free builds. Upgrade to Premium to unlock more builds plus parts discounts and mechanic deals.
       </div>
 
-                 <div class="filters" role="region" aria-label="Garage filters">
+      <div class="filters" role="region" aria-label="Garage filters">
         <input id="q" placeholder="Search builds…" aria-label="Search builds"/>
 
         <select id="vis" aria-label="Visibility">
@@ -166,7 +255,6 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
           <option value="all">All public (default)</option>
         </select>
 
-        <!-- New: filter by part category -->
         <select id="partFilter" aria-label="Part category">
           <option value="">Any part</option>
           <option value="wheels">Wheels</option>
@@ -191,8 +279,6 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
         <button id="apply" class="btn">Apply</button>
       </div>
 
-
-
       <div id="buildsGrid" class="grid cols-3" role="list" aria-live="polite">
         <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
       </div>
@@ -204,503 +290,431 @@ input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;paddi
     </section>
   </main>
 
-<script>
-/* ========= Auth + Nav UI ========= */
-const userBadge   = document.getElementById('userBadge');
-const signinBtn   = document.getElementById('signinBtn');
-const signoutBtn  = document.getElementById('signoutBtn');
-const profileMenu = document.getElementById('profileMenu');
-const profileChip = document.getElementById('profileChip');
-const dropdown    = document.getElementById('dropdown');
-const initialsEl  = document.getElementById('profileInitials');
-
-const buildQuotaEl   = document.getElementById('buildQuota');
-const upgradeBanner  = document.getElementById('upgradeBanner');
-const newBuildBtn    = document.getElementById('newBuildBtn');
-
-async function updateQuota(){
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if(!user){
-    buildQuotaEl.textContent = '0/3 builds used';
-    upgradeBanner.style.display = 'none';
-    newBuildBtn.disabled = true;
-    newBuildBtn.title = 'Sign in to add a build';
-    return;
-  }
-
-  const { count, error } = await supabase
-    .from('builds')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id);
-
-  const used = error ? 0 : (count ?? 0);
-  buildQuotaEl.textContent = `${used}/3 builds used`;
-
-  const atLimit = used >= 3;
-  upgradeBanner.style.display = atLimit ? 'block' : 'none';
-  newBuildBtn.disabled = atLimit;
-  newBuildBtn.title = atLimit
-    ? 'Free limit reached. Upgrade to unlock more builds, parts discounts and mechanic deals.'
-    : '';
-}
-
-async function updateAuthUI(){
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if(user){
-    userBadge.textContent = user.email || '';
-    signinBtn.style.display = 'none';
-    signoutBtn.style.display = 'inline-flex';
-    profileMenu.style.display = 'flex';
-
-    const raw = (user.email || '').split('@')[0] || 'u';
-    const cleaned = raw.replace(/[^a-z0-9]+/gi," ").trim();
-    const parts = cleaned.split(" ").filter(Boolean);
-    let initials = "";
-    if (parts.length >= 2){
-      initials = (parts[0][0] + parts[1][0]);
-    } else {
-      initials = cleaned.slice(0,2);
-    }
-    initialsEl.textContent = initials.toUpperCase();
-  }else{
-    userBadge.textContent = '';
-    signinBtn.style.display = 'inline-flex';
-    signoutBtn.style.display = 'none';
-    profileMenu.style.display = 'none';
-    dropdown.style.display = 'none';
-    initialsEl.textContent = 'U';
-  }
-
-  await updateQuota();
-}
-
-// Toggle dropdown
-profileChip?.addEventListener("click", (e)=>{
-  e.stopPropagation();
-  if (!dropdown) return;
-  const current = dropdown.style.display;
-  dropdown.style.display = (current === "none" || current === "") ? "block" : "none";
-});
-
-document.addEventListener("click", (e)=>{
-  if (!profileMenu?.contains(e.target)){
-    if (dropdown) dropdown.style.display = "none";
-  }
-});
-
-// Sign in (magic link)
-signinBtn?.addEventListener("click", async ()=>{
-  const email = prompt("Enter your email to get a magic link:");
-  if (!email) return;
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options:{ emailRedirectTo: location.href }
-  });
-
-  if (error){
-    console.error(error);
-    alert("Couldn’t send your magic link. Please check the email and try again.");
-  } else {
-    alert("Magic link sent! Check your inbox and come back to the grid.");
-  }
-});
-
-// Sign out
-signoutBtn?.addEventListener("click", async ()=>{
-  await supabase.auth.signOut();
-  await updateAuthUI();
-});
-
-supabase.auth.onAuthStateChange(() => {
-  updateAuthUI();
-});
-
-/* Helper: require login via shared auth-ui.js */
-window.requireLogin = async function(callback){
-  const { data: { user }} = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please sign in first.");
-    signinBtn?.click();
-    return false;
-  }
-  if (callback) callback();
-  return true;
-};
-
-/* ========= New Build (3-build quota) ========= */
-newBuildBtn?.addEventListener('click', () =>
-  authUI.requireLogin(async ()=>{
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Re-check quota
-    const { count, error } = await supabase
-      .from('builds')
-      .select('id', { count:'exact', head:true })
-      .eq('user_id', user.id);
-
-    const used = error ? 0 : (count ?? 0);
-    if(used >= 3){
-      alert('Free limit reached. Upgrade to add more builds and unlock perks.');
-      await updateQuota();
-      return;
+  <script>
+    /* ========= Small helper: auth wrapper (P0-safe) ========= */
+    async function requireLogin(callback){
+      // Prefer central authUI if available
+      if (window.authUI && typeof authUI.requireLogin === 'function'){
+        return authUI.requireLogin(callback);
+      }
+      const { data: { user } = {} } = await supabase.auth.getUser();
+      if (!user){
+        alert("Please sign in first.");
+        return false;
+      }
+      if (callback) callback(user);
+      return true;
     }
 
-    const title = prompt('Name this build:');
-    if(!title) return;
+    /* ========= Quota (3 builds per user) ========= */
+    const buildQuotaEl   = document.getElementById('buildQuota');
+    const upgradeBanner  = document.getElementById('upgradeBanner');
+    const newBuildBtn    = document.getElementById('newBuildBtn');
 
-    const pub = confirm('Make this build public? (OK = public, Cancel = private)');
-    const { data, error: insErr } = await supabase.from('builds').insert({
-      title,
-      is_public: !!pub,
-      user_id: user.id
-    }).select('id').single();
+    async function updateQuota(){
+      const { data: { user } = {} } = await supabase.auth.getUser();
 
-    if(insErr){
-      console.error(insErr);
-      alert('Couldn’t create build. Try again in a few seconds.');
-      return;
-    }
-
-    alert('Build created! Let’s set it up.');
-    await updateQuota();
-
-    // Go straight to editor for that build
-    if (data?.id){
-      location.href = `/build-edit.html?id=${data.id}`;
-    } else {
-      // Fallback: generic editor
-      location.href = `/build-edit.html`;
-    }
-  })
-);
-
-/* ========= Builds listing + filters + pagination ========= */
-const pageSize = 12;
-let page = 0;
-let currentRows = [];
-
-const buildsGrid = document.getElementById('buildsGrid');
-const prevBtn    = document.getElementById('prev');
-const nextBtn    = document.getElementById('next');
-
-function renderBuildCard(b){
-  const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
-  const type = b.build_type || 'owned';
-  const typeLabel = {
-    owned: 'Owned',
-    dream: 'Dream',
-    for_sale: 'For sale'
-  }[type] || 'Build';
-
-  const stageLabel = b.stage ? ({
-    stock: 'Stock/OEM+',
-    stage_1: 'Stage 1',
-    stage_2: 'Stage 2',
-    track: 'Track/Drift',
-    other: 'Custom'
-  }[b.stage] || b.stage) : null;
-
-  const power = b.power_goal ? `${b.power_goal} hp` : null;
-  const visibility = b.is_public ? 'Public' : 'Private';
-  const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
-
-  const liked = !!b._liked;
-  const heart = liked ? '♥' : '♡';
-
-  return `
-    <article class="card" role="listitem" data-build="${b.id}">
-      <a href="/build.html?id=${b.id}" style="display:block">
-        <img src="${img}" alt="${b.title}" loading="lazy">
-      </a>
-      <div class="pad">
-        <strong>${b.title}</strong>
-        ${carLabel ? `<div class="sub">${carLabel}</div>` : ''}
-
-        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
-          <span class="badge">${typeLabel}</span>
-          ${stageLabel ? `<span class="badge">${stageLabel}</span>` : ''}
-          ${power ? `<span class="badge">${power}</span>` : ''}
-          <span class="badge" style="border-color:${b.is_public ? 'var(--accent)' : 'var(--line)'}">
-            ${visibility}
-          </span>
-        </div>
-
-        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <span class="sub">♥ <span class="likes">${Number(b.like_count || 0)}</span></span>
-          <button class="btn" data-like
-            aria-pressed="${liked ? 'true':'false'}"
-            aria-label="${liked ? 'Remove boost from this build' : 'Boost this build'}"
-            title="${liked ? 'Remove boost from this build' : 'Boost this build'}">
-            ${heart}
-          </button>
-        </div>
-      </div>
-    </article>`;
-}
-
-function renderEmptyState(message){
-  buildsGrid.innerHTML = `
-    <article class="card">
-      <div class="pad sub">${message}</div>
-    </article>`;
-  prevBtn.disabled = true;
-  nextBtn.disabled = true;
-}
-
-function renderPage(){
-  if(!currentRows.length){
-    const vis = document.getElementById('vis').value;
-    const msg = vis === 'my'
-      ? "You don’t have any builds yet. Start your first one to put your car on the grid."
-      : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
-    renderEmptyState(msg);
-    return;
-  }
-
-  const start = page * pageSize;
-  const slice = currentRows.slice(start, start + pageSize);
-
-  buildsGrid.innerHTML = slice.map(renderBuildCard).join('');
-
-  prevBtn.disabled = page === 0;
-  nextBtn.disabled = (start + pageSize) >= currentRows.length;
-}
-
-async function applyFilters(){
-  const q       = document.getElementById('q').value.trim().toLowerCase();
-  const vis     = document.getElementById('vis').value;       // public | my | all
-  const sort    = document.getElementById('sort').value;      // top | new
-  const partCat = document.getElementById('partFilter').value; // "" or category
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  let rows = [];
-
-  try{
-    if (vis === 'my' && user){
-      // My builds (public + private), then join counts + thumbs client-side
-      const my = await supabase.from('builds')
-        .select('id,title,is_public,created_at')
-        .eq('user_id', user.id)
-        .order('created_at',{ascending:false});
-
-      if(my.error) throw my.error;
-
-      const ids = (my.data||[]).map(r => r.id);
-      let counts = []; let thumbs = [];
-      if(ids.length){
-        const c = await supabase
-          .from('build_like_counts')
-          .select('build_id, like_count')
-          .in('build_id', ids);
-        const t = await supabase
-          .from('build_primary_image')
-          .select('build_id, image_url')
-          .in('build_id', ids);
-        if(c.error) throw c.error;
-        if(t.error) throw t.error;
-        counts = c.data || [];
-        thumbs = t.data || [];
+      if(!user){
+        if (buildQuotaEl) buildQuotaEl.textContent = '0/3 builds used';
+        if (upgradeBanner) upgradeBanner.style.display = 'none';
+        if (newBuildBtn){
+          newBuildBtn.disabled = true;
+          newBuildBtn.title = 'Log in to add a build';
+        }
+        return;
       }
 
-      const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
-      const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
-      rows = (my.data||[]).map(b => ({
-        id: b.id,
-        title: b.title,
-        like_count: countMap.get(b.id)||0,
-        thumb_url: thumbMap.get(b.id)||null,
-        is_public: b.is_public,
-        created_at: b.created_at
-      }));
-    } else {
-      // Public listing (view already has like_count + thumb_url)
-      const pub = await supabase
-        .from('public_builds_with_like_count')
-        .select('id,title,like_count,thumb_url,is_public,created_at')
-        .order('like_count', { ascending: sort!=='top' })
-        .order('id', { ascending: true });
+      const { count, error } = await supabase
+        .from('builds')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
-      if(pub.error) throw pub.error;
-      rows = pub.data || [];
-    }
+      const used = error ? 0 : (count ?? 0);
+      if (buildQuotaEl) buildQuotaEl.textContent = `${used}/3 builds used`;
 
-    // Search filter
-    if(q){
-      rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
-    }
-
-    // Filter by part category
-    if(partCat){
-      const ids = rows.map(r => r.id);
-      if(ids.length){
-        const { data: partsData, error: partsError } = await supabase
-          .from('build_parts')
-          .select('build_id')
-          .in('build_id', ids)
-          .eq('category', partCat);
-        if(partsError) throw partsError;
-
-        const allowed = new Set((partsData||[]).map(p => p.build_id));
-        rows = rows.filter(r => allowed.has(r.id));
-      }else{
-        rows = [];
+      const atLimit = used >= 3;
+      if (upgradeBanner) upgradeBanner.style.display = atLimit ? 'block' : 'none';
+      if (newBuildBtn){
+        newBuildBtn.disabled = atLimit;
+        newBuildBtn.title = atLimit
+          ? 'Free limit reached. Upgrade to unlock more builds, parts discounts and mechanic deals.'
+          : '';
       }
     }
 
-    // Sort
-    if(sort === 'new'){
-      rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
-    }else if(sort === 'top'){
-      rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
+    supabase.auth.onAuthStateChange(() => {
+      updateQuota();
+      // Re-apply filters so "My builds" view reacts when logging in/out
+      applyFilters();
+    });
+
+    /* ========= New Build (enforce 3-build quota) ========= */
+    newBuildBtn?.addEventListener('click', () =>
+      requireLogin(async (user)=>{
+        if (!user) return;
+
+        const { count, error } = await supabase
+          .from('builds')
+          .select('id', { count:'exact', head:true })
+          .eq('user_id', user.id);
+
+        const used = error ? 0 : (count ?? 0);
+        if(used >= 3){
+          alert('Free limit reached. Upgrade to add more builds and unlock perks.');
+          await updateQuota();
+          return;
+        }
+
+        const title = prompt('Name this build:');
+        if(!title) return;
+
+        const pub = confirm('Make this build public? (OK = public, Cancel = private)');
+        const { data, error: insErr } = await supabase.from('builds').insert({
+          title,
+          is_public: !!pub,
+          user_id: user.id
+        }).select('id').single();
+
+        if(insErr){
+          console.error(insErr);
+          alert('Couldn’t create build. Try again in a few seconds.');
+          return;
+        }
+
+        alert('Build created! Let’s set it up.');
+        await updateQuota();
+
+        if (data?.id){
+          location.href = `/build-edit.html?id=${data.id}`;
+        } else {
+          location.href = `/build-edit.html`;
+        }
+      })
+    );
+
+    /* ========= Builds listing + filters + pagination ========= */
+    const pageSize = 12;
+    let page = 0;
+    let currentRows = [];
+
+    const buildsGrid = document.getElementById('buildsGrid');
+    const prevBtn    = document.getElementById('prev');
+    const nextBtn    = document.getElementById('next');
+
+    function renderBuildCard(b){
+      const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
+      const type = b.build_type || 'owned';
+      const typeLabel = {
+        owned: 'Owned',
+        dream: 'Dream',
+        for_sale: 'For sale'
+      }[type] || 'Build';
+
+      const stageLabel = b.stage ? ({
+        stock: 'Stock/OEM+',
+        stage_1: 'Stage 1',
+        stage_2: 'Stage 2',
+        track: 'Track/Drift',
+        other: 'Custom'
+      }[b.stage] || b.stage) : null;
+
+      const power = b.power_goal ? `${b.power_goal} hp` : null;
+      const visibility = b.is_public ? 'Public' : 'Private';
+      const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
+
+      const liked = !!b._liked;
+      const heart = liked ? '♥' : '♡';
+
+      return `
+        <article class="card" role="listitem" data-build="${b.id}">
+          <a href="/build.html?id=${b.id}" style="display:block">
+            <img src="${img}" alt="${b.title}" loading="lazy">
+          </a>
+          <div class="pad">
+            <strong>${b.title}</strong>
+            ${carLabel ? `<div class="sub">${carLabel}</div>` : ''}
+
+            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+              <span class="badge">${typeLabel}</span>
+              ${stageLabel ? `<span class="badge">${stageLabel}</span>` : ''}
+              ${power ? `<span class="badge">${power}</span>` : ''}
+              <span class="badge" style="border-color:${b.is_public ? 'var(--accent)' : 'var(--line)'}">
+                ${visibility}
+              </span>
+            </div>
+
+            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span class="sub">♥ <span class="likes">${Number(b.like_count || 0)}</span></span>
+              <button class="btn" data-like
+                aria-pressed="${liked ? 'true':'false'}"
+                aria-label="${liked ? 'Remove boost from this build' : 'Boost this build'}"
+                title="${liked ? 'Remove boost from this build' : 'Boost this build'}">
+                ${heart}
+              </button>
+            </div>
+          </div>
+        </article>`;
     }
 
-    // Mark liked hearts
-    const uid = user?.id || null;
-    if(uid && rows.length){
-      const ids = rows.map(r=>r.id);
-      const liked = await supabase.from('build_likes')
+    function renderEmptyState(message){
+      buildsGrid.innerHTML = `
+        <article class="card">
+          <div class="pad sub">${message}</div>
+        </article>`;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+    }
+
+    function renderPage(){
+      if(!currentRows.length){
+        const vis = document.getElementById('vis').value;
+        const msg = vis === 'my'
+          ? "You don’t have any builds yet. Start your first one to put your car on the grid."
+          : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
+        renderEmptyState(msg);
+        return;
+      }
+
+      const start = page * pageSize;
+      const slice = currentRows.slice(start, start + pageSize);
+
+      buildsGrid.innerHTML = slice.map(renderBuildCard).join('');
+
+      prevBtn.disabled = page === 0;
+      nextBtn.disabled = (start + pageSize) >= currentRows.length;
+    }
+
+    async function applyFilters(){
+      const q       = document.getElementById('q').value.trim().toLowerCase();
+      const vis     = document.getElementById('vis').value;       // public | my | all
+      const sort    = document.getElementById('sort').value;      // top | new
+      const partCat = document.getElementById('partFilter').value; // "" or category
+
+      const { data: { user } = {} } = await supabase.auth.getUser();
+
+      let rows = [];
+
+      try{
+        if (vis === 'my' && user){
+          // My builds (public + private)
+          const my = await supabase.from('builds')
+            .select('id,title,is_public,created_at')
+            .eq('user_id', user.id)
+            .order('created_at',{ascending:false});
+
+          if(my.error) throw my.error;
+
+          const ids = (my.data||[]).map(r => r.id);
+          let counts = []; let thumbs = [];
+          if(ids.length){
+            const c = await supabase
+              .from('build_like_counts')
+              .select('build_id, like_count')
+              .in('build_id', ids);
+            const t = await supabase
+              .from('build_primary_image')
+              .select('build_id, image_url')
+              .in('build_id', ids);
+            if(c.error) throw c.error;
+            if(t.error) throw t.error;
+            counts = c.data || [];
+            thumbs = t.data || [];
+          }
+
+          const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
+          const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
+          rows = (my.data||[]).map(b => ({
+            id: b.id,
+            title: b.title,
+            like_count: countMap.get(b.id)||0,
+            thumb_url: thumbMap.get(b.id)||null,
+            is_public: b.is_public,
+            created_at: b.created_at
+          }));
+        } else {
+          // Public listing (view already has like_count + thumb_url)
+          const pub = await supabase
+            .from('public_builds_with_like_count')
+            .select('id,title,like_count,thumb_url,is_public,created_at')
+            .order('like_count', { ascending: sort!=='top' })
+            .order('id', { ascending: true });
+
+          if(pub.error) throw pub.error;
+          rows = pub.data || [];
+        }
+
+        // Search filter
+        if(q){
+          rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
+        }
+
+        // Filter by part category
+        if(partCat){
+          const ids = rows.map(r => r.id);
+          if(ids.length){
+            const { data: partsData, error: partsError } = await supabase
+              .from('build_parts')
+              .select('build_id')
+              .in('build_id', ids)
+              .eq('category', partCat);
+            if(partsError) throw partsError;
+
+            const allowed = new Set((partsData||[]).map(p => p.build_id));
+            rows = rows.filter(r => allowed.has(r.id));
+          }else{
+            rows = [];
+          }
+        }
+
+        // Sort
+        if(sort === 'new'){
+          rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+        }else if(sort === 'top'){
+          rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
+        }
+
+        // Mark liked hearts
+        const uid = user?.id || null;
+        if(uid && rows.length){
+          const ids = rows.map(r=>r.id);
+          const liked = await supabase.from('build_likes')
+            .select('build_id')
+            .in('build_id', ids)
+            .eq('user_id', uid);
+          if(liked.error) throw liked.error;
+          const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
+          rows.forEach(r => { r._liked = likedSet.has(r.id); });
+        }
+
+        currentRows = rows;
+        page = 0;
+        renderPage();
+      }catch(err){
+        console.error(err);
+        renderEmptyState("We couldn’t load builds just now. Refresh the page or try again in a few seconds.");
+      }
+    }
+
+    /* ========= Like / Unlike ========= */
+    buildsGrid.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-like]');
+      if(!btn) return;
+
+      const card = e.target.closest('article.card');
+      const id   = card?.dataset.build;
+      const likesEl = card.querySelector('.likes');
+      if(!id || !likesEl) return;
+
+      const ok = await requireLogin();
+      if (!ok) return;
+
+      const { data: { user } = {} } = await supabase.auth.getUser();
+      if(!user){
+        alert('Sign in to boost builds and save your favourites.');
+        return;
+      }
+
+      const { data: existing, error: existingErr } = await supabase
+        .from('build_likes')
         .select('build_id')
-        .in('build_id', ids)
-        .eq('user_id', uid);
-      if(liked.error) throw liked.error;
-      const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
-      rows.forEach(r => { r._liked = likedSet.has(r.id); });
+        .eq('build_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(existingErr){
+        console.error(existingErr);
+        alert('That move stalled. Try again in a few seconds.');
+        return;
+      }
+
+      if(existing){
+        const { error: delErr } = await supabase
+          .from('build_likes')
+          .delete()
+          .eq('build_id', id)
+          .eq('user_id', user.id);
+        if(delErr){
+          console.error(delErr);
+          alert('Unboost failed. Try again in a few seconds.');
+          return;
+        }
+        btn.textContent = '♡';
+        btn.setAttribute('aria-pressed','false');
+        btn.setAttribute('aria-label','Boost this build');
+        btn.title = 'Boost this build';
+        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+      }else{
+        const { error: insErr } = await supabase
+          .from('build_likes')
+          .insert({ build_id: id, user_id: user.id });
+
+        if(insErr){
+          console.error(insErr);
+          alert('Couldn’t boost this build. Try again in a few seconds.');
+          return;
+        }
+        btn.textContent = '♥';
+        btn.setAttribute('aria-pressed','true');
+        btn.setAttribute('aria-label','Remove boost from this build');
+        btn.title = 'Remove boost from this build';
+        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+      }
+    });
+
+    /* ========= Live like updates ========= */
+    let likesChannel;
+    function setupLiveLikes(){
+      likesChannel?.unsubscribe();
+      likesChannel = supabase.channel('build-likes-live-garage')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
+          const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
+          if(!card) return;
+          const el = card.querySelector('.likes');
+          el.textContent = (parseInt(el.textContent)||0) + 1;
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
+          const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
+          if(!card) return;
+          const el = card.querySelector('.likes');
+          el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
+        })
+        .subscribe();
     }
 
-    currentRows = rows;
-    page = 0;
-    renderPage();
-  }catch(err){
-    console.error(err);
-    renderEmptyState("We couldn’t load builds just now. Refresh the page or try again in a few seconds.");
-  }
-}
-
-/* ========= Like / Unlike ========= */
-buildsGrid.addEventListener('click', async (e)=>{
-  const btn = e.target.closest('button[data-like]');
-  if(!btn) return;
-
-  const card = e.target.closest('article.card');
-  const id   = card?.dataset.build;
-  const likesEl = card.querySelector('.likes');
-  if(!id || !likesEl) return;
-
-  const ok = await authUI.requireLogin();
-  if (!ok) return;
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    alert('Sign in to boost builds and save your favourites.');
-    return;
-  }
-
-  const { data: existing, error: existingErr } = await supabase
-    .from('build_likes')
-    .select('build_id')
-    .eq('build_id', id)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if(existingErr){
-    console.error(existingErr);
-    alert('That move stalled. Try again in a few seconds.');
-    return;
-  }
-
-  if(existing){
-    const { error: delErr } = await supabase
-      .from('build_likes')
-      .delete()
-      .eq('build_id', id)
-      .eq('user_id', user.id);
-    if(delErr){
-      console.error(delErr);
-      alert('Unboost failed. Try again in a few seconds.');
-      return;
+    /* ========= Init ========= */
+    function initDefaultViewFromQuery(){
+      const params = new URLSearchParams(location.search);
+      const view = params.get('view');
+      if(view === 'my'){
+        const visSel = document.getElementById('vis');
+        if(visSel) visSel.value = 'my';
+      }
     }
-    btn.textContent = '♡';
-    btn.setAttribute('aria-pressed','false');
-    btn.setAttribute('aria-label','Boost this build');
-    btn.title = 'Boost this build';
-    likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-  }else{
-    const { error: insErr } = await supabase
-      .from('build_likes')
-      .insert({ build_id: id, user_id: user.id });
 
-    if(insErr){
-      console.error(insErr);
-      alert('Couldn’t boost this build. Try again in a few seconds.');
-      return;
-    }
-    btn.textContent = '♥';
-    btn.setAttribute('aria-pressed','true');
-    btn.setAttribute('aria-label','Remove boost from this build');
-    btn.title = 'Remove boost from this build';
-    likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
-  }
-});
+    document.getElementById('apply').addEventListener('click', applyFilters);
 
-/* ========= Live like updates ========= */
-let likesChannel;
-function setupLiveLikes(){
-  likesChannel?.unsubscribe();
-  likesChannel = supabase.channel('build-likes-live-garage')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
-      const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
-      if(!card) return;
-      const el = card.querySelector('.likes');
-      el.textContent = (parseInt(el.textContent)||0) + 1;
-    })
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
-      const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
-      if(!card) return;
-      const el = card.querySelector('.likes');
-      el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
-    })
-    .subscribe();
-}
+    prevBtn.addEventListener('click', ()=>{
+      if(page>0){
+        page--;
+        renderPage();
+      }
+    });
 
-/* ========= Init ========= */
-function initDefaultViewFromQuery(){
-  const params = new URLSearchParams(location.search);
-  const view = params.get('view');
-  if(view === 'my'){
-    const visSel = document.getElementById('vis');
-    if(visSel) visSel.value = 'my';
-  }
-}
+    nextBtn.addEventListener('click', ()=>{
+      const maxPage = Math.floor((currentRows.length - 1) / pageSize);
+      if(page < maxPage){
+        page++;
+        renderPage();
+      }
+    });
 
-document.getElementById('apply').addEventListener('click', applyFilters);
-prevBtn.addEventListener('click', ()=>{
-  if(page>0){
-    page--;
-    renderPage();
-  }
-});
-nextBtn.addEventListener('click', ()=>{
-  const maxPage = Math.floor((currentRows.length - 1) / pageSize);
-  if(page < maxPage){
-    page++;
-    renderPage();
-  }
-});
-
-window.addEventListener('DOMContentLoaded', async ()=>{
-  initDefaultViewFromQuery();
-  await updateAuthUI();
-  setupLiveLikes();
-  await applyFilters();
-});
-</script>
-
-
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      initDefaultViewFromQuery();
+      await updateQuota();
+      setupLiveLikes();
+      await applyFilters();
+    });
+  </script>
 
 </body>
 </html>

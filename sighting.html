@@ -194,6 +194,14 @@
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
+    function formatHandle(handle){
+      if(!handle) return null;
+      let h = handle.trim();
+      if(!h) return null;
+      if(!h.startsWith('@')) h = '@' + h;
+      return h;
+    }
+
     if (!window.requireLogin) {
       window.requireLogin = async function(callback){
         const { data: { user } } = await supabase.auth.getUser();
@@ -240,6 +248,7 @@
       const when = d ? d.toLocaleString("en-US", {
         month:"short", day:"2-digit", year:"numeric", hour:"numeric", minute:"2-digit"
       }) : "";
+
       const pieces = [];
       if(when) pieces.push(when);
       if(data.location) pieces.push(data.location);
@@ -253,6 +262,12 @@
       if(data.parish) badges += `<span class="pill">${escapeHTML(data.parish)}</span>`;
       if(data.location) badges += `<span class="pill">${escapeHTML(data.location)}</span>`;
       if(when) badges += `<span class="pill">${escapeHTML(when)}</span>`;
+
+      const handle = formatHandle(data.social_handle);
+      if(handle){
+        badges += `<span class="pill">📸 ${escapeHTML(handle)}</span>`;
+      }
+
       $('badgeRow').innerHTML = badges;
 
       await loadLikes();

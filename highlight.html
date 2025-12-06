@@ -1,362 +1,552 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Highlight — ROK Racers JA</title>
-<meta name="description" content="Highlight story from the ROK Racers JA community."/>
-<link rel="icon" href="/Assets/og.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Highlight — ROK Racers JA</title>
+  <meta name="description" content="Highlight story from the ROK Racers JA community."/>
+  <link rel="icon" href="/Assets/og.png"/>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+  <!-- Shared auth/nav behavior -->
+  <script src="/auth-ui.js"></script>
 
-<script src="/auth-ui.js"></script>
+  <style>
+    :root{
+      --bg:#050508;
+      --bg1:#161616;
+      --bg2:#1b1b1b;
+      --fg:#fff;
+      --muted:#bdbdbd;
+      --accent:#e50914;
+      --accent-yellow:#FFD93B;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
 
-<style>
-:root{
-  --bg:#141414;--bg1:#161616;--bg2:#1b1b1b;
-  --fg:#fff;--muted:#bdbdbd;--accent:#e50914;
-  --line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-a{color:var(--fg);text-decoration:none}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
+    /* NAV */
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(5,5,8,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(12px);
+    }
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 0;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
+    h1,h2,h3{
+      font-family:"Bebas Neue";
+      letter-spacing:2px;
+      margin:0;
+    }
+    .sub{color:var(--muted)}
 
-/* NAV */
-.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:44px;height:44px;border-radius:8px}
-h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-.sub{color:var(--muted)}
+    .menu{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      cursor:pointer;
+      background:transparent;
+      color:var(--fg);
+      font-family:inherit;
+      font-size:13px;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .btn.primary{
+      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+      color:#fff;border-color:rgba(229,9,20,.9);
+      box-shadow:0 0 18px rgba(229,9,20,.5);
+    }
+    .btn.primary:hover{
+      box-shadow:0 0 26px rgba(229,9,20,.7);
+      transform:translateY(-1px);
+    }
 
-/* LAYOUT */
-.section{padding:56px 0}
-.grid{display:grid;gap:24px}
-.cols-2{grid-template-columns:1.6fr .6fr}
-@media(max-width:980px){.cols-2{grid-template-columns:1fr}}
+    .section{padding:56px 0}
+    .grid{display:grid;gap:24px}
+    .cols-2{grid-template-columns:1.6fr .6fr}
+    @media(max-width:980px){.cols-2{grid-template-columns:1fr}}
 
-/* CARDS */
-.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
-.pad{padding:20px}
-.heroimg{width:100%;aspect-ratio:16/9;object-fit:cover;background:#0f0f0f;display:block}
-.chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
-.btn.primary{background:#fff;color:#000;border-color:#fff}
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .pad{padding:20px}
+    .heroimg{
+      width:100%;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#0f0f0f;
+      display:block;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:var(--bg2);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:14px;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
 
-/* POST BODY */
-.post-body{
-  font-size:16px;line-height:1.6;
-}
-.post-body p{margin:0 0 10px}
+    /* POST BODY */
+    .post-body{
+      font-size:16px;
+      line-height:1.6;
+    }
+    .post-body p{margin:0 0 10px}
 
-/* COMMENTS */
-.comment{border-top:1px solid var(--line);padding:12px 0}
-</style>
+    /* COMMENTS */
+    .comment{
+      border-top:1px solid var(--line);
+      padding:12px 0;
+    }
+
+    /* nav auth (shared pattern) */
+    .nav-auth{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+    .profile-chip{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-size:13px;
+    }
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 16px rgba(255,217,59,.6);
+      transform:translateY(-1px);
+    }
+    .dropdown{
+      position:absolute;right:0;top:40px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border-radius:16px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:13px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    @media(max-width:640px){
+      .nav-inner{flex-wrap:wrap}
+      .menu{order:3;width:100%;justify-content:flex-start}
+      .nav-auth{order:2;width:100%;justify-content:flex-end}
+    }
+  </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="container nav-inner">
-    <a href="/" class="brand" aria-label="ROK Racers JA home">
-      <img src="/Assets/logo.png" alt="" class="logo">
-      <div><h1>ROK RACERS JA</h1><small class="sub">Highlight</small></div>
-    </a>
-    <div class="row">
-      <a class="btn" href="/highlights.html">Highlights</a>
-    </div>
-  </div>
-</nav>
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a href="/" class="brand" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div>
+          <h1>ROK RACERS JA</h1>
+          <small class="sub">Highlight</small>
+        </div>
+      </a>
 
-<main class="container">
-  <section class="section">
-    <div class="grid cols-2">
-      <!-- LEFT: article -->
-      <article class="card" id="highlightCard">
-        <div class="pad sub">Loading…</div>
-      </article>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="/highlights.html">Highlights</a>
+        </div>
 
-      <!-- RIGHT: meta + likes -->
-      <aside class="card">
-        <div class="pad" id="metaBox">Loading…</div>
-        <div class="pad" id="likeBox" style="border-top:1px solid var(--line)">
-          <div class="row" style="justify-content:space-between">
-            <div><strong>Likes:</strong> <span id="likeCount">0</span></div>
-            <button id="likeBtn" class="btn" title="Like">♡</button>
+        <div class="nav-auth">
+          <!-- Controlled by auth-ui.js -->
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html?view=my">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
           </div>
         </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- COMMENTS -->
-  <section class="section">
-    <h2 style="font-size:40px">Comments</h2>
-    <div id="commentFormWrap" class="row" style="margin:10px 0 16px; display:none">
-      <textarea id="commentText" rows="3" placeholder="Share your thoughts…"
-        style="flex:1;min-width:220px;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;font-family:inherit"></textarea>
-      <button id="commentPost" class="btn primary">Post</button>
-    </div>
-    <div id="comments" class="card"><div class="pad sub">Loading comments…</div></div>
-  </section>
-</main>
-
-<script>
-const highlightId = new URLSearchParams(location.search).get('id');
-const $ = (id)=>document.getElementById(id);
-const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => (
-  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-));
-let currentUserId = null;
-let currentLikeCount = 0;
-
-/* AUTH */
-async function refreshAuth(){
-  const { data: { user } } = await supabase.auth.getUser();
-  currentUserId = user?.id || null;
-  $('commentFormWrap').style.display = user ? 'flex' : 'none';
-  await refreshLikedState();
-}
-supabase.auth.onAuthStateChange(refreshAuth);
-refreshAuth();
-
-/* LOAD HIGHLIGHT */
-function formatBody(body){
-  if(!body) return '<p class="sub">No content yet.</p>';
-  const parts = body.split(/\n\s*\n/); // paragraphs
-  return parts.map(p => `<p>${escapeHTML(p).replace(/\n/g,'<br>')}</p>`).join('');
-}
-
-async function loadHighlight(){
-  const card = $('highlightCard');
-  const meta = $('metaBox');
-  if(!highlightId){
-    card.innerHTML = `<div class="pad sub">Missing highlight ID.</div>`;
-    meta.innerHTML = '';
-    return;
-  }
-
-  const { data: h, error } = await supabase
-    .from('highlights_with_like_count')
-    .select('id,title,category,image_url,body,link_url,like_count,created_at')
-    .eq('id', highlightId)
-    .maybeSingle();
-
-  if(error || !h){
-    console.error(error);
-    card.innerHTML = `<div class="pad sub">Highlight not found or not published.</div>`;
-    meta.innerHTML = '';
-    return;
-  }
-
-  document.title = `${h.title} — ROK Racers JA`;
-  currentLikeCount = h.like_count || 0;
-  $('likeCount').textContent = currentLikeCount;
-
-  const hero = h.image_url || '/Assets/og.png';
-  const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
-  const cat = h.category || null;
-
-  card.innerHTML = `
-    <img src="${hero}" alt="${escapeHTML(h.title)}" class="heroimg">
-    <div class="pad">
-      <div class="row" style="margin-bottom:6px">
-        ${cat ? `<span class="chip">${escapeHTML(cat)}</span>` : ''}
-        ${dateStr ? `<span class="chip">${escapeHTML(dateStr)}</span>` : ''}
-      </div>
-      <h2 style="font-size:44px;margin-bottom:8px">${escapeHTML(h.title)}</h2>
-      <div class="post-body">
-        ${formatBody(h.body || '')}
       </div>
     </div>
-  `;
+  </nav>
 
-  meta.innerHTML = `
-    <div><strong>Category:</strong> ${cat || 'General'}</div>
-    <div class="sub" style="margin-top:6px">Published ${dateStr || '—'}</div>
-    ${
-      h.link_url
-        ? `<div style="margin-top:10px"><a href="${h.link_url}" target="_blank" rel="noopener" style="text-decoration:underline">Open related link</a></div>`
-        : ''
-    }
-  `;
-}
+  <main class="container">
+    <section class="section">
+      <div class="grid cols-2">
+        <!-- LEFT: article -->
+        <article class="card" id="highlightCard">
+          <div class="pad sub">Loading…</div>
+        </article>
 
-/* LIKES */
-async function refreshLikedState(){
-  if(!highlightId) return;
-  const btn = $('likeBtn');
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    btn.textContent = '♡';
-    btn.title = 'Sign in to like';
-    return;
-  }
-  const { data } = await supabase
-    .from('highlight_likes')
-    .select('highlight_id')
-    .eq('highlight_id', highlightId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+        <!-- RIGHT: meta + likes -->
+        <aside class="card" aria-label="Highlight meta and likes">
+          <div class="pad" id="metaBox">Loading…</div>
+          <div class="pad" id="likeBox" style="border-top:1px solid var(--line)">
+            <div class="row" style="justify-content:space-between">
+              <div><strong>Likes:</strong> <span id="likeCount">0</span></div>
+              <button id="likeBtn" class="btn" title="Like" aria-pressed="false">♡</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
 
-  if(data){
-    btn.textContent = '♥';
-    btn.title = 'Unlike';
-  }else{
-    btn.textContent = '♡';
-    btn.title = 'Like';
-  }
-}
+    <!-- COMMENTS -->
+    <section class="section">
+      <h2 style="font-size:40px">Comments</h2>
+      <div id="commentFormWrap" class="row" style="margin:10px 0 16px; display:none">
+        <textarea id="commentText" rows="3" placeholder="Share your thoughts…"
+          style="flex:1;min-width:220px;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;font-family:inherit"></textarea>
+        <button id="commentPost" class="btn primary">Post</button>
+      </div>
+      <div id="comments" class="card">
+        <div class="pad sub">Loading comments…</div>
+      </div>
+    </section>
+  </main>
 
-$('likeBtn').addEventListener('click', async ()=>{
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    alert('Sign in to like highlights.');
-    return;
-  }
-  const btn = $('likeBtn');
-  const { data: existing } = await supabase
-    .from('highlight_likes')
-    .select('highlight_id')
-    .eq('highlight_id', highlightId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+  <script>
+    const highlightId = new URLSearchParams(location.search).get('id');
+    const $ = (id)=>document.getElementById(id);
+    const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+    ));
+    let currentUserId = null;
+    let currentLikeCount = 0;
 
-  if(existing){
-    const { error } = await supabase
-      .from('highlight_likes')
-      .delete()
-      .eq('highlight_id', highlightId)
-      .eq('user_id', user.id);
-    if(error) return alert('Unlike failed: ' + error.message);
-    btn.textContent = '♡';
-    btn.title = 'Like';
-    currentLikeCount = Math.max(0, currentLikeCount - 1);
-    $('likeCount').textContent = currentLikeCount;
-  }else{
-    const { error } = await supabase
-      .from('highlight_likes')
-      .insert({ highlight_id: highlightId, user_id: user.id });
-    if(error) return alert('Like failed: ' + error.message);
-    btn.textContent = '♥';
-    btn.title = 'Unlike';
-    currentLikeCount += 1;
-    $('likeCount').textContent = currentLikeCount;
-  }
-});
-
-// realtime like updates
-let likeChannel;
-function liveLikes(){
-  likeChannel?.unsubscribe();
-  likeChannel = supabase.channel(`highlight-like-${highlightId}`)
-    .on('postgres_changes',{
-      event:'INSERT',schema:'public',table:'highlight_likes',
-      filter:`highlight_id=eq.${highlightId}`
-    }, () => {
-      currentLikeCount += 1;
-      $('likeCount').textContent = currentLikeCount;
-    })
-    .on('postgres_changes',{
-      event:'DELETE',schema:'public',table:'highlight_likes',
-      filter:`highlight_id=eq.${highlightId}`
-    }, () => {
-      currentLikeCount = Math.max(0, currentLikeCount - 1);
-      $('likeCount').textContent = currentLikeCount;
-    })
-    .subscribe();
-}
-
-/* COMMENTS (light) */
-function renderComment(c){
-  const dt = new Date(c.created_at).toLocaleString();
-  return `
-    <div class="comment">
-      <div class="sub" style="margin-bottom:4px">${escapeHTML(dt)}</div>
-      <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
-    </div>
-  `;
-}
-
-async function loadComments(){
-  const wrap = $('comments');
-  const { data, error } = await supabase
-    .from('highlight_comments')
-    .select('id, body, created_at, profile_id')
-    .eq('highlight_id', highlightId)
-    .order('created_at', { ascending:true });
-
-  if(error){
-    console.error(error);
-    wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
-    return;
-  }
-  if(!data?.length){
-    wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
-    return;
-  }
-  wrap.innerHTML = `<div class="pad" id="commentsInner">` +
-    data.map(renderComment).join('') +
-    `</div>`;
-}
-
-$('commentPost').addEventListener('click', async ()=>{
-  const input = $('commentText');
-  const text = input.value.trim();
-  if(!text) return;
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user) return alert('Sign in first.');
-
-  const { error } = await supabase
-    .from('highlight_comments')
-    .insert({ highlight_id: highlightId, body: text, profile_id: user.id });
-
-  if(error){
-    alert('Couldn’t post: ' + error.message);
-    return;
-  }
-  input.value = '';
-});
-
-// realtime comments
-let commentsChannel;
-function liveComments(){
-  commentsChannel?.unsubscribe();
-  commentsChannel = supabase.channel(`highlight-comments-${highlightId}`)
-    .on('postgres_changes',{
-      event:'INSERT',schema:'public',table:'highlight_comments',
-      filter:`highlight_id=eq.${highlightId}`
-    }, (p)=>{
-      const c = p.new;
-      const wrap = $('comments');
-      if(wrap.textContent.includes('No comments yet')){
-        wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
+    /* AUTH (page-specific) */
+    async function syncPageAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUserId = user?.id || null;
+      if($('commentFormWrap')){
+        $('commentFormWrap').style.display = user ? 'flex' : 'none';
       }
-      const inner = $('commentsInner') || (()=>{
-        wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-        return $('commentsInner');
-      })();
-      inner.insertAdjacentHTML('beforeend', renderComment(c));
-    })
-    .subscribe();
-}
+      await refreshLikedState();
+    }
 
-/* BOOT */
-window.addEventListener('DOMContentLoaded', async ()=>{
-  await loadHighlight();
-  liveLikes();
-  await loadComments();
-  liveComments();
-});
-</script>
+    supabase.auth.onAuthStateChange(() => {
+      syncPageAuth();
+    });
+
+    /* LOAD HIGHLIGHT */
+    function formatBody(body){
+      if(!body) return '<p class="sub">No content yet.</p>';
+      const parts = body.split(/\n\s*\n/); // paragraphs
+      return parts
+        .map(p => `<p>${escapeHTML(p).replace(/\n/g,'<br>')}</p>`)
+        .join('');
+    }
+
+    async function loadHighlight(){
+      const card = $('highlightCard');
+      const meta = $('metaBox');
+
+      if(!highlightId){
+        card.innerHTML = `<div class="pad sub">Missing highlight ID.</div>`;
+        meta.innerHTML = '';
+        return;
+      }
+
+      const { data: h, error } = await supabase
+        .from('highlights_with_like_count')
+        .select('id,title,category,image_url,body,link_url,like_count,created_at')
+        .eq('id', highlightId)
+        .maybeSingle();
+
+      if(error || !h){
+        console.error(error);
+        card.innerHTML = `<div class="pad sub">Highlight not found or not published.</div>`;
+        meta.innerHTML = '';
+        return;
+      }
+
+      document.title = `${h.title} — ROK Racers JA`;
+      currentLikeCount = h.like_count || 0;
+      $('likeCount').textContent = currentLikeCount;
+
+      const hero = h.image_url || '/Assets/og.png';
+      const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
+      const cat = h.category || null;
+
+      card.innerHTML = `
+        <img src="${hero}" alt="${escapeHTML(h.title)}" class="heroimg">
+        <div class="pad">
+          <div class="row" style="margin-bottom:6px">
+            ${cat ? `<span class="chip">${escapeHTML(cat)}</span>` : ''}
+            ${dateStr ? `<span class="chip">${escapeHTML(dateStr)}</span>` : ''}
+          </div>
+          <h2 style="font-size:44px;margin-bottom:8px">${escapeHTML(h.title)}</h2>
+          <div class="post-body">
+            ${formatBody(h.body || '')}
+          </div>
+        </div>
+      `;
+
+      meta.innerHTML = `
+        <div><strong>Category:</strong> ${cat ? escapeHTML(cat) : 'General'}</div>
+        <div class="sub" style="margin-top:6px">Published ${dateStr || '—'}</div>
+        ${
+          h.link_url
+            ? `<div style="margin-top:10px"><a href="${h.link_url}" target="_blank" rel="noopener" style="text-decoration:underline">Open related link</a></div>`
+            : ''
+        }
+      `;
+    }
+
+    /* LIKES */
+    async function refreshLikedState(){
+      if(!highlightId) return;
+      const btn = $('likeBtn');
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        btn.textContent = '♡';
+        btn.title = 'Sign in to like';
+        btn.setAttribute('aria-pressed','false');
+        return;
+      }
+      const { data } = await supabase
+        .from('highlight_likes')
+        .select('highlight_id')
+        .eq('highlight_id', highlightId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(data){
+        btn.textContent = '♥';
+        btn.title = 'Unlike';
+        btn.setAttribute('aria-pressed','true');
+      }else{
+        btn.textContent = '♡';
+        btn.title = 'Like';
+        btn.setAttribute('aria-pressed','false');
+      }
+    }
+
+    $('likeBtn').addEventListener('click', async ()=>{
+      if(!highlightId) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        alert('Sign in to like highlights.');
+        return;
+      }
+      const btn = $('likeBtn');
+      const { data: existing, error: existingErr } = await supabase
+        .from('highlight_likes')
+        .select('highlight_id')
+        .eq('highlight_id', highlightId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(existingErr){
+        alert('Couldn’t update like. Try again in a bit.');
+        return;
+      }
+
+      if(existing){
+        const { error } = await supabase
+          .from('highlight_likes')
+          .delete()
+          .eq('highlight_id', highlightId)
+          .eq('user_id', user.id);
+        if(error) return alert('Unlike failed: ' + error.message);
+        btn.textContent = '♡';
+        btn.title = 'Like';
+        btn.setAttribute('aria-pressed','false');
+        currentLikeCount = Math.max(0, currentLikeCount - 1);
+        $('likeCount').textContent = currentLikeCount;
+      }else{
+        const { error } = await supabase
+          .from('highlight_likes')
+          .insert({ highlight_id: highlightId, user_id: user.id });
+        if(error) return alert('Like failed: ' + error.message);
+        btn.textContent = '♥';
+        btn.title = 'Unlike';
+        btn.setAttribute('aria-pressed','true');
+        currentLikeCount += 1;
+        $('likeCount').textContent = currentLikeCount;
+      }
+    });
+
+    // realtime like updates
+    let likeChannel;
+    function liveLikes(){
+      if(!highlightId) return;
+      likeChannel?.unsubscribe();
+      likeChannel = supabase.channel(`highlight-like-${highlightId}`)
+        .on('postgres_changes',{
+          event:'INSERT',schema:'public',table:'highlight_likes',
+          filter:`highlight_id=eq.${highlightId}`
+        }, () => {
+          currentLikeCount += 1;
+          $('likeCount').textContent = currentLikeCount;
+        })
+        .on('postgres_changes',{
+          event:'DELETE',schema:'public',table:'highlight_likes',
+          filter:`highlight_id=eq.${highlightId}`
+        }, () => {
+          currentLikeCount = Math.max(0, currentLikeCount - 1);
+          $('likeCount').textContent = currentLikeCount;
+        })
+        .subscribe();
+    }
+
+    /* COMMENTS (read + write + realtime INSERT) */
+    function renderComment(c){
+      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
+      return `
+        <div class="comment">
+          <div class="sub" style="margin-bottom:4px">${escapeHTML(dt)}</div>
+          <div>${escapeHTML(c.body || '').replace(/\n/g,'<br>')}</div>
+        </div>
+      `;
+    }
+
+    async function loadComments(){
+      const wrap = $('comments');
+      if(!highlightId){
+        wrap.innerHTML = `<div class="pad sub">Missing highlight ID.</div>`;
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('highlight_comments')
+        .select('id, body, created_at, profile_id')
+        .eq('highlight_id', highlightId)
+        .order('created_at', { ascending:true });
+
+      if(error){
+        console.error(error);
+        wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
+        return;
+      }
+      if(!data?.length){
+        wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
+        return;
+      }
+      wrap.innerHTML = `<div class="pad" id="commentsInner">` +
+        data.map(renderComment).join('') +
+        `</div>`;
+    }
+
+    $('commentPost').addEventListener('click', async ()=>{
+      if(!highlightId) return;
+      const input = $('commentText');
+      const text = input.value.trim();
+      if(!text) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        alert('Sign in first.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('highlight_comments')
+        .insert({ highlight_id: highlightId, body: text, profile_id: user.id });
+
+      if(error){
+        alert('Couldn’t post: ' + error.message);
+        return;
+      }
+      input.value = '';
+      // realtime INSERT will append
+    });
+
+    // realtime comments
+    let commentsChannel;
+    function liveComments(){
+      if(!highlightId) return;
+      commentsChannel?.unsubscribe();
+      commentsChannel = supabase.channel(`highlight-comments-${highlightId}`)
+        .on('postgres_changes',{
+          event:'INSERT',schema:'public',table:'highlight_comments',
+          filter:`highlight_id=eq.${highlightId}`
+        }, (p)=>{
+          const c = p.new;
+          const wrap = $('comments');
+          if(wrap.textContent.includes('No comments yet')){
+            wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
+          }
+          const inner = $('commentsInner') || (()=> {
+            wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
+            return $('commentsInner');
+          })();
+          inner.insertAdjacentHTML('beforeend', renderComment(c));
+        })
+        .subscribe();
+    }
+
+    /* BOOT */
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      await syncPageAuth();
+      await loadHighlight();
+      liveLikes();
+      await loadComments();
+      liveComments();
+    });
+  </script>
 </body>
 </html>

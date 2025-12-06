@@ -1,165 +1,351 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Highlights — ROK Racers JA</title>
-<meta name="description" content="News, updates, and stories from the ROK Racers JA community."/>
-<link rel="icon" href="/Assets/og.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Highlights — ROK Racers JA</title>
+  <meta name="description" content="News, updates, and stories from the ROK Racers JA community."/>
+  <link rel="icon" href="/Assets/og.png"/>
 
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-<script src="/auth-ui.js"></script>
-<style>
-:root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-a{color:var(--fg);text-decoration:none}
-.container{max-width:1200px;margin:0 auto;padding:0 24px}
-.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:44px;height:44px;border-radius:8px}
-h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-.sub{color:var(--muted)}
-.section{padding:56px 0}
-.grid{display:grid;gap:24px}
-.cols-3{grid-template-columns:repeat(3,1fr)}
-@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
-.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
-.card:hover{transform:translateY(-6px) scale(1.01)}
-.card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
-.pad{padding:18px}
-.btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:14px;border:1px solid var(--line);cursor:pointer}
-.btn.primary{background:#fff;color:#000;border-color:#fff}
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
-input,select{background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;min-width:160px}
-.badge{border:1px solid var(--line);background:var(--bg2);padding:6px 10px;border-radius:999px}
-</style>
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <!-- Shared auth/nav logic -->
+  <script src="/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg:#050508;
+      --bg1:#141414;
+      --bg2:#1b1b1b;
+      --fg:#fff;
+      --muted:#bdbdbd;
+      --accent:#e50914;
+      --accent-yellow:#FFD93B;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+    /* NAV (aligned with events/event/garage) */
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(5,5,8,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(12px);
+    }
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 0;
+      gap:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .sub{color:var(--muted);font-size:12px}
+
+    .menu{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 14px;border-radius:999px;
+      border:1px solid var(--line);
+      cursor:pointer;background:transparent;color:var(--fg);
+      font-family:inherit;font-size:13px;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .btn.primary{
+      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+      color:#fff;border-color:rgba(229,9,20,.9);
+      box-shadow:0 0 18px rgba(229,9,20,.5);
+    }
+    .btn.primary:hover{
+      box-shadow:0 0 26px rgba(229,9,20,.7);
+      transform:translateY(-1px);
+    }
+
+    .section{padding:56px 0}
+    .grid{display:grid;gap:24px}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .card img{
+      display:block;width:100%;height:auto;
+      aspect-ratio:16/9;object-fit:cover;
+    }
+    .pad{padding:18px}
+
+    .filters{
+      display:flex;gap:10px;flex-wrap:wrap;
+      margin:14px 0 18px;
+    }
+    input,select{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      color:#fff;
+      padding:12px;
+      border-radius:12px;
+      outline:none;
+      min-width:160px;
+      font-family:inherit;
+      font-size:14px;
+    }
+
+    .badge{
+      border:1px solid var(--line);
+      background:var(--bg2);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .header-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    /* nav auth (shared pattern) */
+    .nav-auth{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+    .profile-chip{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-size:13px;
+    }
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 16px rgba(255,217,59,.6);
+      transform:translateY(-1px);
+    }
+    .dropdown{
+      position:absolute;right:0;top:40px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border-radius:16px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:13px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    @media(max-width:640px){
+      .nav-inner{flex-wrap:wrap}
+      .menu{order:3;width:100%;justify-content:flex-start}
+      .nav-auth{order:2;width:100%;justify-content:flex-end}
+    }
+  </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="container nav-inner">
-    <a href="/" class="brand">
-      <img src="/Assets/logo.png" alt="" class="logo">
-      <div><h1>ROK RACERS JA</h1><small class="sub">Highlights</small></div>
-    </a>
-    <div style="display:flex;gap:10px;align-items:center">
-      <a class="btn" href="/garage.html">Garage</a>
-      <a class="btn" href="/sightings.html">Sightings</a>
-    </div>
-  </div>
-</nav>
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a href="/" class="brand" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div>
+          <h1>ROK RACERS JA</h1>
+          <small class="sub">Highlights</small>
+        </div>
+      </a>
 
-<main class="container">
-  <section class="section">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <h2 style="font-size:44px">Highlights feed</h2>
-      <span id="countBadge" class="badge sub">0 highlights</span>
-    </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+        </div>
 
-    <div class="filters" aria-label="Highlight filters">
-      <input id="q" placeholder="Search title/body…">
-      <select id="category">
-        <option value="">All categories</option>
-        <option value="News">News</option>
-        <option value="Events">Events</option>
-        <option value="Merch">Merch</option>
-      </select>
-      <select id="sort">
-        <option value="new">Newest</option>
-        <option value="top">Most liked</option>
-      </select>
-      <button id="apply" class="btn">Apply</button>
-    </div>
+        <div class="nav-auth">
+          <!-- Controlled by auth-ui.js -->
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
 
-    <div id="highlightsGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
-    </div>
-  </section>
-</main>
-
-<script>
-let rows = [];
-
-function renderGrid(items){
-  const grid = document.getElementById('highlightsGrid');
-  if(!items.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">No highlights found.</div></article>`;
-    return;
-  }
-  grid.innerHTML = items.map(h => {
-    const img = h.image_url
-      ? `<img src="${h.image_url}" alt="${h.title}" loading="lazy">`
-      : "";
-    const cat = h.category ? `<span class="badge" style="margin-top:6px">${h.category}</span>` : "";
-    return `
-      <article class="card" role="listitem" data-highlight="${h.id}">
-        <a href="/highlight.html?id=${h.id}">
-          ${img}
-          <div class="pad">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-              <strong>${h.title}</strong>
-              <small class="sub">${new Date(h.created_at).toLocaleDateString()}</small>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
             </div>
-            ${cat}
-            <p class="sub" style="margin:6px 0 8px;max-height:3.6em;overflow:hidden">
-              ${(h.body || '').slice(0,160)}${(h.body && h.body.length > 160) ? '…' : ''}
-            </p>
-            <div class="sub">♥ <span class="likes">${h.like_count || 0}</span></div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html?view=my">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
           </div>
-        </a>
-      </article>
-    `;
-  }).join('');
-}
+        </div>
+      </div>
+    </div>
+  </nav>
 
-async function applyFilters(){
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const category = document.getElementById('category').value;
-  const sort = document.getElementById('sort').value;
+  <main class="container">
+    <section class="section">
+      <div class="header-row">
+        <h2 style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">Highlights</h2>
+        <span id="countBadge" class="badge">0 highlights</span>
+      </div>
 
-  let { data, error } = await supabase
-    .from('highlights_with_like_count')
-    .select('id,title,category,image_url,body,created_at,like_count');
+      <div class="filters" role="region" aria-label="Highlight filters">
+        <input id="q" placeholder="Search title/body…" aria-label="Search highlights"/>
+        <select id="category" aria-label="Category">
+          <option value="">All categories</option>
+          <option value="News">News</option>
+          <option value="Events">Events</option>
+          <option value="Merch">Merch</option>
+        </select>
+        <select id="sort" aria-label="Sort">
+          <option value="new">Newest</option>
+          <option value="top">Most liked</option>
+        </select>
+        <button id="apply" class="btn">Apply</button>
+      </div>
 
-  if(error){
-    console.error(error);
-    document.getElementById('highlightsGrid').innerHTML =
-      `<article class="card"><div class="pad sub">Couldn’t load highlights.</div></article>`;
-    return;
-  }
+      <div id="highlightsGrid" class="grid cols-3" role="list" aria-live="polite">
+        <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+      </div>
+    </section>
+  </main>
 
-  rows = data || [];
-  if(q){
-    rows = rows.filter(h =>
-      (h.title || '').toLowerCase().includes(q) ||
-      (h.body || '').toLowerCase().includes(q)
-    );
-  }
-  if(category){
-    rows = rows.filter(h => h.category === category);
-  }
+  <script>
+    let rows = [];
 
-  if(sort === 'top'){
-    rows.sort((a,b)=> (b.like_count||0) - (a.like_count||0));
-  } else {
-    rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
-  }
+    function renderGrid(items){
+      const grid = document.getElementById('highlightsGrid');
+      if(!items.length){
+        grid.innerHTML = `
+          <article class="card">
+            <div class="pad sub">No highlights found. Clear a filter or check back soon.</div>
+          </article>`;
+        return;
+      }
 
-  document.getElementById('countBadge').textContent = `${rows.length} highlights`;
-  renderGrid(rows);
-}
+      grid.innerHTML = items.map(h => {
+        const img = h.image_url
+          ? `<img src="${h.image_url}" alt="${h.title}" loading="lazy">`
+          : "";
+        const cat = h.category
+          ? `<span class="badge" style="margin-top:6px">${h.category}</span>`
+          : "";
+        const body = h.body || "";
+        const snippet = body.length > 160 ? body.slice(0,160) + "…" : body;
 
-document.getElementById('apply').addEventListener('click', applyFilters);
-window.addEventListener('DOMContentLoaded', applyFilters);
-</script>
+        return `
+          <article class="card" role="listitem" data-highlight="${h.id}">
+            <a href="/highlight.html?id=${h.id}">
+              ${img}
+              <div class="pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                  <strong>${h.title}</strong>
+                  <small class="sub">
+                    ${h.created_at ? new Date(h.created_at).toLocaleDateString() : ""}
+                  </small>
+                </div>
+                ${cat}
+                <p class="sub" style="margin:6px 0 8px;max-height:3.6em;overflow:hidden">
+                  ${snippet}
+                </p>
+                <div class="sub">♥ <span class="likes">${h.like_count || 0}</span></div>
+              </div>
+            </a>
+          </article>`;
+      }).join('');
+    }
+
+    async function applyFilters(){
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      const category = document.getElementById('category').value;
+      const sort = document.getElementById('sort').value;
+
+      const grid = document.getElementById('highlightsGrid');
+      grid.innerHTML = `
+        <article class="card"><div class="pad sub">Loading highlights…</div></article>`;
+
+      let { data, error } = await supabase
+        .from('highlights_with_like_count')
+        .select('id,title,category,image_url,body,created_at,like_count');
+
+      if(error){
+        console.error(error);
+        grid.innerHTML =
+          `<article class="card"><div class="pad sub">Couldn’t load highlights right now. Try again in a few.</div></article>`;
+        return;
+      }
+
+      rows = data || [];
+
+      if(q){
+        rows = rows.filter(h =>
+          (h.title || '').toLowerCase().includes(q) ||
+          (h.body || '').toLowerCase().includes(q)
+        );
+      }
+
+      if(category){
+        rows = rows.filter(h => h.category === category);
+      }
+
+      if(sort === 'top'){
+        rows.sort((a,b)=> (b.like_count||0) - (a.like_count||0));
+      } else {
+        rows.sort((a,b)=> new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        rows.reverse(); // ensure newest first
+      }
+
+      document.getElementById('countBadge').textContent = `${rows.length} highlight${rows.length===1 ? '' : 's'}`;
+      renderGrid(rows);
+    }
+
+    document.getElementById('apply').addEventListener('click', applyFilters);
+    window.addEventListener('DOMContentLoaded', applyFilters);
+  </script>
 </body>
 </html>
