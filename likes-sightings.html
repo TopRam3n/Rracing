@@ -1,132 +1,378 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Liked Sightings — ROK Racers JA</title>
-<meta name="description" content="Sightings you’ve liked in the ROK Racers JA feed."/>
-<link rel="icon" href="/Assets/og.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Liked Sightings — ROK Racers JA</title>
+  <meta name="description" content="All the sightings you’ve liked across Jamaica." />
+  <link rel="icon" href="/Assets/og.png" />
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<script src="/auth-ui.js"></script>
-<style>
-:root{--bg:#141414;--bg1:#161616;--bg2:#1b1b1b;--fg:#fff;--muted:#bdbdbd;--accent:#e50914;--line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-a{color:var(--fg);text-decoration:none}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
-.nav{position:sticky;top:0;z-index:50;background:rgba(18,18,18,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(8px)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:44px;height:44px;border-radius:8px}
-h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-.sub{color:var(--muted)}
-.section{padding:40px 0 56px}
-.grid{display:grid;gap:24px}
-.cols-3{grid-template-columns:repeat(3,1fr)}
-@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
-.card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
-.card:hover{transform:translateY(-6px) scale(1.01)}
-.card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
-.pad{padding:18px}
-</style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <script src="/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    .title small{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;font-size:15px;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.small{padding:6px 10px;font-size:14px}
+    .btn[disabled]{opacity:.5;pointer-events:none}
+
+    .section{padding:48px 0}
+
+    .grid{display:grid;gap:24px}
+    .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .card img{
+      display:block;width:100%;height:auto;
+      aspect-ratio:16/9;object-fit:cover;
+    }
+    .pad{padding:18px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .badge{
+      border:1px solid var(--line);
+      background:var(--bg2);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:13px;
+    }
+
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+    input,select{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:12px;
+      font:inherit;
+      min-width:160px;
+      outline:none;
+    }
+
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:15px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+  </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="container nav-inner">
-    <a href="/" class="brand">
-      <img src="/Assets/logo.png" alt="" class="logo">
-      <div><h1>ROK RACERS JA</h1><small class="sub">Liked Sightings</small></div>
-    </a>
-    <a class="btn" href="/sightings.html" style="border:1px solid var(--line);border-radius:14px;padding:8px 12px">Back to sightings</a>
-  </div>
-</nav>
+  <nav class="nav" role="navigation">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo-img">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Liked sightings</small>
+        </div>
+      </a>
 
-<main class="container">
-  <section class="section">
-    <h2 style="font-size:40px;margin-bottom:10px">Sightings you liked</h2>
-    <p id="gate" class="sub" style="margin-bottom:14px;display:none">Sign in to see your liked sightings.</p>
-    <div id="likedGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="menu">
+          <a class="btn" href="/events.html">Events</a>
+          <a class="btn" href="/garage.html">Garage</a>
+          <a class="btn" href="/sightings.html">Sightings</a>
+        </div>
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/teams.html">My Teams</a>
+              <a href="/activity.html">Activity</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
-</main>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <h2 style="font-size:44px">Liked sightings</h2>
+          <p class="sub" id="pageSub">Clean shots you’ve shown love to on the feed.</p>
+        </div>
+        <span id="countBadge" class="badge sub">0 sightings</span>
+      </div>
+
+      <div class="filters" aria-label="Liked sightings filters">
+        <input id="q" type="text" placeholder="Search caption or location…" />
+        <select id="parish">
+          <option value="">All parishes</option>
+          <option value="Kingston">Kingston</option>
+          <option value="St. Andrew">St. Andrew</option>
+          <option value="St. Catherine">St. Catherine</option>
+          <option value="St. Thomas">St. Thomas</option>
+          <option value="Portland">Portland</option>
+          <option value="St. Mary">St. Mary</option>
+          <option value="St. Ann">St. Ann</option>
+          <option value="Trelawny">Trelawny</option>
+          <option value="St. James">St. James</option>
+          <option value="Hanover">Hanover</option>
+          <option value="Westmoreland">Westmoreland</option>
+          <option value="St. Elizabeth">St. Elizabeth</option>
+          <option value="Manchester">Manchester</option>
+          <option value="Clarendon">Clarendon</option>
+        </select>
+        <select id="sort">
+          <option value="new">Newest first</option>
+          <option value="top">Most liked</option>
+        </select>
+        <button id="applyBtn" class="btn">Apply</button>
+      </div>
+
+      <div id="msg" class="sub" style="margin-bottom:8px"></div>
+
+      <div id="grid" class="grid cols-3" role="list" aria-live="polite">
+        <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+      </div>
+    </section>
+  </main>
 
 <script>
-async function loadLikedSightings(){
-  const gate = document.getElementById('gate');
-  const grid = document.getElementById('likedGrid');
+  const $s = (id)=>document.getElementById(id);
+  let allSightings = [];
+  let currentUser = null;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    gate.style.display = 'block';
-    grid.innerHTML = '';
-    return;
-  }
+  function renderSightingCard(s){
+    const img = s.image_url || '/Assets/og.png';
+    const locLine = [s.parish, s.location].filter(Boolean).join(' • ');
+    const likes = Number(s.like_count || 0);
+    const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
 
-  gate.style.display = 'none';
-  grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
-
-  const { data: likes, error: likesErr } = await supabase
-    .from('sighting_likes')
-    .select('sighting_id')
-    .eq('user_id', user.id);
-
-  if(likesErr){
-    console.error(likesErr);
-    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load likes.</div></article>`;
-    return;
-  }
-
-  const ids = (likes || []).map(l => l.sighting_id);
-  if(!ids.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">You haven’t liked any sightings yet.</div></article>`;
-    return;
-  }
-
-  const { data: rows, error: rowsErr } = await supabase
-    .from('sightings_with_like_count')
-    .select('id,title,location,parish,image_url,like_count,created_at')
-    .in('id', ids);
-
-  if(rowsErr){
-    console.error(rowsErr);
-    grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load sightings.</div></article>`;
-    return;
-  }
-
-  grid.innerHTML = rows.map(s => {
-    const img = s.image_url
-      ? `<img src="${s.image_url}" alt="${s.title}" loading="lazy">`
-      : '';
-    const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
     return `
-      <article class="card" role="listitem">
+      <article class="card" role="listitem" data-sighting="${s.id}">
         <a href="/sighting.html?id=${s.id}">
-          ${img}
+          <img src="${img}" alt="${s.title || 'Car sighting'}" loading="lazy">
           <div class="pad">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-              <strong>${s.title}</strong>
-              <small class="sub">${new Date(s.created_at).toLocaleDateString()}</small>
+              <strong>${s.title || 'Untitled sighting'}</strong>
+              <small class="sub">${dateStr}</small>
             </div>
             ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
-            <div class="sub" style="margin-top:8px">♥ ${s.like_count || 0}</div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span class="sub">♥ <span class="likes">${likes}</span></span>
+              <button class="btn small" data-unlike
+                aria-label="Remove like from this sighting"
+                title="Remove like from this sighting">
+                ♥ Remove
+              </button>
+            </div>
           </div>
         </a>
       </article>
     `;
-  }).join('');
-}
+  }
 
-window.addEventListener('DOMContentLoaded', loadLikedSightings);
+  function renderSightings(rows){
+    const grid = $s('grid');
+    if(!rows.length){
+      grid.innerHTML = `
+        <article class="card">
+          <div class="pad sub">
+            No liked sightings yet. Browse the <a href="/sightings.html" style="text-decoration:underline;color:#fff">Sightings feed</a>
+            and tap ♥ on the shots you vibe with.
+          </div>
+        </article>`;
+      $s('countBadge').textContent = '0 sightings';
+      return;
+    }
+
+    grid.innerHTML = rows.map(renderSightingCard).join('');
+    $s('countBadge').textContent = `${rows.length} sighting${rows.length === 1 ? '' : 's'}`;
+  }
+
+  function applyFiltersLocal(){
+    const q = $s('q').value.trim().toLowerCase();
+    const parish = $s('parish').value;
+    const sort = $s('sort').value;
+
+    let rows = [...allSightings];
+
+    if(q){
+      rows = rows.filter(s =>
+        (s.title || '').toLowerCase().includes(q) ||
+        (s.location || '').toLowerCase().includes(q)
+      );
+    }
+    if(parish){
+      rows = rows.filter(s => s.parish === parish);
+    }
+
+    if(sort === 'top'){
+      rows.sort((a,b)=> Number(b.like_count||0) - Number(a.like_count||0));
+    }else{
+      rows.sort((a,b)=> new Date(b.created_at||0) - new Date(a.created_at||0));
+    }
+
+    renderSightings(rows);
+  }
+
+  async function loadLikedSightings(){
+    $s('msg').textContent = '';
+    $s('grid').innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user || null;
+
+    if(!user){
+      $s('msg').textContent = 'Sign in to see the sightings you’ve liked.';
+      renderSightings([]);
+      return;
+    }
+
+    // 1) Get liked sighting IDs
+    const { data: likes, error: likeErr } = await supabase
+      .from('sighting_likes')
+      .select('sighting_id')
+      .eq('user_id', user.id);
+
+    if(likeErr){
+      console.error(likeErr);
+      $s('msg').textContent = 'We couldn’t load your likes. Try again in a few seconds.';
+      renderSightings([]);
+      return;
+    }
+
+    const ids = (likes || []).map(l => l.sighting_id);
+    if(!ids.length){
+      renderSightings([]);
+      return;
+    }
+
+    // 2) Load sightings with counts
+    const { data: sightings, error: sErr } = await supabase
+      .from('sightings_with_like_count')
+      .select('id,title,location,parish,image_url,created_at,like_count')
+      .in('id', ids);
+
+    if(sErr){
+      console.error(sErr);
+      $s('msg').textContent = 'We couldn’t load sightings. Try again later.';
+      renderSightings([]);
+      return;
+    }
+
+    allSightings = sightings || [];
+    applyFiltersLocal();
+  }
+
+  // Unlike handler
+  $s('grid').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('button[data-unlike]');
+    if(!btn) return;
+    const card = e.target.closest('article.card');
+    const id = card?.dataset.sighting;
+    if(!id) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if(!user){
+      alert('Sign in to manage your liked sightings.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Removing…';
+
+    const { error } = await supabase
+      .from('sighting_likes')
+      .delete()
+      .eq('sighting_id', id)
+      .eq('user_id', user.id);
+
+    if(error){
+      console.error(error);
+      alert('Couldn’t remove like. Try again.');
+      btn.disabled = false;
+      btn.textContent = '♥ Remove';
+      return;
+    }
+
+    allSightings = allSightings.filter(s => String(s.id) !== String(id));
+    card.remove();
+    applyFiltersLocal();
+  });
+
+  $s('applyBtn').addEventListener('click', applyFiltersLocal);
+
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    await loadLikedSightings();
+    supabase.auth.onAuthStateChange(loadLikedSightings);
+  });
 </script>
 </body>
 </html>

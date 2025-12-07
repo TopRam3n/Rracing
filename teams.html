@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My Teams — ROK Racers JA</title>
+  <meta name="description" content="Teams and promoter tools are coming soon to ROK Racers JA."/>
+  <link rel="icon" href="/Assets/og.png"/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <script src="/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
+
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .title small{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;font-size:15px;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.small{padding:6px 10px;font-size:14px}
+    .btn[disabled]{opacity:.5;pointer-events:none}
+
+    .section{padding:48px 0}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:15px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+  </style>
+</head>
+<body>
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo-img" />
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>My Teams</small>
+        </div>
+      </a>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="/sightings.html">Sightings</a>
+        </div>
+
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/teams.html">My Teams</a>
+                <a href="/activity.html">Activity</a>
+              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="card">
+        <h2 style="font-size:40px;margin-bottom:8px">Teams & promoters coming soon</h2>
+        <p class="sub" style="margin-bottom:12px">
+          This space will be where:
+        </p>
+        <ul class="sub" style="margin-top:0;padding-left:18px">
+          <li>Teams and promoters can manage their event pages and applications</li>
+          <li>Drivers, marshals and other roles can track the teams they apply to</li>
+          <li>Your builds will eventually show trophies from competition events</li>
+        </ul>
+        <p class="sub" style="margin-top:8px">
+          It’s part of Phase 2. For now, keep building, posting sightings, and hitting events — we’ll plug your teams into the ecosystem soon.
+        </p>
+        <div style="margin-top:16px">
+          <a href="/garage.html" class="btn primary">Back to Garage</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Let auth-ui.js handle nav auth wiring.
+    // No extra JS needed here on purpose.
+  </script>
+</body>
+</html>

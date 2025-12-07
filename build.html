@@ -192,6 +192,8 @@
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/teams.html">My Teams</a>
+              <a href="/activity.html">Activity</a>
               <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
             </div>
           </div>
@@ -673,9 +675,11 @@
     const wrap = $('commentsInner');
     const { data, error } = await supabase
       .from('comments')
-      .select('id,body,created_at,user_id')
-      .eq('build_id', buildId)
-      .order('created_at', { ascending:true });
+      .select('id,body,created_at,user_id,target_type,target_id')
+      .eq('target_type', 'build')
+      .eq('target_id', buildId)
+      .order('created_at', { ascending: true });
+
 
     if(error){
       console.error(error);
@@ -710,10 +714,12 @@
     const { error } = await supabase
       .from('comments')
       .insert({
-        build_id: buildId,
-        body: text,
-        user_id: user.id
+        user_id: user.id,          // must match RLS
+        target_type: 'build',      // must match your enum value
+        target_id: buildId,
+        body: text
       });
+
 
     if(error){
       console.error(error);

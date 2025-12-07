@@ -167,7 +167,8 @@ function renderGrid(pageRows){
       ? `<img src="${s.image_url}" alt="${s.title}" loading="lazy">`
       : "";
     const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
-    const handle = s.social_handle || s.instagram_handle || null; // support either column name
+    const handle = s.social_handle || s.instagram_handle || null; 
+    // support either column name
 
     return `
       <article class="card" role="listitem" data-sighting="${s.id}">
@@ -187,6 +188,7 @@ function renderGrid(pageRows){
     `;
   }).join('');
 }
+
 
 async function applyFilters(){
   const q = document.getElementById('q').value.trim().toLowerCase();

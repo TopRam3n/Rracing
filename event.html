@@ -189,6 +189,8 @@
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/teams.html">My Teams</a>
+              <a href="/activity.html">Activity</a>
               <button id="navSignOutBtn" type="button">Sign out</button>
             </div>
           </div>
@@ -421,9 +423,11 @@
       const wrap = el('comments');
       const { data, error } = await supabase
         .from('comments')
-        .select('id, body, created_at, user_id')
-        .eq('event_id', eventId)
+        .select('id, body, created_at, user_id, target_type, target_id')
+        .eq('target_type', 'event')
+        .eq('target_id', eventId)
         .order('created_at', { ascending: true });
+
 
       if(error){
         wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
@@ -449,10 +453,12 @@
       }
 
       const { error } = await supabase.from('comments').insert({
-        event_id: eventId,
-        body: text,
-        user_id: user.id
+        user_id: user.id,
+        target_type: 'event',
+        target_id: eventId,
+        body: text
       });
+
       if(error){
         alert("Couldn’t post: " + error.message);
         return;
