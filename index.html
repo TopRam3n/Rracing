@@ -139,23 +139,29 @@
 
     .logo {
       display: flex;
-      align-items: baseline;
-      gap: 6px;
+      align-items: center;
+      gap: 8px;
       letter-spacing: 0.04em;
     }
 
     .logo-mark {
-      width: 26px;
-      height: 26px;
+      width: 36px;
+      height: 36px;
       border-radius: 999px;
       border: 1px solid rgba(229, 9, 20, 0.7);
       box-shadow: 0 0 18px rgba(229, 9, 20, 0.4);
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
+      background:#000;
+    }
+
+    .logo-mark img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
     .logo-text-main {
@@ -1166,7 +1172,9 @@
     <div class="nav-wrapper" id="navWrapper">
       <div class="container nav">
         <a href="/" class="logo">
-          <div class="logo-mark">R</div>
+          <div class="logo-mark">
+            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+          </div>
           <div>
             <div class="logo-text-main">ROK RACERS JA</div>
             <div class="logo-text-sub">Motorsport Community</div>
@@ -1223,11 +1231,13 @@
           </p>
 
           <div class="hero-actions">
-            <button class="btn btn-primary" onclick="location.hash='#events'">
+            <!-- Hero button → All Events page -->
+            <button class="btn btn-primary" onclick="location.href='/events.html'">
               View Upcoming Events
             </button>
+            <!-- Explicit “View all builds” button -->
             <button class="btn btn-ghost" onclick="location.href='/garage.html'">
-              Explore the Garage
+              View all builds
             </button>
           </div>
 
@@ -1526,33 +1536,31 @@
     }
 
     function applyMotionPref(){
-  if (!mv) return;
-  if (prefersReduced.matches){
-    disableDrift();
-  } else {
-    enableDrift();
-  }
-}
+      if (!mv) return;
+      if (prefersReduced.matches){
+        disableDrift();
+      } else {
+        enableDrift();
+      }
+    }
 
-prefersReduced.addEventListener?.('change', applyMotionPref);
-applyMotionPref();
+    prefersReduced.addEventListener?.('change', applyMotionPref);
+    applyMotionPref();
 
+    if (mv) {
+      mv.addEventListener('interaction-start', () => disableDrift());
+      mv.addEventListener('interaction-end', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
 
-if (mv) {
-  mv.addEventListener('interaction-start', () => disableDrift());
-  mv.addEventListener('interaction-end', () => {
-    if (!prefersReduced.matches) enableDrift();
-  });
-
-  mv.addEventListener('pointerdown', () => disableDrift());
-  mv.addEventListener('pointerup', () => {
-    if (!prefersReduced.matches) enableDrift();
-  });
-  mv.addEventListener('pointercancel', () => {
-    if (!prefersReduced.matches) enableDrift();
-  });
-}
-
+      mv.addEventListener('pointerdown', () => disableDrift());
+      mv.addEventListener('pointerup', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
+      mv.addEventListener('pointercancel', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
+    }
 
     // ===== Nav solid on scroll =====
     const navWrapper = document.getElementById('navWrapper');
@@ -1752,9 +1760,7 @@ if (mv) {
             <button class="build-like-btn" data-like
               aria-pressed="${isLiked ? 'true':'false'}"
               aria-label="${likeTitle}"
-              title="${likeTitle}">
-              ${heart}
-            </button>
+              title="${likeTitle}">${heart}</button>
           </article>`;
       }).join('');
 
@@ -1844,13 +1850,15 @@ if (mv) {
         .subscribe();
     }
 
-    // ===== Events (last 5 events by date, same table as events.html) =====
+    // ===== Events (5 most recently posted events) =====
     function renderEventCard(e){
-      const d = e.starts_at ? new Date(e.starts_at) : null;
+      const rawDate = e.starts_at || e.start_time || e.date || e.created_at;
+      const d = rawDate ? new Date(rawDate) : null;
       const whenLabel = d
         ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
         : "TBA";
-      const region = e.location || "";
+
+      const region = [e.parish, e.location, e.venue].filter(Boolean).join(" · ");
       const tag = e.tag || e.type || "Event";
       const status = e.status || "RSVP Open";
       const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
@@ -1891,11 +1899,11 @@ if (mv) {
       const strip = document.getElementById('eventsStrip');
       if (!strip) return;
 
-      // Last 5 events by starts_at (no future filter so homepage always shows something)
+      // 5 most recent events by created_at (so "last 5 posted")
       const [eventsRes, countsRes] = await Promise.all([
         supabase.from('events')
-          .select('id,title,starts_at,location,tag,status,promoter_handle')
-          .order('starts_at', { ascending:false, nullsLast:true })
+          .select('*')
+          .order('created_at', { ascending:false, nullsLast:true })
           .limit(5),
         supabase.from('event_rsvp_counts')
           .select('event_id,yes_count,maybe_count,no_count')
