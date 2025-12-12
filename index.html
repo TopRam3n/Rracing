@@ -1684,12 +1684,20 @@
         <article class="build-card">
           <div class="build-body">
             <div class="build-title">Warming up the dyno…</div>
+            ${
+              b.trophy_labels && b.trophy_labels.length
+                ? `<div class="build-tags" style="margin-top:4px;">
+                    ${b.trophy_labels.map(t => `<span class="build-tag-pill">🏆 ${t}</span>`).join('')}
+                  </div>`
+                : ''
+            }
           </div>
         </article>`;
 
       const { data, error } = await supabase
-        .from('public_builds_with_like_count')
-        .select('id,title,like_count,thumb_url,parish,owner_handle,build_type')
+        .from('public_builds_with_like_count_and_trophies')
+        .select('id,title,like_count,thumb_url,parish,owner_handle,build_type,trophy_labels')
+
         .order('like_count', { ascending:false })
         .order('id', { ascending:true })
         .limit(5);
@@ -1896,72 +1904,144 @@
     }
 
     async function loadFrontEvents(){
-      const strip = document.getElementById('eventsStrip');
-      if (!strip) return;
+  const strip = document.getElementById('eventsStrip');
+  if (!strip) return;
 
-      // 5 most recent events by created_at (so "last 5 posted")
-      const [eventsRes, countsRes] = await Promise.all([
-        supabase.from('events')
-          .select('*')
-          .order('created_at', { ascending:false, nullsLast:true })
-          .limit(5),
-        supabase.from('event_rsvp_counts')
-          .select('event_id,yes_count,maybe_count,no_count')
-      ]);
+  const [eventsRes, countsRes] = await Promise.all([
+    supabase.from('events')
+      .select('id,title,starts_at,location,tag,status,promoter_handle,team_id')
+      .order('starts_at', { ascending:false, nullsLast:true })
+      .limit(5),
+    supabase.from('event_rsvp_counts')
+      .select('event_id,yes_count,maybe_count,no_count')
+  ]);
 
-      if (eventsRes.error){
-        console.error(eventsRes.error);
-        strip.innerHTML = `
-          <article class="event-card">
-            <div class="event-body">
-              <div class="event-title">Couldn’t load events right now.</div>
-              <div class="event-meta"><span>Refresh and try again in a bit.</span></div>
-            </div>
-          </article>`;
-        return;
-      }
+  if (eventsRes.error){
+    console.error(eventsRes.error);
+    strip.innerHTML = `
+      <article class="event-card">
+        <div class="event-body">
+          <div class="event-title">Couldn’t load events right now.</div>
+          <div class="event-meta"><span>Refresh and try again in a bit.</span></div>
+        </div>
+      </article>`;
+    return;
+  }
 
-      const countsMap = new Map((countsRes.data || []).map(c => [c.event_id, c]));
-      const rows = (eventsRes.data || []).map(e => ({
-        ...e,
-        counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
-      }));
+  const countsMap = new Map((countsRes.data || []).map(c => [c.event_id, c]));
 
-      if (!rows.length){
-        strip.innerHTML = `
-          <article class="event-card">
-            <div class="event-body">
-              <div class="event-title">No events posted yet.</div>
-              <div class="event-meta"><span>Check back soon or follow @rrxngclub.</span></div>
-            </div>
-          </article>`;
-        return;
-      }
+  const events = (eventsRes.data || []).map(e => ({
+    ...e,
+    counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+  }));
 
-      strip.innerHTML = rows.map(renderEventCard).join('');
+  // Fetch teams for events that have team_id
+  const teamIds = [...new Set(events.map(e => e.team_id).filter(Boolean))];
+  let teamsMap = new Map();
 
-      // Event strip click handling
-      strip.onclick = function(e){
-        const card = e.target.closest('.event-card');
-        if (!card) return;
-        const id = card.dataset.id;
-        if (!id) return;
+  if (teamIds.length){
+    const { data: teamsData, error: teamsErr } = await supabase
+      .from('teams')
+      .select('id,name,logo_url')
+      .in('id', teamIds);
 
-        const actionBtn = e.target.closest('[data-action]');
-        if (actionBtn){
-          const action = actionBtn.dataset.action;
-          if (action === 'view'){
-            location.href = `/event.html?id=${id}`;
-          } else if (action === 'rsvp'){
-            authUI.requireLogin(()=> location.href = `/event.html?id=${id}#rsvp`);
-          }
-          return;
-        }
-
-        // Plain card click
-        location.href = `/event.html?id=${id}`;
-      };
+    if (!teamsErr){
+      teamsMap = new Map((teamsData || []).map(t => [t.id, t]));
+    } else {
+      console.error('teams fetch failed', teamsErr);
     }
+  }
+
+  function renderEventCard(e){
+    const d = e.starts_at ? new Date(e.starts_at) : null;
+    const whenLabel = d
+      ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
+      : "TBA";
+
+    const region = e.location || "";
+    const tag = e.tag || "Event";
+    const status = e.status || "RSVP Open";
+    const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+    const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
+
+    const team = e.team_id ? teamsMap.get(e.team_id) : null;
+    const teamLine = team ? `TEAM: ${team.name}` : '';
+
+    return `
+      <article class="event-card" data-id="${e.id}">
+        <div class="event-image">
+          <div class="event-image-inner"></div>
+          <div class="event-tag">${tag}</div>
+        </div>
+        <div class="event-body">
+          <div class="event-title">${e.title}</div>
+
+          <div class="event-meta">
+            <span>${whenLabel}</span>
+            <span class="event-status">${status}</span>
+          </div>
+
+          <div class="event-meta">
+            <span>${region}</span>
+            <span>${promoter}</span>
+          </div>
+
+          ${teamLine ? `
+            <div class="event-meta" style="font-size:10px;margin-top:4px;">
+              <span style="color:var(--accent-secondary);letter-spacing:.16em;text-transform:uppercase;">
+                ${teamLine}
+              </span>
+            </div>` : ''}
+
+          <div class="event-meta" style="font-size:10px; margin-top:4px;">
+            <span>✅ ${counts.yes_count} going</span>
+            <span>🤔 ${counts.maybe_count} maybe</span>
+          </div>
+
+          <div class="event-actions">
+            <button class="btn btn-outline-light btn-xs" type="button" data-action="view">View Details</button>
+            <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">
+              RSVP + Attach Build
+            </button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  if (!events.length){
+    strip.innerHTML = `
+      <article class="event-card">
+        <div class="event-body">
+          <div class="event-title">No events posted yet.</div>
+          <div class="event-meta"><span>Check back soon or follow @rrxngclub.</span></div>
+        </div>
+      </article>`;
+    return;
+  }
+
+  strip.innerHTML = events.map(renderEventCard).join('');
+
+  strip.onclick = function(e){
+    const card = e.target.closest('.event-card');
+    if (!card) return;
+    const id = card.dataset.id;
+    if (!id) return;
+
+    const actionBtn = e.target.closest('[data-action]');
+    if (actionBtn){
+      const action = actionBtn.dataset.action;
+      if (action === 'view'){
+        location.href = `/event.html?id=${id}`;
+      } else if (action === 'rsvp'){
+        authUI.requireLogin(()=> location.href = `/event.html?id=${id}#rsvp`);
+      }
+      return;
+    }
+
+    location.href = `/event.html?id=${id}`;
+  };
+}
+
 
     // ===== Sightings =====
     async function loadFrontSightings(){

@@ -426,7 +426,13 @@
 
       const liked = !!b._liked;
       const heart = liked ? '♥' : '♡';
-
+      const badges = [];
+      if (b.stage) badges.push('Stage ' + b.stage);
+      if (b.power_goal) badges.push(b.power_goal + 'hp');
+      if (b.parish) badges.push(b.parish);
+      if (b.trophy_labels && b.trophy_labels.length) {
+        b.trophy_labels.forEach(t => badges.push('🏆 ' + t));
+      }
       return `
         <article class="card" role="listitem" data-build="${b.id}">
           <a href="/build.html?id=${b.id}" style="display:block">
@@ -444,7 +450,7 @@
                 ${visibility}
               </span>
             </div>
-
+            
             <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
               <span class="sub">♥ <span class="likes">${Number(b.like_count || 0)}</span></span>
               <button class="btn" data-like
@@ -536,8 +542,8 @@
         } else {
           // Public listing (view already has like_count + thumb_url)
           const pub = await supabase
-            .from('public_builds_with_like_count')
-            .select('id,title,like_count,thumb_url,is_public,created_at')
+            .from('public_builds_with_like_count_and_trophies')
+            .select('id,title,thumb_url,build_type,stage,power_goal,parish,owner_handle,like_count,created_at,trophy_labels')
             .order('like_count', { ascending: sort!=='top' })
             .order('id', { ascending: true });
 

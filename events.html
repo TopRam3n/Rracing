@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>All Events — ROK Racers JA</title>
-<meta name="description" content="See all upcoming car meets and events across Jamaica." />
+<meta name="description" content="See all upcoming and past car events across Jamaica." />
 <link rel="icon" href="/Assets/og.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,7 +75,12 @@
     letter-spacing:2px;
     margin:0;
   }
-  .title small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em}
+  .title small{
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+  }
 
   .nav-auth{
     display:flex;
@@ -96,6 +101,7 @@
     font-size:13px;
     background:transparent;
     color:var(--fg);
+    transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
   }
   .btn.primary{
     background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
@@ -107,8 +113,11 @@
     box-shadow:0 0 26px rgba(229,9,20,.7);
     transform:translateY(-1px);
   }
+  .btn:hover{
+    background:rgba(255,255,255,0.03);
+  }
 
-  /* Profile menu (shared IDs with index/auth-ui.js) */
+  /* Profile menu */
   .profile-menu{
     position:relative;
     display:flex;
@@ -126,6 +135,7 @@
     cursor:pointer;
     border:1px solid var(--line);
     font-size:13px;
+    transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
   }
   .profile-chip:hover{
     border-color:rgba(255,255,255,.32);
@@ -172,11 +182,12 @@
     border-radius:20px;
     overflow:hidden;
     box-shadow:var(--shadow);
-    transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s;
   }
   .card:hover{
     transform:translateY(-6px) scale(1.01);
     box-shadow:0 30px 80px rgba(0,0,0,.85);
+    border-color:rgba(255,217,59,0.5);
   }
   .card img{display:block;width:100%;height:auto}
   .pad{padding:18px}
@@ -216,6 +227,11 @@
     outline:none;
     font-size:14px;
   }
+  input:focus-visible,
+  select:focus-visible{
+    border-color:var(--accent-yellow);
+    box-shadow:0 0 0 1px rgba(255,217,59,0.5);
+  }
 
   .chip{
     display:inline-flex;
@@ -226,6 +242,16 @@
     border-radius:999px;
     padding:6px 10px;
     font-size:12px;
+  }
+
+  .chip-status{
+    border-color:rgba(255,217,59,0.7);
+    color:var(--accent-yellow);
+  }
+  .chip-past{
+    border-color:rgba(255,255,255,0.18);
+    color:var(--muted);
+    background:rgba(255,255,255,0.03);
   }
 
   .pagination{
@@ -313,7 +339,7 @@
 </style>
 </head>
 <body>
-  <!-- NAV (shared auth pattern) -->
+  <!-- NAV -->
   <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
@@ -337,14 +363,13 @@
             <span id="navProfileInitials">U</span>
           </div>
           <div id="navProfileDropdown" class="dropdown" style="display:none">
-          <a href="/garage.html">My Garage</a>
-          <a href="/tickets.html">My Tickets</a>
-          <a href="/likes-builds.html">Liked Builds</a>
-          <a href="/likes-sightings.html">Liked Sightings</a>
-          <a href="/teams.html">My Teams</a>
-          <a href="/activity.html">Activity</a>
-          <button id="signoutBtn" type="button">Sign out</button>
-
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a href="/activity.html">Activity</a>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -357,6 +382,7 @@
 
       <div class="filters" role="region" aria-label="Event filters">
         <input id="q" placeholder="Search title or location…" aria-label="Search"/>
+
         <select id="month" aria-label="Month">
           <option value="">Any month</option>
           <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
@@ -364,11 +390,30 @@
           <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
           <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
         </select>
+
         <select id="when" aria-label="When">
           <option value="upcoming">Upcoming</option>
           <option value="past">Past</option>
           <option value="all">All</option>
         </select>
+
+        <select id="hostFilter" aria-label="Host">
+          <option value="all">All hosts</option>
+          <option value="promoters">Promoters</option>
+          <option value="team">Specific team…</option>
+        </select>
+
+        <select id="hostTeam" aria-label="Team" style="display:none; min-width:220px">
+          <option value="">Select a team…</option>
+        </select>
+
+        <!-- NEW: Host filter -->
+        <select id="host" aria-label="Host">
+          <option value="">Any host</option>
+          <option value="promoters">Promoters only</option>
+          <!-- team options injected -->
+        </select>
+
         <button class="btn" id="apply">Apply</button>
       </div>
 
@@ -409,6 +454,29 @@
             <input id="f_location" placeholder="Kingston, Fairview Parking Lot…" />
           </label>
         </div>
+
+        <div class="row">
+          <label>Post as
+            <select id="f_team">
+              <option value="">My account</option>
+            </select>
+          </label>
+          <div class="help">Only teams you manage show here</div>
+        </div>
+
+        <div class="row">
+          <label>Parish <span class="help">(optional)</span>
+            <input id="f_parish" placeholder="St. Andrew, St. James…" />
+          </label>
+        </div>
+        <div class="two">
+          <label>Type / Tag <span class="help">(optional)</span>
+            <input id="f_tag" placeholder="Track day, gas station meet…" />
+          </label>
+          <label>Status <span class="help">(optional)</span>
+            <input id="f_status" placeholder="RSVP Open, Sold Out…" />
+          </label>
+        </div>
         <div class="row">
           <label>Cover image URL <span class="help">(optional, HTTPS)</span>
             <input id="f_cover" placeholder="https://…" />
@@ -428,12 +496,19 @@
   </div>
 
   <script>
-    /* ========= Events list, filters & pagination ========= */
+    /* ========= Helpers ========= */
 
     const pageSize = 9;
     let page      = 0;
-    let cached    = [];  // all events from DB
-    let filtered  = [];  // filtered view based on search/month/when
+    let cached    = [];
+    let filtered  = [];
+
+    let teamsIndex = new Map();          // team_id -> {id,name,is_promoter}
+    let promoterTeamIds = new Set();     // team_ids where is_promoter true
+
+    function escapeHTML(s){
+      return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
 
     function withinMonth(dateStr, monthIndex){
       if (monthIndex === "" || monthIndex == null) return true;
@@ -454,15 +529,30 @@
       const when = d
         ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
         : "";
-      const loc  = e.location
-        ? `${when ? when + " • " : ""}${e.location}`
-        : when;
+      const hostTeam = e.teams?.id
+        ? `<div class="sub">Host team: <a href="/team.html?id=${e.teams.id}" style="text-decoration:underline">${e.teams.name || 'View team'}</a></div>`
+        : '';
+
+
+      const parish = e.parish || "";
+      const locLabel = [parish, e.location].filter(Boolean).join(" · ");
+      const loc  = when
+        ? (locLabel ? `${when} • ${locLabel}` : when)
+        : locLabel;
 
       const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+      const past = e.starts_at && !isUpcoming(e.starts_at);
+      const statusText = e.status || (past ? "Completed" : "RSVP Open");
+      const tagText = e.tag || "Event";
+
+      const host = e.team_id ? teamsIndex.get(e.team_id) : null;
+      const hostLine = host
+        ? `<div class="sub" style="margin-top:4px">Host: <a href="/team.html?id=${encodeURIComponent(host.id)}" style="text-decoration:underline">${escapeHTML(host.name)}</a></div>`
+        : "";
 
       return `
         <article class="card" role="listitem">
-          ${e.cover_url ? `<img src="${e.cover_url}" alt="${e.title}" loading="lazy">` : ""}
+          ${e.cover_url ? `<img src="${escapeHTML(e.cover_url)}" alt="${escapeHTML(e.title)}" loading="lazy">` : ""}
           <div class="pad">
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
               <div class="date">
@@ -470,15 +560,23 @@
                 <div class="d">${day}</div>
               </div>
               <div>
-                <strong>${e.title}</strong>
-                ${loc ? `<div class="sub">${loc}</div>` : ""}
+                <strong>${escapeHTML(e.title)}</strong>
+                ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ""}
+                ${hostLine}
               </div>
             </div>
+
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+              <span class="chip chip-status">${escapeHTML(tagText)}</span>
+              <span class="chip ${past ? 'chip-past' : 'chip-status'}">${escapeHTML(statusText)}</span>
+              ${host?.is_promoter ? `<span class="chip chip-status">Promoter</span>` : ``}
+            </div>
+
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <span class="chip">✅ ${counts.yes_count}</span>
               <span class="chip">🤔 ${counts.maybe_count}</span>
               <span class="chip">❌ ${counts.no_count}</span>
-              <a class="btn" href="/event.html?id=${e.id}" style="margin-left:auto">
+              <a class="btn" href="/event.html?id=${encodeURIComponent(e.id)}" style="margin-left:auto">
                 Details / Tickets
               </a>
             </div>
@@ -514,6 +612,19 @@
       const q     = document.getElementById('q').value.trim().toLowerCase();
       const month = document.getElementById('month').value;
       const when  = document.getElementById('when').value;
+      const host  = document.getElementById('host').value; // "" | "promoters" | "team:<id>"
+      const hostFilter = document.getElementById('hostFilter').value;
+      const hostTeamId = document.getElementById('hostTeam').value;
+
+        if (hostFilter === 'promoters'){
+          rows = rows.filter(isPromoterEvent);
+        } else if (hostFilter === 'team'){
+          if (hostTeamId){
+            rows = rows.filter(r => r.team_id === hostTeamId);
+          } else {
+            rows = []; // user picked "Specific team" but didn't choose a team yet
+          }
+        }
 
       let rows = cached.slice(0);
 
@@ -529,11 +640,20 @@
         rows = rows.filter(r => r.starts_at && withinMonth(r.starts_at, month));
       }
 
-      // Search (title + location)
+      // Host filter
+      if (host === 'promoters'){
+        rows = rows.filter(r => r.team_id && promoterTeamIds.has(r.team_id));
+      } else if (host && host.startsWith('team:')){
+        const teamId = host.slice('team:'.length);
+        rows = rows.filter(r => (r.team_id || '') === teamId);
+      }
+
+      // Search (title + location + parish + host name)
       if (q){
-        rows = rows.filter(r =>
-          (`${r.title || ""} ${r.location || ""}`).toLowerCase().includes(q)
-        );
+        rows = rows.filter(r => {
+          const hostName = r.team_id ? (teamsIndex.get(r.team_id)?.name || '') : '';
+          return (`${r.title||""} ${r.location||""} ${r.parish||""} ${hostName}`.toLowerCase().includes(q));
+        });
       }
 
       filtered = rows;
@@ -541,16 +661,79 @@
       renderCurrentPage();
     }
 
+    async function loadHostTeamsForFilter(){
+  const sel = document.getElementById('hostTeam');
+  if(!sel) return;
+
+  sel.innerHTML = `<option value="">Select a team…</option>`;
+
+  const { data, error } = await supabase
+    .from('teams')
+    .select('id,name')
+    .order('name', { ascending:true });
+
+  if(error){
+    console.error('loadHostTeamsForFilter', error);
+    return;
+  }
+
+  (data||[]).forEach(t=>{
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.name || 'Team';
+    sel.appendChild(opt);
+  });
+}
+
+
+    async function fetchTeamsForFilters(){
+      const hostSel = document.getElementById('host');
+      if(!hostSel) return;
+
+      // keep first two options (Any host + Promoters only), then rebuild team options
+      hostSel.innerHTML = `
+        <option value="">Any host</option>
+        <option value="promoters">Promoters only</option>
+      `;
+
+      const { data, error } = await supabase
+        .from('teams')
+        .select('id,name,is_promoter')
+        .order('name', { ascending:true });
+
+      if(error){
+        console.error('fetchTeamsForFilters error', error);
+        return;
+      }
+
+      teamsIndex = new Map((data || []).map(t => [t.id, t]));
+      promoterTeamIds = new Set((data || []).filter(t => t.is_promoter).map(t => t.id));
+
+      (data || []).forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = `team:${t.id}`;
+        opt.textContent = t.is_promoter ? `${t.name} (Promoter)` : t.name;
+        hostSel.appendChild(opt);
+      });
+    }
+    function isPromoterEvent(e){
+      // treat as promoter-hosted if the host team exists and is_promoter = true
+      return !!(e.teams && e.teams.is_promoter);
+    }
+
     async function fetchAll(){
       const list = document.getElementById('eventsList');
       list.innerHTML =
         `<article class="card"><div class="pad sub">Loading events…</div></article>`;
 
+      // ensure teams are available for host link + filters before rendering
+      await fetchTeamsForFilters();
+
       const [eventsRes, countsRes] = await Promise.all([
         supabase
           .from('events')
-          .select('id,title,starts_at,location,cover_url')
-          .order('starts_at',{ ascending:true }),
+          .select('id,title,starts_at,location,cover_url,tag,status,parish,promoter_handle,team_id,teams:team_id(id,name,is_promoter,logo_url)')
+          .order('starts_at',{ ascending:true, nullsLast:true }),
         supabase
           .from('event_rsvp_counts')
           .select('event_id,yes_count,maybe_count,no_count')
@@ -572,6 +755,24 @@
         counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
       }));
     }
+    
+document.getElementById('hostFilter').addEventListener('change', async ()=>{
+  const mode = document.getElementById('hostFilter').value;
+  const teamSel = document.getElementById('hostTeam');
+
+  if(mode === 'team'){
+    teamSel.style.display = 'inline-block';
+    if(teamSel.options.length <= 1){
+      await loadHostTeamsForFilter();
+    }
+  } else {
+    teamSel.style.display = 'none';
+    teamSel.value = '';
+  }
+  applyFilters();
+});
+
+document.getElementById('hostTeam').addEventListener('change', applyFilters);
 
     document.getElementById('apply').addEventListener('click', applyFilters);
 
@@ -590,11 +791,13 @@
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
+      await loadHostTeamsForFilter(); // optional: prefill, or only when needed
       cached = await fetchAll();
       filtered = cached.slice(0);
       page = 0;
       renderCurrentPage();
     });
+
 
     /* ========= Create Event Modal ========= */
 
@@ -613,18 +816,20 @@
 
     if (addEventBtn){
       addEventBtn.addEventListener('click', async () => {
-        // Prefer central auth helper if available
         if (window.authUI && typeof authUI.requireLogin === 'function'){
-          authUI.requireLogin(openModal);
+          authUI.requireLogin(async () => {
+            await loadMyTeamOptions();
+            openModal();
+          });
           return;
         }
 
-        // Fallback: direct Supabase check
         const { data: { user } } = await supabase.auth.getUser();
         if (!user){
           alert("Sign in to create an event.");
           return;
         }
+        await loadMyTeamOptions();
         openModal();
       });
     }
@@ -652,6 +857,9 @@
       const startsRaw   = document.getElementById('f_starts').value;
       const endsRaw     = document.getElementById('f_ends').value;
       const locationTxt = document.getElementById('f_location').value.trim() || null;
+      const parishTxt   = document.getElementById('f_parish').value.trim() || null;
+      const tag         = document.getElementById('f_tag').value.trim() || null;
+      const status      = document.getElementById('f_status').value.trim() || null;
       const cover       = document.getElementById('f_cover').value.trim() || null;
       const desc        = document.getElementById('f_desc').value.trim()  || null;
 
@@ -660,14 +868,20 @@
         return;
       }
 
+      const teamId = document.getElementById('f_team')?.value || null;
+
       const row = {
         title,
         starts_at: toISO(startsRaw),
         ends_at:   endsRaw ? toISO(endsRaw) : null,
         location:  locationTxt,
+        parish:    parishTxt,
+        tag,
+        status,
         cover_url: cover,
         description: desc,
-        created_by: user.id
+        created_by: user.id,
+        team_id: teamId || null
       };
 
       const { error } = await supabase.from('events').insert(row);
@@ -678,9 +892,49 @@
 
       closeModal();
       cached = await fetchAll();
-      applyFilters(); // re-applies current filters on fresh data
+      applyFilters();
       alert("Event created and added to the board.");
     });
+
+    async function loadMyTeamOptions(){
+      const sel = document.getElementById('f_team');
+      if (!sel) return;
+
+      sel.innerHTML = `<option value="">My account</option>`;
+
+      const { data:{ user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('team_members')
+        .select(`
+          role,
+          teams:team_id (
+            id,
+            name,
+            is_promoter
+          )
+        `)
+        .eq('user_id', user.id)
+        .in('role', ['owner','manager']);
+
+      if (error){
+        console.error('loadMyTeamOptions error', error);
+        return;
+      }
+
+      const teams = (data || []).map(r => r.teams).filter(Boolean);
+
+      // if you want ONLY promoter teams to be able to host events, keep this:
+      const allowed = teams;
+
+      allowed.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.name}`;
+        sel.appendChild(opt);
+      });
+    }
   </script>
 
 </body>

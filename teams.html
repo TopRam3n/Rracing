@@ -1,163 +1,524 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>My Teams — ROK Racers JA</title>
-  <meta name="description" content="Teams and promoter tools are coming soon to ROK Racers JA."/>
-  <link rel="icon" href="/Assets/og.png"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>My Teams — ROK Racers JA</title>
+<meta name="description" content="Create and manage your teams, membership, and promoter access." />
+<link rel="icon" href="/Assets/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script src="/auth-ui.js"></script>
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  </script>
+<style>
+  :root{
+    --bg:#050508; --bg1:#141414; --bg2:#1b1b1b;
+    --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --accent-yellow:#FFD93B;
+    --line:rgba(255,255,255,.08); --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+    color:var(--fg);
+    font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  a{color:var(--fg);text-decoration:none}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-  <script src="/auth-ui.js"></script>
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(5,5,8,.9);
+    border-bottom:1px solid var(--line);
+    backdrop-filter:saturate(140%) blur(12px);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:12px;object-fit:cover}
+  h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+  .title small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em}
+  .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 
-  <style>
-    :root{
-      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
-      --fg:#fff; --muted:#bdbdbd;
-      --accent:#e50914; --line:rgba(255,255,255,.08);
-      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:0 24px}
-    .sub{color:var(--muted)}
+  .btn{
+    display:inline-flex;gap:8px;align-items:center;
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    cursor:pointer;font-size:13px;background:transparent;color:var(--fg);
+    transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
+  }
+  .btn.primary{
+    background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+    color:#fff;border-color:rgba(229,9,20,.9);
+    box-shadow:0 0 18px rgba(229,9,20,.5);
+  }
+  .btn.primary:hover{box-shadow:0 0 26px rgba(229,9,20,.7);transform:translateY(-1px)}
+  .btn:hover{background:rgba(255,255,255,.03)}
+  .btn[disabled]{opacity:.5;pointer-events:none}
 
-    .nav{
-      position:sticky;top:0;z-index:50;
-      background:rgba(18,18,18,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px);
-    }
-    .nav-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 0;
-    }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .title small{color:var(--muted)}
-    .menu{display:flex;gap:10px;align-items:center}
-    .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:10px 14px;border-radius:14px;
-      border:1px solid var(--line);cursor:pointer;
-      background:transparent;color:var(--fg);
-      font-family:inherit;font-size:15px;
-    }
-    .btn.primary{background:#fff;color:#000;border-color:#fff}
-    .btn.small{padding:6px 10px;font-size:14px}
-    .btn[disabled]{opacity:.5;pointer-events:none}
+  .profile-menu{position:relative;display:flex;align-items:center}
+  .profile-chip{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--bg2);display:flex;align-items:center;justify-content:center;
+    font-weight:600;cursor:pointer;border:1px solid var(--line);font-size:13px;
+  }
+  .dropdown{
+    position:absolute;right:0;top:40px;background:#121212;border:1px solid var(--line);
+    box-shadow:0 20px 40px rgba(0,0,0,.6);border-radius:16px;display:flex;flex-direction:column;
+    min-width:190px;z-index:60;
+  }
+  .dropdown a,.dropdown button{
+    padding:10px 16px;text-align:left;border:none;background:transparent;color:var(--fg);
+    font-size:13px;width:100%;cursor:pointer;
+  }
+  .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
 
-    .section{padding:48px 0}
+  .section{padding:40px 0 56px}
+  .grid{display:grid;gap:18px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+  .card{
+    background:var(--bg1);
+    border:1px solid var(--line);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1), border-color .25s;
+  }
+  .card:hover{transform:translateY(-6px) scale(1.01);border-color:rgba(255,217,59,.5)}
+  .pad{padding:18px}
+  .sub{color:var(--muted)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
 
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      box-shadow:var(--shadow);
-      padding:22px;
-    }
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+    background:var(--bg2);font-size:12px;color:var(--muted);
+  }
+  .pill.good{border-color:rgba(255,217,59,.6);color:var(--accent-yellow)}
+  .pill.bad{border-color:rgba(255,255,255,.18);color:var(--muted)}
+  .thumb{
+    width:52px;height:52px;border-radius:14px;object-fit:cover;border:1px solid var(--line);background:var(--bg2);
+  }
 
-    .nav-auth{display:flex;align-items:center;gap:10px}
-    .profile-menu{position:relative;display:flex;align-items:center}
-    .profile-chip{
-      width:40px;height:40px;border-radius:50%;
-      background:var(--bg2);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:600;cursor:pointer;border:1px solid var(--line);
-    }
-    .profile-chip span{font-size:16px}
-    .dropdown{
-      position:absolute;right:0;top:48px;
-      background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;display:flex;flex-direction:column;
-      min-width:190px;z-index:999;
-    }
-    .dropdown a,.dropdown button{
-      padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:15px;
-      width:100%;cursor:pointer;font-family:inherit;
-    }
-    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
-  </style>
+  input,select,textarea{
+    width:100%;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    color:#fff;
+    padding:10px 12px;
+    border-radius:12px;
+    outline:none;
+    font-size:14px;
+    font-family:inherit;
+  }
+  textarea{resize:vertical}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:720px){.two{grid-template-columns:1fr}}
+  .help{font-size:12px;color:var(--muted)}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:90}
+  .modal{
+    width:min(820px,92vw);
+    background:#121212;border:1px solid var(--line);
+    border-radius:18px;box-shadow:var(--shadow);overflow:hidden;
+  }
+  .modal header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .modal h3{font-size:28px}
+  .modal .content{padding:18px;display:grid;gap:12px}
+  .modal .actions{display:flex;gap:10px;justify-content:flex-end;padding:16px 18px;border-top:1px solid var(--line)}
+</style>
 </head>
+
 <body>
   <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo-img" />
+        <img src="/Assets/logo.png" alt="" class="logo">
         <div class="title">
           <h1>ROK RACERS JA</h1>
           <small>My Teams</small>
         </div>
       </a>
 
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/sightings.html">Sightings</a>
-        </div>
+      <div class="nav-auth">
+        <a class="btn" href="/events.html">Events</a>
+        <a class="btn" href="/garage.html">Garage</a>
+        <button id="createTeamBtn" class="btn primary">+ Create Team</button>
 
-        <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Sign in</button>
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
-            </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
-                <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
-            </div>
+        <button id="navSignInBtn" class="btn">Log in</button>
+        <button id="navJoinBtn" class="btn primary">Join the grid</button>
+
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="navProfileInitials">U</span>
+          </div>
+          <div id="navProfileDropdown" class="dropdown" style="display:none">
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a href="/activity.html">Activity</a>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
-
       </div>
     </div>
   </nav>
 
   <main class="container">
     <section class="section">
-      <div class="card">
-        <h2 style="font-size:40px;margin-bottom:8px">Teams & promoters coming soon</h2>
-        <p class="sub" style="margin-bottom:12px">
-          This space will be where:
-        </p>
-        <ul class="sub" style="margin-top:0;padding-left:18px">
-          <li>Teams and promoters can manage their event pages and applications</li>
-          <li>Drivers, marshals and other roles can track the teams they apply to</li>
-          <li>Your builds will eventually show trophies from competition events</li>
-        </ul>
-        <p class="sub" style="margin-top:8px">
-          It’s part of Phase 2. For now, keep building, posting sightings, and hitting events — we’ll plug your teams into the ecosystem soon.
-        </p>
-        <div style="margin-top:16px">
-          <a href="/garage.html" class="btn primary">Back to Garage</a>
+      <div class="row">
+        <h2 style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">My Teams</h2>
+        <span id="statusLine" class="sub"></span>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:14px">
+        <div class="card">
+          <div class="pad">
+            <h3 style="font-size:28px;letter-spacing:2px;text-transform:uppercase;">Memberships</h3>
+            <div class="sub">Teams you’re already part of.</div>
+            <div id="myTeams" style="margin-top:12px" class="grid"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pad">
+            <h3 style="font-size:28px;letter-spacing:2px;text-transform:uppercase;">Pending</h3>
+            <div class="sub">Requests waiting on approval.</div>
+            <div id="pendingTeams" style="margin-top:12px" class="grid"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pad">
+            <h3 style="font-size:28px;letter-spacing:2px;text-transform:uppercase;">Find teams</h3>
+            <div class="sub">Browse public teams and apply.</div>
+            <input id="q" placeholder="Search team name…" style="margin-top:12px"/>
+            <div id="allTeams" style="margin-top:12px" class="grid"></div>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <script>
-    // Let auth-ui.js handle nav auth wiring.
-    // No extra JS needed here on purpose.
-  </script>
+  <!-- Create Team Modal -->
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header>
+        <h3 id="modalTitle">Create Team</h3>
+        <button id="modalClose" class="btn" aria-label="Close">✕</button>
+      </header>
+
+      <div class="content">
+        <div class="row" style="justify-content:flex-start;gap:14px">
+          <img id="logoPreview" class="thumb" alt="" />
+          <div style="flex:1">
+            <label class="sub">Team logo (PNG/JPG)</label>
+            <input id="f_logo" type="file" accept="image/*" />
+            <div class="help">If upload fails (bucket not set), you can still paste a logo URL in admin later.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label class="sub">Team name</label>
+          <input id="f_name" placeholder="ROC Kings, Night Shift, Track Gods…" />
+        </div>
+        <div class="row">
+  <label class="sub">Handle (optional)</label>
+  <input id="f_handle" placeholder="rockings (optional)" />
+  <div class="help">If you don’t set this now, you can set it in admin later.</div>
+</div>
+
+
+        <div class="two">
+          <div>
+            <label class="sub">Parish</label>
+            <input id="f_parish" placeholder="Kingston, St. Andrew, St. James…" />
+          </div>
+          <div>
+            <label class="sub">Instagram handle</label>
+            <input id="f_ig" placeholder="@teamhandle" />
+          </div>
+        </div>
+
+        <div class="two">
+          <div>
+            <label class="sub">TikTok (optional)</label>
+            <input id="f_tt" placeholder="@tiktokhandle" />
+          </div>
+          <div>
+            <label class="sub">Website (optional)</label>
+            <input id="f_web" placeholder="https://…" />
+          </div>
+        </div>
+
+        <div>
+          <label class="sub">Bio</label>
+          <textarea id="f_bio" rows="4" placeholder="Short story about the team…"></textarea>
+        </div>
+
+        <div>
+          <label class="sub">Gallery photos (optional, multiple)</label>
+          <input id="f_gallery" type="file" accept="image/*" multiple />
+          <div class="help">These show on team.html. If uploads fail, you can add photos later in admin.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="modalCancel" class="btn">Cancel</button>
+        <button id="modalCreate" class="btn primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  function openModal(){
+    $('modalBackdrop').style.display='flex';
+    $('modalBackdrop').setAttribute('aria-hidden','false');
+  }
+  function closeModal(){
+    $('modalBackdrop').style.display='none';
+    $('modalBackdrop').setAttribute('aria-hidden','true');
+  }
+
+  $('modalClose').onclick = closeModal;
+  $('modalCancel').onclick = closeModal;
+  $('modalBackdrop').addEventListener('click',(e)=>{ if(e.target===$('modalBackdrop')) closeModal(); });
+
+  $('f_logo').addEventListener('change', (e)=>{
+    const f = e.target.files?.[0];
+    if(!f){ $('logoPreview').removeAttribute('src'); return; }
+    $('logoPreview').src = URL.createObjectURL(f);
+  });
+
+  async function requireLogin(cb){
+    if(window.authUI && typeof authUI.requireLogin === 'function'){
+      return authUI.requireLogin(cb);
+    }
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user){ alert('Please sign in.'); return false; }
+    cb?.(user);
+    return true;
+  }
+
+  // ---------- Storage helpers ----------
+  async function uploadToBucket(bucket, path, file){
+    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert:true });
+    if(error) throw error;
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async function createTeam(){
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user){ alert('Sign in first.'); return; }
+
+    const name = $('f_name').value.trim();
+    if(!name){ alert('Team name is required.'); return; }
+    const handle = $('f_handle').value.trim() || null;
+
+
+    const parish = $('f_parish').value.trim() || null;
+    const ig = $('f_ig').value.trim() || null;
+    const tt = $('f_tt').value.trim() || null;
+    const web = $('f_web').value.trim() || null;
+    const bio = $('f_bio').value.trim() || null;
+
+    // 1) create team row first (logo/gallery can be updated after upload)
+    const { data:teamRow, error:teamErr } = await supabase
+      .from('teams')
+      .insert({
+        name,
+        handle,
+        parish,
+        bio,
+        instagram_handle: ig,
+        tiktok_handle: tt,
+        website_url: web,
+        created_by: user.id
+      })
+      .select('id')
+      .single();
+
+    if(teamErr){ alert('Couldn’t create team: ' + teamErr.message); return; }
+
+    const teamId = teamRow.id;
+
+    // 2) make creator owner
+    const { error:memErr } = await supabase
+      .from('team_members')
+      .insert({ team_id: teamId, user_id: user.id, role:'owner' });
+
+    if(memErr){
+      alert('Team created, but owner link failed: ' + memErr.message);
+    }
+
+    // 3) try uploads
+    let logoUrl = null;
+    try{
+      const logoFile = $('f_logo').files?.[0];
+      if(logoFile){
+        const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase();
+        logoUrl = await uploadToBucket('team-logos', `${teamId}/logo.${ext}`, logoFile);
+      }
+    }catch(e){
+      console.warn('logo upload failed', e);
+    }
+
+    let galleryUrls = [];
+    try{
+      const files = Array.from($('f_gallery').files || []);
+      for(const file of files){
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const key = `${teamId}/${crypto.getRandomValues(new Uint32Array(1))[0]}.${ext}`;
+        const url = await uploadToBucket('team-gallery', key, file);
+        galleryUrls.push(url);
+      }
+    }catch(e){
+      console.warn('gallery upload failed', e);
+    }
+
+    // 4) update team with urls if any
+    const payload = {};
+    if(logoUrl) payload.logo_url = logoUrl;
+    if(galleryUrls.length) payload.gallery_urls = galleryUrls; // expects json/array column; if not, it still won't break insert above
+
+    if(Object.keys(payload).length){
+      const { error:updErr } = await supabase.from('teams').update(payload).eq('id', teamId);
+      if(updErr){
+        console.warn('team url update failed', updErr);
+      }
+    }
+
+    closeModal();
+    await loadAll();
+    alert('Team created. You are now the owner.');
+  }
+
+  $('modalCreate').onclick = ()=> requireLogin(createTeam);
+
+  $('createTeamBtn').onclick = ()=> requireLogin(openModal);
+
+  // ---------- Render ----------
+  function renderTeamMini(t, role){
+    const logo = t.logo_url ? `<img class="thumb" src="${escapeHTML(t.logo_url)}" alt="">` : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
+    const promoter = t.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill bad">Team</span>`;
+    const rolePill = role ? `<span class="pill">${escapeHTML(role)}</span>` : ``;
+
+    return `
+      <div class="row" style="justify-content:flex-start;gap:12px">
+        ${logo}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <a href="/team.html?id=${encodeURIComponent(t.id)}"><strong>${escapeHTML(t.name || 'Team')}</strong></a>
+            ${promoter}
+            ${rolePill}
+          </div>
+          <div class="sub">${escapeHTML([t.parish].filter(Boolean).join(' • '))}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a class="btn" href="/team.html?id=${encodeURIComponent(t.id)}">View</a>
+          <a class="btn" href="/admin-team.html?team_id=${encodeURIComponent(t.id)}">Admin</a>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTeamBrowse(t){
+    const logo = t.logo_url ? `<img class="thumb" src="${escapeHTML(t.logo_url)}" alt="">` : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
+    const promoter = t.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill bad">Team</span>`;
+    const ig = t.instagram_handle ? `<div class="sub">@${escapeHTML(t.instagram_handle.replace(/^@/,'') )}</div>` : ``;
+
+    return `
+      <div class="row" style="justify-content:flex-start;gap:12px">
+        ${logo}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <a href="/team.html?id=${encodeURIComponent(t.id)}"><strong>${escapeHTML(t.name || 'Team')}</strong></a>
+            ${promoter}
+          </div>
+          <div class="sub">${escapeHTML(t.parish || '')}</div>
+          ${ig}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a class="btn" href="/team.html?id=${encodeURIComponent(t.id)}">View</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadAll(){
+    const { data:{ user } } = await supabase.auth.getUser();
+    $('statusLine').textContent = user ? `Signed in as ${user.email || 'Driver'}` : `Sign in to manage teams.`;
+
+    // MY MEMBERSHIPS + PENDING
+    $('myTeams').innerHTML = `<div class="sub">Loading…</div>`;
+    $('pendingTeams').innerHTML = `<div class="sub">Loading…</div>`;
+
+    if(user){
+      const { data:rows, error } = await supabase
+        .from('team_members')
+        .select(`team_id, role, teams:team_id(id,name,parish,logo_url,is_promoter,instagram_handle)`)
+        .eq('user_id', user.id);
+
+      if(error){
+        console.error(error);
+        $('myTeams').innerHTML = `<div class="sub">Couldn’t load memberships.</div>`;
+        $('pendingTeams').innerHTML = `<div class="sub">Couldn’t load pending.</div>`;
+      }else{
+        const active = (rows||[]).filter(r => r.role && r.role !== 'pending' && r.teams);
+        const pending = (rows||[]).filter(r => r.role === 'pending' && r.teams);
+
+        $('myTeams').innerHTML = active.length
+          ? active.map(r => `<div class="card"><div class="pad">${renderTeamMini(r.teams, r.role)}</div></div>`).join('')
+          : `<div class="sub">No teams yet. Create one or apply to one.</div>`;
+
+        $('pendingTeams').innerHTML = pending.length
+          ? pending.map(r => `<div class="card"><div class="pad">${renderTeamMini(r.teams, r.role)}</div></div>`).join('')
+          : `<div class="sub">No pending requests.</div>`;
+      }
+    }else{
+      $('myTeams').innerHTML = `<div class="sub">Sign in to see memberships.</div>`;
+      $('pendingTeams').innerHTML = `<div class="sub">Sign in to see pending.</div>`;
+    }
+
+    // BROWSE ALL TEAMS
+    const q = ($('q').value || '').trim().toLowerCase();
+    const { data:teams, error:teamsErr } = await supabase
+      .from('teams')
+      .select('id,name,parish,logo_url,is_promoter,instagram_handle')
+      .order('name',{ascending:true});
+
+    if(teamsErr){
+      console.error(teamsErr);
+      $('allTeams').innerHTML = `<div class="sub">Couldn’t load teams.</div>`;
+      return;
+    }
+
+    let list = teams || [];
+    if(q){
+      list = list.filter(t => (t.name||'').toLowerCase().includes(q));
+    }
+
+    $('allTeams').innerHTML = list.length
+      ? list.slice(0,30).map(t => `<div class="card"><div class="pad">${renderTeamBrowse(t)}</div></div>`).join('')
+      : `<div class="sub">No teams found.</div>`;
+  }
+
+  $('q').addEventListener('input', ()=> loadAll());
+
+  window.addEventListener('DOMContentLoaded', loadAll);
+</script>
 </body>
 </html>

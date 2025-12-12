@@ -1,190 +1,353 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>My Tickets — ROK Racers JA</title>
-  <meta name="description" content="Your reserved tickets for ROK Racers JA events." />
-  <link rel="icon" href="/Assets/og.png" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>My Tickets — ROK Racers JA</title>
+<meta name="description" content="See all the events you've RSVP’d to on ROK Racers JA." />
+<link rel="icon" href="/Assets/og.png" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  </script>
-  <script src="/auth-ui.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 
-  <style>
-    :root{
-      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
-      --fg:#fff; --muted:#bdbdbd;
-      --accent:#e50914; --line:rgba(255,255,255,.08);
-      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;background:var(--bg);color:var(--fg);
-      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
-    }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1200px;margin:0 auto;padding:0 24px}
-    .sub{color:var(--muted)}
+<!-- Shared auth / nav behaviour -->
+<script src="/auth-ui.js"></script>
 
-    /* NAV */
-    .nav{
-      position:sticky;top:0;z-index:50;
-      background:rgba(18,18,18,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px);
-    }
-    .nav-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 0;
-    }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .title small{color:var(--muted)}
+<style>
+  :root{
+    --bg:#050508;
+    --bg1:#141414;
+    --bg2:#1b1b1b;
+    --fg:#fff;
+    --muted:#bdbdbd;
+    --accent:#e50914;
+    --accent-yellow:#FFD93B;
+    --line:rgba(255,255,255,.08);
+    --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+  }
 
-    .menu{display:flex;gap:10px;align-items:center}
-    .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:10px 14px;border-radius:14px;
-      border:1px solid var(--line);cursor:pointer;
-      background:transparent;color:var(--fg);
-      font-family:inherit;
-    }
-    .btn.primary{background:#fff;color:#000;border-color:#fff}
-    .btn.icon{width:40px;height:40px;border-radius:999px;justify-content:center}
-    .btn[disabled]{opacity:.5;pointer-events:none}
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+    color:var(--fg);
+    font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  h1,h2{
+    font-family:"Bebas Neue",system-ui,sans-serif;
+    letter-spacing:2px;
+    margin:0;
+  }
+  .sub{color:var(--muted);font-size:14px}
 
-    .section{padding:56px 0}
-    .grid{display:grid;gap:24px}
-    .cols-3{grid-template-columns:repeat(3,1fr)}
-    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+  /* NAV (matches events / likes pages) */
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(5,5,8,.9);
+    border-bottom:1px solid var(--line);
+    backdrop-filter:saturate(140%) blur(12px);
+  }
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 0;
+    gap:16px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo{
+    width:48px;
+    height:48px;
+    border-radius:12px;
+    object-fit:cover;
+  }
+  .title small{
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+  }
 
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      transition:transform .25s cubic-bezier(.2,.8,.2,1);
-    }
-    .card:hover{transform:translateY(-6px) scale(1.01)}
-    .card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
-    .pad{padding:18px}
+  .nav-auth{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
 
-    .badge{
-      border:1px solid var(--line);
-      background:var(--bg2);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:14px;
-    }
-    .row{
-      display:flex;gap:10px;
-      align-items:center;flex-wrap:wrap;
-      justify-content:space-between;
-    }
+  .btn{
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+    padding:8px 14px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    cursor:pointer;
+    font-size:13px;
+    background:transparent;
+    color:var(--fg);
+    transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
+  }
+  .btn.small{
+    padding:6px 10px;
+    font-size:12px;
+  }
+  .btn.primary{
+    background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+    color:#fff;
+    border-color:rgba(229,9,20,.9);
+    box-shadow:0 0 18px rgba(229,9,20,.5);
+  }
+  .btn.primary:hover{
+    box-shadow:0 0 26px rgba(229,9,20,.7);
+    transform:translateY(-1px);
+  }
+  .btn:hover{
+    background:rgba(255,255,255,0.03);
+  }
 
-    /* Auth chip + dropdown (shared pattern) */
-    .nav-auth{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .profile-menu{
-      position:relative;
-      display:flex;
-      align-items:center;
-    }
-    .profile-chip{
-      width:40px;
-      height:40px;
-      border-radius:50%;
-      background:var(--bg2);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:600;
-      cursor:pointer;
-      border:1px solid var(--line);
-    }
-    .profile-chip span{font-size:16px}
-    .dropdown{
-      position:absolute;
-      right:0;
-      top:48px;
-      background:var(--bg1);
-      border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;
-      display:flex;
-      flex-direction:column;
-      min-width:190px;
-      z-index:999;
-    }
-    .dropdown a,
-    .dropdown button{
-      padding:10px 16px;
-      text-align:left;
-      border:none;
-      background:transparent;
-      color:var(--fg);
-      font-size:15px;
-      width:100%;
-      cursor:pointer;
-      font-family:inherit;
-    }
-    .dropdown a:hover,
-    .dropdown button:hover{
-      background:#1f1f1f;
-    }
-  </style>
+  /* Profile nav (same ids as other pages for auth-ui.js) */
+  .profile-menu{
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
+  .profile-chip{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:var(--bg2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid var(--line);
+    font-size:13px;
+    transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+  }
+  .profile-chip:hover{
+    border-color:rgba(255,255,255,.32);
+    box-shadow:0 0 16px rgba(255,217,59,.6);
+    transform:translateY(-1px);
+  }
+  .dropdown{
+    position:absolute;
+    right:0;
+    top:40px;
+    background:#121212;
+    border:1px solid var(--line);
+    box-shadow:0 20px 40px rgba(0,0,0,.6);
+    border-radius:16px;
+    display:flex;
+    flex-direction:column;
+    min-width:190px;
+    z-index:60;
+  }
+  .dropdown a,
+  .dropdown button{
+    padding:10px 16px;
+    text-align:left;
+    border:none;
+    background:transparent;
+    color:var(--fg);
+    font-size:13px;
+    width:100%;
+    cursor:pointer;
+  }
+  .dropdown a:hover,
+  .dropdown button:hover{
+    background:#1f1f1f;
+  }
+
+  main{padding:32px 0 48px}
+
+  .header-row{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+
+  /* Filter pills (Upcoming / Past / All) */
+  .filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+    align-items:center;
+  }
+  .filter-label{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    color:var(--muted);
+  }
+  .filter-pill{
+    border:none;
+    padding:6px 12px;
+    border-radius:999px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    color:var(--fg);
+    font-size:12px;
+    cursor:pointer;
+  }
+  .filter-pill.active{
+    background:#fff;
+    color:#000;
+    border-color:#fff;
+  }
+
+  .grid{
+    display:grid;
+    gap:18px;
+    grid-template-columns:repeat(2,1fr);
+  }
+  @media(max-width:960px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--bg1);
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    transition:transform .22s ease-out, box-shadow .22s ease-out, border-color .22s ease-out;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:rgba(255,217,59,0.7);
+    box-shadow:0 30px 80px rgba(0,0,0,.9);
+  }
+
+  .card img{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height:220px;
+    object-fit:cover;
+  }
+
+  .pad{
+    padding:14px 16px 16px;
+  }
+
+  .date-block{
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 10px;
+    min-width:60px;
+    text-align:center;
+  }
+  .date-block .m{
+    font-family:"Bebas Neue";
+    font-size:20px;
+    line-height:1;
+  }
+  .date-block .d{
+    font-family:"Bebas Neue";
+    font-size:24px;
+    line-height:1;
+  }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--bg2);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+  }
+  .pill.status{
+    border-color:rgba(255,217,59,0.7);
+    color:var(--accent-yellow);
+  }
+
+  .empty{
+    border-radius:18px;
+    border:1px dashed rgba(255,255,255,0.16);
+    padding:20px 18px;
+    background:rgba(5,5,8,0.9);
+    text-align:left;
+    box-shadow:0 24px 60px rgba(0,0,0,0.9);
+  }
+
+  #authMessage{
+    margin-top:8px;
+  }
+
+  @media(max-width:600px){
+    .nav-inner{flex-wrap:wrap;}
+    .nav-auth{width:100%;justify-content:flex-end;}
+    .header-row{align-items:flex-start;}
+  }
+</style>
 </head>
 <body>
   <!-- NAV -->
   <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo-img" />
+        <img src="/Assets/logo.png" alt="" class="logo">
         <div class="title">
           <h1>ROK RACERS JA</h1>
-          <small>Tickets</small>
+          <small>My tickets</small>
         </div>
       </a>
 
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/about.html">About</a>
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-        </div>
+      <div class="nav-auth">
+        <a class="btn" href="/events.html">Events</a>
+        <a class="btn" href="/garage.html">Garage</a>
 
-        <!-- Auth / profile (shared IDs for auth-ui.js) -->
-        <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Sign in</button>
+        <button id="navSignInBtn" class="btn">Log in</button>
+        <button id="navJoinBtn" class="btn primary">Join the grid</button>
 
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
-            </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
-              <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
-            </div>
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="navProfileInitials">U</span>
+          </div>
+          <div id="navProfileDropdown" class="dropdown" style="display:none">
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a href="/activity.html">Activity</a>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -192,157 +355,258 @@
   </nav>
 
   <main class="container">
-    <section class="section">
-      <div class="row" style="margin-bottom:16px">
-        <h2 style="font-size:44px">My Tickets</h2>
-        <span class="sub" id="ticketCountLabel"></span>
+    <section>
+      <div class="header-row">
+        <div>
+          <h2 style="font-size:40px;letter-spacing:2px;text-transform:uppercase;">My tickets</h2>
+          <p class="sub">
+            Events you’ve locked in with an RSVP. As payments roll in later, this page becomes your full ticket wallet.
+          </p>
+        </div>
+        <button class="btn" onclick="location.href='/events.html'">
+          Browse events
+        </button>
       </div>
 
-      <div id="ticketsMessage" class="sub" style="margin-bottom:14px"></div>
+      <p id="authMessage" class="sub"></p>
 
-      <div id="ticketsGrid" class="grid cols-3" role="list" aria-live="polite">
-        <article class="card" role="listitem">
-          <div class="pad sub">Loading your tickets…</div>
-        </article>
+      <div class="filter-row" id="filterRow" style="display:none">
+        <span class="filter-label">Show</span>
+        <button class="filter-pill active" data-when="upcoming">Upcoming</button>
+        <button class="filter-pill" data-when="past">Past</button>
+        <button class="filter-pill" data-when="all">All</button>
+      </div>
+
+      <div id="ticketsGrid" class="grid" aria-live="polite">
+        <div class="empty">
+          Loading your tickets…
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- shared auth UI -->
-  <script src="/auth-ui.js"></script>
-
   <script>
-    async function loadTickets(){
-      const ok = await window.authUI.requireLogin();
-      const grid   = document.getElementById('ticketsGrid');
-      const msg    = document.getElementById('ticketsMessage');
-      const countL = document.getElementById('ticketCountLabel');
+    const pageState = {
+      allTickets: [],
+      filterWhen: 'upcoming'
+    };
 
-      if (!ok) {
-        grid.innerHTML =
-          `<article class="card"><div class="pad sub">Sign in to see your tickets.</div></article>`;
-        msg.textContent = '';
-        countL.textContent = '';
+    function escapeHTML(s){
+      return (s || "").replace(/[&<>"']/g, m => (
+        {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+      ));
+    }
+
+    function isUpcoming(dateStr){
+      if (!dateStr) return false;
+      const now = new Date();
+      const d = new Date(dateStr);
+      return d >= now;
+    }
+
+    function renderTickets(){
+      const grid = document.getElementById('ticketsGrid');
+      const when = pageState.filterWhen;
+      let rows = pageState.allTickets.slice(0);
+
+      if (when === 'upcoming'){
+        rows = rows.filter(r => r.event.starts_at && isUpcoming(r.event.starts_at));
+      } else if (when === 'past'){
+        rows = rows.filter(r => r.event.starts_at && !isUpcoming(r.event.starts_at));
+      }
+
+      if (!rows.length){
+        grid.innerHTML = `
+          <div class="empty">
+            <p style="margin-bottom:6px;">No tickets in this view yet.</p>
+            <p class="sub" style="margin-bottom:10px;">
+              Try switching filters, or hit the events board and RSVP “Yes” to a meet.
+            </p>
+            <button class="btn primary" type="button" onclick="location.href='/events.html'">
+              View events
+            </button>
+          </div>`;
         return;
       }
 
-      const { data: { user }} = await supabase.auth.getUser();
+      grid.innerHTML = rows.map(({ rsvp, event }) => {
+        const d = event.starts_at ? new Date(event.starts_at) : null;
+        const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+        const whenStr = d
+          ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
+          : "";
+        const loc = event.location
+          ? `${whenStr ? whenStr + " • " : ""}${event.location}`
+          : whenStr;
 
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading your tickets…</div></article>`;
-      msg.textContent = '';
+        const booked = rsvp.created_at
+          ? new Date(rsvp.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
+          : "";
 
-      // 1) Get my RSVPs where status = 'yes'
+        const statusLabel = (rsvp.status || '').toUpperCase();
+        const isConfirmed = rsvp.status === 'yes';
+
+        const statusText = isConfirmed ? 'Confirmed RSVP' : `RSVP: ${statusLabel || 'UNKNOWN'}`;
+
+        return `
+          <article class="card">
+            ${event.cover_url
+              ? `<img src="${escapeHTML(event.cover_url)}" alt="${escapeHTML(event.title)}" loading="lazy">`
+              : ''}
+            <div class="pad">
+              <div class="row" style="margin-bottom:8px">
+                <div style="display:flex;gap:10px;align-items:center;flex:1 1 auto;min-width:0;">
+                  <div class="date-block">
+                    <div class="m">${m}</div>
+                    <div class="d">${day}</div>
+                  </div>
+                  <div style="min-width:0;">
+                    <strong style="display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">
+                      ${escapeHTML(event.title)}
+                    </strong>
+                    ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ''}
+                  </div>
+                </div>
+                <span class="pill status">
+                  ${escapeHTML(statusText)}
+                </span>
+              </div>
+
+              <div class="row" style="margin-top:6px">
+                <span class="sub">
+                  ${booked ? `Booked on ${escapeHTML(booked)}` : ''}
+                </span>
+                <a class="btn small" href="/event.html?id=${event.id}">
+                  View event
+                </a>
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function loadTickets(){
+      const grid = document.getElementById('ticketsGrid');
+      const authMsg = document.getElementById('authMessage');
+      const filterRow = document.getElementById('filterRow');
+
+      grid.innerHTML = `<div class="empty">Loading your tickets…</div>`;
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user){
+        authMsg.textContent = "Sign in to see your tickets and RSVPs.";
+        grid.innerHTML = `
+          <div class="empty">
+            <p style="margin-bottom:8px;">You’re not signed in.</p>
+            <button class="btn primary" type="button"
+              onclick="window.authUI && authUI.requireLogin(()=>location.reload())">
+              Log in to view tickets
+            </button>
+          </div>`;
+        filterRow.style.display = 'none';
+        return;
+      }
+
+      authMsg.textContent = "";
+      filterRow.style.display = 'flex';
+
+      // Fetch RSVPs where status = 'yes' (i.e. confirmed / ticket)
       const rsvpRes = await supabase
         .from('event_rsvps')
         .select('event_id,status,created_at')
         .eq('user_id', user.id)
-        .eq('status', 'yes')
-        .order('created_at', { ascending: false });
+        .in('status', ['yes', 'maybe'])           // in case you want to show maybes as soft tickets
+        .order('created_at',{ ascending:false });
 
-      if (rsvpRes.error) {
+      if (rsvpRes.error){
         console.error(rsvpRes.error);
-        grid.innerHTML =
-          `<article class="card"><div class="pad sub">Couldn’t load tickets right now.</div></article>`;
-        countL.textContent = '';
+        grid.innerHTML = `
+          <div class="empty">
+            Couldn’t load your tickets right now. Refresh in a bit.
+          </div>`;
+        filterRow.style.display = 'none';
         return;
       }
 
       const rsvps = rsvpRes.data || [];
-      if (!rsvps.length) {
-        grid.innerHTML =
-          `<article class="card"><div class="pad sub">No tickets yet. RSVP to an event and it’ll show up here.</div></article>`;
-        countL.textContent = '0 tickets';
+      if (!rsvps.length){
+        grid.innerHTML = `
+          <div class="empty">
+            <p style="margin-bottom:6px;">No tickets yet.</p>
+            <p class="sub" style="margin-bottom:10px;">
+              Once you RSVP “Yes” to an event, it’ll show up here as your ticket.
+            </p>
+            <button class="btn primary" type="button" onclick="location.href='/events.html'">
+              Browse events
+            </button>
+          </div>`;
+        filterRow.style.display = 'none';
         return;
       }
 
-      const ids = [...new Set(rsvps.map(r => r.event_id))];
+      const eventIds = [...new Set(rsvps.map(r => r.event_id))];
+
       const evRes = await supabase
         .from('events')
         .select('id,title,starts_at,location,cover_url')
-        .in('id', ids);
+        .in('id', eventIds);
 
-      if (evRes.error) {
+      if (evRes.error){
         console.error(evRes.error);
-        grid.innerHTML =
-          `<article class="card"><div class="pad sub">Couldn’t load events for your tickets.</div></article>`;
-        countL.textContent = '';
+        grid.innerHTML = `
+          <div class="empty">
+            Couldn’t load events linked to your tickets. Try again shortly.
+          </div>`;
         return;
       }
 
       const events = evRes.data || [];
-      const map = new Map(events.map(e => [e.id, e]));
+      const evMap = new Map(events.map(e => [e.id, e]));
 
-      // Keep latest RSVP per event
+      // keep only latest RSVP per event
       const latestByEvent = new Map();
       rsvps.forEach(r => {
         const prev = latestByEvent.get(r.event_id);
-        if (!prev || new Date(r.created_at) > new Date(prev.created_at)) {
+        if (!prev || new Date(r.created_at) > new Date(prev.created_at)){
           latestByEvent.set(r.event_id, r);
         }
       });
 
       const rows = [];
-      latestByEvent.forEach((r, eventId) => {
-        const ev = map.get(eventId);
-        if (!ev) return;
-        rows.push({ rsvp: r, event: ev });
+      latestByEvent.forEach((rsvp, eventId) => {
+        const event = evMap.get(eventId);
+        if (event) rows.push({ rsvp, event });
       });
 
-      // Sort soonest event date first
+      // sort by event date (soonest first)
       rows.sort((a,b) => {
         const da = a.event.starts_at ? new Date(a.event.starts_at) : new Date(0);
         const db = b.event.starts_at ? new Date(b.event.starts_at) : new Date(0);
         return da - db;
       });
 
-      countL.textContent = `${rows.length} ticket${rows.length === 1 ? '' : 's'}`;
-
-      grid.innerHTML = rows.map(({ rsvp, event }) => {
-        const d = event.starts_at ? new Date(event.starts_at) : null;
-        const m = d ? d.toLocaleString("en-US",{ month:"short" }).toUpperCase() : "--";
-        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-        const when = d ? d.toLocaleString("en-US", {
-          weekday:"short", hour:"numeric", minute:"2-digit"
-        }) : "";
-        const loc = event.location
-          ? `${when ? when + " • " : ""}${event.location}`
-          : when;
-        const img = event.cover_url
-          ? `<img src="${event.cover_url}" alt="${event.title}" loading="lazy">`
-          : "";
-
-        const booked = new Date(rsvp.created_at).toLocaleString("en-US", {
-          month:"short", day:"numeric", year:"numeric"
-        });
-
-        return `
-          <article class="card" role="listitem">
-            ${img}
-            <div class="pad">
-              <div class="row" style="margin-bottom:6px">
-                <div style="display:flex;gap:10px;align-items:center">
-                  <div style="background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:60px;text-align:center">
-                    <div style="font-family:'Bebas Neue';font-size:20px">${m}</div>
-                    <div style="font-family:'Bebas Neue';font-size:24px">${day}</div>
-                  </div>
-                  <div>
-                    <strong>${event.title}</strong>
-                    ${loc ? `<div class="sub">${loc}</div>` : ''}
-                  </div>
-                </div>
-                <span class="badge">RSVP: ${rsvp.status.toUpperCase()}</span>
-              </div>
-              <div class="row" style="margin-top:8px">
-                <span class="sub">Booked on ${booked}</span>
-                <a class="btn" href="/event.html?id=${event.id}">View event</a>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join('');
+      pageState.allTickets = rows;
+      renderTickets();
     }
 
-    window.addEventListener('DOMContentLoaded', loadTickets);
+    // hook up filter pills
+    document.addEventListener('click', (e) => {
+      const pill = e.target.closest('.filter-pill');
+      if (!pill) return;
+      const when = pill.dataset.when;
+      if (!when) return;
+
+      document.querySelectorAll('.filter-pill').forEach(p => {
+        p.classList.toggle('active', p === pill);
+      });
+
+      pageState.filterWhen = when;
+      renderTickets();
+    });
+
+    document.addEventListener('DOMContentLoaded', loadTickets);
   </script>
 </body>
 </html>

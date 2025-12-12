@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Team Admin — ROK Racers JA</title>
+<meta name="description" content="Approve members, edit team profile, and manage promoter access." />
+<link rel="icon" href="/Assets/og.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script src="/auth-ui.js"></script>
+
+<style>
+  :root{
+    --bg:#050508; --bg1:#141414; --bg2:#1b1b1b;
+    --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --accent-yellow:#FFD93B;
+    --line:rgba(255,255,255,.08); --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+    color:var(--fg);
+    font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  a{color:var(--fg);text-decoration:none}
+  .container{max-width:1100px;margin:0 auto;padding:0 24px}
+  .nav{position:sticky;top:0;z-index:50;background:rgba(5,5,8,.9);border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(12px)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:12px;object-fit:cover}
+  h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+  .title small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em}
+  .btn{
+    display:inline-flex;gap:8px;align-items:center;
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    cursor:pointer;font-size:13px;background:transparent;color:var(--fg);
+  }
+  .btn.primary{
+    background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+    color:#fff;border-color:rgba(229,9,20,.9);
+    box-shadow:0 0 18px rgba(229,9,20,.5);
+  }
+  .btn[disabled]{opacity:.5;pointer-events:none}
+
+  .section{padding:40px 0 56px}
+  .card{background:var(--bg1);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+  .pad{padding:18px}
+  .sub{color:var(--muted)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .grid{display:grid;gap:14px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  @media(max-width:900px){.cols-2{grid-template-columns:1fr}}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+    background:var(--bg2);font-size:12px;color:var(--muted);
+  }
+  .pill.good{border-color:rgba(255,217,59,.6);color:var(--accent-yellow)}
+  input,select,textarea{
+    width:100%;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    color:#fff;
+    padding:10px 12px;
+    border-radius:12px;
+    outline:none;
+    font-size:14px;
+    font-family:inherit;
+  }
+  textarea{resize:vertical}
+  .help{font-size:12px;color:var(--muted)}
+  .thumb{width:64px;height:64px;border-radius:16px;object-fit:cover;border:1px solid var(--line);background:var(--bg2)}
+  .mini{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02)}
+</style>
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/teams.html">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Team Admin</small>
+        </div>
+      </a>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <a id="viewTeamLink" class="btn" href="/teams.html">Back</a>
+        <button id="saveBtn" class="btn primary">Save profile</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="row">
+        <h2 style="font-size:44px;text-transform:uppercase;">Admin</h2>
+        <span id="statusLine" class="sub"></span>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:16px">
+        <div class="card">
+          <div class="pad">
+            <h3 style="font-size:28px;text-transform:uppercase;">Team profile</h3>
+            <div class="sub">Edit logo, bio, parish, socials, gallery.</div>
+
+            <div class="row" style="justify-content:flex-start;gap:14px;margin-top:14px">
+              <img id="logoPreview" class="thumb" alt="">
+              <div style="flex:1">
+                <div class="sub">Logo (upload)</div>
+                <input id="f_logo" type="file" accept="image/*">
+                <div class="help">Uses bucket <b>team-logos</b>. If not created, upload may fail.</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <label class="sub">Name</label>
+              <input id="f_name" placeholder="Team name">
+            </div>
+            <div style="margin-top:12px">
+            <label class="sub">Handle (optional)</label>
+            <input id="f_handle" placeholder="rockings">
+            </div>
+
+            <div style="margin-top:12px">
+            <label class="sub">Cover URL (optional)</label>
+            <input id="f_cover_url" placeholder="https://...">
+            <div class="help">Optional hero cover image for team.html (if you decide to display it later).</div>
+            </div>
+
+
+            <div class="grid cols-2" style="margin-top:12px">
+              <div>
+                <label class="sub">Parish</label>
+                <input id="f_parish" placeholder="Parish">
+              </div>
+              <div>
+                <label class="sub">Instagram</label>
+                <input id="f_ig" placeholder="@handle">
+              </div>
+            </div>
+
+            <div class="grid cols-2" style="margin-top:12px">
+              <div>
+                <label class="sub">TikTok</label>
+                <input id="f_tt" placeholder="@handle">
+              </div>
+              <div>
+                <label class="sub">Website</label>
+                <input id="f_web" placeholder="https://…">
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <label class="sub">Bio</label>
+              <textarea id="f_bio" rows="4" placeholder="Team bio…"></textarea>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="row" style="justify-content:flex-start;gap:10px">
+                <span class="pill" id="promoterPill">Promoter: ?</span>
+                <button id="togglePromoterBtn" class="btn">Toggle promoter</button>
+              </div>
+              <div class="help">If ON, team can show in “Promoters only” and can host events (if you kept that rule).</div>
+            </div>
+
+            <div style="margin-top:14px">
+              <label class="sub">Add gallery photos (multiple)</label>
+              <input id="f_gallery" type="file" accept="image/*" multiple>
+              <div class="help">Uses bucket <b>team-gallery</b>. We append to existing gallery.</div>
+            </div>
+
+            <div style="margin-top:14px">
+              <h3 style="font-size:22px;text-transform:uppercase;">Current gallery</h3>
+              <div id="galleryList" class="grid" style="margin-top:10px"></div>
+              <div id="galleryEmpty" class="sub" style="margin-top:10px;display:none">No gallery photos yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pad">
+            <h3 style="font-size:28px;text-transform:uppercase;">Join requests</h3>
+            <div class="sub">Approve or deny pending members.</div>
+            <div id="pendingList" class="grid" style="margin-top:14px"></div>
+
+            <div style="margin-top:18px">
+              <h3 style="font-size:28px;text-transform:uppercase;">Members</h3>
+              <div class="sub">Active members (owner/manager/member)</div>
+              <div id="memberList" class="grid" style="margin-top:14px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const teamId = new URLSearchParams(location.search).get('team_id');
+  const $ = (id)=>document.getElementById(id);
+  const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const ACTIVE_ROLES = new Set(['owner','manager','member']);
+
+  let currentUserId = null;
+  let myRole = null;
+  let team = null;
+  let galleryUrls = [];
+
+  async function requireLogin(cb){
+    if(window.authUI && typeof authUI.requireLogin === 'function'){
+      return authUI.requireLogin(cb);
+    }
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user){ alert('Please sign in.'); return false; }
+    cb?.(user);
+    return true;
+  }
+
+  async function uploadToBucket(bucket, path, file){
+    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert:true });
+    if(error) throw error;
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  function setPromoterPill(){
+    $('promoterPill').textContent = `Promoter: ${team?.is_promoter ? 'ON' : 'OFF'}`;
+    $('promoterPill').className = team?.is_promoter ? 'pill good' : 'pill';
+  }
+
+  async function boot(){
+    if(!teamId){
+      $('statusLine').textContent = 'Missing team_id.';
+      $('saveBtn').disabled = true;
+      return;
+    }
+
+    $('viewTeamLink').href = `/team.html?id=${encodeURIComponent(teamId)}`;
+
+    await requireLogin(async ()=>{
+      const { data:{ user } } = await supabase.auth.getUser();
+      currentUserId = user?.id || null;
+      $('statusLine').textContent = user ? `Signed in as ${user.email || 'Driver'}` : 'Not signed in.';
+    });
+
+    // check admin role
+    const { data:mem, error:memErr } = await supabase
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', currentUserId)
+      .maybeSingle();
+
+    if(memErr || !mem){
+      $('statusLine').textContent = 'You are not a member of this team.';
+      $('saveBtn').disabled = true;
+      return;
+    }
+
+    myRole = mem.role;
+    const canAdmin = (myRole === 'owner' || myRole === 'manager');
+    if(!canAdmin){
+      $('statusLine').textContent = `Role: ${myRole}. You don’t have admin access.`;
+      $('saveBtn').disabled = true;
+      return;
+    }
+
+    await loadTeam();
+    await loadMembers();
+  }
+
+  async function loadTeam(){
+    const { data, error } = await supabase
+      .from('teams')
+      .select('id,name,handle,parish,bio,logo_url,cover_url,is_promoter,instagram_handle,tiktok_handle,website_url,gallery_urls')
+      .eq('id', teamId)
+      .maybeSingle();
+
+    if(error || !data){
+      $('statusLine').textContent = 'Team not found.';
+      $('saveBtn').disabled = true;
+      return;
+    }
+
+    team = data;
+    galleryUrls = Array.isArray(team.gallery_urls) ? team.gallery_urls : [];
+
+    $('f_name').value = team.name || '';
+    $('f_parish').value = team.parish || '';
+    $('f_ig').value = team.instagram_handle ? (team.instagram_handle.startsWith('@') ? team.instagram_handle : '@' + team.instagram_handle) : '';
+    $('f_tt').value = team.tiktok_handle ? (team.tiktok_handle.startsWith('@') ? team.tiktok_handle : '@' + team.tiktok_handle) : '';
+    $('f_web').value = team.website_url || '';
+    $('f_bio').value = team.bio || '';
+    $('f_handle').value = team.handle || '';
+    $('f_cover_url').value = team.cover_url || '';
+
+
+    if(team.logo_url){
+      $('logoPreview').src = team.logo_url;
+    }else{
+      $('logoPreview').removeAttribute('src');
+    }
+
+    setPromoterPill();
+    renderGallery();
+  }
+
+  function renderGallery(){
+    const wrap = $('galleryList');
+    if(!galleryUrls.length){
+      wrap.innerHTML = '';
+      $('galleryEmpty').style.display = 'block';
+      return;
+    }
+    $('galleryEmpty').style.display = 'none';
+
+    wrap.innerHTML = galleryUrls.map((u, idx) => `
+      <div class="mini">
+        <a href="${escapeHTML(u)}" target="_blank" rel="noreferrer" class="sub" style="max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          ${escapeHTML(u)}
+        </a>
+        <button class="btn" data-remove="${idx}">Remove</button>
+      </div>
+    `).join('');
+
+    wrap.querySelectorAll('button[data-remove]').forEach(btn=>{
+      btn.onclick = ()=>{
+        const i = Number(btn.dataset.remove);
+        galleryUrls.splice(i,1);
+        renderGallery();
+      };
+    });
+  }
+
+  async function loadMembers(){
+    // pending
+    const { data:pending, error:pendErr } = await supabase
+      .from('team_members')
+      .select('user_id,role,created_at')
+      .eq('team_id', teamId)
+      .eq('role','pending')
+      .order('created_at',{ascending:true});
+
+    if(pendErr){
+      console.error(pendErr);
+      $('pendingList').innerHTML = `<div class="sub">Couldn’t load pending.</div>`;
+    }else{
+      const list = pending || [];
+      $('pendingList').innerHTML = list.length ? list.map(r => `
+        <div class="mini">
+          <div>
+            <strong>${escapeHTML(r.user_id)}</strong>
+            <div class="sub">Requested ${new Date(r.created_at).toLocaleString()}</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn primary" data-approve="${escapeHTML(r.user_id)}">Approve</button>
+            <button class="btn" data-deny="${escapeHTML(r.user_id)}">Deny</button>
+          </div>
+        </div>
+      `).join('') : `<div class="sub">No pending requests.</div>`;
+
+      $('pendingList').querySelectorAll('button[data-approve]').forEach(b=>{
+        b.onclick = ()=> approveUser(b.dataset.approve);
+      });
+      $('pendingList').querySelectorAll('button[data-deny]').forEach(b=>{
+        b.onclick = ()=> denyUser(b.dataset.deny);
+      });
+    }
+
+    // active
+    const { data:members, error:memErr } = await supabase
+      .from('team_members')
+      .select('user_id,role,created_at')
+      .eq('team_id', teamId)
+      .order('created_at',{ascending:true});
+
+    if(memErr){
+      console.error(memErr);
+      $('memberList').innerHTML = `<div class="sub">Couldn’t load members.</div>`;
+      return;
+    }
+
+    const active = (members||[]).filter(r => ACTIVE_ROLES.has(r.role));
+    $('memberList').innerHTML = active.length ? active.map(r => `
+      <div class="mini">
+        <div>
+          <strong>${escapeHTML(r.user_id)}</strong>
+          <div class="sub">Role: ${escapeHTML(r.role)}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select data-role="${escapeHTML(r.user_id)}" style="max-width:190px">
+            <option value="member" ${r.role==='member'?'selected':''}>member</option>
+            <option value="manager" ${r.role==='manager'?'selected':''}>manager</option>
+            <option value="owner" ${r.role==='owner'?'selected':''}>owner</option>
+          </select>
+          <button class="btn" data-save-role="${escapeHTML(r.user_id)}">Save</button>
+        </div>
+      </div>
+    `).join('') : `<div class="sub">No members.</div>`;
+
+    $('memberList').querySelectorAll('button[data-save-role]').forEach(btn=>{
+      btn.onclick = ()=>{
+        const uid = btn.dataset.saveRole;
+        const sel = $('memberList').querySelector(`select[data-role="${CSS.escape(uid)}"]`);
+        if(sel) updateRole(uid, sel.value);
+      };
+    });
+  }
+
+  async function approveUser(userId){
+    const { error } = await supabase
+      .from('team_members')
+      .update({ role:'member' })
+      .eq('team_id', teamId)
+      .eq('user_id', userId)
+      .eq('role','pending');
+
+    if(error){ alert('Approve failed: ' + error.message); return; }
+    await loadMembers();
+  }
+
+  async function denyUser(userId){
+    const { error } = await supabase
+      .from('team_members')
+      .delete()
+      .eq('team_id', teamId)
+      .eq('user_id', userId)
+      .eq('role','pending');
+
+    if(error){ alert('Deny failed: ' + error.message); return; }
+    await loadMembers();
+  }
+
+  async function updateRole(userId, role){
+    if(role === 'owner' && myRole !== 'owner'){
+      alert('Only the owner can assign owner.');
+      return;
+    }
+    const { error } = await supabase
+      .from('team_members')
+      .update({ role })
+      .eq('team_id', teamId)
+      .eq('user_id', userId);
+
+    if(error){ alert('Role update failed: ' + error.message); return; }
+    await loadMembers();
+  }
+
+  $('togglePromoterBtn').onclick = async ()=>{
+    if(!team) return;
+    team.is_promoter = !team.is_promoter;
+    setPromoterPill();
+  };
+
+  $('f_logo').addEventListener('change',(e)=>{
+    const f = e.target.files?.[0];
+    if(!f){ return; }
+    $('logoPreview').src = URL.createObjectURL(f);
+  });
+
+  async function saveProfile(){
+    if(!team) return;
+
+    const name = $('f_name').value.trim();
+    if(!name){ alert('Name required.'); return; }
+
+    const parish = $('f_parish').value.trim() || null;
+    const ig = $('f_ig').value.trim() ? $('f_ig').value.trim().replace(/^@/,'') : null;
+    const tt = $('f_tt').value.trim() ? $('f_tt').value.trim().replace(/^@/,'') : null;
+    const web = $('f_web').value.trim() || null;
+    const bio = $('f_bio').value.trim() || null;
+    const handle = $('f_handle').value.trim() || null;
+    const coverUrl = $('f_cover_url').value.trim() || null;
+
+
+    // uploads
+    let logoUrl = team.logo_url || null;
+    try{
+      const logoFile = $('f_logo').files?.[0];
+      if(logoFile){
+        const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase();
+        logoUrl = await uploadToBucket('team-logos', `${teamId}/logo.${ext}`, logoFile);
+      }
+    }catch(e){
+      console.warn('logo upload failed', e);
+      alert('Logo upload failed (bucket missing or permissions). Profile still saved without new logo.');
+    }
+
+    try{
+      const files = Array.from($('f_gallery').files || []);
+      for(const file of files){
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const key = `${teamId}/${crypto.getRandomValues(new Uint32Array(1))[0]}.${ext}`;
+        const url = await uploadToBucket('team-gallery', key, file);
+        galleryUrls.push(url);
+      }
+    }catch(e){
+      console.warn('gallery upload failed', e);
+      alert('Gallery upload failed (bucket missing or permissions). Profile still saved.');
+    }
+
+    const payload = {
+      name,
+      handle,
+      cover_url: coverUrl,
+      parish,
+      bio,
+      instagram_handle: ig ? '@'+ig : null,
+      tiktok_handle: tt ? '@'+tt : null,
+      website_url: web,
+      is_promoter: !!team.is_promoter,
+      logo_url: logoUrl,
+      gallery_urls: galleryUrls
+    };
+
+    const { error } = await supabase.from('teams').update(payload).eq('id', teamId);
+    if(error){ alert('Save failed: ' + error.message); return; }
+
+    // refresh team local + UI
+    const { data } = await supabase.from('teams').select('*').eq('id', teamId).maybeSingle();
+    if(data) team = data;
+    galleryUrls = Array.isArray(team.gallery_urls) ? team.gallery_urls : galleryUrls;
+    renderGallery();
+    setPromoterPill();
+    $('f_gallery').value = '';
+    $('f_logo').value = '';
+
+    alert('Saved.');
+  }
+
+  $('saveBtn').onclick = saveProfile;
+
+  window.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

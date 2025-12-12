@@ -43,7 +43,6 @@
     a{color:var(--fg);text-decoration:none}
     .container{max-width:900px;margin:0 auto;padding:0 24px}
 
-    /* NAV (aligned with events/index) */
     .nav{
       position:sticky;top:0;z-index:20;
       background:rgba(5,5,8,.9);
@@ -112,16 +111,10 @@
     .cols-2{grid-template-columns:1fr 1fr}
     @media(max-width:760px){.cols-2{grid-template-columns:1fr}}
 
-    /* presence */
     .presence{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
 
-    /* nav auth (shared pattern) */
     .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .profile-menu{
-      position:relative;
-      display:flex;
-      align-items:center;
-    }
+    .profile-menu{position:relative;display:flex;align-items:center;}
     .profile-chip{
       width:32px;height:32px;border-radius:50%;
       background:var(--bg2);
@@ -153,6 +146,22 @@
       .menu{order:3;width:100%;justify-content:flex-start}
       .nav-auth{order:2;width:100%;justify-content:flex-end}
     }
+
+    /* ===== Team badge ===== */
+    .team-badge{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+      padding:10px 12px;border-radius:999px;margin-top:12px;
+    }
+    .team-badge img{
+      width:28px;height:28px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.12);
+    }
+    .team-badge .pill{
+      display:inline-flex;align-items:center;
+      padding:5px 10px;border-radius:999px;
+      background:var(--accent-yellow);color:#111;font-size:12px;border:1px solid rgba(255,217,59,.65);
+    }
   </style>
 </head>
 <body>
@@ -176,7 +185,6 @@
         </div>
 
         <div class="nav-auth">
-          <!-- shared nav buttons (auth-ui.js controls these) -->
           <button id="navSignInBtn" class="btn">Log in</button>
           <button id="navJoinBtn" class="btn primary">Join the grid</button>
 
@@ -206,7 +214,6 @@
       </div>
     </section>
 
-    <!-- Comments -->
     <section class="section">
       <h2 style="font-size:36px;letter-spacing:2px;text-transform:uppercase;">Comments</h2>
       <div id="commentForm" class="row" style="margin:10px 0 16px; display:none">
@@ -237,7 +244,6 @@
 
     let currentUserId = null;
 
-    // wrapper that prefers central authUI.requireLogin but falls back to direct check
     async function requireLogin(callback){
       if (window.authUI && typeof authUI.requireLogin === 'function'){
         return authUI.requireLogin(callback);
@@ -251,7 +257,6 @@
       return true;
     }
 
-    /* ========== Auth → show/hide comment box ========== */
     async function syncPageAuth(){
       const { data: { user } } = await supabase.auth.getUser();
       currentUserId = user?.id || null;
@@ -265,7 +270,6 @@
       await loadMyBuilds();
     });
 
-    /* ========== RSVP count helper ========== */
     async function refreshRsvpCounts(){
       const countsEl = el('rsvpCounts');
       if(!countsEl || !eventId) return;
@@ -284,7 +288,55 @@
       countsEl.textContent = `✅ ${data.yes_count} going • 🤔 ${data.maybe_count} maybe • ❌ ${data.no_count} not going`;
     }
 
-    /* ========== Event loader + owner tools + RSVP ========== */
+    async function renderTeamForEvent(eventRow){
+      const host = el('eventTeamBadge');
+      if(!host) return;
+
+      if(!eventRow?.team_id){
+        host.style.display = 'none';
+        return;
+      }
+
+      const { data: team, error: tErr } = await supabase
+        .from('teams')
+        .select('id,name,logo_url,is_promoter')
+        .eq('id', eventRow.team_id)
+        .single();
+
+      if(tErr || !team){
+        console.error(tErr);
+        host.style.display = 'none';
+        return;
+      }
+
+      const { data:{ user } } = await supabase.auth.getUser();
+      let role = null;
+
+      if(user){
+        const { data: mem } = await supabase
+          .from('team_members')
+          .select('role,status')
+          .eq('team_id', team.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        role = (mem && mem.status === 'active') ? mem.role : null;
+      }
+
+      const canManage = role && ['owner','manager'].includes(role);
+
+      host.style.display = 'flex';
+      host.innerHTML = `
+        <div class="team-badge">
+          ${team.logo_url ? `<img src="${escapeHTML(team.logo_url)}" alt="">` : ``}
+          <div style="font-weight:700">${escapeHTML(team.name)}</div>
+          ${team.is_promoter ? `<span class="pill">PROMOTER</span>` : ``}
+          <a class="btn" href="/team.html?id=${team.id}" style="margin-left:auto">View team</a>
+          ${canManage ? `<a class="btn primary" href="/admin-team.html?team=${team.id}">Manage</a>` : ``}
+        </div>
+      `;
+    }
+
     async function loadEvent(){
       const card = el('eventCard');
       if(!eventId){
@@ -293,7 +345,7 @@
       }
 
       const { data, error } = await supabase.from('events')
-        .select('id,title,starts_at,ends_at,location,description,cover_url,created_by')
+        .select('id,title,starts_at,ends_at,location,description,cover_url,created_by,team_id,teams:team_id(id,name,is_promoter,logo_url)')
         .eq('id', eventId)
         .maybeSingle();
 
@@ -306,15 +358,26 @@
 
       const time = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
       const canEdit = !!(currentUserId && data.created_by && data.created_by === currentUserId);
+      const hostTeamPill = data.teams?.id
+        ? `<a class="chip" href="/team.html?id=${data.teams.id}" style="text-decoration:none">
+            🏁 Host: ${escapeHTML(data.teams.name || 'Team')}
+          </a>`
+        : '';
+
 
       card.innerHTML = `
         ${data.cover_url ? `<img src="${escapeHTML(data.cover_url)}" alt="${escapeHTML(data.title)}" style="width:100%;display:block">` : ""}
+
         <div class="pad">
           <h2 style="font-size:42px;letter-spacing:2px;text-transform:uppercase;">${escapeHTML(data.title)}</h2>
           <div class="meta">
             <span class="chip">🕒 ${escapeHTML(time)}</span>
             ${data.location ? `<span class="chip">📍 ${escapeHTML(data.location)}</span>` : ""}
+            ${hostTeamPill}
           </div>
+
+          <div id="eventTeamBadge" style="display:none"></div>
+
           <p style="margin-top:14px">
             ${escapeHTML(data.description||"").replace(/\n/g,'<br>')}
           </p>
@@ -342,7 +405,6 @@
             </div>
           </div>
 
-          <!-- inline edit form (owner only) -->
           <div id="editForm" style="display:none;margin-top:14px" class="grid cols-2">
             <input id="e_title" class="input" placeholder="Title" value="${escapeHTML(data.title)}">
             <input id="e_location" class="input" placeholder="Location" value="${escapeHTML(data.location||'')}">
@@ -357,12 +419,12 @@
           </div>
         </div>`;
 
-      // RSVP buttons → central auth
+      await renderTeamForEvent(data);
+
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
         btn.addEventListener('click', ()=> requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
       });
 
-      // Owner controls
       if(canEdit){
         el('editBtn').onclick = ()=> el('editForm').style.display = 'block';
         el('cancelEdit').onclick = ()=> el('editForm').style.display = 'none';
@@ -374,16 +436,9 @@
           const cover = el('e_cover').value.trim() || null;
           const desc = el('e_desc').value.trim() || null;
 
-          const payload = {
-            title,
-            location: locationTxt,
-            cover_url: cover,
-            description: desc
-          };
-          if(startsAt) payload.starts_at = new Date(startsAt.replace(' ','T')).toISOString();
-          else payload.starts_at = null;
-          if(endsAt) payload.ends_at = new Date(endsAt.replace(' ','T')).toISOString();
-          else payload.ends_at = null;
+          const payload = { title, location: locationTxt, cover_url: cover, description: desc };
+          payload.starts_at = startsAt ? new Date(startsAt.replace(' ','T')).toISOString() : null;
+          payload.ends_at = endsAt ? new Date(endsAt.replace(' ','T')).toISOString() : null;
 
           const { error } = await supabase.from('events').update(payload).eq('id', eventId);
           if(error) return alert('Update failed: ' + error.message);
@@ -403,7 +458,6 @@
       await refreshRsvpCounts();
     }
 
-    /* ========== Comments ========== */
     function renderComment(c){
       const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
       const isOwner = currentUserId && (c.user_id === currentUserId);
@@ -427,7 +481,6 @@
         .eq('target_type', 'event')
         .eq('target_id', eventId)
         .order('created_at', { ascending: true });
-
 
       if(error){
         wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
@@ -464,7 +517,6 @@
         return;
       }
       input.value = "";
-      // realtime will append
     }
 
     el('commentPost').onclick = ()=> requireLogin(postComment);
@@ -513,16 +565,19 @@
       }
     });
 
-    // realtime comments
     let commentsChannel;
     function setupLiveComments(){
       if(!eventId) return;
       commentsChannel?.unsubscribe();
+
+      // IMPORTANT: use target_type/target_id filters
       commentsChannel = supabase.channel(`comments-${eventId}`)
         .on('postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+          { event: 'INSERT', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
           (payload) => {
             const c = payload.new;
+            if (c.target_type !== 'event') return;
+
             const wrap = el('comments');
             if (wrap.textContent.includes('No comments yet')) {
               wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
@@ -531,14 +586,15 @@
             inner.insertAdjacentHTML('beforeend', renderComment(c));
           })
         .on('postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+          { event: 'UPDATE', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
           (payload) => {
             const c = payload.new;
+            if (c.target_type !== 'event') return;
             const node = document.querySelector(`.comment[data-id="${c.id}"]`);
             if(node){ node.outerHTML = renderComment(c); }
           })
         .on('postgres_changes',
-          { event: 'DELETE', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` },
+          { event: 'DELETE', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
           (payload) => {
             const id = payload.old.id;
             const node = document.querySelector(`.comment[data-id="${id}"]`);
@@ -551,7 +607,6 @@
         .subscribe();
     }
 
-    /* ========== Presence (viewers) ========== */
     let presenceChannel;
     async function setupPresence(){
       if(!eventId) return;
@@ -577,7 +632,6 @@
         });
     }
 
-    /* ========== Builds for RSVP attach ========== */
     async function loadMyBuilds(){
       const { data: { user } } = await supabase.auth.getUser();
       const sel = el('attachBuild');
@@ -599,7 +653,6 @@
       ).join("");
     }
 
-    /* ========== RSVP state (per user) ========== */
     async function loadMyRsvp(){
       const { data: { user } } = await supabase.auth.getUser();
       const badge = el('rsvpStatus');
@@ -645,9 +698,7 @@
           user_id: user.id,
           status: newStatus,
           build_id: buildId || null
-        }, {
-          onConflict: 'event_id,user_id'
-        });
+        }, { onConflict: 'event_id,user_id' });
 
       if(error){
         alert('RSVP failed: ' + error.message);
@@ -658,7 +709,6 @@
       alert('RSVP saved.');
     }
 
-    /* ========== Boot ========== */
     window.addEventListener('DOMContentLoaded', async ()=>{
       await syncPageAuth();
       await loadEvent();

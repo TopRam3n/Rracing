@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Team — ROK Racers JA</title>
+<meta name="description" content="Team profile, gallery, members, and hosted events." />
+<link rel="icon" href="/Assets/og.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script src="/auth-ui.js"></script>
+
+<style>
+  :root{
+    --bg:#050508; --bg1:#141414; --bg2:#1b1b1b;
+    --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --accent-yellow:#FFD93B;
+    --line:rgba(255,255,255,.08); --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+    color:var(--fg);
+    font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  a{color:var(--fg);text-decoration:none}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+  .nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(5,5,8,.9);
+    border-bottom:1px solid var(--line);
+    backdrop-filter:saturate(140%) blur(12px);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:12px;object-fit:cover}
+  h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+  .title small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em}
+  .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{
+    display:inline-flex;gap:8px;align-items:center;
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    cursor:pointer;font-size:13px;background:transparent;color:var(--fg);
+  }
+  .btn.primary{
+    background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+    color:#fff;border-color:rgba(229,9,20,.9);
+    box-shadow:0 0 18px rgba(229,9,20,.5);
+  }
+  .btn[disabled]{opacity:.5;pointer-events:none}
+
+  .section{padding:40px 0 56px}
+  .card{
+    background:var(--bg1);
+    border:1px solid var(--line);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .pad{padding:18px}
+  .sub{color:var(--muted)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+    background:var(--bg2);font-size:12px;color:var(--muted);
+  }
+  .pill.good{border-color:rgba(255,217,59,.6);color:var(--accent-yellow)}
+  .grid{display:grid;gap:18px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+
+  .hero{
+    display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+  }
+  .teamLogo{
+    width:84px;height:84px;border-radius:18px;object-fit:cover;
+    border:1px solid var(--line);background:var(--bg2);
+  }
+  .gallery img{
+    width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;
+    border-radius:16px;border:1px solid var(--line);display:block;
+  }
+</style>
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/teams.html">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Team</small>
+        </div>
+      </a>
+      <div class="nav-auth">
+        <a class="btn" href="/events.html">Events</a>
+        <a class="btn" href="/garage.html">Garage</a>
+        <a class="btn" href="/teams.html">My Teams</a>
+        <button id="applyBtn" class="btn primary">Apply to team</button>
+        <a id="adminBtn" class="btn" href="#" style="display:none">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div id="teamCard" class="card">
+        <div class="pad sub">Loading…</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2 style="font-size:40px;text-transform:uppercase;">Gallery</h2>
+        <span class="sub" id="galleryCount"></span>
+      </div>
+      <div id="gallery" class="grid cols-3 gallery" style="margin-top:14px"></div>
+      <div id="galleryEmpty" class="sub" style="margin-top:10px;display:none">No gallery photos yet.</div>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2 style="font-size:40px;text-transform:uppercase;">Members</h2>
+        <span class="sub" id="memberCount"></span>
+      </div>
+      <div id="members" class="grid cols-3" style="margin-top:14px"></div>
+    </section>
+
+    <section class="section">
+      <div class="row">
+        <h2 style="font-size:40px;text-transform:uppercase;">Hosted events</h2>
+        <span class="sub" id="eventCount"></span>
+      </div>
+      <div id="events" class="grid cols-3" style="margin-top:14px"></div>
+    </section>
+  </main>
+
+<script>
+  const teamId = new URLSearchParams(location.search).get('id');
+  const $ = (id)=>document.getElementById(id);
+  const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const ACTIVE_ROLES = new Set(['owner','manager','member']);
+
+  async function requireLogin(cb){
+    if(window.authUI && typeof authUI.requireLogin === 'function'){
+      return authUI.requireLogin(cb);
+    }
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user){ alert('Please sign in.'); return false; }
+    cb?.(user);
+    return true;
+  }
+
+  function fmtDate(d){
+    if(!d) return '';
+    const dt = new Date(d);
+    return dt.toLocaleString(undefined,{weekday:'short',month:'short',day:'2-digit',hour:'numeric',minute:'2-digit'});
+  }
+
+  async function loadTeam(){
+    if(!teamId){
+      $('teamCard').innerHTML = `<div class="pad sub">Missing team id.</div>`;
+      return;
+    }
+
+    const { data:team, error } = await supabase
+      .from('teams')
+      .select('id,name,parish,bio,logo_url,is_promoter,instagram_handle,tiktok_handle,website_url,gallery_urls')
+      .eq('id', teamId)
+      .maybeSingle();
+
+    if(error || !team){
+      $('teamCard').innerHTML = `<div class="pad sub">Team not found.</div>`;
+      return;
+    }
+
+    document.title = `${team.name || 'Team'} — ROK Racers JA`;
+
+    const logo = team.logo_url ? `<img class="teamLogo" src="${escapeHTML(team.logo_url)}" alt="">`
+      : `<div class="teamLogo" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
+
+    const ig = team.instagram_handle ? team.instagram_handle.replace(/^@/,'') : '';
+    const tt = team.tiktok_handle ? team.tiktok_handle.replace(/^@/,'') : '';
+    const web = team.website_url || '';
+
+    const socials = [
+      ig ? `<a class="pill good" href="https://instagram.com/${encodeURIComponent(ig)}" target="_blank" rel="noreferrer">IG: @${escapeHTML(ig)}</a>` : '',
+      tt ? `<a class="pill good" href="https://tiktok.com/@${encodeURIComponent(tt)}" target="_blank" rel="noreferrer">TikTok: @${escapeHTML(tt)}</a>` : '',
+      web ? `<a class="pill" href="${escapeHTML(web)}" target="_blank" rel="noreferrer">Website</a>` : ''
+    ].filter(Boolean).join(' ');
+
+    $('teamCard').innerHTML = `
+      <div class="pad">
+        <div class="hero">
+          ${logo}
+          <div style="flex:1;min-width:260px">
+            <div class="row" style="justify-content:flex-start">
+              <h1 style="font-size:56px;letter-spacing:2px">${escapeHTML(team.name || 'Team')}</h1>
+              ${team.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill">Team</span>`}
+              ${team.parish ? `<span class="pill">${escapeHTML(team.parish)}</span>` : ``}
+            </div>
+            ${team.bio ? `<p class="sub" style="font-size:16px;line-height:1.4;margin:10px 0 0">${escapeHTML(team.bio).replace(/\n/g,'<br>')}</p>` : `<div class="sub" style="margin-top:10px">No bio yet.</div>`}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              ${socials || `<span class="sub">No socials added yet.</span>`}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Gallery (teams.gallery_urls expected as json array; if missing, we tolerate)
+    const urls = Array.isArray(team.gallery_urls) ? team.gallery_urls : [];
+    $('galleryCount').textContent = urls.length ? `${urls.length} photo(s)` : '';
+    $('gallery').innerHTML = urls.map(u => `
+      <a href="${escapeHTML(u)}" target="_blank" rel="noreferrer">
+        <img src="${escapeHTML(u)}" alt="">
+      </a>
+    `).join('');
+    $('galleryEmpty').style.display = urls.length ? 'none' : 'block';
+
+    await loadMembers();
+    await loadEvents();
+    await wireAdminButton();
+  }
+
+  async function loadMembers(){
+    $('members').innerHTML = `<div class="sub">Loading…</div>`;
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('user_id,role,created_at')
+      .eq('team_id', teamId);
+
+    if(error){
+      console.error(error);
+      $('members').innerHTML = `<div class="sub">Couldn’t load members.</div>`;
+      return;
+    }
+
+    const active = (data||[]).filter(r => ACTIVE_ROLES.has(r.role));
+    $('memberCount').textContent = `${active.length} member(s)`;
+
+    $('members').innerHTML = active.length ? active.map(m => `
+      <div class="card">
+        <div class="pad">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+            <strong>${escapeHTML(m.user_id)}</strong>
+            <span class="pill">${escapeHTML(m.role)}</span>
+          </div>
+          <div class="sub" style="margin-top:6px">Joined ${new Date(m.created_at).toLocaleDateString()}</div>
+        </div>
+      </div>
+    `).join('') : `<div class="sub">No members yet.</div>`;
+  }
+
+  async function loadEvents(){
+    $('events').innerHTML = `<div class="sub">Loading…</div>`;
+    const { data, error } = await supabase
+      .from('events')
+      .select('id,title,starts_at,location,parish,cover_url')
+      .eq('team_id', teamId)
+      .order('starts_at',{ascending:true, nullsLast:true});
+
+    if(error){
+      console.error(error);
+      $('events').innerHTML = `<div class="sub">Couldn’t load events.</div>`;
+      return;
+    }
+
+    const events = data || [];
+    $('eventCount').textContent = `${events.length} event(s)`;
+
+    $('events').innerHTML = events.length ? events.map(e => `
+      <div class="card">
+        ${e.cover_url ? `<img src="${escapeHTML(e.cover_url)}" alt="" style="width:100%;display:block">` : ``}
+        <div class="pad">
+          <strong>${escapeHTML(e.title || 'Event')}</strong>
+          <div class="sub" style="margin-top:6px">${escapeHTML(fmtDate(e.starts_at))}</div>
+          <div class="sub">${escapeHTML([e.parish, e.location].filter(Boolean).join(' • '))}</div>
+          <div style="margin-top:10px">
+            <a class="btn" href="/event.html?id=${encodeURIComponent(e.id)}">View event</a>
+          </div>
+        </div>
+      </div>
+    `).join('') : `<div class="sub">No hosted events yet.</div>`;
+  }
+
+  async function wireAdminButton(){
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user) return;
+
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if(error) return;
+
+    const role = data?.role || '';
+    const canAdmin = (role === 'owner' || role === 'manager');
+    if(canAdmin){
+      $('adminBtn').style.display = 'inline-flex';
+      $('adminBtn').href = `/admin-team.html?team_id=${encodeURIComponent(teamId)}`;
+    }
+  }
+
+  async function applyToTeam(){
+    await requireLogin(async ()=>{
+      const { data:{ user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      // if membership exists, just inform
+      const { data:existing } = await supabase
+        .from('team_members')
+        .select('role')
+        .eq('team_id', teamId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(existing?.role){
+        if(existing.role === 'pending') alert('You already have a pending request.');
+        else alert(`You’re already in this team (${existing.role}).`);
+        return;
+      }
+
+      const { error } = await supabase.from('team_members').insert({
+        team_id: teamId,
+        user_id: user.id,
+        role: 'pending'
+      });
+      if(error){ alert('Could not apply: ' + error.message); return; }
+      alert('Application sent (pending approval).');
+    });
+  }
+
+  $('applyBtn').onclick = applyToTeam;
+
+  window.addEventListener('DOMContentLoaded', loadTeam);
+</script>
+</body>
+</html>
