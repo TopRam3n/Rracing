@@ -1,0 +1,4 @@
+Client ID: 729651711768-jitnb0nah9o45f4ipjpidc2bmem5nqi2.apps.googleusercontent.com
+Client Secret: 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
+Creation Date: 2025-12-13 10:28:16 (UTC)
+callBack URL: https://dtgnvzjtojdqmujzokgh.supabase.co/auth/v1/callback

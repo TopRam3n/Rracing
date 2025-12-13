@@ -1,21 +1,18 @@
-/*PLACEHOLDER*// PLEASE ACTUALLY WRITE SMN later
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>My Teams — ROK Racers JA</title>
-  <meta name="description" content="Teams and promoter tools are coming soon to ROK Racers JA."/>
-  <link rel="icon" href="/Assets/og.png"/>
+  <title>Activity — ROK Racers JA</title>
+  <meta name="description" content="Your activity timeline on ROK Racers JA." />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
@@ -23,142 +20,385 @@
 
   <style>
     :root{
-      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
-      --fg:#fff; --muted:#bdbdbd;
-      --accent:#e50914; --line:rgba(255,255,255,.08);
-      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+      --bg:#050508;
+      --card:#141414;
+      --muted:#bdbdbd;
+      --line:rgba(255,255,255,.08);
+      --accent:#e50914;
+      --accent2:#FFD93B;
+      --radius:18px;
+      --shadow:0 18px 40px rgba(0,0,0,.7);
+      --navH:76px;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:0 24px}
-    .sub{color:var(--muted)}
-
-    .nav{
-      position:sticky;top:0;z-index:50;
-      background:rgba(18,18,18,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px);
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:#fff;
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
     }
-    .nav-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 0;
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1100px, 100% - 32px); margin:0 auto;}
+    .nav-wrapper{
+      position:sticky;top:0;z-index:40;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+      border-bottom:1px solid rgba(255,255,255,0.04);
+      transition:.3s;
     }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .title small{color:var(--muted)}
-    .menu{display:flex;gap:10px;align-items:center}
+    .nav-solid{ background: rgba(5,5,8,0.98); border-bottom-color: rgba(255,255,255,0.10); box-shadow: var(--shadow); }
+    .nav{height:var(--navH); display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(229,9,20,.7); overflow:hidden; background:#000}
+    .logo-mark img{width:100%;height:100%;object-fit:cover;display:block}
+    .logo-text-main{font-family:"Bebas Neue"; letter-spacing:.04em; font-size:22px; text-transform:uppercase}
+    .logo-text-sub{font-size:11px;color:var(--accent2);text-transform:uppercase}
+    .nav-links{display:flex;gap:18px;align-items:center;font-size:13px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+    .nav-links a{padding-bottom:4px;position:relative}
+    .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2));transition:.18s;border-radius:999px}
+    .nav-links a:hover{color:#fff}
+    .nav-links a:hover::after{width:100%}
+    .nav-cta{display:flex;gap:8px;align-items:center}
     .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:10px 14px;border-radius:14px;
-      border:1px solid var(--line);cursor:pointer;
-      background:transparent;color:var(--fg);
-      font-family:inherit;font-size:15px;
+      border-radius:999px; padding:8px 16px;
+      font-size:13px; text-transform:uppercase; letter-spacing:.15em;
+      border:1px solid transparent; background:transparent; color:#fff;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition:.18s;
     }
-    .btn.primary{background:#fff;color:#000;border-color:#fff}
-    .btn.small{padding:6px 10px;font-size:14px}
-    .btn[disabled]{opacity:.5;pointer-events:none}
-
-    .section{padding:48px 0}
-
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      box-shadow:var(--shadow);
-      padding:22px;
+    .btn-ghost{border-color:rgba(255,255,255,.12); color:var(--muted)}
+    .btn-ghost:hover{border-color:rgba(255,255,255,.25); background:rgba(255,255,255,.02); color:#fff}
+    .btn-primary{
+      background: radial-gradient(circle at top left, #ff4d4d, var(--accent));
+      border-color: rgba(229,9,20,.9);
+      box-shadow: 0 0 24px rgba(229,9,20,.6);
     }
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-pill-sm{padding:6px 14px;font-size:11px;letter-spacing:.16em}
 
-    .nav-auth{display:flex;align-items:center;gap:10px}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
-      width:40px;height:40px;border-radius:50%;
-      background:var(--bg2);
+      width:32px;height:32px;border-radius:50%;
+      background:var(--card);
       display:flex;align-items:center;justify-content:center;
-      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-weight:600;border:1px solid rgba(255,255,255,.18);
+      cursor:pointer;font-size:13px;
     }
-    .profile-chip span{font-size:16px}
     .dropdown{
-      position:absolute;right:0;top:48px;
-      background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;display:flex;flex-direction:column;
-      min-width:190px;z-index:999;
+      position:absolute; right:0; top:40px;
+      background:rgba(10,10,14,0.96);
+      border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
+      border-radius:16px;
+      display:none;
+      flex-direction:column;
+      min-width:200px;
+      z-index:999;
+      backdrop-filter:blur(16px);
+      overflow:hidden;
     }
     .dropdown a,.dropdown button{
-      padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:15px;
-      width:100%;cursor:pointer;font-family:inherit;
+      padding:10px 16px;text-align:left;border:none;background:transparent;color:#fff;font-size:13px;width:100%;cursor:pointer
     }
-    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06)}
+
+    @media(max-width:768px){ .nav-links{display:none} .logo-text-sub{display:none} }
+
+    .page{padding:22px 0 40px}
+    .title{
+      font-family:"Bebas Neue"; letter-spacing:2px; text-transform:uppercase;
+      font-size:52px; margin:18px 0 4px;
+    }
+    .sub{color:var(--muted); margin-bottom:18px}
+    .card{
+      border:1px solid var(--line);
+      background:radial-gradient(circle at top, rgba(255,255,255,0.05), rgba(10,10,10,0.96));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .filters{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin:10px 0 14px}
+    .pill{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.35);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--muted);
+    }
+
+    .timeline{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+    .item{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.30);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      cursor:pointer;
+      transition:.18s;
+    }
+    .item:hover{border-color:rgba(255,217,59,.35); transform:translateY(-1px)}
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background:var(--accent2);
+      box-shadow:0 0 10px rgba(255,217,59,.8);
+      margin-top:5px;
+      flex:0 0 auto;
+    }
+    .item-title{font-weight:700}
+    .item-meta{color:var(--muted); font-size:12px; margin-top:2px}
+    .item-type{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:10px; text-transform:uppercase; letter-spacing:.16em;
+      border:1px solid rgba(255,255,255,.12);
+      padding:3px 8px; border-radius:999px; color:var(--muted);
+      margin-bottom:6px;
+    }
+    .empty{
+      padding:16px;
+      border:1px dashed rgba(255,255,255,.16);
+      border-radius:16px;
+      color:var(--muted);
+      background:rgba(0,0,0,.22);
+    }
   </style>
 </head>
+
 <body>
-  <nav class="nav" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
-      <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo-img" />
-        <div class="title">
-          <h1>ROK RACERS JA</h1>
-          <small>My Teams</small>
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="/" class="logo">
+        <div class="logo-mark"><img src="/Assets/logo.png" alt="ROK Racers JA logo"></div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Motorsport Community</div>
         </div>
       </a>
 
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/sightings.html">Sightings</a>
-        </div>
+      <nav class="nav-links">
+        <a href="/events.html">Events</a>
+        <a href="/garage.html">Garage</a>
+        <a href="/sightings.html">Sightings</a>
+        <a href="/highlights.html">Highlights</a>
+        <a href="/marketplace.html">Marketplace</a>
+      </nav>
 
-        <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Sign in</button>
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
-            </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
-                <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
-            </div>
+      <div class="nav-cta">
+        <a href="/marketplace.html" class="btn btn-ghost btn-pill-sm">Marketplace</a>
+
+        <button id="loginBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
+        <button id="joinBtn" class="btn btn-primary btn-pill-sm">Join the Grid</button>
+
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="profileInitials">U</span>
+          </div>
+          <div id="dropdown" class="dropdown">
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/teams.html">My Teams</a>
+            <a href="/activity.html">Activity</a>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
-
       </div>
     </div>
-  </nav>
+  </div>
 
-  <main class="container">
-    <section class="section">
-      <div class="card">
-        <h2 style="font-size:40px;margin-bottom:8px">Teams & promoters coming soon</h2>
-        <p class="sub" style="margin-bottom:12px">
-          This space will be where:
-        </p>
-        <ul class="sub" style="margin-top:0;padding-left:18px">
-          <li>Teams and promoters can manage their event pages and applications</li>
-          <li>Drivers, marshals and other roles can track the teams they apply to</li>
-          <li>Your builds will eventually show trophies from competition events</li>
-        </ul>
-        <p class="sub" style="margin-top:8px">
-          It’s part of Phase 2. For now, keep building, posting sightings, and hitting events — we’ll plug your teams into the ecosystem soon.
-        </p>
-        <div style="margin-top:16px">
-          <a href="/garage.html" class="btn primary">Back to Garage</a>
-        </div>
+  <main class="container page">
+    <div class="title">Activity</div>
+    <div class="sub">Your recent moves across the grid.</div>
+
+    <div class="filters">
+      <div class="pill" id="whoPill">Signed out</div>
+      <div class="pill">Newest first</div>
+    </div>
+
+    <section class="card">
+      <div id="feed" class="timeline" aria-live="polite">
+        <div class="empty">Loading…</div>
       </div>
     </section>
   </main>
 
-  <script>
-    // Let auth-ui.js handle nav auth wiring.
-    // No extra JS needed here on purpose.
-  </script>
+<script>
+  const navWrapper = document.getElementById('navWrapper');
+  function updateNavSolid(){ navWrapper.classList.toggle('nav-solid', window.scrollY > 40); }
+  updateNavSolid();
+  window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+  const feed = document.getElementById('feed');
+  const whoPill = document.getElementById('whoPill');
+
+  function safeDate(ts){
+    try{
+      return ts ? new Date(ts).toLocaleString() : '';
+    }catch(e){ return '';}
+  }
+
+  function push(items, type, title, meta, href, ts){
+    items.push({ type, title, meta, href, ts: ts || null });
+  }
+
+  function render(items){
+    if (!items.length){
+      feed.innerHTML = `
+        <div class="empty">
+          No activity yet. Create a build, RSVP to an event, or drop a sighting.
+        </div>`;
+      return;
+    }
+
+    feed.innerHTML = items.map(it => `
+      <div class="item" role="link" tabindex="0" data-href="${it.href || ''}">
+        <div class="dot"></div>
+        <div style="flex:1">
+          <div class="item-type">${it.type}</div>
+          <div class="item-title">${it.title}</div>
+          <div class="item-meta">${it.meta || ''}${it.ts ? ' · ' + safeDate(it.ts) : ''}</div>
+        </div>
+      </div>
+    `).join('');
+
+    feed.onclick = (e)=>{
+      const row = e.target.closest('.item');
+      if(!row) return;
+      const href = row.dataset.href;
+      if(href) location.href = href;
+    };
+
+    feed.onkeydown = (e)=>{
+      if(e.key !== 'Enter') return;
+      const row = e.target.closest('.item');
+      if(!row) return;
+      const href = row.dataset.href;
+      if(href) location.href = href;
+    };
+  }
+
+  async function tryQuery(fn){
+    try{ return await fn(); }catch(e){ return { data:null, error:e }; }
+  }
+
+  async function loadActivity(){
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if(!user){
+      whoPill.textContent = "Signed out";
+      feed.innerHTML = `
+        <div class="empty">
+          You need to log in to see your activity.
+          <div style="margin-top:10px">
+            <button class="btn btn-primary btn-pill-sm" onclick="authUI.openAuthModal('login')">Log in</button>
+          </div>
+        </div>`;
+      return;
+    }
+
+    whoPill.textContent = "Signed in: " + (user.email || 'Driver');
+
+    const items = [];
+
+    // 1) Builds created (if builds table exists with owner_id)
+    const buildsRes = await tryQuery(() =>
+      supabase.from('builds')
+        .select('id,title,created_at')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(12)
+    );
+    if (!buildsRes.error && buildsRes.data){
+      buildsRes.data.forEach(b=>{
+        push(items, "Build", `Created build: ${b.title || 'Untitled'}`, "Your garage", `/build.html?id=${b.id}`, b.created_at);
+      });
+    }
+
+    // 2) Sightings posted (try author_id then created_by)
+    const sightingsRes1 = await tryQuery(() =>
+      supabase.from('sightings')
+        .select('id,title,created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(12)
+    );
+    const sightingsRes2 = sightingsRes1.error ? await tryQuery(() =>
+      supabase.from('sightings')
+        .select('id,title,created_at')
+        .eq('created_by', user.id)
+        .order('created_at', { ascending:false })
+        .limit(12)
+    ) : { data:null, error:true };
+
+    const sightingsData = (!sightingsRes1.error && sightingsRes1.data) ? sightingsRes1.data
+                        : (!sightingsRes2.error && sightingsRes2.data) ? sightingsRes2.data
+                        : null;
+
+    if (sightingsData){
+      sightingsData.forEach(s=>{
+        push(items, "Sighting", `Posted sighting: ${s.title || 'Sighting'}`, "Island feed", `/sighting.html?id=${s.id}`, s.created_at);
+      });
+    }
+
+    // 3) Likes given (build_likes)
+    const blRes = await tryQuery(() =>
+      supabase.from('build_likes')
+        .select('build_id,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20)
+    );
+    if(!blRes.error && blRes.data){
+      blRes.data.forEach(r=>{
+        push(items, "Boost", `Boosted a build`, "Tap to view", `/build.html?id=${r.build_id}`, r.created_at);
+      });
+    }
+
+    // 4) Likes given (sighting_likes)
+    const slRes = await tryQuery(() =>
+      supabase.from('sighting_likes')
+        .select('sighting_id,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20)
+    );
+    if(!slRes.error && slRes.data){
+      slRes.data.forEach(r=>{
+        push(items, "Like", `Liked a sighting`, "Tap to view", `/sighting.html?id=${r.sighting_id}`, r.created_at);
+      });
+    }
+
+    // 5) Event RSVPs (event_rsvps)
+    const rsvpRes = await tryQuery(() =>
+      supabase.from('event_rsvps')
+        .select('event_id,status,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20)
+    );
+    if(!rsvpRes.error && rsvpRes.data){
+      rsvpRes.data.forEach(r=>{
+        const label = (r.status || 'RSVP').toUpperCase();
+        push(items, "RSVP", `RSVP: ${label}`, "Tap to view event", `/event.html?id=${r.event_id}`, r.created_at);
+      });
+    }
+
+    // Sort newest first
+    items.sort((a,b)=>{
+      const ta = a.ts ? new Date(a.ts).getTime() : 0;
+      const tb = b.ts ? new Date(b.ts).getTime() : 0;
+      return tb - ta;
+    });
+
+    render(items);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadActivity);
+</script>
 </body>
 </html>

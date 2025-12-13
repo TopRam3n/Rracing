@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Merch Store (Admin View)— ROK Racers JA</title>
+  <meta name="description" content="Admin store management for ROK Racers JA." />
+
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <style>
+    :root{
+      --bg:#050508;
+      --card:#141414;
+      --muted:#bdbdbd;
+      --line:rgba(255,255,255,.10);
+      --accent:#e50914;
+      --accent2:#FFD93B;
+      --radius:18px;
+      --shadow:0 18px 40px rgba(0,0,0,.7);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:#fff;
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1100px, 100% - 32px); margin:0 auto; padding:22px 0 50px;}
+    .title{font-family:"Bebas Neue"; font-size:54px; letter-spacing:2px; text-transform:uppercase; margin:0 0 8px}
+    .sub{color:var(--muted); margin:0 0 18px}
+
+    .card{
+      border:1px solid var(--line);
+      background:radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .pill{
+      border:1px solid rgba(255,255,255,.12);
+      padding:6px 10px;border-radius:999px;
+      font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+      background:rgba(0,0,0,.25);
+    }
+
+    .grid{display:grid;grid-template-columns: 1fr 1fr;gap:14px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+    label{font-size:12px;color:var(--muted)}
+    input,textarea,select{
+      width:100%;
+      padding:11px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(20,20,24,.9);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+      font-family:inherit;
+    }
+    textarea{min-height:88px;resize:vertical}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:520px){.row{grid-template-columns:1fr}}
+
+    .btn{
+      border-radius:999px;
+      padding:8px 16px;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+      border:1px solid rgba(255,255,255,.14);
+      background:transparent;
+      color:#fff;
+      cursor:pointer;
+      transition:.18s;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+    }
+    .btn:hover{transform:translateY(-1px); border-color:rgba(255,217,59,.35)}
+    .btn-primary{
+      background: radial-gradient(circle at top left, #ff4d4d, var(--accent));
+      border-color: rgba(229,9,20,.85);
+      box-shadow:0 0 24px rgba(229,9,20,.5);
+    }
+    .btn-primary:hover{box-shadow:0 0 30px rgba(229,9,20,.65)}
+    .btn-ghost{color:var(--muted)}
+    .btn-danger{border-color:rgba(255,90,90,.35); color:#ffd0d0}
+    .btn-danger:hover{border-color:rgba(255,90,90,.6)}
+    .btn-sm{padding:6px 12px;font-size:11px}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);text-align:left}
+    td{font-size:13px;color:#fff}
+    .muted{color:var(--muted);font-size:12px}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:10px;text-transform:uppercase;letter-spacing:.14em;
+      border:1px solid rgba(255,255,255,.12);
+      padding:3px 8px;border-radius:999px;color:var(--muted);
+      background:rgba(0,0,0,.25);
+    }
+    .tag.on{border-color:rgba(154,255,197,.35); color:#9affc5}
+    .tag.off{border-color:rgba(255,217,59,.35); color:var(--accent2)}
+    .msg{margin-top:8px;font-size:12px;color:var(--muted);min-height:16px}
+    .msg.ok{color:#9affc5}
+    .msg.bad{color:#ff9a9a}
+
+    .hidden{display:none!important}
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="title">Admin Store</div>
+    <p class="sub">Add products, set Stripe links, toggle active, and manage drops.</p>
+
+    <div class="topbar">
+      <div class="pill" id="who">Checking auth…</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn btn-ghost btn-sm" href="/store.html">Open Store</a>
+        <button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">Refresh</button>
+        <button class="btn btn-danger btn-sm" id="signoutBtn" type="button">Sign out</button>
+      </div>
+    </div>
+
+    <section class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 10px; font-family:'Bebas Neue'; letter-spacing:2px; text-transform:uppercase; font-size:28px;">Create product</h3>
+
+        <div class="row">
+          <div>
+            <label>Title</label>
+            <input id="title" placeholder="ROK Tee (Black)"/>
+          </div>
+          <div>
+            <label>Price (JMD)</label>
+            <input id="price" type="number" inputmode="numeric" placeholder="4500"/>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Description</label>
+          <textarea id="desc" placeholder="Limited drop. Soft cotton. Built for the island."></textarea>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Image URL</label>
+            <input id="img" placeholder="https://..."/>
+          </div>
+          <div>
+            <label>Stripe Payment Link URL</label>
+            <input id="paylink" placeholder="https://buy.stripe.com/..."/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Active</label>
+            <select id="active">
+              <option value="true">True (Visible)</option>
+              <option value="false">False (Hidden)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:end">
+            <button id="createBtn" class="btn btn-primary" type="button" style="width:100%">Create</button>
+          </div>
+        </div>
+
+        <div class="msg" id="createMsg"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px; font-family:'Bebas Neue'; letter-spacing:2px; text-transform:uppercase; font-size:28px;">Products</h3>
+        <div class="msg" id="listMsg">Loading…</div>
+
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="4" class="muted">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Edit modal -->
+    <div id="editWrap" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.70);display:flex;align-items:center;justify-content:center;padding:18px;">
+      <div class="card" style="width:min(640px, 96vw);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <h3 style="margin:0; font-family:'Bebas Neue'; letter-spacing:2px; text-transform:uppercase; font-size:28px;">Edit product</h3>
+          <button class="btn btn-ghost btn-sm" id="closeEdit" type="button">Close</button>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <div>
+            <label>Title</label>
+            <input id="e_title"/>
+          </div>
+          <div>
+            <label>Price (JMD)</label>
+            <input id="e_price" type="number"/>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Description</label>
+          <textarea id="e_desc"></textarea>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Image URL</label>
+            <input id="e_img"/>
+          </div>
+          <div>
+            <label>Stripe Payment Link URL</label>
+            <input id="e_paylink"/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Active</label>
+            <select id="e_active">
+              <option value="true">True (Visible)</option>
+              <option value="false">False (Hidden)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-primary" id="saveEdit" type="button" style="width:100%">Save</button>
+            <button class="btn btn-danger" id="deleteItem" type="button" style="width:100%">Delete</button>
+          </div>
+        </div>
+
+        <div class="msg" id="editMsg"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+  // ✅ Set your admin emails here
+  const ADMIN_EMAILS = [
+    "rokracers@gmail.com", "britneyl.patterson@gmail.com"
+  ];
+
+  const who = document.getElementById('who');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const signoutBtn = document.getElementById('signoutBtn');
+
+  const titleEl = document.getElementById('title');
+  const priceEl = document.getElementById('price');
+  const descEl  = document.getElementById('desc');
+  const imgEl   = document.getElementById('img');
+  const payEl   = document.getElementById('paylink');
+  const activeEl= document.getElementById('active');
+  const createBtn = document.getElementById('createBtn');
+  const createMsg = document.getElementById('createMsg');
+
+  const listMsg = document.getElementById('listMsg');
+  const tbody = document.getElementById('tbody');
+
+  const editWrap = document.getElementById('editWrap');
+  const closeEdit = document.getElementById('closeEdit');
+  const saveEdit = document.getElementById('saveEdit');
+  const deleteItem = document.getElementById('deleteItem');
+  const editMsg = document.getElementById('editMsg');
+
+  const e_title = document.getElementById('e_title');
+  const e_price = document.getElementById('e_price');
+  const e_desc  = document.getElementById('e_desc');
+  const e_img   = document.getElementById('e_img');
+  const e_paylink = document.getElementById('e_paylink');
+  const e_active = document.getElementById('e_active');
+
+  let currentUser = null;
+  let editingId = null;
+
+  function setMsg(el, text, kind){
+    el.textContent = text || '';
+    el.className = 'msg' + (kind ? (' ' + kind) : '');
+  }
+
+  async function requireAdmin(){
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user || null;
+
+    if (!user){
+      who.textContent = "Not signed in";
+      document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;color:#fff;font-family:Rajdhani,system-ui">
+          <div style="max-width:520px">
+            <h1 style="font-family:'Bebas Neue';letter-spacing:2px;font-size:44px;margin:0 0 8px;text-transform:uppercase">Admin Store</h1>
+            <p style="color:#bdbdbd;margin:0 0 14px">Sign in first, then reopen this page.</p>
+            <a href="/index.html" style="color:#FFD93B;text-decoration:none">Go to homepage</a>
+          </div>
+        </div>`;
+      return false;
+    }
+
+    const email = (user.email || '').toLowerCase();
+    const ok = ADMIN_EMAILS.map(e=>e.toLowerCase()).includes(email);
+    if (!ok){
+      who.textContent = "Access denied: " + (user.email || 'user');
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Not authorized.</td></tr>`;
+      setMsg(listMsg, 'You are signed in but not in ADMIN_EMAILS.', 'bad');
+      return false;
+    }
+
+    who.textContent = "Admin: " + user.email;
+    return true;
+  }
+
+  async function loadProducts(){
+    setMsg(listMsg, 'Loading…', '');
+    tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
+
+    const { data, error } = await supabase
+      .from('merch_products')
+      .select('id,title,price_jmd,is_active,created_at')
+      .order('created_at', { ascending:false });
+
+    if (error){
+      console.error(error);
+      setMsg(listMsg, error.message || 'Failed to load products', 'bad');
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Error loading.</td></tr>`;
+      return;
+    }
+
+    if (!data?.length){
+      setMsg(listMsg, 'No products yet.', '');
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Create your first drop on the left.</td></tr>`;
+      return;
+    }
+
+    setMsg(listMsg, `${data.length} product(s)`, 'ok');
+
+    tbody.innerHTML = data.map(p=>{
+      const price = p.price_jmd ? `JMD ${Number(p.price_jmd).toLocaleString()}` : '—';
+      const activeTag = p.is_active
+        ? `<span class="tag on">ON</span>`
+        : `<span class="tag off">OFF</span>`;
+      return `
+        <tr data-id="${p.id}">
+          <td>
+            <div style="font-weight:700">${p.title || 'Untitled'}</div>
+            <div class="muted">${p.id}</div>
+          </td>
+          <td>${price}</td>
+          <td>${activeTag}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-sm" data-edit type="button">Edit</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function createProduct(){
+    const title = (titleEl.value || '').trim();
+    const price = priceEl.value ? parseInt(priceEl.value, 10) : null;
+    const description = (descEl.value || '').trim();
+    const image_url = (imgEl.value || '').trim() || null;
+    const payment_link_url = (payEl.value || '').trim() || null;
+    const is_active = activeEl.value === 'true';
+
+    if (!title){
+      setMsg(createMsg, 'Title is required.', 'bad');
+      return;
+    }
+
+    createBtn.disabled = true;
+    setMsg(createMsg, 'Creating…', '');
+
+    const { error } = await supabase
+      .from('merch_products')
+      .insert({ title, price_jmd: price, description, image_url, payment_link_url, is_active });
+
+    createBtn.disabled = false;
+
+    if (error){
+      console.error(error);
+      setMsg(createMsg, error.message || 'Could not create product.', 'bad');
+      return;
+    }
+
+    setMsg(createMsg, 'Created.', 'ok');
+    titleEl.value = '';
+    priceEl.value = '';
+    descEl.value = '';
+    imgEl.value = '';
+    payEl.value = '';
+    activeEl.value = 'true';
+
+    await loadProducts();
+  }
+
+  function openEdit(p){
+    editingId = p.id;
+    e_title.value = p.title || '';
+    e_price.value = p.price_jmd || '';
+    e_desc.value = p.description || '';
+    e_img.value = p.image_url || '';
+    e_paylink.value = p.payment_link_url || '';
+    e_active.value = (p.is_active ? 'true' : 'false');
+    setMsg(editMsg, '', '');
+    editWrap.classList.remove('hidden');
+  }
+
+  function closeEditModal(){
+    editWrap.classList.add('hidden');
+    editingId = null;
+  }
+
+  async function fetchProduct(id){
+    const { data, error } = await supabase
+      .from('merch_products')
+      .select('id,title,price_jmd,description,image_url,payment_link_url,is_active')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async function saveProduct(){
+    if (!editingId) return;
+
+    saveEdit.disabled = true;
+    setMsg(editMsg, 'Saving…', '');
+
+    const payload = {
+      title: (e_title.value || '').trim(),
+      price_jmd: e_price.value ? parseInt(e_price.value, 10) : null,
+      description: (e_desc.value || '').trim(),
+      image_url: (e_img.value || '').trim() || null,
+      payment_link_url: (e_paylink.value || '').trim() || null,
+      is_active: e_active.value === 'true'
+    };
+
+    if (!payload.title){
+      saveEdit.disabled = false;
+      setMsg(editMsg, 'Title is required.', 'bad');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('merch_products')
+      .update(payload)
+      .eq('id', editingId);
+
+    saveEdit.disabled = false;
+
+    if (error){
+      console.error(error);
+      setMsg(editMsg, error.message || 'Could not save.', 'bad');
+      return;
+    }
+
+    setMsg(editMsg, 'Saved.', 'ok');
+    await loadProducts();
+  }
+
+  async function deleteProduct(){
+    if (!editingId) return;
+    const ok = confirm('Delete this product?');
+    if (!ok) return;
+
+    deleteItem.disabled = true;
+    setMsg(editMsg, 'Deleting…', '');
+
+    const { error } = await supabase
+      .from('merch_products')
+      .delete()
+      .eq('id', editingId);
+
+    deleteItem.disabled = false;
+
+    if (error){
+      console.error(error);
+      setMsg(editMsg, error.message || 'Could not delete.', 'bad');
+      return;
+    }
+
+    setMsg(editMsg, 'Deleted.', 'ok');
+    closeEditModal();
+    await loadProducts();
+  }
+
+  // Events
+  createBtn.addEventListener('click', createProduct);
+  refreshBtn.addEventListener('click', loadProducts);
+  signoutBtn.addEventListener('click', async ()=>{
+    await supabase.auth.signOut();
+    location.href = '/index.html';
+  });
+  closeEdit.addEventListener('click', closeEditModal);
+  editWrap.addEventListener('click', (e)=>{ if(e.target === editWrap) closeEditModal(); });
+  saveEdit.addEventListener('click', saveProduct);
+  deleteItem.addEventListener('click', deleteProduct);
+
+  tbody.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-edit]');
+    if (!btn) return;
+    const tr = e.target.closest('tr[data-id]');
+    const id = tr?.dataset.id;
+    if (!id) return;
+
+    try{
+      const p = await fetchProduct(id);
+      openEdit(p);
+    }catch(err){
+      console.error(err);
+      alert(err.message || 'Could not open item.');
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    const ok = await requireAdmin();
+    if (ok) await loadProducts();
+  });
+</script>
+</body>
+</html>

@@ -207,12 +207,29 @@
           <a class="btn" role="menuitem" href="/about.html">About</a>
           <a class="btn" role="menuitem" href="/events.html">Events</a>
           <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="teams.html">Community</a>
+          <a href="/marketplace.html" class="btn" role="menuitem">Marketplace</a>
+          <a href="/store.html" class="btn" role="menuitem">Store</a>
+
         </div>
 
         <div class="nav-auth">
           <!-- Shared nav buttons controlled by auth-ui.js -->
           <button id="navSignInBtn" class="btn">Log in</button>
           <button id="navJoinBtn" class="btn primary">Join the grid</button>
+          <button id="loginBtn" class="btn">Log in</button>
+<button id="joinBtn" class="btn primary">Join the grid</button>
+
+<div id="profileMenu" class="profile-menu" style="display:none">
+  <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+    <span id="profileInitials">U</span>
+  </div>
+  <div id="dropdown" class="dropdown" style="display:none">
+    <!-- your links -->
+    <button id="signoutBtn" type="button">Sign out</button>
+  </div>
+</div>
+
 
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
