@@ -21,7 +21,7 @@
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
-  <!-- Central auth helper -->
+  <!-- Optional central auth helper if you keep using /auth-ui.js on other pages -->
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -43,7 +43,11 @@
       --nav-height: 76px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     html, body {
       height: 100%;
@@ -54,20 +58,48 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    body { display: flex; flex-direction: column; }
-
-    a { color: inherit; text-decoration: none; }
-
-    img { max-width: 100%; display: block; }
-
-    .sr-only{
-      position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;
+    body {
+      display: flex;
+      flex-direction: column;
     }
 
-    .page { min-height: 100vh; display: flex; flex-direction: column; }
-    .container { width: min(1200px, 100% - 32px); margin: 0 auto; }
-    @media (min-width: 1280px) { .container { width: min(1280px, 100% - 64px); } }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .sr-only{
+      position:absolute;
+      left:-9999px;
+      width:1px;
+      height:1px;
+      overflow:hidden;
+    }
+
+    /* Layout helpers */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      width: min(1200px, 100% - 32px);
+      margin: 0 auto;
+    }
+
+    @media (min-width: 1280px) {
+      .container {
+        width: min(1280px, 100% - 64px);
+      }
+    }
+
+    /* Glow bottom gradient */
     .page::after {
       content: "";
       position: fixed;
@@ -80,6 +112,7 @@
     }
 
     /* NAVIGATION */
+
     .nav-wrapper {
       position: sticky;
       top: 0;
@@ -89,11 +122,13 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     }
+
     .nav-wrapper.nav-solid{
       background: rgba(5,5,8,0.98);
       border-bottom-color: rgba(255,255,255,0.10);
       box-shadow: 0 18px 40px rgba(0,0,0,0.7);
     }
+
     .nav {
       height: var(--nav-height);
       display: flex;
@@ -101,12 +136,14 @@
       justify-content: space-between;
       gap: 20px;
     }
+
     .logo {
       display: flex;
       align-items: center;
       gap: 8px;
       letter-spacing: 0.04em;
     }
+
     .logo-mark {
       width: 36px;
       height: 36px;
@@ -119,22 +156,26 @@
       justify-content: center;
       background:#000;
     }
+
     .logo-mark img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
     }
+
     .logo-text-main {
       font-family: "Bebas Neue", system-ui, sans-serif;
       font-size: 22px;
       text-transform: uppercase;
     }
+
     .logo-text-sub {
       font-size: 11px;
       color: var(--accent-cyan);
       text-transform: uppercase;
     }
+
     .nav-links {
       display: flex;
       gap: 18px;
@@ -144,11 +185,13 @@
       letter-spacing: 0.15em;
       color: var(--text-muted);
     }
+
     .nav-links a {
       position: relative;
       padding-bottom: 4px;
       cursor: pointer;
     }
+
     .nav-links a::after {
       content: "";
       position: absolute;
@@ -160,10 +203,20 @@
       transition: width var(--transition-fast);
       border-radius: 999px;
     }
-    .nav-links a:hover { color: var(--text-main); }
-    .nav-links a:hover::after { width: 100%; }
 
-    .nav-cta { display: flex; gap: 8px; align-items: center; }
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
 
     .btn {
       border-radius: 999px;
@@ -184,45 +237,91 @@
         transform var(--transition-fast),
         box-shadow var(--transition-fast);
     }
+
     .btn-primary {
       background: radial-gradient(circle at top left, #ff4d4d, var(--accent-main));
       color: #fff;
       box-shadow: 0 0 24px rgba(229, 9, 20, 0.6);
       border-color: rgba(229, 9, 20, 0.9);
     }
+
     .btn-primary:hover {
       transform: translateY(-1px);
       box-shadow: 0 0 32px rgba(229, 9, 20, 0.75);
     }
+
     .btn-ghost {
       border-color: rgba(255,255,255,0.12);
       color: var(--text-muted);
     }
+
     .btn-ghost:hover {
       color: var(--text-main);
       border-color: rgba(255,255,255,0.25);
       background: rgba(255,255,255,0.02);
     }
-    .btn-pill-sm { padding: 6px 14px; font-size: 11px; letter-spacing: 0.16em; }
+
+    .btn-pill-sm {
+      padding: 6px 14px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+    }
+
+    .badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(135deg, rgba(20,20,20,0.9), rgba(5,5,8,0.7));
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-secondary);
+      box-shadow: 0 0 8px rgba(255,217,59,0.9);
+    }
 
     /* Nav auth profile */
-    .profile-menu{ position:relative; display:flex; align-items:center; }
+    .profile-menu{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+
     .profile-chip{
-      width:32px; height:32px; border-radius:50%;
+      width:32px;
+      height:32px;
+      border-radius:50%;
       background:var(--bg-card);
-      display:flex; align-items:center; justify-content:center;
-      font-weight:600; cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      cursor:pointer;
       border:1px solid rgba(255,255,255,0.18);
       transition:box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
       font-size:13px;
     }
+
     .profile-chip:hover{
       border-color:rgba(255,255,255,0.32);
       box-shadow:0 0 16px rgba(255,217,59,0.6);
       transform:translateY(-1px);
     }
+
     .dropdown{
-      position:absolute; right:0; top:40px;
+      position:absolute;
+      right:0;
+      top:40px;
       background:rgba(10,10,14,0.96);
       border:1px solid var(--border-subtle);
       box-shadow:0 20px 40px rgba(0,0,0,.65);
@@ -233,7 +332,9 @@
       z-index:999;
       backdrop-filter:blur(16px);
     }
-    .dropdown a, .dropdown button{
+
+    .dropdown a,
+    .dropdown button{
       padding:10px 16px;
       text-align:left;
       border:none;
@@ -243,18 +344,31 @@
       width:100%;
       cursor:pointer;
     }
-    .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
+
+    .dropdown a:hover,
+    .dropdown button:hover{
+      background:rgba(255,255,255,0.06);
+    }
 
     .hidden{display:none!important}
 
     @media (max-width: 768px) {
-      .nav { justify-content: space-between; }
-      .nav-links { display: none; }
-      .nav-cta { gap: 6px; }
-      .logo-text-sub { display: none; }
+      .nav {
+        justify-content: space-between;
+      }
+      .nav-links {
+        display: none;
+      }
+      .nav-cta {
+        gap: 6px;
+      }
+      .logo-text-sub {
+        display: none;
+      }
     }
 
     /* HERO */
+
     .hero {
       position: relative;
       min-height: calc(100vh - var(--nav-height));
@@ -263,27 +377,47 @@
       padding: 32px 0 40px;
       z-index: 1;
     }
+
     .hero-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
       gap: 40px;
       align-items: center;
     }
+
     .hero-left {
       display: flex;
       flex-direction: column;
       gap: 18px;
       max-width: 520px;
     }
-    .hero-kicker { display: flex; gap: 10px; align-items: center; }
-    .hero-kicker-line { width: 26px; height: 1px; background: linear-gradient(to right, var(--accent-main), var(--accent-cyan)); }
-    .hero-kicker span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent-cyan); }
+
+    .hero-kicker {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hero-kicker-line {
+      width: 26px;
+      height: 1px;
+      background: linear-gradient(to right, var(--accent-main), var(--accent-cyan));
+    }
+
+    .hero-kicker span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent-cyan);
+    }
+
     .hero-title {
       font-family: "Bebas Neue", system-ui, sans-serif;
       font-size: clamp(40px, 7vw, 62px);
       line-height: 0.9;
       text-transform: uppercase;
     }
+
     .hero-title span.highlight {
       background: linear-gradient(120deg, #ff7373, #ff2a00, #ffdf40);
       -webkit-background-clip: text;
@@ -291,8 +425,20 @@
       color: transparent;
       text-shadow: 0 0 18px rgba(229,9,20,0.5);
     }
-    .hero-sub { font-size: 14px; color: var(--text-muted); max-width: 440px; }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+
+    .hero-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 440px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
     .hero-meta {
       display: flex;
       gap: 20px;
@@ -303,14 +449,24 @@
       letter-spacing: 0.14em;
       color: var(--text-muted);
     }
-    .hero-meta div { display: flex; gap: 6px; align-items: center; }
+
+    .hero-meta div {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
     .hero-meta-pill {
       padding: 4px 10px;
       border-radius: 999px;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.06);
     }
-    .hero-right { position: relative; }
+
+    .hero-right {
+      position: relative;
+    }
+
     .hero-3d-card {
       position: relative;
       border-radius: var(--radius-lg);
@@ -321,6 +477,7 @@
       padding: 10px 10px 14px;
       isolation: isolate;
     }
+
     .hero-3d-card::before {
       content: "";
       position: absolute;
@@ -331,6 +488,7 @@
       opacity: 0.6;
       z-index: -1;
     }
+
     model-viewer {
       width: 100%;
       height: 340px;
@@ -344,16 +502,33 @@
       contain: layout paint size;
       will-change: transform;
     }
+
     @media (max-width: 900px) {
-      .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 26px; }
-      .hero { padding-top: 20px; }
-      model-viewer { height: 280px; }
+      .hero-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 26px;
+      }
+      .hero {
+        padding-top: 20px;
+      }
+      model-viewer {
+        height: 280px;
+      }
     }
+
     @media (max-width: 600px) {
-      .hero-meta { flex-direction: column; align-items: flex-start; }
-      .hero-3d-card { padding: 8px 8px 12px; }
-      model-viewer { height: 240px; }
+      .hero-meta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-3d-card {
+        padding: 8px 8px 12px;
+      }
+      model-viewer {
+        height: 240px;
+      }
     }
+
     .hero-3d-bottom {
       display: flex;
       justify-content: space-between;
@@ -362,6 +537,7 @@
       gap: 10px;
       flex-wrap: wrap;
     }
+
     .hero-3d-meta {
       display: flex;
       gap: 16px;
@@ -371,7 +547,12 @@
       color: var(--text-muted);
       flex-wrap: wrap;
     }
-    .hero-3d-meta span strong { color: var(--text-main); margin-left: 4px; }
+
+    .hero-3d-meta span strong {
+      color: var(--text-main);
+      margin-left: 4px;
+    }
+
     .hero-3d-tag {
       font-size: 10px;
       text-transform: uppercase;
@@ -385,6 +566,7 @@
       align-items: center;
       gap: 6px;
     }
+
     .hero-3d-tag-dot {
       width: 6px;
       height: 6px;
@@ -393,8 +575,14 @@
       box-shadow: 0 0 8px rgba(255,217,59,1);
     }
 
-    /* SECTIONS */
-    .section { position: relative; padding: 42px 0; z-index: 1; }
+    /* SECTION WRAPPERS */
+
+    .section {
+      position: relative;
+      padding: 42px 0;
+      z-index: 1;
+    }
+
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -402,10 +590,21 @@
       margin-bottom: 18px;
       gap: 10px;
     }
-    .section-title { font-size: 16px; text-transform: uppercase; letter-spacing: 0.18em; }
-    .section-sub { font-size: 12px; color: var(--text-muted); max-width: 420px; }
+
+    .section-title {
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .section-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 420px;
+    }
 
     /* EVENTS STRIP */
+
     .events-strip {
       display: flex;
       gap: 14px;
@@ -414,9 +613,17 @@
       scrollbar-width: thin;
       scroll-snap-type: x mandatory;
     }
-    .events-strip::-webkit-scrollbar { height: 4px; }
-    .events-strip::-webkit-scrollbar-track { background: transparent; }
-    .events-strip::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.16); border-radius: 999px; }
+
+    .events-strip::-webkit-scrollbar {
+      height: 4px;
+    }
+    .events-strip::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .events-strip::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.16);
+      border-radius: 999px;
+    }
 
     .event-card {
       flex: 0 0 min(280px, 78vw);
@@ -432,12 +639,14 @@
       transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med), background 0.25s ease-out;
       cursor: pointer;
     }
+
     .event-card:hover {
       transform: translateY(-4px) translateZ(0);
       border-color: rgba(229,9,20,0.6);
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
       background: radial-gradient(circle at top left, rgba(229,9,20,0.26), rgba(5,5,8,1));
     }
+
     .event-image {
       position: relative;
       border-radius: 16px;
@@ -445,6 +654,7 @@
       height: 140px;
       background: linear-gradient(135deg, #171717, #262626);
     }
+
     .event-image-inner {
       position: absolute;
       inset: 0;
@@ -454,6 +664,7 @@
       mix-blend-mode: screen;
       opacity: 0.8;
     }
+
     .event-tag {
       position: absolute;
       bottom: 10px;
@@ -466,10 +677,31 @@
       background: rgba(0,0,0,0.65);
       border: 1px solid rgba(255,255,255,0.24);
     }
-    .event-body { display: flex; flex-direction: column; gap: 6px; }
-    .event-title { font-size: 15px; font-weight: 600; }
-    .event-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); gap: 10px; }
-    .event-meta span { display: flex; align-items: center; gap: 6px; }
+
+    .event-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .event-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .event-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .event-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .event-status {
       font-size: 10px;
       text-transform: uppercase;
@@ -479,21 +711,36 @@
       border: 1px solid rgba(255,217,59,0.6);
       color: var(--accent-secondary);
       background: rgba(41,31,0,0.96);
-      white-space: nowrap;
     }
-    .event-actions { display: flex; gap: 8px; margin-top: 6px; }
-    .btn-xs { padding: 6px 10px; font-size: 10px; letter-spacing: 0.16em; }
+
+    .event-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn-xs {
+      padding: 6px 10px;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+    }
+
     .btn-outline-light {
       border-color: rgba(255,255,255,0.28);
       color: var(--text-main);
       background: rgba(0,0,0,0.3);
     }
-    .btn-outline-light:hover { background: rgba(255,255,255,0.06); }
+
+    .btn-outline-light:hover {
+      background: rgba(255,255,255,0.06);
+    }
+
     .btn-outline-ghost {
       border-color: rgba(255,255,255,0.12);
       color: var(--text-muted);
       background: transparent;
     }
+
     .btn-outline-ghost:hover {
       border-color: rgba(255,255,255,0.2);
       color: var(--text-main);
@@ -501,9 +748,24 @@
     }
 
     /* TOP BUILDS */
-    .cards-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-    @media (max-width: 900px) { .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { .cards-grid { grid-template-columns: minmax(0, 1fr); } }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .cards-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
 
     .build-card {
       border-radius: var(--radius-md);
@@ -519,11 +781,13 @@
       transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
       cursor: pointer;
     }
+
     .build-card:hover {
       transform: translateY(-3px);
       border-color: rgba(255,217,59,0.7);
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
     }
+
     .build-image {
       position: relative;
       border-radius: 14px;
@@ -531,6 +795,7 @@
       height: 135px;
       background: linear-gradient(135deg, #181818, #292929);
     }
+
     .build-image::before {
       content: "";
       position: absolute;
@@ -541,6 +806,7 @@
       mix-blend-mode: screen;
       opacity: 0.9;
     }
+
     .build-owner {
       position: absolute;
       left: 10px;
@@ -551,6 +817,7 @@
       background: rgba(0,0,0,0.72);
       border: 1px solid rgba(255,255,255,0.24);
     }
+
     .build-chip {
       position: absolute;
       right: 10px;
@@ -563,8 +830,36 @@
       background: rgba(0,0,0,0.7);
       border: 1px solid rgba(255,255,255,0.2);
     }
-    .build-body { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-    .build-title { font-size: 14px; font-weight: 600; }
+
+    .build-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .build-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .build-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .build-tag-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
     .build-footer {
       display: flex;
       justify-content: space-between;
@@ -573,9 +868,23 @@
       font-size: 11px;
       color: var(--text-muted);
     }
-    .build-stats { display: flex; gap: 10px; align-items: center; }
-    .build-stat { display: flex; gap: 5px; align-items: center; }
-    .build-likes { color: #ff4d7d; }
+
+    .build-stats {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .build-stat {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .build-likes {
+      color: #ff4d7d;
+    }
+
     .build-parish {
       font-size: 10px;
       text-transform: uppercase;
@@ -585,6 +894,7 @@
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
     }
+
     .build-like-btn{
       border-radius:999px;
       border:1px solid rgba(255,255,255,0.18);
@@ -599,10 +909,21 @@
     }
 
     /* SIGHTINGS */
-    .sightings-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; }
-    @media (max-width: 900px) { .sightings-grid { grid-template-columns: minmax(0, 1fr); } }
 
-    .sighting-main, .sighting-side-card {
+    .sightings-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .sightings-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .sighting-main,
+    .sighting-side-card {
       border-radius: var(--radius-md);
       border: 1px solid var(--border-subtle);
       background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
@@ -611,6 +932,7 @@
       position: relative;
       overflow: hidden;
     }
+
     .sighting-media {
       position: relative;
       border-radius: 14px;
@@ -621,6 +943,7 @@
       background-size: cover;
       background-position: center;
     }
+
     .sighting-media::before {
       content: "";
       position: absolute;
@@ -631,6 +954,7 @@
       mix-blend-mode: screen;
       opacity: 0.9;
     }
+
     .sighting-badge {
       position: absolute;
       left: 10px;
@@ -643,6 +967,7 @@
       text-transform: uppercase;
       letter-spacing: 0.18em;
     }
+
     .sighting-meta-top {
       display: flex;
       justify-content: space-between;
@@ -651,8 +976,18 @@
       font-size: 11px;
       color: var(--text-muted);
     }
-    .sighting-title { font-size: 13px; margin-bottom: 4px; }
-    .sighting-caption { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+
+    .sighting-title {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .sighting-caption {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
     .sighting-footer {
       display: flex;
       justify-content: space-between;
@@ -660,6 +995,7 @@
       font-size: 11px;
       color: var(--text-muted);
     }
+
     .pill-soft {
       padding: 3px 8px;
       border-radius: 999px;
@@ -669,7 +1005,14 @@
       letter-spacing: 0.14em;
       font-size: 10px;
     }
-    .sighting-side-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+
+    .sighting-side-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
     .sighting-side-item {
       display: flex;
       justify-content: space-between;
@@ -679,12 +1022,32 @@
       color: var(--text-muted);
       cursor:pointer;
     }
-    .sighting-side-item span.label { color: var(--text-main); font-size: 12px; }
-    .sighting-cta { margin-top: 10px; display: flex; justify-content: flex-end; }
+
+    .sighting-side-item span.label {
+      color: var(--text-main);
+      font-size: 12px;
+    }
+
+    .sighting-cta {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
 
     /* BRAND SECTION */
-    .brand-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
-    @media (max-width: 900px) { .brand-grid { grid-template-columns: minmax(0, 1fr); } }
+
+    .brand-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .brand-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
     .brand-card {
       border-radius: var(--radius-md);
       border: 1px solid var(--border-subtle);
@@ -694,6 +1057,7 @@
       font-size: 13px;
       color: var(--text-muted);
     }
+
     .brand-card h3 {
       font-size: 14px;
       text-transform: uppercase;
@@ -701,6 +1065,7 @@
       margin-bottom: 10px;
       color: var(--text-main);
     }
+
     .brand-pill-row {
       display: flex;
       flex-wrap: wrap;
@@ -710,6 +1075,7 @@
       text-transform: uppercase;
       letter-spacing: 0.14em;
     }
+
     .brand-pill {
       padding: 4px 10px;
       border-radius: 999px;
@@ -718,12 +1084,14 @@
     }
 
     /* SUBSCRIBE */
+
     .subscribe-row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       margin-top:10px;
     }
+
     .subscribe-input{
       flex:1;
       min-width:220px;
@@ -736,6 +1104,7 @@
       font-size:14px;
       transition:border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     }
+
     .subscribe-input:focus-visible{
       border-color:var(--accent-secondary);
       box-shadow:0 0 0 1px rgba(255,217,59,0.5);
@@ -743,12 +1112,14 @@
     }
 
     /* FOOTER */
+
     .footer {
       margin-top: 20px;
       padding: 24px 0 30px;
       border-top: 1px solid rgba(255,255,255,0.06);
       z-index: 1;
     }
+
     .footer-main {
       display: flex;
       justify-content: space-between;
@@ -756,7 +1127,12 @@
       align-items: center;
       flex-wrap: wrap;
     }
-    .footer-left { font-size: 12px; color: var(--text-muted); }
+
+    .footer-left {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
     .footer-right {
       display: flex;
       gap: 12px;
@@ -764,8 +1140,16 @@
       text-transform: uppercase;
       letter-spacing: 0.16em;
     }
-    .footer-link { cursor: pointer; color: var(--text-muted); }
-    .footer-link:hover { color: var(--text-main); }
+
+    .footer-link {
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .footer-link:hover {
+      color: var(--text-main);
+    }
+
     .footer-tagline {
       margin-top: 4px;
       font-size: 11px;
@@ -775,11 +1159,13 @@
     }
 
     @media (max-width:600px){
-      .section-header{ flex-direction:column; align-items:flex-start; }
+      .section-header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
     }
   </style>
 </head>
-
 <body>
   <div class="page">
     <!-- NAV -->
@@ -800,7 +1186,6 @@
           <a href="#garage">Garage</a>
           <a href="#community">Community</a>
           <a href="#brand">About</a>
-          <a href="/marketplace.html">Marketplace</a>
         </nav>
 
         <div class="nav-cta">
@@ -819,7 +1204,6 @@
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
               <a href="/activity.html">Activity</a>
-              <a href="/marketplace.html">Marketplace</a>
               <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
@@ -847,8 +1231,14 @@
           </p>
 
           <div class="hero-actions">
-            <button class="btn btn-primary" onclick="location.href='/events.html'">View Upcoming Events</button>
-            <button class="btn btn-ghost" onclick="location.href='/garage.html'">View all builds</button>
+            <!-- Hero button → All Events page -->
+            <button class="btn btn-primary" onclick="location.href='/events.html'">
+              View Upcoming Events
+            </button>
+            <!-- Explicit “View all builds” button -->
+            <button class="btn btn-ghost" onclick="location.href='/garage.html'">
+              View all builds
+            </button>
           </div>
 
           <div class="hero-meta">
@@ -896,7 +1286,7 @@
       </div>
     </main>
 
-    <!-- EVENTS -->
+    <!-- EVENTS SECTION (dynamic from Supabase) -->
     <section id="events" class="section">
       <div class="container">
         <div class="section-header">
@@ -920,7 +1310,7 @@
       </div>
     </section>
 
-    <!-- TOP BUILDS -->
+    <!-- TOP BUILDS SECTION (Top 5 from Supabase) -->
     <section id="garage" class="section">
       <div class="container">
         <div class="section-header">
@@ -945,7 +1335,7 @@
       </div>
     </section>
 
-    <!-- COMMUNITY / SIGHTINGS -->
+    <!-- COMMUNITY / SIGHTINGS SECTION (Supabase preview) -->
     <section id="community" class="section">
       <div class="container">
         <div class="section-header">
@@ -961,6 +1351,7 @@
         </div>
 
         <div class="sightings-grid">
+          <!-- Main sighting slot -->
           <article id="sightingMain" class="sighting-main">
             <div class="sighting-media">
               <div class="sighting-badge">Loading…</div>
@@ -970,13 +1361,16 @@
               <span class="pill-soft">Island feed</span>
             </div>
             <div class="sighting-title">Loading…</div>
-            <div class="sighting-caption">Pulling in the latest shots from the streets.</div>
+            <div class="sighting-caption">
+              Pulling in the latest shots from the streets.
+            </div>
             <div class="sighting-footer">
               <span>❤ · 💬</span>
               <span>View Thread →</span>
             </div>
           </article>
 
+          <!-- Side panel -->
           <aside class="sighting-side-card">
             <div class="sighting-meta-top">
               <span>Island feed</span>
@@ -998,7 +1392,7 @@
       </div>
     </section>
 
-    <!-- ABOUT -->
+    <!-- BRAND / ABOUT SECTION -->
     <section id="brand" class="section">
       <div class="container">
         <div class="section-header">
@@ -1050,7 +1444,7 @@
       </div>
     </section>
 
-    <!-- Highlights -->
+    <!-- OPTIONAL: Highlights preview -->
     <section class="section">
       <div class="container">
         <div class="section-header">
@@ -1105,7 +1499,6 @@
           <span class="footer-link" onclick="location.href='https://instagram.com/rrxngclub'">@rrxngclub</span>
           <span class="footer-link" onclick="location.href='/about.html'">About</span>
           <span class="footer-link" onclick="location.href='/events.html'">Events</span>
-          <span class="footer-link" onclick="location.href='/marketplace.html'">Marketplace</span>
         </div>
       </div>
     </footer>
@@ -1156,16 +1549,23 @@
 
     if (mv) {
       mv.addEventListener('interaction-start', () => disableDrift());
-      mv.addEventListener('interaction-end', () => { if (!prefersReduced.matches) enableDrift(); });
+      mv.addEventListener('interaction-end', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
+
       mv.addEventListener('pointerdown', () => disableDrift());
-      mv.addEventListener('pointerup', () => { if (!prefersReduced.matches) enableDrift(); });
-      mv.addEventListener('pointercancel', () => { if (!prefersReduced.matches) enableDrift(); });
+      mv.addEventListener('pointerup', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
+      mv.addEventListener('pointercancel', () => {
+        if (!prefersReduced.matches) enableDrift();
+      });
     }
 
     // ===== Nav solid on scroll =====
     const navWrapper = document.getElementById('navWrapper');
     function updateNavSolid(){
-      navWrapper?.classList.toggle('nav-solid', window.scrollY > 40);
+      navWrapper.classList.toggle('nav-solid', window.scrollY > 40);
     }
     updateNavSolid();
     window.addEventListener('scroll', updateNavSolid, { passive:true });
@@ -1181,10 +1581,42 @@
     }
     window.subscribe = subscribe;
 
-    // ===== Profile dropdown wiring (UI only) =====
+    // ===== Auth UI =====
+    const loginBtn   = document.getElementById("loginBtn");
+    const joinBtn    = document.getElementById("joinBtn");
     const profileMenu = document.getElementById("profileMenu");
     const profileChip = document.getElementById("profileChip");
     const dropdown    = document.getElementById("dropdown");
+    const initialsEl  = document.getElementById("profileInitials");
+    const signoutBtn  = document.getElementById("signoutBtn");
+
+    async function updateAuthUI(){
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user){
+        if (loginBtn) loginBtn.style.display = "none";
+        if (joinBtn) joinBtn.style.display = "none";
+        if (profileMenu) profileMenu.style.display = "flex";
+
+        if (initialsEl){
+          const raw = (user.email || "").split("@")[0] || "u";
+          const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
+          const parts = cleaned.split(" ").filter(Boolean);
+          let initials = "";
+          if (parts.length >= 2){
+            initials = (parts[0][0] + parts[1][0]);
+          } else {
+            initials = cleaned.slice(0,2);
+          }
+          initialsEl.textContent = initials.toUpperCase();
+        }
+      } else {
+        if (loginBtn) loginBtn.style.display = "inline-flex";
+        if (joinBtn) joinBtn.style.display = "inline-flex";
+        if (profileMenu) profileMenu.style.display = "none";
+        if (dropdown) dropdown.style.display = "none";
+      }
+    }
 
     profileChip?.addEventListener("click", (e)=>{
       e.stopPropagation();
@@ -1201,70 +1633,71 @@
       }
     });
 
-    // ===== Auth bridge (index IDs -> shared auth-ui.js) =====
-    async function syncNavAuth(){
-      const loginBtn = document.getElementById("loginBtn");
-      const joinBtn  = document.getElementById("joinBtn");
-      const initialsEl = document.getElementById("profileInitials");
+    loginBtn?.addEventListener("click", async ()=>{
+      const email = prompt("Enter your email:");
+      if (!email) return;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options:{ emailRedirectTo: location.href }
+      });
+      if (error) alert("Sign-in error: " + error.message);
+      else alert("Magic link sent! Check your inbox.");
+    });
 
-      const user = window.authUI?.getUser ? authUI.getUser() : (await supabase.auth.getUser()).data?.user;
+    joinBtn?.addEventListener("click", async ()=>{
+      const email = prompt("Enter your email to join the grid:");
+      if (!email) return;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options:{ emailRedirectTo: location.href }
+      });
+      if (error) alert("Sign-up error: " + error.message);
+      else alert("Magic link sent! Check your inbox.");
+    });
 
-      if (user){
-        loginBtn && (loginBtn.style.display = "none");
-        joinBtn && (joinBtn.style.display = "none");
-        profileMenu && (profileMenu.style.display = "flex");
+    signoutBtn?.addEventListener("click", async ()=>{
+      await supabase.auth.signOut();
+      await updateAuthUI();
+    });
 
-        if (initialsEl){
-          const base = authUI?.getHandle?.() || user.email || "U";
-          initialsEl.textContent = base.trim().charAt(0).toUpperCase();
-        }
-      } else {
-        loginBtn && (loginBtn.style.display = "inline-flex");
-        joinBtn && (joinBtn.style.display = "inline-flex");
-        profileMenu && (profileMenu.style.display = "none");
-        dropdown && (dropdown.style.display = "none");
+    supabase.auth.onAuthStateChange(updateAuthUI);
+
+    // Expose requireLogin like before
+    window.authUI = window.authUI || {};
+    window.authUI.requireLogin = async function(callback){
+      const { data: { user }} = await supabase.auth.getUser();
+      if (!user){
+        alert("Please sign in first.");
+        loginBtn?.click();
+        return false;
       }
-    }
-
-    document.getElementById("loginBtn")?.addEventListener("click", () => {
-      if (window.authUI?.openAuthModal) return authUI.openAuthModal("login");
-      if (window.authUI?.startSignin) return authUI.startSignin("Enter your email to log in:");
-      // fallback
-      alert("Auth not ready. Refresh and try again.");
-    });
-
-    document.getElementById("joinBtn")?.addEventListener("click", () => {
-      if (window.authUI?.openAuthModal) return authUI.openAuthModal("signup");
-      if (window.authUI?.startSignin) return authUI.startSignin("Enter your email to join the grid:");
-      alert("Auth not ready. Refresh and try again.");
-    });
-
-    document.getElementById("signoutBtn")?.addEventListener("click", async () => {
-      if (window.authUI?.signOut) await authUI.signOut();
-      else await supabase.auth.signOut();
-      await syncNavAuth();
-    });
-
-    // keep in sync
-    if (window.authUI?.onChange) authUI.onChange(syncNavAuth);
-    supabase.auth.onAuthStateChange(() => syncNavAuth());
+      if (callback) callback();
+      return true;
+    };
 
     // ===== Top 5 builds =====
     async function loadTopBuilds(){
       const grid = document.getElementById('top-builds-grid');
       if (!grid) return;
 
-      // FIX: remove undefined "b" placeholder bug
       grid.innerHTML = `
         <article class="build-card">
           <div class="build-body">
             <div class="build-title">Warming up the dyno…</div>
+            ${
+              b.trophy_labels && b.trophy_labels.length
+                ? `<div class="build-tags" style="margin-top:4px;">
+                    ${b.trophy_labels.map(t => `<span class="build-tag-pill">🏆 ${t}</span>`).join('')}
+                  </div>`
+                : ''
+            }
           </div>
         </article>`;
 
       const { data, error } = await supabase
         .from('public_builds_with_like_count_and_trophies')
         .select('id,title,like_count,thumb_url,parish,owner_handle,build_type,trophy_labels')
+
         .order('like_count', { ascending:false })
         .order('id', { ascending:true })
         .limit(5);
@@ -1275,7 +1708,7 @@
           <article class="build-card">
             <div class="build-body">
               <div class="build-title">Couldn’t load builds right now.</div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Try refreshing in a bit.</div>
+              <div class="build-tags"><span class="build-tag-pill">Try refreshing in a bit.</span></div>
             </div>
           </article>`;
         return;
@@ -1286,7 +1719,7 @@
           <article class="build-card">
             <div class="build-body">
               <div class="build-title">No public builds on the grid yet.</div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Be the first to drop one.</div>
+              <div class="build-tags"><span class="build-tag-pill">Be the first to drop one.</span></div>
             </div>
           </article>`;
         return;
@@ -1310,7 +1743,7 @@
           ? (isLiked ? 'Remove boost from this build' : 'Boost this build')
           : 'Sign in to boost builds';
         const img = b.thumb_url
-          ? `<img src="${b.thumb_url}" alt="${b.title || 'Build'}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`
+          ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`
           : '';
 
         const owner = b.owner_handle ? '@' + b.owner_handle : 'Build owner';
@@ -1324,7 +1757,7 @@
               <div class="build-chip">${type}</div>
             </div>
             <div class="build-body">
-              <div class="build-title">${b.title || 'Build'}</div>
+              <div class="build-title">${b.title}</div>
             </div>
             <div class="build-footer">
               <div class="build-stats">
@@ -1339,240 +1772,276 @@
           </article>`;
       }).join('');
 
-      // IMPORTANT: bind handlers once
-      if (!grid.dataset.bound){
-        grid.dataset.bound = "1";
+      // Like handler
+      grid.addEventListener('click', async (e)=>{
+        const btn = e.target.closest('[data-like]');
+        if (!btn) return;
 
-        // Like handler
-        grid.addEventListener('click', async (e)=>{
-          const btn = e.target.closest('[data-like]');
-          if (!btn) return;
+        const card = e.target.closest('.build-card');
+        const buildId = card?.dataset.build;
+        const likesEl = card.querySelector('.likes');
 
-          const card = e.target.closest('.build-card');
-          const buildId = card?.dataset.build;
-          const likesEl = card?.querySelector('.likes');
-          if (!buildId || !likesEl) return;
+        const { data: auth2 } = await supabase.auth.getUser();
+        if (!auth2?.user){
+          alert('Sign in to boost builds and save your favourites.');
+          return;
+        }
 
-          const { data: auth2 } = await supabase.auth.getUser();
-          if (!auth2?.user){
-            alert('Sign in to boost builds and save your favourites.');
+        const { data: existing } = await supabase
+          .from('build_likes')
+          .select('build_id')
+          .eq('build_id', buildId)
+          .eq('user_id', auth2.user.id)
+          .maybeSingle();
+
+        if (existing){
+          const { error } = await supabase
+            .from('build_likes')
+            .delete()
+            .eq('build_id', buildId)
+            .eq('user_id', auth2.user.id);
+          if (error){
+            console.error(error);
+            alert('That unboost stalled. Try again in a few seconds.');
             return;
           }
-
-          const { data: existing } = await supabase
+          btn.textContent = '♡';
+          btn.title = 'Boost this build';
+          btn.setAttribute('aria-label','Boost this build');
+          btn.setAttribute('aria-pressed','false');
+          likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+        } else {
+          const { error } = await supabase
             .from('build_likes')
-            .select('build_id')
-            .eq('build_id', buildId)
-            .eq('user_id', auth2.user.id)
-            .maybeSingle();
-
-          if (existing){
-            const { error } = await supabase
-              .from('build_likes')
-              .delete()
-              .eq('build_id', buildId)
-              .eq('user_id', auth2.user.id);
-            if (error){
-              console.error(error);
-              alert('That unboost stalled. Try again in a few seconds.');
-              return;
-            }
-            btn.textContent = '♡';
-            btn.title = 'Boost this build';
-            btn.setAttribute('aria-label','Boost this build');
-            btn.setAttribute('aria-pressed','false');
-            likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-          } else {
-            const { error } = await supabase
-              .from('build_likes')
-              .insert({ build_id: buildId, user_id: auth2.user.id });
-            if (error){
-              console.error(error);
-              alert('Couldn’t boost this build. Try again in a few seconds.');
-              return;
-            }
-            btn.textContent = '♥';
-            btn.title = 'Remove boost from this build';
-            btn.setAttribute('aria-label','Remove boost from this build');
-            btn.setAttribute('aria-pressed','true');
-            likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+            .insert({ build_id: buildId, user_id: auth2.user.id });
+          if (error){
+            console.error(error);
+            alert('Couldn’t boost this build. Try again in a few seconds.');
+            return;
           }
-        });
+          btn.textContent = '♥';
+          btn.title = 'Remove boost from this build';
+          btn.setAttribute('aria-label','Remove boost from this build');
+          btn.setAttribute('aria-pressed','true');
+          likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+        }
+      });
 
-        // Card click → build page (ignore like button)
-        grid.addEventListener('click', (e)=>{
-          if (e.target.closest('[data-like]')) return;
-          const card = e.target.closest('.build-card');
-          if (!card) return;
-          const id = card.dataset.build;
-          if (!id) return;
-          location.href = `/build.html?id=${id}`;
-        });
-      }
+      // Card click → go to build page (ignore like button)
+      grid.addEventListener('click', (e)=>{
+        if (e.target.closest('[data-like]')) return;
+        const card = e.target.closest('.build-card');
+        if (!card) return;
+        const id = card.dataset.build;
+        if (!id) return;
+        location.href = `/build.html?id=${id}`;
+      });
     }
 
     // Live likes channel
     let likesChannel;
     function setupLiveLikes(){
-      likesChannel?.unsubscribe?.();
+      likesChannel?.unsubscribe();
       likesChannel = supabase.channel('build-likes-live')
         .on('postgres_changes', { event:'INSERT', schema:'public', table:'build_likes' }, (p)=>{
           const card = document.querySelector(`.build-card[data-build="${p.new.build_id}"]`);
           if(!card) return;
           const el = card.querySelector('.likes');
-          if(!el) return;
           el.textContent = (parseInt(el.textContent)||0) + 1;
         })
         .on('postgres_changes', { event:'DELETE', schema:'public', table:'build_likes' }, (p)=>{
           const card = document.querySelector(`.build-card[data-build="${p.old.build_id}"]`);
           if(!card) return;
           const el = card.querySelector('.likes');
-          if(!el) return;
           el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
         })
         .subscribe();
     }
 
-    // ===== Events (5 most recent by starts_at, includes host team link) =====
-    async function loadFrontEvents(){
-      const strip = document.getElementById('eventsStrip');
-      if (!strip) return;
+    // ===== Events (5 most recently posted events) =====
+    function renderEventCard(e){
+      const rawDate = e.starts_at || e.start_time || e.date || e.created_at;
+      const d = rawDate ? new Date(rawDate) : null;
+      const whenLabel = d
+        ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
+        : "TBA";
 
-      const [eventsRes, countsRes] = await Promise.all([
-        supabase.from('events')
-          .select('id,title,starts_at,location,tag,status,promoter_handle,team_id')
-          .order('starts_at', { ascending:false, nullsLast:true })
-          .limit(5),
-        supabase.from('event_rsvp_counts')
-          .select('event_id,yes_count,maybe_count,no_count')
-      ]);
+      const region = [e.parish, e.location, e.venue].filter(Boolean).join(" · ");
+      const tag = e.tag || e.type || "Event";
+      const status = e.status || "RSVP Open";
+      const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
 
-      if (eventsRes.error){
-        console.error(eventsRes.error);
-        strip.innerHTML = `
-          <article class="event-card">
-            <div class="event-body">
-              <div class="event-title">Couldn’t load events right now.</div>
-              <div class="event-meta"><span>Refresh and try again in a bit.</span></div>
+      const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
+
+      return `
+        <article class="event-card" data-id="${e.id}">
+          <div class="event-image">
+            <div class="event-image-inner"></div>
+            <div class="event-tag">${tag}</div>
+          </div>
+          <div class="event-body">
+            <div class="event-title">${e.title}</div>
+            <div class="event-meta">
+              <span>${whenLabel}</span>
+              <span class="event-status">${status}</span>
             </div>
-          </article>`;
-        return;
-      }
-
-      const countsMap = new Map((countsRes.data || []).map(c => [c.event_id, c]));
-      const events = (eventsRes.data || []).map(e => ({
-        ...e,
-        counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
-      }));
-
-      // Fetch teams for events that have team_id
-      const teamIds = [...new Set(events.map(e => e.team_id).filter(Boolean))];
-      let teamsMap = new Map();
-
-      if (teamIds.length){
-        const { data: teamsData, error: teamsErr } = await supabase
-          .from('teams')
-          .select('id,name,logo_url')
-          .in('id', teamIds);
-
-        if (!teamsErr){
-          teamsMap = new Map((teamsData || []).map(t => [t.id, t]));
-        } else {
-          console.error('teams fetch failed', teamsErr);
-        }
-      }
-
-      function renderEventCard(e){
-        const d = e.starts_at ? new Date(e.starts_at) : null;
-        const whenLabel = d
-          ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
-          : "TBA";
-
-        const region = e.location || "";
-        const tag = e.tag || "Event";
-        const status = e.status || "RSVP Open";
-        const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
-        const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
-
-        const team = e.team_id ? teamsMap.get(e.team_id) : null;
-        const hostTeamLink = team
-          ? `<a href="/team.html?id=${encodeURIComponent(team.id)}"
-                style="color:var(--accent-secondary);letter-spacing:.16em;text-transform:uppercase;font-size:10px;">
-                Host team: ${team.name}
-             </a>`
-          : '';
-
-        return `
-          <article class="event-card" data-id="${e.id}">
-            <div class="event-image">
-              <div class="event-image-inner"></div>
-              <div class="event-tag">${tag}</div>
+            <div class="event-meta">
+              <span>${region}</span>
+              <span>${promoter}</span>
             </div>
-            <div class="event-body">
-              <div class="event-title">${e.title || 'Event'}</div>
-
-              <div class="event-meta">
-                <span>${whenLabel}</span>
-                <span class="event-status">${status}</span>
-              </div>
-
-              <div class="event-meta">
-                <span>${region}</span>
-                <span>${promoter}</span>
-              </div>
-
-              ${hostTeamLink ? `
-                <div class="event-meta" style="justify-content:flex-start;margin-top:4px;">
-                  <span>${hostTeamLink}</span>
-                </div>` : ''}
-
-              <div class="event-meta" style="font-size:10px; margin-top:4px;">
-                <span>✅ ${counts.yes_count} going</span>
-                <span>🤔 ${counts.maybe_count} maybe</span>
-              </div>
-
-              <div class="event-actions">
-                <button class="btn btn-outline-light btn-xs" type="button" data-action="view">View Details</button>
-                <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">
-                  RSVP + Attach Build
-                </button>
-              </div>
+            <div class="event-meta" style="font-size:10px; margin-top:4px;">
+              <span>✅ ${counts.yes_count} going</span>
+              <span>🤔 ${counts.maybe_count} maybe</span>
             </div>
-          </article>`;
-      }
-
-      if (!events.length){
-        strip.innerHTML = `
-          <article class="event-card">
-            <div class="event-body">
-              <div class="event-title">No events posted yet.</div>
-              <div class="event-meta"><span>Check back soon or follow @rrxngclub.</span></div>
+            <div class="event-actions">
+              <button class="btn btn-outline-light btn-xs" type="button" data-action="view">View Details</button>
+              <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">
+                RSVP + Attach Build
+              </button>
             </div>
-          </article>`;
-        return;
-      }
-
-      strip.innerHTML = events.map(renderEventCard).join('');
-
-      strip.onclick = function(e){
-        const card = e.target.closest('.event-card');
-        if (!card) return;
-        const id = card.dataset.id;
-        if (!id) return;
-
-        const actionBtn = e.target.closest('[data-action]');
-        if (actionBtn){
-          const action = actionBtn.dataset.action;
-          if (action === 'view'){
-            location.href = `/event.html?id=${id}`;
-          } else if (action === 'rsvp'){
-            authUI.requireLogin(()=> location.href = `/event.html?id=${id}#rsvp`);
-          }
-          return;
-        }
-        location.href = `/event.html?id=${id}`;
-      };
+          </div>
+        </article>`;
     }
+
+    async function loadFrontEvents(){
+  const strip = document.getElementById('eventsStrip');
+  if (!strip) return;
+
+  const [eventsRes, countsRes] = await Promise.all([
+    supabase.from('events')
+      .select('id,title,starts_at,location,tag,status,promoter_handle,team_id')
+      .order('starts_at', { ascending:false, nullsLast:true })
+      .limit(5),
+    supabase.from('event_rsvp_counts')
+      .select('event_id,yes_count,maybe_count,no_count')
+  ]);
+
+  if (eventsRes.error){
+    console.error(eventsRes.error);
+    strip.innerHTML = `
+      <article class="event-card">
+        <div class="event-body">
+          <div class="event-title">Couldn’t load events right now.</div>
+          <div class="event-meta"><span>Refresh and try again in a bit.</span></div>
+        </div>
+      </article>`;
+    return;
+  }
+
+  const countsMap = new Map((countsRes.data || []).map(c => [c.event_id, c]));
+
+  const events = (eventsRes.data || []).map(e => ({
+    ...e,
+    counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
+  }));
+
+  // Fetch teams for events that have team_id
+  const teamIds = [...new Set(events.map(e => e.team_id).filter(Boolean))];
+  let teamsMap = new Map();
+
+  if (teamIds.length){
+    const { data: teamsData, error: teamsErr } = await supabase
+      .from('teams')
+      .select('id,name,logo_url')
+      .in('id', teamIds);
+
+    if (!teamsErr){
+      teamsMap = new Map((teamsData || []).map(t => [t.id, t]));
+    } else {
+      console.error('teams fetch failed', teamsErr);
+    }
+  }
+
+  function renderEventCard(e){
+    const d = e.starts_at ? new Date(e.starts_at) : null;
+    const whenLabel = d
+      ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
+      : "TBA";
+
+    const region = e.location || "";
+    const tag = e.tag || "Event";
+    const status = e.status || "RSVP Open";
+    const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
+    const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
+
+    const team = e.team_id ? teamsMap.get(e.team_id) : null;
+    const teamLine = team ? `TEAM: ${team.name}` : '';
+
+    return `
+      <article class="event-card" data-id="${e.id}">
+        <div class="event-image">
+          <div class="event-image-inner"></div>
+          <div class="event-tag">${tag}</div>
+        </div>
+        <div class="event-body">
+          <div class="event-title">${e.title}</div>
+
+          <div class="event-meta">
+            <span>${whenLabel}</span>
+            <span class="event-status">${status}</span>
+          </div>
+
+          <div class="event-meta">
+            <span>${region}</span>
+            <span>${promoter}</span>
+          </div>
+
+          ${teamLine ? `
+            <div class="event-meta" style="font-size:10px;margin-top:4px;">
+              <span style="color:var(--accent-secondary);letter-spacing:.16em;text-transform:uppercase;">
+                ${teamLine}
+              </span>
+            </div>` : ''}
+
+          <div class="event-meta" style="font-size:10px; margin-top:4px;">
+            <span>✅ ${counts.yes_count} going</span>
+            <span>🤔 ${counts.maybe_count} maybe</span>
+          </div>
+
+          <div class="event-actions">
+            <button class="btn btn-outline-light btn-xs" type="button" data-action="view">View Details</button>
+            <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">
+              RSVP + Attach Build
+            </button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  if (!events.length){
+    strip.innerHTML = `
+      <article class="event-card">
+        <div class="event-body">
+          <div class="event-title">No events posted yet.</div>
+          <div class="event-meta"><span>Check back soon or follow @rrxngclub.</span></div>
+        </div>
+      </article>`;
+    return;
+  }
+
+  strip.innerHTML = events.map(renderEventCard).join('');
+
+  strip.onclick = function(e){
+    const card = e.target.closest('.event-card');
+    if (!card) return;
+    const id = card.dataset.id;
+    if (!id) return;
+
+    const actionBtn = e.target.closest('[data-action]');
+    if (actionBtn){
+      const action = actionBtn.dataset.action;
+      if (action === 'view'){
+        location.href = `/event.html?id=${id}`;
+      } else if (action === 'rsvp'){
+        authUI.requireLogin(()=> location.href = `/event.html?id=${id}#rsvp`);
+      }
+      return;
+    }
+
+    location.href = `/event.html?id=${id}`;
+  };
+}
+
 
     // ===== Sightings =====
     async function loadFrontSightings(){
@@ -1702,14 +2171,14 @@
         const more = (h.body && h.body.length > 140) ? '…' : '';
         const img = h.image_url
           ? `<div style="border-radius:12px;overflow:hidden;margin-bottom:8px;">
-               <img src="${h.image_url}" alt="${h.title || 'Highlight'}" loading="lazy" style="width:100%;height:auto;object-fit:cover;">
+               <img src="${h.image_url}" alt="${h.title}" loading="lazy" style="width:100%;height:auto;object-fit:cover;">
              </div>`
           : '';
 
         return `
           <article class="brand-card" onclick="location.href='/highlight.html?id=${h.id}'">
             ${img}
-            <h3 style="margin-bottom:6px;">${h.title || 'Highlight'}</h3>
+            <h3 style="margin-bottom:6px;">${h.title}</h3>
             <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">
               ${h.category || ''} · ${dateStr}
             </p>
@@ -1721,7 +2190,7 @@
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async () => {
-      await syncNavAuth();
+      await updateAuthUI();
       await loadTopBuilds();
       setupLiveLikes();
       await loadFrontEvents();
