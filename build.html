@@ -185,22 +185,27 @@
         </div>
 
         <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Sign in</button>
+          <!-- Keep IDs consistent with other pages -->
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
             <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html">My Garage</a>
+              <a href="/garage.html?view=my">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
               <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" style="justify-content:flex-start" type="button">Sign out</button>
+              <!-- Use the shared signout ID -->
+              <button id="signoutBtn" style="justify-content:flex-start" type="button">Sign out</button>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </nav>
@@ -210,7 +215,6 @@
       <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:16px">
         <div>
           <h2 id="buildTitle" style="font-size:44px">Loading build…</h2>
-          <!-- NEW: owner line -->
           <div id="buildOwner" class="sub" style="margin-top:4px"></div>
           <div id="buildMeta" class="meta-row"></div>
         </div>
@@ -223,7 +227,6 @@
       <div id="buildError" class="sub" style="margin-bottom:12px;color:#ffb3b3"></div>
 
       <div class="grid cols-2">
-        <!-- LEFT: gallery + description -->
         <div class="card">
           <div id="galleryMain" class="gallery-main">
             <span class="sub">Loading…</span>
@@ -233,7 +236,6 @@
           <p id="buildDescription" style="margin-top:14px" class="sub"></p>
         </div>
 
-        <!-- RIGHT: specs + meta -->
         <div class="card">
           <h3 style="font-size:24px;margin-bottom:8px">Build info</h3>
           <div id="buildBadges" class="meta-row" style="margin-bottom:10px"></div>
@@ -248,7 +250,6 @@
       </div>
     </section>
 
-    <!-- COMMENTS -->
     <section class="section">
       <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
         <h3 style="font-size:32px">Comments</h3>
@@ -303,9 +304,7 @@
     };
   }
 
-  function showBuildError(msg){
-    $('buildError').textContent = msg;
-  }
+  function showBuildError(msg){ $('buildError').textContent = msg; }
 
   function clearBuildUIForError(titleText){
     $('buildTitle').textContent = titleText;
@@ -328,9 +327,7 @@
     const thumbs = $('galleryThumbs');
     let list = images && images.length ? images.map(im => im.image_url) : [];
 
-    if(!list.length && fallbackUrl){
-      list = [fallbackUrl];
-    }
+    if(!list.length && fallbackUrl) list = [fallbackUrl];
 
     if(!list.length){
       main.innerHTML = `<span class="sub">No media yet — owner hasn’t dropped visuals for this build.</span>`;
@@ -338,8 +335,7 @@
       return;
     }
 
-    let current = list[0];
-    main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
+    main.innerHTML = `<img src="${escapeHTML(list[0])}" alt="Build image">`;
 
     if(list.length === 1){
       thumbs.innerHTML = '';
@@ -352,8 +348,7 @@
       div.className = 'thumb' + (idx === 0 ? ' active' : '');
       div.innerHTML = `<img src="${escapeHTML(url)}" alt="Thumbnail ${idx+1}">`;
       div.addEventListener('click', () => {
-        current = url;
-        main.innerHTML = `<img src="${escapeHTML(current)}" alt="Build image">`;
+        main.innerHTML = `<img src="${escapeHTML(url)}" alt="Build image">`;
         thumbs.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
         div.classList.add('active');
       });
@@ -367,11 +362,7 @@
     const badges = [];
 
     const type = build.build_type || 'owned';
-    const typeMap = {
-      owned: 'Owned',
-      dream: 'Dream build',
-      for_sale: 'For sale'
-    };
+    const typeMap = { owned:'Owned', dream:'Dream build', for_sale:'For sale' };
     badges.push(`<span class="badge">${typeMap[type] || 'Build'}</span>`);
 
     if(build.stage){
@@ -417,60 +408,44 @@
       ['exterior','Exterior'],
     ];
 
-    const rows = pairs
-      .map(([key,label]) => {
-        const v = specs[key];
-        if(!v) return '';
-        return `
-          <div class="spec-item">
-            <span class="spec-label">${label}</span>
-            <span>${escapeHTML(v)}</span>
-          </div>`;
-      })
-      .filter(Boolean);
+    const rows = pairs.map(([key,label]) => {
+      const v = specs[key];
+      if(!v) return '';
+      return `
+        <div class="spec-item">
+          <span class="spec-label">${label}</span>
+          <span>${escapeHTML(v)}</span>
+        </div>`;
+    }).filter(Boolean);
 
-    if(!rows.length){
-      grid.innerHTML = `<div class="sub">No specs added yet — owner hasn’t logged the parts list.</div>`;
-    }else{
-      grid.innerHTML = rows.join('');
-    }
+    grid.innerHTML = rows.length
+      ? rows.join('')
+      : `<div class="sub">No specs added yet — owner hasn’t logged the parts list.</div>`;
   }
 
-  /* ===== Owner / profile ===== */
+  /* ===== Owner / profile (safe) ===== */
   async function loadOwnerMeta(build){
     const ownerEl = $('buildOwner');
     ownerEl.textContent = '';
 
     try{
       const { data, error } = await supabase
-        .from('profiles')                // <-- adjust table name if needed
+        .from('profiles')
         .select('id, handle, display_name')
         .eq('id', build.user_id)
         .maybeSingle();
 
-      if(error){
-        console.error('Owner lookup error', error);
-        return;
-      }
-      if(!data) return;
+      if(error || !data) return;
 
       const handle = (data.handle || '').trim();
       const name   = (data.display_name || '').trim();
 
-      let html = '';
-
       if(handle){
-        const safeHandle = escapeHTML(handle);
-        const href = `/u/${encodeURIComponent(handle)}`;
-        html = `Built by <a href="${href}" style="text-decoration:underline">@${safeHandle}</a>`;
+        ownerEl.innerHTML = `Built by <a href="/u/${encodeURIComponent(handle)}" style="text-decoration:underline">@${escapeHTML(handle)}</a>`;
       }else if(name){
-        html = `Built by ${escapeHTML(name)}`;
+        ownerEl.innerHTML = `Built by ${escapeHTML(name)}`;
       }
-
-      ownerEl.innerHTML = html;
-    }catch(err){
-      console.error('Owner meta exception', err);
-    }
+    }catch(_){}
   }
 
   /* ===== Likes ===== */
@@ -480,31 +455,22 @@
     currentUser = user || null;
 
     let total = 0;
-
-    const { data: likeAgg, error: likeAggErr } = await supabase
+    const { data: likeAgg } = await supabase
       .from('build_like_counts')
       .select('like_count')
       .eq('build_id', buildId)
       .maybeSingle();
 
-    if(likeAggErr){
-      console.error(likeAggErr);
-    }else{
-      total = Number(likeAgg?.like_count || 0);
-    }
-
+    total = Number(likeAgg?.like_count || 0);
     likeCount = total;
 
     if(user){
-      const { data: existing, error: existingErr } = await supabase
+      const { data: existing } = await supabase
         .from('build_likes')
         .select('build_id')
         .eq('build_id', buildId)
         .eq('user_id', user.id)
         .maybeSingle();
-      if(existingErr){
-        console.error(existingErr);
-      }
       liked = !!existing;
     }else{
       liked = false;
@@ -523,17 +489,16 @@
 
       likeBtn.disabled = true;
 
-      const { data: existing, error: existingErr2 } = await supabase
+      const { data: existing, error: existingErr } = await supabase
         .from('build_likes')
         .select('build_id')
         .eq('build_id', buildId)
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if(existingErr2){
-        console.error(existingErr2);
-        alert('That move stalled. Try again in a few seconds.');
+      if(existingErr){
         likeBtn.disabled = false;
+        alert('That move stalled. Try again in a few seconds.');
         return;
       }
 
@@ -543,10 +508,7 @@
           .delete()
           .eq('build_id', buildId)
           .eq('user_id', user.id);
-        if(delErr){
-          console.error(delErr);
-          alert('Unboost failed. Try again shortly.');
-        }else{
+        if(!delErr){
           liked = false;
           likeCount = Math.max(0, likeCount - 1);
         }
@@ -554,10 +516,7 @@
         const { error: insErr } = await supabase
           .from('build_likes')
           .insert({ build_id: buildId, user_id: user.id });
-        if(insErr){
-          console.error(insErr);
-          alert('Couldn’t boost this build. Try again shortly.');
-        }else{
+        if(!insErr){
           liked = true;
           likeCount += 1;
         }
@@ -587,13 +546,11 @@
       .maybeSingle();
 
     if(error || !build){
-      console.error(error);
       showBuildError('We couldn’t find this build. It may have been deleted or moved.');
       clearBuildUIForError('Build not found');
       return false;
     }
 
-    // Respect private builds
     if(!build.is_public && (!user || user.id !== build.user_id)){
       showBuildError('This build is private. Ask the owner to share a public build or check their garage.');
       clearBuildUIForError('Private build');
@@ -603,28 +560,31 @@
     document.title = `${build.title || 'Build'} — ROK Racers JA`;
     $('buildTitle').textContent = build.title || 'Untitled build';
 
-    const created = build.created_at ? new Date(build.created_at) : null;
-    const when = created ? created.toLocaleString('en-US', {
-      month:'short', day:'2-digit', year:'numeric'
-    }) : '';
+    // Clean meta formatting (no double separators)
+    const metaRow = $('buildMeta');
+    metaRow.innerHTML = '';
 
-    const metaBits = [];
-    if(build.make || build.model || build.year){
-      const carLabel = [build.year, build.make, build.model].filter(Boolean).join(' ');
-      if(carLabel) metaBits.push(`<span class="sub">${escapeHTML(carLabel)}</span>`);
-    }
+    const metaItems = [];
+
+    const carLabel = [build.year, build.make, build.model].filter(Boolean).join(' ');
+    if(carLabel) metaItems.push(`<span class="sub">${escapeHTML(carLabel)}</span>`);
+
     if(build.color_hex){
-      metaBits.push(`
+      metaItems.push(`
         <span class="badge subtle">
           <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${build.color_hex};margin-right:4px;"></span>
           Paint
         </span>
       `);
     }
-    if(when){
-      metaBits.push(`<span class="sub">Added ${escapeHTML(when)}</span>`);
+
+    if(build.created_at){
+      const created = new Date(build.created_at);
+      const when = created.toLocaleString('en-US',{ month:'short', day:'2-digit', year:'numeric' });
+      metaItems.push(`<span class="sub">Added ${escapeHTML(when)}</span>`);
     }
-    $('buildMeta').innerHTML = metaBits.join(' • ');
+
+    metaRow.innerHTML = metaItems.join('');
 
     if(build.description){
       $('buildDescription').innerHTML = escapeHTML(build.description).replace(/\n/g,'<br>');
@@ -632,13 +592,9 @@
       $('buildDescription').innerHTML = `<span class="sub">No description yet — owner hasn’t told this build’s story.</span>`;
     }
 
-    const footer = [];
-    if(build.is_public){
-      footer.push('Visible in your public garage and eligible for Top 5.');
-    }else{
-      footer.push('Only visible to you (private build).');
-    }
-    $('buildFooterMeta').textContent = footer.join(' ');
+    $('buildFooterMeta').textContent = build.is_public
+      ? 'Visible in your public garage and eligible for Top 5.'
+      : 'Only visible to you (private build).';
 
     const { data: images, error: imgErr } = await supabase
       .from('build_images')
@@ -646,19 +602,11 @@
       .eq('build_id', buildId)
       .order('created_at', { ascending:true });
 
-    if(imgErr){
-      console.error(imgErr);
-      setGallery([], build.custom_image_url || build.thumb_url || null);
-    }else{
-      setGallery(images || [], build.custom_image_url || build.thumb_url || null);
-    }
+    setGallery((imgErr ? [] : (images || [])), build.custom_image_url || build.thumb_url || null);
 
     renderSpecs(build.specs || null);
     renderBadges(build);
-
-    // NEW: owner meta
     await loadOwnerMeta(build);
-
     await loadLikes();
 
     return true;
@@ -676,6 +624,12 @@
 
   async function loadComments(){
     const wrap = $('commentsInner');
+
+    if(!buildId){
+      wrap.textContent = 'No build selected.';
+      return;
+    }
+
     const { data, error } = await supabase
       .from('comments')
       .select('id,body,created_at,user_id,target_type,target_id')
@@ -683,9 +637,7 @@
       .eq('target_id', buildId)
       .order('created_at', { ascending: true });
 
-
     if(error){
-      console.error(error);
       wrap.textContent = 'We couldn’t load comments just now. Refresh to try again.';
       return;
     }
@@ -699,8 +651,7 @@
   async function updateCommentFormVisibility(){
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user || null;
-    const formRow = $('commentFormRow');
-    formRow.style.display = user ? 'flex' : 'none';
+    $('commentFormRow').style.display = user ? 'flex' : 'none';
   }
 
   $('commentPostBtn').addEventListener('click', async () => {
@@ -717,15 +668,13 @@
     const { error } = await supabase
       .from('comments')
       .insert({
-        user_id: user.id,          // must match RLS
-        target_type: 'build',      // must match your enum value
+        user_id: user.id,
+        target_type: 'build',
         target_id: buildId,
         body: text
       });
 
-
     if(error){
-      console.error(error);
       alert('Could not post comment. Try again in a few seconds.');
       return;
     }

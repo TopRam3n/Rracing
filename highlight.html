@@ -33,16 +33,24 @@
       --accent-yellow:#FFD93B;
       --line:rgba(255,255,255,.08);
       --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+      --shadow2:0 24px 60px rgba(0,0,0,.55);
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(255,217,59,.10) 0, transparent 35%),
+        radial-gradient(circle at 85% 0%, rgba(229,9,20,.10) 0, transparent 35%),
+        radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
       color:var(--fg);
       font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
     }
     a{color:var(--fg);text-decoration:none}
     .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .sub{color:var(--muted)}
+    .section{padding:56px 0}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
     /* NAV */
     .nav{
@@ -52,40 +60,21 @@
       backdrop-filter:saturate(140%) blur(12px);
     }
     .nav-inner{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 0;
-      gap:16px;
-      flex-wrap:wrap;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;gap:16px;flex-wrap:wrap;
     }
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
-    h1,h2,h3{
-      font-family:"Bebas Neue";
-      letter-spacing:2px;
-      margin:0;
-    }
-    .sub{color:var(--muted)}
-
-    .menu{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .btn{
       display:inline-flex;gap:8px;align-items:center;
-      padding:8px 14px;
-      border-radius:999px;
+      padding:8px 14px;border-radius:999px;
       border:1px solid var(--line);
-      cursor:pointer;
-      background:transparent;
-      color:var(--fg);
-      font-family:inherit;
-      font-size:13px;
-      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      cursor:pointer;background:transparent;color:var(--fg);
+      font-family:inherit;font-size:13px;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
     }
+    .btn:hover{background:rgba(255,255,255,0.03)}
     .btn.primary{
       background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
       color:#fff;border-color:rgba(229,9,20,.9);
@@ -96,69 +85,9 @@
       transform:translateY(-1px);
     }
 
-    .section{padding:56px 0}
-    .grid{display:grid;gap:24px}
-    .cols-2{grid-template-columns:1.6fr .6fr}
-    @media(max-width:980px){.cols-2{grid-template-columns:1fr}}
-
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-    }
-    .pad{padding:20px}
-    .heroimg{
-      width:100%;
-      aspect-ratio:16/9;
-      object-fit:cover;
-      background:#0f0f0f;
-      display:block;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      background:var(--bg2);
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:14px;
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    /* POST BODY */
-    .post-body{
-      font-size:16px;
-      line-height:1.6;
-    }
-    .post-body p{margin:0 0 10px}
-
-    /* COMMENTS */
-    .comment{
-      border-top:1px solid var(--line);
-      padding:12px 0;
-    }
-
-    /* nav auth (shared pattern) */
-    .nav-auth{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .profile-menu{
-      position:relative;
-      display:flex;
-      align-items:center;
-    }
+    /* nav auth */
+    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
       width:32px;height:32px;border-radius:50%;
       background:var(--bg2);
@@ -190,6 +119,112 @@
       .menu{order:3;width:100%;justify-content:flex-start}
       .nav-auth{order:2;width:100%;justify-content:flex-end}
     }
+
+    /* Layout */
+    .grid{display:grid;gap:24px}
+    .cols-2{grid-template-columns:1.6fr .6fr}
+    @media(max-width:980px){.cols-2{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow2);
+    }
+    .pad{padding:20px}
+
+    /* Hero */
+    .hero-wrap{position:relative}
+    .heroimg{
+      width:100%;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#0f0f0f;
+      display:block;
+    }
+    .hero-fade{
+      position:absolute;inset:0;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,217,59,.20), transparent 45%),
+        linear-gradient(180deg, rgba(0,0,0,.05) 0, rgba(0,0,0,.72) 100%);
+      pointer-events:none;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(0,0,0,.25);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Article */
+    .title{
+      font-size:50px;
+      line-height:.95;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      margin:10px 0 8px;
+    }
+    .post-body{
+      font-size:16px;
+      line-height:1.75;
+      color:#e9e9e9;
+    }
+    .post-body p{margin:0 0 12px}
+    .post-body p:first-child{
+      font-size:18px;
+      color:#fff;
+    }
+    .divider{
+      height:10px;border-radius:999px;
+      background:linear-gradient(90deg, rgba(229,9,20,.7), rgba(255,217,59,.7));
+      opacity:.28;
+      margin:16px 0 10px;
+    }
+
+    /* Meta */
+    .metaBox strong{color:#fff}
+    .likeRow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .likeCount{color:var(--muted)}
+    .btnLike{min-width:44px;justify-content:center}
+
+    /* Comments */
+    .comment{border-top:1px solid var(--line);padding:12px 0}
+    .comment:first-child{border-top:none}
+    textarea{
+      width:100%;
+      background:var(--bg2);
+      border:1px solid var(--line);
+      color:#fff;
+      padding:12px;
+      border-radius:12px;
+      outline:none;
+      font-family:inherit;
+    }
+    textarea:focus-visible{
+      border-color:var(--accent-yellow);
+      box-shadow:0 0 0 1px rgba(255,217,59,.5);
+    }
+
+    /* Related */
+    .relatedItem{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 0;border-top:1px solid var(--line);
+    }
+    .thumb{
+      width:64px;height:46px;border-radius:10px;
+      border:1px solid var(--line);
+      object-fit:cover;background:#0c0c0f;
+      flex:0 0 auto;
+    }
+    .relTitle{font-size:13px;font-weight:700;line-height:1.15}
+    .relMeta{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -212,7 +247,6 @@
         </div>
 
         <div class="nav-auth">
-          <!-- Controlled by auth-ui.js -->
           <button id="navSignInBtn" class="btn">Log in</button>
           <button id="navJoinBtn" class="btn primary">Join the grid</button>
 
@@ -232,38 +266,45 @@
           </div>
         </div>
       </div>
+
     </div>
   </nav>
 
   <main class="container">
     <section class="section">
       <div class="grid cols-2">
-        <!-- LEFT: article -->
         <article class="card" id="highlightCard">
           <div class="pad sub">Loading…</div>
         </article>
 
-        <!-- RIGHT: meta + likes -->
         <aside class="card" aria-label="Highlight meta and likes">
           <div class="pad" id="metaBox">Loading…</div>
           <div class="pad" id="likeBox" style="border-top:1px solid var(--line)">
-            <div class="row" style="justify-content:space-between">
-              <div><strong>Likes:</strong> <span id="likeCount">0</span></div>
-              <button id="likeBtn" class="btn" title="Like" aria-pressed="false">♡</button>
+            <div class="likeRow">
+              <div class="likeCount"><strong>Likes:</strong> <span id="likeCount">0</span></div>
+              <button id="likeBtn" class="btn btnLike" title="Like" aria-pressed="false">♡</button>
             </div>
+          </div>
+
+          <div class="pad" style="border-top:1px solid var(--line)">
+            <h3 style="font-size:22px;margin-bottom:6px">Related</h3>
+            <div id="relatedBox" class="sub">Loading…</div>
           </div>
         </aside>
       </div>
     </section>
 
-    <!-- COMMENTS -->
     <section class="section">
-      <h2 style="font-size:40px">Comments</h2>
+      <div class="row" style="justify-content:space-between;align-items:flex-end">
+        <h2 style="font-size:40px">Comments</h2>
+        <a class="btn" href="/highlights.html">← Back to Highlights</a>
+      </div>
+
       <div id="commentFormWrap" class="row" style="margin:10px 0 16px; display:none">
-        <textarea id="commentText" rows="3" placeholder="Share your thoughts…"
-          style="flex:1;min-width:220px;background:var(--bg2);border:1px solid var(--line);color:#fff;padding:12px;border-radius:12px;outline:none;font-family:inherit"></textarea>
+        <textarea id="commentText" rows="3" placeholder="Share your thoughts…" style="flex:1;min-width:220px"></textarea>
         <button id="commentPost" class="btn primary">Post</button>
       </div>
+
       <div id="comments" class="card">
         <div class="pad sub">Loading comments…</div>
       </div>
@@ -278,14 +319,12 @@
     ));
     let currentUserId = null;
     let currentLikeCount = 0;
+    let currentCategory = null;
 
-    /* AUTH (page-specific) */
     async function syncPageAuth(){
       const { data: { user } } = await supabase.auth.getUser();
       currentUserId = user?.id || null;
-      if($('commentFormWrap')){
-        $('commentFormWrap').style.display = user ? 'flex' : 'none';
-      }
+      $('commentFormWrap').style.display = user ? 'flex' : 'none';
       await refreshLikedState();
     }
 
@@ -293,13 +332,19 @@
       syncPageAuth();
     });
 
-    /* LOAD HIGHLIGHT */
     function formatBody(body){
       if(!body) return '<p class="sub">No content yet.</p>';
-      const parts = body.split(/\n\s*\n/); // paragraphs
-      return parts
-        .map(p => `<p>${escapeHTML(p).replace(/\n/g,'<br>')}</p>`)
-        .join('');
+      const parts = body.split(/\n\s*\n/);
+      return parts.map(p => `<p>${escapeHTML(p).replace(/\n/g,'<br>')}</p>`).join('');
+    }
+
+    function catIcon(cat){
+      const c = (cat||'').toLowerCase();
+      if(c.includes('event')) return '🏁';
+      if(c.includes('merch')) return '🛒';
+      if(c.includes('build')) return '🛠️';
+      if(c.includes('community')) return '🧩';
+      return '📰';
     }
 
     async function loadHighlight(){
@@ -331,16 +376,23 @@
 
       const hero = h.image_url || '/Assets/og.png';
       const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
-      const cat = h.category || null;
+      currentCategory = h.category || 'News';
 
       card.innerHTML = `
-        <img src="${hero}" alt="${escapeHTML(h.title)}" class="heroimg">
+        <div class="hero-wrap">
+          <img src="${hero}" alt="${escapeHTML(h.title)}" class="heroimg">
+          <div class="hero-fade"></div>
+        </div>
         <div class="pad">
           <div class="row" style="margin-bottom:6px">
-            ${cat ? `<span class="chip">${escapeHTML(cat)}</span>` : ''}
+            <span class="chip">${catIcon(currentCategory)} ${escapeHTML(currentCategory)}</span>
             ${dateStr ? `<span class="chip">${escapeHTML(dateStr)}</span>` : ''}
+            <span class="chip">♥ ${Number(h.like_count||0)}</span>
           </div>
-          <h2 style="font-size:44px;margin-bottom:8px">${escapeHTML(h.title)}</h2>
+
+          <h2 class="title">${escapeHTML(h.title)}</h2>
+          <div class="divider" aria-hidden="true"></div>
+
           <div class="post-body">
             ${formatBody(h.body || '')}
           </div>
@@ -348,17 +400,58 @@
       `;
 
       meta.innerHTML = `
-        <div><strong>Category:</strong> ${cat ? escapeHTML(cat) : 'General'}</div>
-        <div class="sub" style="margin-top:6px">Published ${dateStr || '—'}</div>
-        ${
-          h.link_url
-            ? `<div style="margin-top:10px"><a href="${h.link_url}" target="_blank" rel="noopener" style="text-decoration:underline">Open related link</a></div>`
-            : ''
-        }
+        <div class="metaBox">
+          <div><strong>Category:</strong> ${escapeHTML(currentCategory)}</div>
+          <div class="sub" style="margin-top:6px">Published ${escapeHTML(dateStr || '—')}</div>
+          ${
+            h.link_url
+              ? `<div style="margin-top:10px"><a class="btn" href="${h.link_url}" target="_blank" rel="noopener">Open related link</a></div>`
+              : ''
+          }
+        </div>
       `;
+
+      await loadRelated(h.id, currentCategory);
     }
 
-    /* LIKES */
+    async function loadRelated(currentId, category){
+      const box = $('relatedBox');
+      box.textContent = 'Loading…';
+
+      const { data, error } = await supabase
+        .from('highlights_with_like_count')
+        .select('id,title,category,image_url,created_at')
+        .eq('category', category)
+        .order('created_at', { ascending:false })
+        .limit(6);
+
+      if(error){
+        console.error(error);
+        box.textContent = 'Could not load related highlights.';
+        return;
+      }
+
+      const items = (data || []).filter(x => x.id !== currentId).slice(0,4);
+      if(!items.length){
+        box.innerHTML = `<div class="sub">No related stories yet.</div>`;
+        return;
+      }
+
+      box.innerHTML = items.map(h => {
+        const img = h.image_url || '/Assets/og.png';
+        const dt = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
+        return `
+          <a class="relatedItem" href="/highlight.html?id=${h.id}">
+            <img class="thumb" src="${img}" alt="">
+            <div>
+              <div class="relTitle">${escapeHTML(h.title)}</div>
+              <div class="relMeta">${escapeHTML(dt)}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
     async function refreshLikedState(){
       if(!highlightId) return;
       const btn = $('likeBtn');
@@ -414,6 +507,7 @@
           .eq('highlight_id', highlightId)
           .eq('user_id', user.id);
         if(error) return alert('Unlike failed: ' + error.message);
+
         btn.textContent = '♡';
         btn.title = 'Like';
         btn.setAttribute('aria-pressed','false');
@@ -424,6 +518,7 @@
           .from('highlight_likes')
           .insert({ highlight_id: highlightId, user_id: user.id });
         if(error) return alert('Like failed: ' + error.message);
+
         btn.textContent = '♥';
         btn.title = 'Unlike';
         btn.setAttribute('aria-pressed','true');
@@ -455,7 +550,6 @@
         .subscribe();
     }
 
-    /* COMMENTS (read + write + realtime INSERT) */
     function renderComment(c){
       const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
       return `
@@ -488,9 +582,7 @@
         wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
         return;
       }
-      wrap.innerHTML = `<div class="pad" id="commentsInner">` +
-        data.map(renderComment).join('') +
-        `</div>`;
+      wrap.innerHTML = `<div class="pad" id="commentsInner">` + data.map(renderComment).join('') + `</div>`;
     }
 
     $('commentPost').addEventListener('click', async ()=>{
@@ -514,7 +606,6 @@
         return;
       }
       input.value = '';
-      // realtime INSERT will append
     });
 
     // realtime comments
@@ -541,7 +632,6 @@
         .subscribe();
     }
 
-    /* BOOT */
     window.addEventListener('DOMContentLoaded', async ()=>{
       await syncPageAuth();
       await loadHighlight();

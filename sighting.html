@@ -12,7 +12,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMT90MDAwLCJleHAiOjIwNzc3OTUwMDB9.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
@@ -26,9 +26,9 @@
       --shadow:0 40px 120px -30px rgba(0,0,0,.6);
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    body{margin:0;background:radial-gradient(circle at top,#1a1a1a 0,#141414 55%,#000 100%);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
     a{color:var(--fg);text-decoration:none}
-    .container{max-width:900px;margin:0 auto;padding:0 24px}
+    .container{max-width:950px;margin:0 auto;padding:0 24px}
     .sub{color:var(--muted)}
     h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
 
@@ -36,13 +36,13 @@
       position:sticky;top:0;z-index:50;
       background:rgba(18,18,18,.9);
       border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px);
+      backdrop-filter:saturate(140%) blur(10px);
     }
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:12px;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:12px}
     .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
     .title small{color:var(--muted)}
-    .menu{display:flex;gap:10px;align-items:center}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .btn{
       display:inline-flex;gap:8px;align-items:center;
       padding:10px 14px;border-radius:14px;
@@ -55,7 +55,6 @@
     .btn[disabled]{opacity:.5;pointer-events:none}
 
     .section{padding:48px 0}
-
     .card{
       background:var(--bg1);
       border:1px solid var(--line);
@@ -63,24 +62,37 @@
       box-shadow:var(--shadow);
       padding:18px;
     }
-    .hero-img{
-      width:100%;border-radius:16px;border:1px solid var(--line);
-      overflow:hidden;background:#000;aspect-ratio:4/3;
+
+    .hero{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--line);
+      overflow:hidden;
+      background:#000;
+      aspect-ratio:16/9;
+      display:flex;align-items:center;justify-content:center;
     }
-    .hero-img img{width:100%;height:100%;object-fit:cover;display:block}
+    .hero img,.hero video{width:100%;height:100%;object-fit:cover;display:block}
+    .hero video{object-fit:contain;background:#000}
 
     .pill{
       display:inline-flex;align-items:center;
       padding:4px 8px;border-radius:999px;
       border:1px solid var(--line);background:var(--bg2);
-      font-size:12px;margin-right:6px;margin-top:4px;
+      font-size:12px;margin-right:6px;margin-top:6px;
     }
 
     .comment-card{border-top:1px solid var(--line);padding:10px 0}
     .comment-meta{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .row-left{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    textarea.input{
+      width:100%;background:var(--bg2);border:1px solid var(--line);
+      border-radius:12px;padding:10px 12px;color:#fff;font:inherit;min-height:60px;resize:vertical;
+    }
 
+    /* nav auth */
     .nav-auth{display:flex;align-items:center;gap:10px}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
@@ -101,11 +113,6 @@
       text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
     }
     .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
-
-    textarea.input{
-      width:100%;background:var(--bg2);border:1px solid var(--line);
-      border-radius:12px;padding:10px 12px;color:#fff;font:inherit;min-height:60px;resize:vertical;
-    }
   </style>
 </head>
 <body>
@@ -136,6 +143,7 @@
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/bookmarks-sightings.html">Saved Sightings</a>
               <a href="/teams.html">My Teams</a>
               <a href="/activity.html">Activity</a>
               <button id="navSignOutBtn" type="button">Sign out</button>
@@ -148,32 +156,36 @@
 
   <main class="container">
     <section class="section">
-      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+      <div class="row" style="margin-bottom:14px">
         <div>
-          <h2 id="title" style="font-size:40px">Loading sighting…</h2>
-          <div id="meta" class="sub" style="margin-top:4px"></div>
+          <h2 id="title" style="font-size:44px">Loading…</h2>
+          <div id="meta" class="sub" style="margin-top:6px"></div>
         </div>
-        <div class="row">
-          <button id="likeBtn" class="btn" type="button" disabled>♥ 0</button>
-          <a href="/sightings.html" class="btn small">← Back to sightings</a>
+        <div class="row-left">
+          <button id="bookmarkBtn" class="btn" type="button" disabled title="Save">🔖</button>
+          <button id="likeBtn" class="btn" type="button" disabled>♡ 0</button>
+          <a href="/sightings.html" class="btn small">← Back</a>
         </div>
       </div>
 
       <div id="error" class="sub" style="color:#ffb3b3;margin-bottom:8px"></div>
 
       <div class="card">
-        <div class="hero-img" id="heroImg"><span class="sub">Loading…</span></div>
-        <p id="caption" class="sub" style="margin-top:12px"></p>
-        <div id="badgeRow" style="margin-top:6px"></div>
+        <div class="hero" id="hero"><span class="sub">Loading…</span></div>
+
+        <div style="margin-top:12px">
+          <div id="badgeRow"></div>
+          <p id="description" class="sub" style="margin-top:10px;white-space:pre-wrap"></p>
+        </div>
       </div>
     </section>
 
     <section class="section">
-      <div class="row" style="justify-content:space-between;margin-bottom:8px">
-        <h2 style="font-size:32px">Comments</h2>
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="font-size:34px">Comments</h2>
       </div>
 
-      <div id="commentFormRow" class="row" style="margin-bottom:10px;display:none">
+      <div id="commentFormRow" class="row-left" style="margin-bottom:10px;display:none">
         <textarea id="commentInput" class="input" placeholder="Drop a line about this sighting…"></textarea>
         <button id="commentPostBtn" class="btn primary" type="button">Post</button>
       </div>
@@ -192,10 +204,11 @@
     let liked = false;
     let likeCount = 0;
 
+    let bookmarked = false;
+
     function escapeHTML(s){
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
-
     function formatHandle(handle){
       if(!handle) return null;
       let h = handle.trim();
@@ -204,25 +217,15 @@
       return h;
     }
 
-    if (!window.requireLogin) {
-      window.requireLogin = async function(callback){
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          const email = prompt("Enter your email to sign in:");
-          if (!email) return false;
-          const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: location.href }
-          });
-          if (error) { alert("Sign-in error: " + error.message); return false; }
-          alert("Magic link sent. Check your email, then reload.");
-          return false;
-        }
-        if (callback) callback(user);
-        return true;
-      };
+    async function syncAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
+      $('commentFormRow').style.display = user ? 'flex' : 'none';
+      await refreshLikedState();
+      await refreshBookmarkState();
     }
 
+    // LOAD
     async function loadSighting(){
       if(!sightingId){
         $('error').textContent = 'Missing sighting ID.';
@@ -231,7 +234,7 @@
 
       const { data, error } = await supabase
         .from('sightings')
-        .select('*')
+        .select('id,user_id,title,description,social_handle,location,parish,image_url,image_type,created_at')
         .eq('id', sightingId)
         .maybeSingle();
 
@@ -239,17 +242,16 @@
         console.error(error);
         $('error').textContent = 'Sighting not found.';
         $('title').textContent = 'Sighting not found';
-        $('heroImg').innerHTML = '';
+        $('hero').innerHTML = '';
         return;
       }
 
-      document.title = `${data.title || 'Sighting'} — ROK Racers JA`;
-      $('title').textContent = data.title || 'Untitled sighting';
+      const title = data.title || 'Untitled sighting';
+      document.title = `${title} — ROK Racers JA`;
+      $('title').textContent = title;
 
       const d = data.created_at ? new Date(data.created_at) : null;
-      const when = d ? d.toLocaleString("en-US", {
-        month:"short", day:"2-digit", year:"numeric", hour:"numeric", minute:"2-digit"
-      }) : "";
+      const when = d ? d.toLocaleString("en-US", { month:"short", day:"2-digit", year:"numeric", hour:"numeric", minute:"2-digit" }) : "";
 
       const pieces = [];
       if(when) pieces.push(when);
@@ -257,8 +259,23 @@
       if(data.parish) pieces.push(data.parish);
       $('meta').textContent = pieces.join(' • ');
 
-      $('heroImg').innerHTML = `<img src="${escapeHTML(data.image_url)}" alt="${escapeHTML(data.title || 'Car sighting')}">`;
-      $('caption').innerHTML = escapeHTML(data.title || '').replace(/\n/g,'<br>');
+      // media fallback to existing image_url if you haven't migrated yet
+      const mediaUrl = data.image_url || data.image_url || null;
+      const mediaType = (data.image_type || (mediaUrl && mediaUrl.match(/\.(mp4|mov|webm)(\?|$)/i) ? 'video' : 'image')).toLowerCase();
+
+      if(mediaUrl){
+        if(mediaType === 'video'){
+          $('hero').innerHTML = `
+            <video controls playsinline preload="metadata" src="${escapeHTML(mediaUrl)}"></video>
+          `;
+        }else{
+          $('hero').innerHTML = `<img src="${escapeHTML(mediaUrl)}" alt="${escapeHTML(title)}">`;
+        }
+      }else{
+        $('hero').innerHTML = `<div class="sub">No media.</div>`;
+      }
+
+      $('description').textContent = (data.description || '');
 
       let badges = '';
       if(data.parish) badges += `<span class="pill">${escapeHTML(data.parish)}</span>`;
@@ -266,88 +283,153 @@
       if(when) badges += `<span class="pill">${escapeHTML(when)}</span>`;
 
       const handle = formatHandle(data.social_handle);
-      if(handle){
-        badges += `<span class="pill">📸 ${escapeHTML(handle)}</span>`;
-      }
+      if(handle) badges += `<span class="pill">📸 ${escapeHTML(handle)}</span>`;
+      if(data.username) badges += `<span class="pill">👤 ${escapeHTML(data.username)}</span>`;
 
       $('badgeRow').innerHTML = badges;
 
-      await loadLikes();
+      await loadLikeCount();
+      await refreshLikedState();
+      await refreshBookmarkState();
     }
 
-    async function loadLikes(){
-      const likeBtn = $('likeBtn');
-
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
-
+    // LIKES
+    async function loadLikeCount(){
       const { count, error } = await supabase
         .from('sighting_likes')
         .select('*', { count:'exact', head:true })
         .eq('sighting_id', sightingId);
 
-      if(error){
-        console.error(error);
-        likeCount = 0;
-      }else{
-        likeCount = count || 0;
+      likeCount = (!error && typeof count === 'number') ? count : 0;
+      const likeBtn = $('likeBtn');
+      likeBtn.disabled = false;
+      likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+    }
+
+    async function refreshLikedState(){
+      const likeBtn = $('likeBtn');
+      if(!sightingId) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
+
+      if(!user){
+        liked = false;
+        likeBtn.disabled = false;
+        likeBtn.textContent = `♡ ${likeCount}`;
+        likeBtn.title = 'Sign in to like';
+        likeBtn.setAttribute('aria-pressed','false');
+        return;
       }
 
-      if(user){
-        const { data: existing } = await supabase
-          .from('sighting_likes')
-          .select('id')
-          .eq('sighting_id', sightingId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        liked = !!existing;
+      const { data } = await supabase
+        .from('sighting_likes')
+        .select('id')
+        .eq('sighting_id', sightingId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      liked = !!data;
+      likeBtn.disabled = false;
+      likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+      likeBtn.title = liked ? 'Unlike' : 'Like';
+      likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    }
+
+    $('likeBtn').addEventListener('click', async ()=>{
+      if(!sightingId) return;
+      const ok = await window.authUI?.requireLogin?.(null, { silent:false, message:"Sign in to like sightings." });
+      if(!ok) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      const likeBtn = $('likeBtn');
+      likeBtn.disabled = true;
+
+      const { data: existing } = await supabase
+        .from('sighting_likes')
+        .select('id')
+        .eq('sighting_id', sightingId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(existing){
+        const { error } = await supabase.from('sighting_likes').delete().eq('id', existing.id);
+        if(!error){
+          liked = false;
+          likeCount = Math.max(0, likeCount - 1);
+        }
       }else{
-        liked = false;
+        const { error } = await supabase.from('sighting_likes').insert({ sighting_id: sightingId, user_id: user.id });
+        if(!error){
+          liked = true;
+          likeCount += 1;
+        }
       }
 
       likeBtn.disabled = false;
       likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
       likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    });
 
-      likeBtn.onclick = async ()=>{
-        const ok = await window.requireLogin();
-        if(!ok) return;
+    // BOOKMARKS
+    async function refreshBookmarkState(){
+      const btn = $('bookmarkBtn');
+      btn.disabled = false;
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if(!user) return;
-        likeBtn.disabled = true;
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
 
-        const { data: existing } = await supabase
-          .from('sighting_likes')
-          .select('id')
-          .eq('sighting_id', sightingId)
-          .eq('user_id', user.id)
-          .maybeSingle();
+      if(!user){
+        bookmarked = false;
+        btn.textContent = '🔖';
+        btn.title = 'Sign in to save';
+        btn.setAttribute('aria-pressed','false');
+        return;
+      }
 
-        if(existing){
-          const { error } = await supabase
-            .from('sighting_likes')
-            .delete()
-            .eq('id', existing.id);
-          if(!error){
-            liked = false;
-            likeCount = Math.max(0, likeCount - 1);
-          }
-        }else{
-          const { error } = await supabase
-            .from('sighting_likes')
-            .insert({ sighting_id: sightingId, user_id: user.id });
-          if(!error){
-            liked = true;
-            likeCount += 1;
-          }
-        }
+      const { data } = await supabase
+        .from('sighting_bookmarks')
+        .select('id')
+        .eq('sighting_id', sightingId)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-        likeBtn.disabled = false;
-        likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
-        likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
-      };
+      bookmarked = !!data;
+      btn.textContent = bookmarked ? '🔖 Saved' : '🔖 Save';
+      btn.title = bookmarked ? 'Unsave' : 'Save';
+      btn.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
     }
+
+    $('bookmarkBtn').addEventListener('click', async ()=>{
+      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to save sightings." });
+      if(!ok) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      const btn = $('bookmarkBtn');
+      btn.disabled = true;
+
+      const { data: existing } = await supabase
+        .from('sighting_bookmarks')
+        .select('id')
+        .eq('sighting_id', sightingId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(existing){
+        await supabase.from('sighting_bookmarks').delete().eq('id', existing.id);
+        bookmarked = false;
+      }else{
+        await supabase.from('sighting_bookmarks').insert({ sighting_id: sightingId, user_id: user.id });
+        bookmarked = true;
+      }
+
+      btn.disabled = false;
+      await refreshBookmarkState();
+    });
 
     // COMMENTS
     function renderComment(c){
@@ -355,58 +437,50 @@
       return `
         <div class="comment-card">
           <div class="comment-meta">${escapeHTML(dt)}</div>
-          <div>${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
+          <div>${escapeHTML(c.body || '').replace(/\n/g,'<br>')}</div>
         </div>`;
     }
 
     async function loadComments(){
       const wrap = $('commentsInner');
       const { data, error } = await supabase
-      .from('comments')
-      .select('id,body,created_at,user_id,target_type,target_id')
-      .eq('target_type', 'sighting')
-      .eq('target_id', sightingId)
-      .order('created_at', { ascending: true });
-
+        .from('comments')
+        .select('id,body,created_at,user_id,target_type,target_id')
+        .eq('target_type', 'sighting')
+        .eq('target_id', sightingId)
+        .order('created_at', { ascending: true });
 
       if(error){
         console.error(error);
         wrap.textContent = 'Couldn’t load comments.';
         return;
       }
-      if(!data || !data.length){
+      if(!data?.length){
         wrap.textContent = 'No comments yet — be the first.';
         return;
       }
       wrap.innerHTML = data.map(renderComment).join('');
     }
 
-    async function initCommentAuth(){
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
-      $('commentFormRow').style.display = user ? 'flex' : 'none';
-    }
-
     $('commentPostBtn').addEventListener('click', async ()=>{
-      const ok = await window.requireLogin();
+      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to comment." });
       if(!ok) return;
 
       const input = $('commentInput');
-      const text = input.value.trim();
+      const text = (input.value || '').trim();
       if(!text) return;
 
       const { data: { user } } = await supabase.auth.getUser();
       if(!user) return;
 
       const { error } = await supabase
-      .from('comments')
-      .insert({
-        user_id: user.id,
-        target_type: 'sighting',   // enum value for sightings
-        target_id: sightingId,
-        body: text
-      });
-
+        .from('comments')
+        .insert({
+          user_id: user.id,
+          target_type: 'sighting',
+          target_id: sightingId,
+          body: text
+        });
 
       if(error){
         alert('Could not post comment: ' + error.message);
@@ -421,10 +495,10 @@
         $('error').textContent = 'Missing sighting ID in URL.';
         return;
       }
+      await syncAuth();
       await loadSighting();
-      await initCommentAuth();
       await loadComments();
-      supabase.auth.onAuthStateChange(initCommentAuth);
+      supabase.auth.onAuthStateChange(syncAuth);
     });
   </script>
 </body>

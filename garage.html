@@ -44,7 +44,7 @@
     a{color:var(--fg);text-decoration:none}
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-    /* NAV (aligned with events/event pages) */
+    /* NAV */
     .nav{
       position:sticky;top:0;z-index:50;
       background:rgba(5,5,8,.9);
@@ -76,8 +76,9 @@
       border:1px solid var(--line);
       cursor:pointer;background:transparent;color:var(--fg);
       font-family:inherit;font-size:13px;
-      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
     }
+    .btn:hover{background:rgba(255,255,255,0.03)}
     .btn.primary{
       background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
       color:#fff;border-color:rgba(229,9,20,.9);
@@ -99,9 +100,13 @@
       border-radius:20px;
       overflow:hidden;
       box-shadow:var(--shadow);
-      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s;
     }
-    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .card:hover{
+      transform:translateY(-6px) scale(1.01);
+      box-shadow:0 30px 80px rgba(0,0,0,.85);
+      border-color:rgba(255,217,59,0.5);
+    }
     .card img{display:block;width:100%;height:auto}
     .pad{padding:18px}
 
@@ -116,8 +121,10 @@
       outline:none;min-width:160px;
       font-family:inherit;font-size:14px;
     }
-
-    .btn.ghost{background:transparent}
+    input:focus-visible, select:focus-visible{
+      border-color:var(--accent-yellow);
+      box-shadow:0 0 0 1px rgba(255,217,59,0.5);
+    }
 
     .browse-head{
       display:flex;gap:10px;align-items:center;
@@ -164,6 +171,7 @@
       display:flex;align-items:center;justify-content:center;
       font-weight:600;cursor:pointer;border:1px solid var(--line);
       font-size:13px;
+      transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
     }
     .profile-chip:hover{
       border-color:rgba(255,255,255,.32);
@@ -207,45 +215,31 @@
           <a class="btn" role="menuitem" href="/about.html">About</a>
           <a class="btn" role="menuitem" href="/events.html">Events</a>
           <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="teams.html">Community</a>
-          <a href="/marketplace.html" class="btn" role="menuitem">Marketplace</a>
-          <a href="/store.html" class="btn" role="menuitem">Store</a>
-
+          <a class="btn" role="menuitem" href="/teams.html">Community</a>
+          <a class="btn" role="menuitem" href="/marketplace.html">Marketplace</a>
+          <a class="btn" role="menuitem" href="/store.html">Store</a>
         </div>
 
         <div class="nav-auth">
-          <!-- Shared nav buttons controlled by auth-ui.js -->
+          <!-- Controlled by auth-ui.js -->
           <button id="navSignInBtn" class="btn">Log in</button>
           <button id="navJoinBtn" class="btn primary">Join the grid</button>
-          <button id="loginBtn" class="btn">Log in</button>
-<button id="joinBtn" class="btn primary">Join the grid</button>
-
-<div id="profileMenu" class="profile-menu" style="display:none">
-  <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-    <span id="profileInitials">U</span>
-  </div>
-  <div id="dropdown" class="dropdown" style="display:none">
-    <!-- your links -->
-    <button id="signoutBtn" type="button">Sign out</button>
-  </div>
-</div>
-
 
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
             <div id="navProfileDropdown" class="dropdown" style="display:none">
-            <a href="/garage.html">My Garage</a>
-            <a href="/tickets.html">My Tickets</a>
-            <a href="/likes-builds.html">Liked Builds</a>
-            <a href="/likes-sightings.html">Liked Sightings</a>
-            <a href="/teams.html">My Teams</a>
-            <button id="signoutBtn" type="button">Sign out</button>
-
+              <a href="/garage.html?view=my">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/teams.html">My Teams</a>
+              <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </nav>
@@ -271,7 +265,7 @@
         <select id="vis" aria-label="Visibility">
           <option value="public">Public builds</option>
           <option value="my">My builds</option>
-          <option value="all">All public (default)</option>
+          <option value="all">All public</option>
         </select>
 
         <select id="partFilter" aria-label="Part category">
@@ -312,7 +306,6 @@
   <script>
     /* ========= Small helper: auth wrapper (P0-safe) ========= */
     async function requireLogin(callback){
-      // Prefer central authUI if available
       if (window.authUI && typeof authUI.requireLogin === 'function'){
         return authUI.requireLogin(callback);
       }
@@ -337,7 +330,7 @@
         if (buildQuotaEl) buildQuotaEl.textContent = '0/3 builds used';
         if (upgradeBanner) upgradeBanner.style.display = 'none';
         if (newBuildBtn){
-          newBuildBtn.disabled = true;
+          newBuildBtn.disabled = false; // let them click and authUI will prompt
           newBuildBtn.title = 'Log in to add a build';
         }
         return;
@@ -363,13 +356,12 @@
 
     supabase.auth.onAuthStateChange(() => {
       updateQuota();
-      // Re-apply filters so "My builds" view reacts when logging in/out
       applyFilters();
     });
 
     /* ========= New Build (enforce 3-build quota) ========= */
     newBuildBtn?.addEventListener('click', () =>
-      requireLogin(async (user)=>{
+      requireLogin(async (user)=> {
         if (!user) return;
 
         const { count, error } = await supabase
@@ -404,9 +396,9 @@
         await updateQuota();
 
         if (data?.id){
-          location.href = `/build-edit.html?id=${data.id}`;
+          location.href = `/build-new.html?id=${data.id}`;
         } else {
-          location.href = `/build-edit.html`;
+          location.href = `/build-new.html`;
         }
       })
     );
@@ -423,11 +415,7 @@
     function renderBuildCard(b){
       const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
       const type = b.build_type || 'owned';
-      const typeLabel = {
-        owned: 'Owned',
-        dream: 'Dream',
-        for_sale: 'For sale'
-      }[type] || 'Build';
+      const typeLabel = { owned:'Owned', dream:'Dream', for_sale:'For sale' }[type] || 'Build';
 
       const stageLabel = b.stage ? ({
         stock: 'Stock/OEM+',
@@ -443,13 +431,7 @@
 
       const liked = !!b._liked;
       const heart = liked ? '♥' : '♡';
-      const badges = [];
-      if (b.stage) badges.push('Stage ' + b.stage);
-      if (b.power_goal) badges.push(b.power_goal + 'hp');
-      if (b.parish) badges.push(b.parish);
-      if (b.trophy_labels && b.trophy_labels.length) {
-        b.trophy_labels.forEach(t => badges.push('🏆 ' + t));
-      }
+
       return `
         <article class="card" role="listitem" data-build="${b.id}">
           <a href="/build.html?id=${b.id}" style="display:block">
@@ -494,7 +476,7 @@
       if(!currentRows.length){
         const vis = document.getElementById('vis').value;
         const msg = vis === 'my'
-          ? "You don’t have any builds yet. Start your first one to put your car on the grid."
+          ? "Sign in to view your builds, or start your first one to put your car on the grid."
           : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
         renderEmptyState(msg);
         return;
@@ -511,17 +493,24 @@
 
     async function applyFilters(){
       const q       = document.getElementById('q').value.trim().toLowerCase();
-      const vis     = document.getElementById('vis').value;       // public | my | all
-      const sort    = document.getElementById('sort').value;      // top | new
+      const vis     = document.getElementById('vis').value;        // public | my | all
+      const sort    = document.getElementById('sort').value;       // top | new
       const partCat = document.getElementById('partFilter').value; // "" or category
 
       const { data: { user } = {} } = await supabase.auth.getUser();
+
+      // UX: if user asked for "my" while logged out, show a proper message
+      if (vis === 'my' && !user){
+        currentRows = [];
+        page = 0;
+        renderPage();
+        return;
+      }
 
       let rows = [];
 
       try{
         if (vis === 'my' && user){
-          // My builds (public + private)
           const my = await supabase.from('builds')
             .select('id,title,is_public,created_at')
             .eq('user_id', user.id)
@@ -557,23 +546,20 @@
             created_at: b.created_at
           }));
         } else {
-          // Public listing (view already has like_count + thumb_url)
           const pub = await supabase
             .from('public_builds_with_like_count_and_trophies')
             .select('id,title,thumb_url,build_type,stage,power_goal,parish,owner_handle,like_count,created_at,trophy_labels')
-            .order('like_count', { ascending: sort!=='top' })
+            .order('like_count', { ascending: sort !== 'top' })
             .order('id', { ascending: true });
 
           if(pub.error) throw pub.error;
           rows = pub.data || [];
         }
 
-        // Search filter
         if(q){
           rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
         }
 
-        // Filter by part category
         if(partCat){
           const ids = rows.map(r => r.id);
           if(ids.length){
@@ -591,14 +577,12 @@
           }
         }
 
-        // Sort
         if(sort === 'new'){
           rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
         }else if(sort === 'top'){
           rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
         }
 
-        // Mark liked hearts
         const uid = user?.id || null;
         if(uid && rows.length){
           const ids = rows.map(r=>r.id);
@@ -719,18 +703,12 @@
     document.getElementById('apply').addEventListener('click', applyFilters);
 
     prevBtn.addEventListener('click', ()=>{
-      if(page>0){
-        page--;
-        renderPage();
-      }
+      if(page>0){ page--; renderPage(); }
     });
 
     nextBtn.addEventListener('click', ()=>{
       const maxPage = Math.floor((currentRows.length - 1) / pageSize);
-      if(page < maxPage){
-        page++;
-        renderPage();
-      }
+      if(page < maxPage){ page++; renderPage(); }
     });
 
     window.addEventListener('DOMContentLoaded', async ()=>{

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Teams — ROK Racers JA</title>
-<meta name="description" content="Create and manage your teams, membership, and promoter access." />
+<title>Teams — ROK Racers JA</title>
+<meta name="description" content="Browse teams, manage memberships, and invites." />
 <link rel="icon" href="/Assets/og.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,8 +45,8 @@
   .logo{width:48px;height:48px;border-radius:12px;object-fit:cover}
   h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
   .title small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em}
-  .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 
+  .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
   .btn{
     display:inline-flex;gap:8px;align-items:center;
     padding:8px 14px;border-radius:999px;border:1px solid var(--line);
@@ -75,7 +75,7 @@
   }
   .dropdown a,.dropdown button{
     padding:10px 16px;text-align:left;border:none;background:transparent;color:var(--fg);
-    font-size:13px;width:100%;cursor:pointer;
+    font-size:13px;width:100%;cursor:pointer;font-family:inherit;
   }
   .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
 
@@ -102,7 +102,6 @@
     background:var(--bg2);font-size:12px;color:var(--muted);
   }
   .pill.good{border-color:rgba(255,217,59,.6);color:var(--accent-yellow)}
-  .pill.bad{border-color:rgba(255,255,255,.18);color:var(--muted)}
   .thumb{
     width:52px;height:52px;border-radius:14px;object-fit:cover;border:1px solid var(--line);background:var(--bg2);
   }
@@ -119,8 +118,6 @@
     font-family:inherit;
   }
   textarea{resize:vertical}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:720px){.two{grid-template-columns:1fr}}
   .help{font-size:12px;color:var(--muted)}
 
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:90}
@@ -143,14 +140,15 @@
         <img src="/Assets/logo.png" alt="" class="logo">
         <div class="title">
           <h1>ROK RACERS JA</h1>
-          <small>My Teams</small>
+          <small>Teams</small>
         </div>
       </a>
 
       <div class="nav-auth">
         <a class="btn" href="/events.html">Events</a>
         <a class="btn" href="/garage.html">Garage</a>
-        <button id="createTeamBtn" class="btn primary">+ Create Team</button>
+
+        <button id="createTeamBtn" class="btn primary" style="display:none">+ Create Team</button>
 
         <button id="navSignInBtn" class="btn">Log in</button>
         <button id="navJoinBtn" class="btn primary">Join the grid</button>
@@ -166,7 +164,7 @@
             <a href="/likes-sightings.html">Liked Sightings</a>
             <a href="/teams.html">My Teams</a>
             <a href="/activity.html">Activity</a>
-            <button id="signoutBtn" type="button">Sign out</button>
+            <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -176,31 +174,31 @@
   <main class="container">
     <section class="section">
       <div class="row">
-        <h2 style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">My Teams</h2>
+        <h2 style="font-size:44px;text-transform:uppercase;">Teams</h2>
         <span id="statusLine" class="sub"></span>
       </div>
 
       <div class="grid cols-3" style="margin-top:14px">
         <div class="card">
           <div class="pad">
-            <h3 style="font-size:28px;letter-spacing:2px;text-transform:uppercase;">Memberships</h3>
-            <div class="sub">Teams you’re already part of.</div>
+            <h3 style="font-size:28px;text-transform:uppercase;">My teams</h3>
+            <div class="sub">Teams you’re part of.</div>
             <div id="myTeams" style="margin-top:12px" class="grid"></div>
           </div>
         </div>
 
         <div class="card">
           <div class="pad">
-            <h3 style="font-size:28px;letter-spacing:2px;text-transform:uppercase;">Pending</h3>
-            <div class="sub">Requests waiting on approval.</div>
-            <div id="pendingTeams" style="margin-top:12px" class="grid"></div>
+            <h3 style="font-size:28px;text-transform:uppercase;">Invites</h3>
+            <div class="sub">Accept or decline team invites.</div>
+            <div id="invites" style="margin-top:12px" class="grid"></div>
           </div>
         </div>
 
         <div class="card">
           <div class="pad">
-            <h3 style="font-size:28px;letter-spacing:2px;text-transform:uppercase;">Find teams</h3>
-            <div class="sub">Browse public teams and apply.</div>
+            <h3 style="font-size:28px;text-transform:uppercase;">Browse</h3>
+            <div class="sub">Find teams and view pages.</div>
             <input id="q" placeholder="Search team name…" style="margin-top:12px"/>
             <div id="allTeams" style="margin-top:12px" class="grid"></div>
           </div>
@@ -223,41 +221,47 @@
           <div style="flex:1">
             <label class="sub">Team logo (PNG/JPG)</label>
             <input id="f_logo" type="file" accept="image/*" />
-            <div class="help">If upload fails (bucket not set), you can still paste a logo URL in admin later.</div>
+            <div class="help">Bucket: <b>team-logos</b></div>
           </div>
         </div>
 
-        <div class="row">
+        <div>
           <label class="sub">Team name</label>
           <input id="f_name" placeholder="ROC Kings, Night Shift, Track Gods…" />
         </div>
+
+        <div>
+          <label class="sub">Handle (optional)</label>
+          <input id="f_handle" placeholder="rockings" />
+          <div class="help">Optional @handle for the team (keep it simple).</div>
+        </div>
+
         <div class="row">
-  <label class="sub">Handle (optional)</label>
-  <input id="f_handle" placeholder="rockings (optional)" />
-  <div class="help">If you don’t set this now, you can set it in admin later.</div>
-</div>
-
-
-        <div class="two">
-          <div>
+          <div style="flex:1">
             <label class="sub">Parish</label>
             <input id="f_parish" placeholder="Kingston, St. Andrew, St. James…" />
           </div>
-          <div>
+          <div style="flex:1">
             <label class="sub">Instagram handle</label>
             <input id="f_ig" placeholder="@teamhandle" />
           </div>
         </div>
 
-        <div class="two">
-          <div>
+        <div class="row">
+          <div style="flex:1">
             <label class="sub">TikTok (optional)</label>
             <input id="f_tt" placeholder="@tiktokhandle" />
           </div>
-          <div>
+          <div style="flex:1">
             <label class="sub">Website (optional)</label>
             <input id="f_web" placeholder="https://…" />
           </div>
+        </div>
+
+        <div>
+          <label class="sub">Application link (optional)</label>
+          <input id="f_app" placeholder="Paste your Google Form link…" />
+          <div class="help">If set, users click Apply on the team page.</div>
         </div>
 
         <div>
@@ -268,8 +272,10 @@
         <div>
           <label class="sub">Gallery photos (optional, multiple)</label>
           <input id="f_gallery" type="file" accept="image/*" multiple />
-          <div class="help">These show on team.html. If uploads fail, you can add photos later in admin.</div>
+          <div class="help">Bucket: <b>team-gallery</b></div>
         </div>
+
+        <div id="createMsg" class="sub" style="min-height:18px"></div>
       </div>
 
       <div class="actions">
@@ -290,6 +296,7 @@
   function closeModal(){
     $('modalBackdrop').style.display='none';
     $('modalBackdrop').setAttribute('aria-hidden','true');
+    $('createMsg').textContent = '';
   }
 
   $('modalClose').onclick = closeModal;
@@ -312,7 +319,15 @@
     return true;
   }
 
-  // ---------- Storage helpers ----------
+  async function isPromoterUser(){
+    try{
+      await window.authUI?.refresh?.();
+      return !!window.authUI?.isPromoter?.();
+    }catch(e){
+      return false;
+    }
+  }
+
   async function uploadToBucket(bucket, path, file){
     const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert:true });
     if(error) throw error;
@@ -321,21 +336,29 @@
   }
 
   async function createTeam(){
+    $('createMsg').textContent = '';
+
+    const promoterOk = await isPromoterUser();
+    if(!promoterOk){
+      $('createMsg').textContent = 'Only promoters can create teams right now.';
+      return;
+    }
+
     const { data:{ user } } = await supabase.auth.getUser();
     if(!user){ alert('Sign in first.'); return; }
 
     const name = $('f_name').value.trim();
     if(!name){ alert('Team name is required.'); return; }
+
     const handle = $('f_handle').value.trim() || null;
-
-
     const parish = $('f_parish').value.trim() || null;
     const ig = $('f_ig').value.trim() || null;
     const tt = $('f_tt').value.trim() || null;
     const web = $('f_web').value.trim() || null;
     const bio = $('f_bio').value.trim() || null;
+    const appUrl = $('f_app').value.trim() || null;
 
-    // 1) create team row first (logo/gallery can be updated after upload)
+    // create team row first
     const { data:teamRow, error:teamErr } = await supabase
       .from('teams')
       .insert({
@@ -346,6 +369,7 @@
         instagram_handle: ig,
         tiktok_handle: tt,
         website_url: web,
+        application_url: appUrl,
         created_by: user.id
       })
       .select('id')
@@ -355,16 +379,10 @@
 
     const teamId = teamRow.id;
 
-    // 2) make creator owner
-    const { error:memErr } = await supabase
-      .from('team_members')
-      .insert({ team_id: teamId, user_id: user.id, role:'owner' });
+    // creator becomes owner
+    await supabase.from('team_members').insert({ team_id: teamId, user_id: user.id, role:'owner' });
 
-    if(memErr){
-      alert('Team created, but owner link failed: ' + memErr.message);
-    }
-
-    // 3) try uploads
+    // uploads
     let logoUrl = null;
     try{
       const logoFile = $('f_logo').files?.[0];
@@ -389,32 +407,33 @@
       console.warn('gallery upload failed', e);
     }
 
-    // 4) update team with urls if any
     const payload = {};
     if(logoUrl) payload.logo_url = logoUrl;
-    if(galleryUrls.length) payload.gallery_urls = galleryUrls; // expects json/array column; if not, it still won't break insert above
+    if(galleryUrls.length) payload.gallery_urls = galleryUrls;
 
     if(Object.keys(payload).length){
-      const { error:updErr } = await supabase.from('teams').update(payload).eq('id', teamId);
-      if(updErr){
-        console.warn('team url update failed', updErr);
-      }
+      await supabase.from('teams').update(payload).eq('id', teamId);
     }
 
     closeModal();
-    await loadAll();
     alert('Team created. You are now the owner.');
+    location.href = `/team.html?id=${encodeURIComponent(teamId)}`;
   }
 
   $('modalCreate').onclick = ()=> requireLogin(createTeam);
 
   $('createTeamBtn').onclick = ()=> requireLogin(openModal);
 
-  // ---------- Render ----------
   function renderTeamMini(t, role){
-    const logo = t.logo_url ? `<img class="thumb" src="${escapeHTML(t.logo_url)}" alt="">` : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
-    const promoter = t.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill bad">Team</span>`;
+    const logo = t.logo_url
+      ? `<img class="thumb" src="${escapeHTML(t.logo_url)}" alt="">`
+      : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
+    const promoter = t.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill">Team</span>`;
     const rolePill = role ? `<span class="pill">${escapeHTML(role)}</span>` : ``;
+
+    const adminLink = (role === 'owner' || role === 'manager')
+      ? `<a class="btn" href="/admin-team.html?team_id=${encodeURIComponent(t.id)}">Admin</a>`
+      : ``;
 
     return `
       <div class="row" style="justify-content:flex-start;gap:12px">
@@ -429,16 +448,18 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <a class="btn" href="/team.html?id=${encodeURIComponent(t.id)}">View</a>
-          <a class="btn" href="/admin-team.html?team_id=${encodeURIComponent(t.id)}">Admin</a>
+          ${adminLink}
         </div>
       </div>
     `;
   }
 
   function renderTeamBrowse(t){
-    const logo = t.logo_url ? `<img class="thumb" src="${escapeHTML(t.logo_url)}" alt="">` : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
-    const promoter = t.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill bad">Team</span>`;
-    const ig = t.instagram_handle ? `<div class="sub">@${escapeHTML(t.instagram_handle.replace(/^@/,'') )}</div>` : ``;
+    const logo = t.logo_url
+      ? `<img class="thumb" src="${escapeHTML(t.logo_url)}" alt="">`
+      : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">🏁</div>`;
+    const promoter = t.is_promoter ? `<span class="pill good">Promoter</span>` : `<span class="pill">Team</span>`;
+    const ig = t.instagram_handle ? `<div class="sub">${escapeHTML(t.instagram_handle)}</div>` : ``;
 
     return `
       <div class="row" style="justify-content:flex-start;gap:12px">
@@ -458,15 +479,79 @@
     `;
   }
 
+  function renderInvite(inv){
+    return `
+      <div class="card">
+        <div class="pad">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+            <div style="min-width:0">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <strong>${escapeHTML(inv.teams?.name || 'Team')}</strong>
+                <span class="pill">Invite</span>
+              </div>
+              <div class="sub">${escapeHTML(inv.teams?.parish || '')}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn primary" data-accept="${escapeHTML(inv.id)}">Accept</button>
+              <button class="btn" data-decline="${escapeHTML(inv.id)}">Decline</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function acceptInvite(inviteId){
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user) return;
+
+    const { data:inv, error:invErr } = await supabase
+      .from('team_invites')
+      .select('id,team_id,invited_user_id,status')
+      .eq('id', inviteId)
+      .maybeSingle();
+
+    if(invErr || !inv){ alert('Invite not found.'); return; }
+    if(inv.invited_user_id !== user.id){ alert('Not your invite.'); return; }
+    if(inv.status !== 'pending'){ alert('Invite already handled.'); return; }
+
+    // upsert membership
+    await supabase
+      .from('team_members')
+      .upsert({ team_id: inv.team_id, user_id: user.id, role:'member' }, { onConflict:'team_id,user_id' });
+
+    // mark invite accepted
+    await supabase
+      .from('team_invites')
+      .update({ status:'accepted', responded_at: new Date().toISOString() })
+      .eq('id', inviteId);
+
+    await loadAll();
+  }
+
+  async function declineInvite(inviteId){
+    await supabase
+      .from('team_invites')
+      .update({ status:'declined', responded_at: new Date().toISOString() })
+      .eq('id', inviteId);
+    await loadAll();
+  }
+
   async function loadAll(){
     const { data:{ user } } = await supabase.auth.getUser();
-    $('statusLine').textContent = user ? `Signed in as ${user.email || 'Driver'}` : `Sign in to manage teams.`;
+    const signedIn = !!user;
 
-    // MY MEMBERSHIPS + PENDING
+    $('statusLine').textContent = signedIn
+      ? `Signed in as ${user.email || 'Driver'}`
+      : `Browse teams below. Sign in to manage memberships.`;
+
+    // promoter-only create button
+    const canCreate = signedIn ? await isPromoterUser() : false;
+    $('createTeamBtn').style.display = canCreate ? 'inline-flex' : 'none';
+
+    // My teams
     $('myTeams').innerHTML = `<div class="sub">Loading…</div>`;
-    $('pendingTeams').innerHTML = `<div class="sub">Loading…</div>`;
-
-    if(user){
+    if(signedIn){
       const { data:rows, error } = await supabase
         .from('team_members')
         .select(`team_id, role, teams:team_id(id,name,parish,logo_url,is_promoter,instagram_handle)`)
@@ -475,25 +560,57 @@
       if(error){
         console.error(error);
         $('myTeams').innerHTML = `<div class="sub">Couldn’t load memberships.</div>`;
-        $('pendingTeams').innerHTML = `<div class="sub">Couldn’t load pending.</div>`;
       }else{
         const active = (rows||[]).filter(r => r.role && r.role !== 'pending' && r.teams);
         const pending = (rows||[]).filter(r => r.role === 'pending' && r.teams);
 
-        $('myTeams').innerHTML = active.length
-          ? active.map(r => `<div class="card"><div class="pad">${renderTeamMini(r.teams, r.role)}</div></div>`).join('')
-          : `<div class="sub">No teams yet. Create one or apply to one.</div>`;
+        const blocks = [];
+        if(active.length){
+          blocks.push(...active.map(r => `<div class="card"><div class="pad">${renderTeamMini(r.teams, r.role)}</div></div>`));
+        }
+        if(pending.length){
+          blocks.push(`<div class="sub">Pending requests</div>`);
+          blocks.push(...pending.map(r => `<div class="card"><div class="pad">${renderTeamMini(r.teams, r.role)}</div></div>`));
+        }
 
-        $('pendingTeams').innerHTML = pending.length
-          ? pending.map(r => `<div class="card"><div class="pad">${renderTeamMini(r.teams, r.role)}</div></div>`).join('')
-          : `<div class="sub">No pending requests.</div>`;
+        $('myTeams').innerHTML = blocks.length
+          ? blocks.join('')
+          : `<div class="sub">No teams yet. If a team invites you, it shows here.</div>`;
       }
     }else{
-      $('myTeams').innerHTML = `<div class="sub">Sign in to see memberships.</div>`;
-      $('pendingTeams').innerHTML = `<div class="sub">Sign in to see pending.</div>`;
+      $('myTeams').innerHTML = `<div class="sub">Sign in to see your teams.</div>`;
     }
 
-    // BROWSE ALL TEAMS
+    // Invites
+    $('invites').innerHTML = `<div class="sub">Loading…</div>`;
+    if(signedIn){
+      const { data:invites, error:invErr } = await supabase
+        .from('team_invites')
+        .select('id,team_id,status,teams:team_id(id,name,parish)')
+        .eq('invited_user_id', user.id)
+        .eq('status','pending')
+        .order('created_at',{ascending:true});
+
+      if(invErr){
+        console.error(invErr);
+        $('invites').innerHTML = `<div class="sub">Couldn’t load invites.</div>`;
+      }else{
+        $('invites').innerHTML = (invites||[]).length
+          ? (invites||[]).map(renderInvite).join('')
+          : `<div class="sub">No invites.</div>`;
+
+        $('invites').querySelectorAll('button[data-accept]').forEach(b=>{
+          b.onclick = ()=> acceptInvite(b.dataset.accept);
+        });
+        $('invites').querySelectorAll('button[data-decline]').forEach(b=>{
+          b.onclick = ()=> declineInvite(b.dataset.decline);
+        });
+      }
+    }else{
+      $('invites').innerHTML = `<div class="sub">Sign in to see invites.</div>`;
+    }
+
+    // Browse
     const q = ($('q').value || '').trim().toLowerCase();
     const { data:teams, error:teamsErr } = await supabase
       .from('teams')
@@ -517,7 +634,6 @@
   }
 
   $('q').addEventListener('input', ()=> loadAll());
-
   window.addEventListener('DOMContentLoaded', loadAll);
 </script>
 </body>

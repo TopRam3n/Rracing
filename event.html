@@ -69,6 +69,7 @@
       border:1px solid var(--line);
       cursor:pointer;background:transparent;color:var(--fg);
       font-family:inherit;font-size:13px;
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
     }
     .btn.primary{
       background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
@@ -78,6 +79,17 @@
     .btn.primary:hover{
       box-shadow:0 0 26px rgba(229,9,20,.7);
       transform:translateY(-1px);
+    }
+    .btn.yellow{
+      background:radial-gradient(circle at top left, #ffe58a, var(--accent-yellow));
+      color:#111;
+      border-color:rgba(255,217,59,.7);
+      box-shadow:0 0 18px rgba(255,217,59,.25);
+      font-weight:700;
+    }
+    .btn.yellow:hover{
+      transform:translateY(-1px);
+      box-shadow:0 0 26px rgba(255,217,59,.32);
     }
 
     .section{padding:40px 0 52px}
@@ -161,6 +173,35 @@
       display:inline-flex;align-items:center;
       padding:5px 10px;border-radius:999px;
       background:var(--accent-yellow);color:#111;font-size:12px;border:1px solid rgba(255,217,59,.65);
+      font-weight:700;
+    }
+
+    /* ===== Payment / RSVP code blocks ===== */
+    .info-block{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.22);
+      border-radius:16px;
+      padding:12px;
+      margin-top:14px;
+    }
+    .info-title{
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+    .code-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:8px 12px;
+      border:1px solid rgba(255,217,59,.25);
+      background:rgba(255,217,59,.08);
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
     }
   </style>
 </head>
@@ -243,6 +284,21 @@
         weekday:'short',month:'short',day:'2-digit',
         hour:'2-digit',minute:'2-digit'
       });
+    }
+
+    // RSVP code generator: RR-8F3K2
+    function generateRsvpCode(){
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
+      let out = "RR-";
+      for (let i=0;i<5;i++){
+        out += alphabet[Math.floor(Math.random()*alphabet.length)];
+      }
+      return out;
+    }
+
+    function isMissingColumnError(err){
+      const msg = (err?.message || "").toLowerCase();
+      return msg.includes("column") && msg.includes("does not exist");
     }
 
     let currentUserId = null;
@@ -340,6 +396,15 @@
       `;
     }
 
+    function openExternalPayment(url){
+      if(!url) return;
+      try{
+        window.open(url, "_blank", "noopener,noreferrer");
+      }catch(e){
+        location.href = url;
+      }
+    }
+
     async function loadEvent(){
       const card = el('eventCard');
       if(!eventId){
@@ -348,7 +413,12 @@
       }
 
       const { data, error } = await supabase.from('events')
-        .select('id,title,starts_at,ends_at,location,description,cover_url,created_by,team_id,teams:team_id(id,name,is_promoter,logo_url)')
+        .select(`
+          id,title,starts_at,ends_at,location,description,cover_url,
+          created_by,team_id,
+          payment_url,payment_label,payment_instructions,
+          teams:team_id(id,name,is_promoter,logo_url)
+        `)
         .eq('id', eventId)
         .maybeSingle();
 
@@ -361,12 +431,14 @@
 
       const time = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
       const canEdit = !!(currentUserId && data.created_by && data.created_by === currentUserId);
+
       const hostTeamPill = data.teams?.id
         ? `<a class="chip" href="/team.html?id=${data.teams.id}" style="text-decoration:none">
             🏁 Host: ${escapeHTML(data.teams.name || 'Team')}
           </a>`
         : '';
 
+      const hasPay = !!data.payment_url;
 
       card.innerHTML = `
         ${data.cover_url ? `<img src="${escapeHTML(data.cover_url)}" alt="${escapeHTML(data.title)}" style="width:100%;display:block">` : ""}
@@ -385,12 +457,40 @@
             ${escapeHTML(data.description||"").replace(/\n/g,'<br>')}
           </p>
 
+          <!-- Payment block (external link) -->
+          <div id="paymentBlock" class="info-block" style="${hasPay ? '' : 'display:none'}">
+            <div class="info-title">Tickets</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+              <div class="sub" style="font-size:13px;max-width:520px">
+                ${escapeHTML(data.payment_instructions || "Pay using the promoter's external link. If you're paying by transfer, use your RSVP code as reference where possible.")}
+              </div>
+              <button id="payNowBtn" class="btn yellow" type="button">
+                ${escapeHTML(data.payment_label || "Pay now (external)")} ↗
+              </button>
+            </div>
+          </div>
+
+          <!-- RSVP code block -->
+          <div id="rsvpCodeBlock" class="info-block" style="display:none">
+            <div class="info-title">Your RSVP code</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+              <span class="code-pill">🎟 <span id="rsvpCodeText">RR-XXXXX</span></span>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button id="copyRsvpCode" class="btn" type="button">Copy</button>
+                <button id="shareRsvpCode" class="btn" type="button">Share</button>
+              </div>
+            </div>
+            <div class="sub" style="margin-top:8px;font-size:13px">
+              Use this at the gate, or as your transfer reference if the promoter requests it.
+            </div>
+          </div>
+
           <div class="toolbar" id="ownerToolbar" style="${canEdit?'':'display:none'}">
             <button class="btn" id="editBtn">Edit</button>
             <button class="btn" id="deleteBtn">Delete</button>
           </div>
 
-          <div class="grid cols-2" style="margin-top:12px">
+          <div class="grid cols-2" style="margin-top:12px" id="rsvp">
             <div>
               <label class="sub" for="attachBuild">Attach build (optional):</label>
               <select id="attachBuild" class="input" style="max-width:320px">
@@ -415,6 +515,12 @@
             <input id="e_ends" class="input" placeholder="Ends (YYYY-MM-DD HH:MM)" value="${data.ends_at? new Date(data.ends_at).toISOString().slice(0,16).replace('T',' '):''}">
             <input id="e_cover" class="input" placeholder="Cover URL" value="${escapeHTML(data.cover_url||'')}">
             <textarea id="e_desc" class="input" rows="4" placeholder="Description">${escapeHTML(data.description||'')}</textarea>
+
+            <!-- Optional: allow editing payment fields if you want (kept hidden unless you add UI later) -->
+            <input id="e_pay_url" class="input" placeholder="Payment URL (external)" value="${escapeHTML(data.payment_url||'')}">
+            <input id="e_pay_label" class="input" placeholder="Payment button label" value="${escapeHTML(data.payment_label||'')}">
+            <textarea id="e_pay_ins" class="input" rows="3" placeholder="Payment instructions">${escapeHTML(data.payment_instructions||'')}</textarea>
+
             <div style="display:flex;gap:10px">
               <button id="saveEdit" class="btn primary">Save</button>
               <button id="cancelEdit" class="btn">Cancel</button>
@@ -424,10 +530,18 @@
 
       await renderTeamForEvent(data);
 
+      // Wire payment button
+      const payBtn = el('payNowBtn');
+      if (payBtn && data.payment_url){
+        payBtn.onclick = ()=> openExternalPayment(data.payment_url);
+      }
+
+      // RSVP button handlers
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
         btn.addEventListener('click', ()=> requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
       });
 
+      // Owner edit/delete
       if(canEdit){
         el('editBtn').onclick = ()=> el('editForm').style.display = 'block';
         el('cancelEdit').onclick = ()=> el('editForm').style.display = 'none';
@@ -439,12 +553,37 @@
           const cover = el('e_cover').value.trim() || null;
           const desc = el('e_desc').value.trim() || null;
 
-          const payload = { title, location: locationTxt, cover_url: cover, description: desc };
+          // payment fields
+          const payUrl = (el('e_pay_url')?.value || '').trim() || null;
+          const payLabel = (el('e_pay_label')?.value || '').trim() || null;
+          const payIns = (el('e_pay_ins')?.value || '').trim() || null;
+
+          const payload = {
+            title,
+            location: locationTxt,
+            cover_url: cover,
+            description: desc,
+            payment_url: payUrl,
+            payment_label: payLabel,
+            payment_instructions: payIns
+          };
+
           payload.starts_at = startsAt ? new Date(startsAt.replace(' ','T')).toISOString() : null;
           payload.ends_at = endsAt ? new Date(endsAt.replace(' ','T')).toISOString() : null;
 
           const { error } = await supabase.from('events').update(payload).eq('id', eventId);
-          if(error) return alert('Update failed: ' + error.message);
+
+          // If payment columns don't exist yet, don't block saving core fields
+          if (error && isMissingColumnError(error)){
+            delete payload.payment_url;
+            delete payload.payment_label;
+            delete payload.payment_instructions;
+            const { error: e2 } = await supabase.from('events').update(payload).eq('id', eventId);
+            if (e2) return alert('Update failed: ' + e2.message);
+          } else if (error){
+            return alert('Update failed: ' + error.message);
+          }
+
           await loadEvent();
           alert('Saved.');
         };
@@ -459,6 +598,11 @@
       await loadMyBuilds();
       await loadMyRsvp();
       await refreshRsvpCounts();
+
+      // If you land on #rsvp (from homepage button), scroll nicely
+      if (location.hash === '#rsvp'){
+        setTimeout(()=> document.getElementById('rsvp')?.scrollIntoView({ behavior:'smooth', block:'start' }), 250);
+      }
     }
 
     function renderComment(c){
@@ -573,7 +717,6 @@
       if(!eventId) return;
       commentsChannel?.unsubscribe();
 
-      // IMPORTANT: use target_type/target_id filters
       commentsChannel = supabase.channel(`comments-${eventId}`)
         .on('postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
@@ -656,6 +799,41 @@
       ).join("");
     }
 
+    function showRsvpCodeUI(code){
+      const block = el('rsvpCodeBlock');
+      const text = el('rsvpCodeText');
+      if(!block || !text) return;
+
+      if(!code){
+        block.style.display = 'none';
+        return;
+      }
+
+      block.style.display = 'block';
+      text.textContent = code;
+
+      const copyBtn = el('copyRsvpCode');
+      const shareBtn = el('shareRsvpCode');
+
+      copyBtn?.addEventListener('click', async ()=>{
+        try{
+          await navigator.clipboard.writeText(code);
+          alert('RSVP code copied.');
+        }catch(e){
+          prompt('Copy your RSVP code:', code);
+        }
+      });
+
+      shareBtn?.addEventListener('click', async ()=>{
+        const msg = `ROK Racers RSVP Code: ${code}`;
+        if (navigator.share){
+          try{ await navigator.share({ text: msg }); }catch(e){}
+        } else {
+          prompt('Share this RSVP code:', msg);
+        }
+      });
+    }
+
     async function loadMyRsvp(){
       const { data: { user } } = await supabase.auth.getUser();
       const badge = el('rsvpStatus');
@@ -663,27 +841,108 @@
       if(!user){
         if(badge) badge.textContent = '';
         if(sel) sel.value = '';
+        showRsvpCodeUI(null);
         return;
       }
 
-      const { data, error } = await supabase
+      // Try to include rsvp_code. If column doesn't exist, retry without it.
+      let rsvpRow = null;
+
+      const res = await supabase
         .from('event_rsvps')
-        .select('status, build_id')
+        .select('status, build_id, rsvp_code')
         .eq('event_id', eventId)
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if(error){
-        console.error(error);
+      if(res.error && isMissingColumnError(res.error)){
+        const res2 = await supabase
+          .from('event_rsvps')
+          .select('status, build_id')
+          .eq('event_id', eventId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if(res2.error){
+          console.error(res2.error);
+          return;
+        }
+        rsvpRow = res2.data;
+      } else if (res.error){
+        console.error(res.error);
         return;
+      } else {
+        rsvpRow = res.data;
       }
-      if(data){
-        if(badge) badge.textContent = `Your RSVP: ${data.status}`;
-        if(sel && data.build_id) sel.value = data.build_id;
-      }else{
+
+      if(rsvpRow){
+        if(badge) badge.textContent = `Your RSVP: ${rsvpRow.status}`;
+        if(sel && rsvpRow.build_id) sel.value = rsvpRow.build_id;
+        showRsvpCodeUI(rsvpRow.rsvp_code || null);
+      } else {
         if(badge) badge.textContent = 'No RSVP yet';
         if(sel) sel.value = '';
+        showRsvpCodeUI(null);
       }
+    }
+
+    async function ensureRsvpCodeIfNew(userId){
+      // Check if user already has RSVP for this event
+      const existingRes = await supabase
+        .from('event_rsvps')
+        .select('status, build_id, rsvp_code')
+        .eq('event_id', eventId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      // If rsvp_code column doesn't exist, just return null and let RSVP proceed normally
+      if(existingRes.error && isMissingColumnError(existingRes.error)){
+        return { existing: existingRes.data || null, code: null, columnMissing: true };
+      }
+      if(existingRes.error){
+        // if some other error, still let RSVP proceed but no code
+        console.error(existingRes.error);
+        return { existing: null, code: null, columnMissing: false };
+      }
+
+      if(existingRes.data?.rsvp_code){
+        return { existing: existingRes.data, code: existingRes.data.rsvp_code, columnMissing: false };
+      }
+
+      // If no RSVP exists yet, we generate a code for first insert.
+      // If RSVP exists but no code, we can still generate and patch it.
+      const needsCode = true;
+      if(!needsCode) return { existing: existingRes.data || null, code: null, columnMissing: false };
+
+      // Try a few times in case of unique collision
+      for (let attempt=0; attempt<6; attempt++){
+        const code = generateRsvpCode();
+
+        if(existingRes.data){
+          // Patch existing row
+          const upd = await supabase
+            .from('event_rsvps')
+            .update({ rsvp_code: code })
+            .eq('event_id', eventId)
+            .eq('user_id', userId);
+
+          if(!upd.error){
+            return { existing: existingRes.data, code, columnMissing: false };
+          }
+          // If unique violation, try again
+          const msg = (upd.error?.message || "").toLowerCase();
+          if(msg.includes('duplicate') || msg.includes('unique')){
+            continue;
+          }
+          console.error(upd.error);
+          return { existing: existingRes.data, code: null, columnMissing: false };
+        } else {
+          // We'll insert RSVP later with the code (handled in upsertRsvp)
+          return { existing: null, code, columnMissing: false };
+        }
+      }
+
+      return { existing: existingRes.data || null, code: null, columnMissing: false };
     }
 
     async function upsertRsvp(newStatus){
@@ -694,23 +953,64 @@
       }
       const buildId = el('attachBuild')?.value || null;
 
-      const { error } = await supabase
-        .from('event_rsvps')
-        .upsert({
+      // Try to create/ensure RSVP code (if your column exists)
+      const codeInfo = await ensureRsvpCodeIfNew(user.id);
+
+      // If RSVP existed already, use normal upsert (don’t overwrite their code)
+      if (codeInfo.existing){
+        const { error } = await supabase
+          .from('event_rsvps')
+          .upsert({
+            event_id: eventId,
+            user_id: user.id,
+            status: newStatus,
+            build_id: buildId || null
+          }, { onConflict: 'event_id,user_id' });
+
+        if(error){
+          alert('RSVP failed: ' + error.message);
+          return;
+        }
+      } else {
+        // First RSVP insert: include code if available and column exists
+        const payload = {
           event_id: eventId,
           user_id: user.id,
           status: newStatus,
           build_id: buildId || null
-        }, { onConflict: 'event_id,user_id' });
+        };
 
-      if(error){
-        alert('RSVP failed: ' + error.message);
-        return;
+        if (!codeInfo.columnMissing && codeInfo.code){
+          payload.rsvp_code = codeInfo.code;
+        }
+
+        const { error } = await supabase
+          .from('event_rsvps')
+          .upsert(payload, { onConflict: 'event_id,user_id' });
+
+        if(error){
+          // If we tried to write rsvp_code but column isn't there, retry without it
+          if (isMissingColumnError(error)){
+            delete payload.rsvp_code;
+            const { error: e2 } = await supabase
+              .from('event_rsvps')
+              .upsert(payload, { onConflict: 'event_id,user_id' });
+            if (e2){
+              alert('RSVP failed: ' + e2.message);
+              return;
+            }
+          } else {
+            alert('RSVP failed: ' + error.message);
+            return;
+          }
+        }
       }
+
       await loadMyRsvp();
       await refreshRsvpCounts();
       alert('RSVP saved.');
     }
+
 
     window.addEventListener('DOMContentLoaded', async ()=>{
       await syncPageAuth();

@@ -38,11 +38,11 @@
       border-bottom:1px solid var(--line);
       backdrop-filter:saturate(140%) blur(8px);
     }
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:14px;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:12px}
     .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
     .title small{color:var(--muted)}
-    .menu{display:flex;gap:10px;align-items:center}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .btn{
       display:inline-flex;gap:8px;align-items:center;
       padding:10px 14px;border-radius:14px;
@@ -68,9 +68,7 @@
       padding:8px 14px;border-radius:999px;
       cursor:pointer;font:inherit;
     }
-    .tab-btn.active{
-      background:#fff;color:#000;
-    }
+    .tab-btn.active{background:#fff;color:#000}
     .tab-panel{display:none;margin-top:18px}
     .tab-panel.active{display:block}
 
@@ -120,6 +118,15 @@
       text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
     }
     .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    .skeleton{
+      background:linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background-size:200% 100%;
+      animation:shimmer 1.2s infinite;
+      border-radius:14px;
+      border:1px solid var(--line);
+    }
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
   </style>
 </head>
 <body>
@@ -133,7 +140,7 @@
         </div>
       </a>
 
-      <div style="display:flex;gap:12px;align-items:center">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <div class="menu">
           <a class="btn" href="/events.html">Events</a>
           <a class="btn" href="/garage.html">Garage</a>
@@ -167,14 +174,17 @@
   <main class="container">
     <section class="section">
       <div class="row">
-        <div class="row" style="gap:16px;align-items:center">
+        <div class="row" style="gap:16px;align-items:center;justify-content:flex-start">
           <div class="avatar" id="profileAvatar">U</div>
           <div>
-            <h2 id="profileTitle" style="font-size:40px">My profile</h2>
+            <div class="row" style="justify-content:flex-start">
+              <h2 id="profileTitle" style="font-size:40px">My profile</h2>
+              <span id="myTeamPill" class="pill" style="display:none"></span>
+            </div>
             <div id="profileEmail" class="sub"></div>
           </div>
         </div>
-        <button id="editGarageBtn" class="btn small" type="button" onclick="location.href='/create-build.html'">
+        <button id="newBuildBtn" class="btn small" type="button" onclick="location.href='/create-build.html'">
           + New build
         </button>
       </div>
@@ -191,102 +201,206 @@
 
       <!-- GARAGE -->
       <div id="panel-garage" class="tab-panel active">
-        <div id="garageGrid" class="grid cols-3" style="margin-top:18px">
-          <article class="card"><div class="pad sub">Loading your builds…</div></article>
-        </div>
+        <div id="garageGrid" class="grid cols-3" style="margin-top:18px"></div>
       </div>
 
       <!-- TICKETS -->
       <div id="panel-tickets" class="tab-panel">
-        <div id="ticketsGrid" class="grid cols-2" style="margin-top:18px">
-          <article class="card"><div class="pad sub">Loading your tickets…</div></article>
-        </div>
+        <div id="ticketsGrid" class="grid cols-2" style="margin-top:18px"></div>
       </div>
 
       <!-- LIKED BUILDS -->
       <div id="panel-liked-builds" class="tab-panel">
-        <div id="likedBuildsGrid" class="grid cols-3" style="margin-top:18px">
-          <article class="card"><div class="pad sub">Loading…</div></article>
-        </div>
+        <div id="likedBuildsGrid" class="grid cols-3" style="margin-top:18px"></div>
       </div>
 
       <!-- LIKED SIGHTINGS -->
       <div id="panel-liked-sightings" class="tab-panel">
-        <div id="likedSightingsGrid" class="grid cols-3" style="margin-top:18px">
-          <article class="card"><div class="pad sub">Loading…</div></article>
-        </div>
+        <div id="likedSightingsGrid" class="grid cols-3" style="margin-top:18px"></div>
       </div>
 
       <!-- LIKED HIGHLIGHTS -->
       <div id="panel-liked-highlights" class="tab-panel">
-        <div id="likedHighlightsGrid" class="grid cols-3" style="margin-top:18px">
-          <article class="card"><div class="pad sub">Loading…</div></article>
-        </div>
+        <div id="likedHighlightsGrid" class="grid cols-3" style="margin-top:18px"></div>
       </div>
     </section>
   </main>
 
   <script>
-    // Fallback requireLogin if not supplied by auth-ui.js
-    if (!window.requireLogin) {
-      window.requireLogin = async function(callback){
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          const email = prompt("Enter your email to sign in:");
-          if (!email) return false;
-          const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: location.href }
-          });
-          if (error) { alert("Sign-in error: " + error.message); return false; }
-          alert("Magic link sent. Check your email, then reload.");
-          return false;
-        }
-        if (callback) callback(user);
-        return true;
-      };
-    }
-
     const $ = (id)=>document.getElementById(id);
 
     function escapeHTML(s){
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    // ---- Tabs ----
+    async function requireLoginUnified(cb){
+      if(window.authUI?.requireLogin){
+        try{
+          const ok = await window.authUI.requireLogin(cb);
+          return !!ok;
+        }catch(e){
+          console.warn('authUI.requireLogin failed, falling back', e);
+        }
+      }
+      const { data:{ user } } = await supabase.auth.getUser();
+      if(!user){
+        const email = prompt("Enter your email to sign in:");
+        if(!email) return false;
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options:{ emailRedirectTo: location.href }
+        });
+        if(error){ alert("Sign-in error: " + error.message); return false; }
+        alert("Magic link sent. Check your email, then reload.");
+        return false;
+      }
+      cb?.(user);
+      return true;
+    }
+
+    async function initNav(){
+      const { data:{ user } } = await supabase.auth.getUser();
+
+      const signInBtn = $('navSignInBtn');
+      const wrap = $('navProfileWrap');
+
+      if(signInBtn) signInBtn.style.display = user ? 'none' : 'inline-flex';
+      if(wrap) wrap.style.display = user ? 'flex' : 'none';
+
+      if(user){
+        const base = user.user_metadata?.full_name || user.email || 'Driver';
+        const initial = base.trim().charAt(0).toUpperCase();
+        const ni = $('navProfileInitials');
+        if(ni) ni.textContent = initial;
+      }
+
+      const chip = $('navProfileChip');
+      const dropdown = $('navProfileDropdown');
+
+      if(chip && dropdown){
+        chip.onclick = ()=>{
+          const open = dropdown.style.display === 'flex';
+          dropdown.style.display = open ? 'none' : 'flex';
+          chip.setAttribute('aria-expanded', open ? 'false' : 'true');
+        };
+        document.addEventListener('click', (e)=>{
+          if(!dropdown || dropdown.style.display !== 'flex') return;
+          const inside = chip.contains(e.target) || dropdown.contains(e.target);
+          if(!inside){
+            dropdown.style.display = 'none';
+            chip.setAttribute('aria-expanded','false');
+          }
+        });
+      }
+
+      $('navSignOutBtn')?.addEventListener('click', async ()=>{
+        await supabase.auth.signOut();
+        location.reload();
+      });
+
+      $('navSignInBtn')?.addEventListener('click', async ()=>{
+        await requireLoginUnified();
+      });
+    }
+
+    // ---- Tabs + lazy load ----
+    const loaded = {
+      garage:false,
+      tickets:false,
+      likedBuilds:false,
+      likedSightings:false,
+      likedHighlights:false
+    };
+
+    function showSkeleton(gridId, count, cols){
+      const grid = $(gridId);
+      if(!grid) return;
+      grid.className = `grid ${cols}`;
+      grid.innerHTML = Array.from({length:count}).map(()=>`
+        <article class="card">
+          <div class="skeleton" style="width:100%;aspect-ratio:16/9"></div>
+          <div class="pad">
+            <div class="skeleton" style="height:14px;width:70%"></div>
+            <div style="height:10px"></div>
+            <div class="skeleton" style="height:12px;width:45%"></div>
+          </div>
+        </article>
+      `).join('');
+    }
+
     document.querySelectorAll('.tab-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+      btn.addEventListener('click', async ()=>{
         const tab = btn.dataset.tab;
+
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
         document.querySelectorAll('.tab-panel').forEach(p=>{
           p.classList.toggle('active', p.id === `panel-${tab}`);
         });
+
+        const user = window.__currentUser || null;
+        if(!user) return;
+
+        if(tab === 'garage' && !loaded.garage){ loaded.garage = true; await loadGarage(user); }
+        if(tab === 'tickets' && !loaded.tickets){ loaded.tickets = true; await loadTickets(user); }
+        if(tab === 'liked-builds' && !loaded.likedBuilds){ loaded.likedBuilds = true; await loadLikedBuilds(user); }
+        if(tab === 'liked-sightings' && !loaded.likedSightings){ loaded.likedSightings = true; await loadLikedSightings(user); }
+        if(tab === 'liked-highlights' && !loaded.likedHighlights){ loaded.likedHighlights = true; await loadLikedHighlights(user); }
       });
     });
 
-    // ---- Loaders ----
     async function ensureAuthedProfile(){
-      const ok = await window.authUI.requireLogin();
+      const ok = await requireLoginUnified();
       if(!ok){
         $('authMessage').textContent = 'Sign in to view your profile.';
         return null;
       }
-      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data:{ user } } = await supabase.auth.getUser();
       if(!user){
         $('authMessage').textContent = 'Sign in to view your profile.';
         return null;
       }
+
+      window.__currentUser = user;
       $('authMessage').textContent = '';
+
       const base = user.user_metadata?.full_name || user.email || 'Driver';
       $('profileTitle').textContent = base;
       $('profileEmail').textContent = user.email || '';
       $('profileAvatar').textContent = base.trim().charAt(0).toUpperCase();
+
+      // Optional: show active team label (if team_members exists)
+      await loadMyTeamPill(user);
+
       return user;
     }
 
+    async function loadMyTeamPill(user){
+      const pill = $('myTeamPill');
+      if(!pill) return;
+
+      // Show first active team only (label), keep it simple
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('role, teams:team_id(id,name,is_promoter)')
+        .eq('user_id', user.id);
+
+      if(error || !data){ pill.style.display='none'; return; }
+
+      const active = (data || []).filter(r => r.role && r.role !== 'pending' && r.teams);
+      if(!active.length){ pill.style.display='none'; return; }
+
+      const t = active[0].teams;
+      pill.style.display = 'inline-flex';
+      pill.textContent = `My team: ${t.name || 'Team'}`;
+      pill.onclick = ()=> location.href = `/team.html?id=${encodeURIComponent(t.id)}`;
+      pill.style.cursor = 'pointer';
+    }
+
+    // ---- Loaders ----
     async function loadGarage(user){
-      const grid = $('garageGrid');
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading your builds…</div></article>`;
+      const gridId = 'garageGrid';
+      showSkeleton(gridId, 6, 'cols-3');
 
       const { data, error } = await supabase
         .from('builds')
@@ -294,6 +408,7 @@
         .eq('user_id', user.id)
         .order('created_at', { ascending:false });
 
+      const grid = $(gridId);
       if(error){
         console.error(error);
         grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
@@ -315,7 +430,7 @@
 
         return `
           <article class="card">
-            <a href="/build.html?id=${b.id}">
+            <a href="/build.html?id=${encodeURIComponent(b.id)}">
               ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -330,8 +445,8 @@
     }
 
     async function loadTickets(user){
-      const grid = $('ticketsGrid');
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading your tickets…</div></article>`;
+      const gridId = 'ticketsGrid';
+      showSkeleton(gridId, 4, 'cols-2');
 
       const rsvpRes = await supabase
         .from('event_rsvps')
@@ -340,6 +455,7 @@
         .eq('status','yes')
         .order('created_at',{ascending:false});
 
+      const grid = $(gridId);
       if(rsvpRes.error){
         console.error(rsvpRes.error);
         grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load tickets.</div></article>`;
@@ -362,6 +478,7 @@
         grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events for your tickets.</div></article>`;
         return;
       }
+
       const events = evRes.data || [];
       const map = new Map(events.map(e=>[e.id,e]));
 
@@ -408,11 +525,11 @@
                     ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ''}
                   </div>
                 </div>
-                <span class="pill">RSVP: ${escapeHTML(rsvp.status.toUpperCase())}</span>
+                <span class="pill">RSVP: ${escapeHTML(String(rsvp.status || '').toUpperCase())}</span>
               </div>
               <div class="row" style="margin-top:8px">
                 <span class="sub">Booked on ${escapeHTML(booked)}</span>
-                <a class="btn small" href="/event.html?id=${event.id}">View event</a>
+                <a class="btn small" href="/event.html?id=${encodeURIComponent(event.id)}">View event</a>
               </div>
             </div>
           </article>`;
@@ -420,8 +537,8 @@
     }
 
     async function loadLikedBuilds(user){
-      const grid = $('likedBuildsGrid');
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+      const gridId = 'likedBuildsGrid';
+      showSkeleton(gridId, 6, 'cols-3');
 
       const { data, error } = await supabase
         .from('build_likes')
@@ -442,6 +559,7 @@
         .eq('user_id', user.id)
         .order('created_at',{ascending:false});
 
+      const grid = $(gridId);
       if(error){
         console.error(error);
         grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load liked builds.</div></article>`;
@@ -457,7 +575,7 @@
       grid.innerHTML = rows.map(r=>{
         const b = r.builds;
         const d = b.created_at ? new Date(b.created_at) : null;
-        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) : "";
+        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}) : "";
         const badges = [];
         if(b.build_type) badges.push(b.build_type);
         if(b.stage) badges.push(`Stage ${b.stage}`);
@@ -466,7 +584,7 @@
 
         return `
           <article class="card">
-            <a href="/build.html?id=${b.id}">
+            <a href="/build.html?id=${encodeURIComponent(b.id)}">
               ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -481,8 +599,8 @@
     }
 
     async function loadLikedSightings(user){
-      const grid = $('likedSightingsGrid');
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+      const gridId = 'likedSightingsGrid';
+      showSkeleton(gridId, 6, 'cols-3');
 
       const { data, error } = await supabase
         .from('sighting_likes')
@@ -501,6 +619,7 @@
         .eq('user_id', user.id)
         .order('created_at',{ascending:false});
 
+      const grid = $(gridId);
       if(error){
         console.error(error);
         grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load liked sightings.</div></article>`;
@@ -516,13 +635,13 @@
       grid.innerHTML = rows.map(r=>{
         const s = r.sightings;
         const d = s.created_at ? new Date(s.created_at) : null;
-        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) : "";
+        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}) : "";
         const loc = s.location || s.parish || "";
 
         return `
           <article class="card">
-            <a href="/sighting.html?id=${s.id}">
-              <img src="${escapeHTML(s.image_url)}" alt="${escapeHTML(s.title || 'Car sighting')}" loading="lazy">
+            <a href="/sighting.html?id=${encodeURIComponent(s.id)}">
+              ${s.image_url ? `<img src="${escapeHTML(s.image_url)}" alt="${escapeHTML(s.title || 'Car sighting')}" loading="lazy">` : ''}
             </a>
             <div class="pad">
               <strong>${escapeHTML(s.title || 'Untitled sighting')}</strong>
@@ -537,8 +656,8 @@
     }
 
     async function loadLikedHighlights(user){
-      const grid = $('likedHighlightsGrid');
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading…</div></article>`;
+      const gridId = 'likedHighlightsGrid';
+      showSkeleton(gridId, 6, 'cols-3');
 
       const { data, error } = await supabase
         .from('highlight_likes')
@@ -557,6 +676,7 @@
         .eq('user_id', user.id)
         .order('created_at',{ascending:false});
 
+      const grid = $(gridId);
       if(error){
         console.error(error);
         grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load liked highlights.</div></article>`;
@@ -576,7 +696,7 @@
 
         return `
           <article class="card">
-            <a href="/highlight.html?id=${h.id}">
+            <a href="/highlight.html?id=${encodeURIComponent(h.id)}">
               ${h.cover_url ? `<img src="${escapeHTML(h.cover_url)}" alt="${escapeHTML(h.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -592,13 +712,30 @@
     }
 
     window.addEventListener('DOMContentLoaded', async ()=>{
+      await initNav();
+
+      // seed skeleton for first tab so it feels instant
+      showSkeleton('garageGrid', 6, 'cols-3');
+
       const user = await ensureAuthedProfile();
-      if(!user) return;
-      loadGarage(user);
-      loadTickets(user);
-      loadLikedBuilds(user);
-      loadLikedSightings(user);
-      loadLikedHighlights(user);
+      if(!user){
+        // hide content grids if not authed
+        $('garageGrid').innerHTML = `<article class="card"><div class="pad sub">Sign in to view your profile.</div></article>`;
+        $('ticketsGrid').innerHTML = '';
+        $('likedBuildsGrid').innerHTML = '';
+        $('likedSightingsGrid').innerHTML = '';
+        $('likedHighlightsGrid').innerHTML = '';
+        return;
+      }
+
+      // Load only Garage initially (lazy-load others on tab click)
+      loaded.garage = true;
+      await loadGarage(user);
+
+      // keep nav in sync
+      supabase.auth.onAuthStateChange(async ()=>{
+        await initNav();
+      });
     });
   </script>
 </body>

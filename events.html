@@ -407,13 +407,6 @@
           <option value="">Select a team…</option>
         </select>
 
-        <!-- NEW: Host filter -->
-        <select id="host" aria-label="Host">
-          <option value="">Any host</option>
-          <option value="promoters">Promoters only</option>
-          <!-- team options injected -->
-        </select>
-
         <button class="btn" id="apply">Apply</button>
       </div>
 
@@ -503,8 +496,8 @@
     let cached    = [];
     let filtered  = [];
 
-    let teamsIndex = new Map();          // team_id -> {id,name,is_promoter}
-    let promoterTeamIds = new Set();     // team_ids where is_promoter true
+    let teamsIndex = new Map(); // team_id -> {id,name,is_promoter}
+    let promoterTeamIds = new Set();
 
     function escapeHTML(s){
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -522,6 +515,11 @@
       return d >= now;
     }
 
+    function isPromoterEvent(e){
+      // treat as promoter-hosted if the joined team row exists and is_promoter = true
+      return !!(e.teams && e.teams.is_promoter);
+    }
+
     function renderEventListCard(e){
       const d   = e.starts_at ? new Date(e.starts_at) : null;
       const m   = d ? d.toLocaleString("en-US",{ month:"short" }).toUpperCase() : "--";
@@ -529,10 +527,6 @@
       const when = d
         ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
         : "";
-      const hostTeam = e.teams?.id
-        ? `<div class="sub">Host team: <a href="/team.html?id=${e.teams.id}" style="text-decoration:underline">${e.teams.name || 'View team'}</a></div>`
-        : '';
-
 
       const parish = e.parish || "";
       const locLabel = [parish, e.location].filter(Boolean).join(" · ");
@@ -612,19 +606,10 @@
       const q     = document.getElementById('q').value.trim().toLowerCase();
       const month = document.getElementById('month').value;
       const when  = document.getElementById('when').value;
-      const host  = document.getElementById('host').value; // "" | "promoters" | "team:<id>"
-      const hostFilter = document.getElementById('hostFilter').value;
-      const hostTeamId = document.getElementById('hostTeam').value;
 
-        if (hostFilter === 'promoters'){
-          rows = rows.filter(isPromoterEvent);
-        } else if (hostFilter === 'team'){
-          if (hostTeamId){
-            rows = rows.filter(r => r.team_id === hostTeamId);
-          } else {
-            rows = []; // user picked "Specific team" but didn't choose a team yet
-          }
-        }
+      // Host filter UI (hostFilter + hostTeam)
+      const hostFilter = document.getElementById('hostFilter').value; // all | promoters | team
+      const hostTeamId = document.getElementById('hostTeam').value;
 
       let rows = cached.slice(0);
 
@@ -640,12 +625,15 @@
         rows = rows.filter(r => r.starts_at && withinMonth(r.starts_at, month));
       }
 
-      // Host filter
-      if (host === 'promoters'){
-        rows = rows.filter(r => r.team_id && promoterTeamIds.has(r.team_id));
-      } else if (host && host.startsWith('team:')){
-        const teamId = host.slice('team:'.length);
-        rows = rows.filter(r => (r.team_id || '') === teamId);
+      // Host filter (this is your team filtering)
+      if (hostFilter === 'promoters'){
+        rows = rows.filter(isPromoterEvent);
+      } else if (hostFilter === 'team'){
+        if (hostTeamId){
+          rows = rows.filter(r => r.team_id === hostTeamId);
+        } else {
+          rows = []; // picked "Specific team" but didn't choose a team yet
+        }
       }
 
       // Search (title + location + parish + host name)
@@ -662,39 +650,10 @@
     }
 
     async function loadHostTeamsForFilter(){
-  const sel = document.getElementById('hostTeam');
-  if(!sel) return;
+      const sel = document.getElementById('hostTeam');
+      if(!sel) return;
 
-  sel.innerHTML = `<option value="">Select a team…</option>`;
-
-  const { data, error } = await supabase
-    .from('teams')
-    .select('id,name')
-    .order('name', { ascending:true });
-
-  if(error){
-    console.error('loadHostTeamsForFilter', error);
-    return;
-  }
-
-  (data||[]).forEach(t=>{
-    const opt = document.createElement('option');
-    opt.value = t.id;
-    opt.textContent = t.name || 'Team';
-    sel.appendChild(opt);
-  });
-}
-
-
-    async function fetchTeamsForFilters(){
-      const hostSel = document.getElementById('host');
-      if(!hostSel) return;
-
-      // keep first two options (Any host + Promoters only), then rebuild team options
-      hostSel.innerHTML = `
-        <option value="">Any host</option>
-        <option value="promoters">Promoters only</option>
-      `;
+      sel.innerHTML = `<option value="">Select a team…</option>`;
 
       const { data, error } = await supabase
         .from('teams')
@@ -702,23 +661,19 @@
         .order('name', { ascending:true });
 
       if(error){
-        console.error('fetchTeamsForFilters error', error);
+        console.error('loadHostTeamsForFilter', error);
         return;
       }
 
       teamsIndex = new Map((data || []).map(t => [t.id, t]));
       promoterTeamIds = new Set((data || []).filter(t => t.is_promoter).map(t => t.id));
 
-      (data || []).forEach(t => {
+      (data || []).forEach(t=>{
         const opt = document.createElement('option');
-        opt.value = `team:${t.id}`;
-        opt.textContent = t.is_promoter ? `${t.name} (Promoter)` : t.name;
-        hostSel.appendChild(opt);
+        opt.value = t.id;
+        opt.textContent = t.name || 'Team';
+        sel.appendChild(opt);
       });
-    }
-    function isPromoterEvent(e){
-      // treat as promoter-hosted if the host team exists and is_promoter = true
-      return !!(e.teams && e.teams.is_promoter);
     }
 
     async function fetchAll(){
@@ -726,8 +681,8 @@
       list.innerHTML =
         `<article class="card"><div class="pad sub">Loading events…</div></article>`;
 
-      // ensure teams are available for host link + filters before rendering
-      await fetchTeamsForFilters();
+      // teamsIndex + promoterTeamIds (needed for host links + filters)
+      await loadHostTeamsForFilter();
 
       const [eventsRes, countsRes] = await Promise.all([
         supabase
@@ -755,25 +710,27 @@
         counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
       }));
     }
-    
-document.getElementById('hostFilter').addEventListener('change', async ()=>{
-  const mode = document.getElementById('hostFilter').value;
-  const teamSel = document.getElementById('hostTeam');
 
-  if(mode === 'team'){
-    teamSel.style.display = 'inline-block';
-    if(teamSel.options.length <= 1){
-      await loadHostTeamsForFilter();
-    }
-  } else {
-    teamSel.style.display = 'none';
-    teamSel.value = '';
-  }
-  applyFilters();
-});
+    // Host filter UI behavior
+    document.getElementById('hostFilter').addEventListener('change', async ()=>{
+      const mode = document.getElementById('hostFilter').value;
+      const teamSel = document.getElementById('hostTeam');
 
-document.getElementById('hostTeam').addEventListener('change', applyFilters);
+      if(mode === 'team'){
+        teamSel.style.display = 'inline-block';
+        if(teamSel.options.length <= 1){
+          await loadHostTeamsForFilter();
+        }
+      } else {
+        teamSel.style.display = 'none';
+        teamSel.value = '';
+      }
+      applyFilters();
+    });
 
+    document.getElementById('hostTeam').addEventListener('change', applyFilters);
+
+    // Apply + pagination
     document.getElementById('apply').addEventListener('click', applyFilters);
 
     document.getElementById('prev').addEventListener('click', () => {
@@ -791,13 +748,14 @@ document.getElementById('hostTeam').addEventListener('change', applyFilters);
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
-      await loadHostTeamsForFilter(); // optional: prefill, or only when needed
+      // preload teams so the team dropdown is ready
+      await loadHostTeamsForFilter();
+
       cached = await fetchAll();
       filtered = cached.slice(0);
       page = 0;
       renderCurrentPage();
     });
-
 
     /* ========= Create Event Modal ========= */
 
@@ -925,7 +883,6 @@ document.getElementById('hostTeam').addEventListener('change', applyFilters);
 
       const teams = (data || []).map(r => r.teams).filter(Boolean);
 
-      // if you want ONLY promoter teams to be able to host events, keep this:
       const allowed = teams;
 
       allowed.forEach(t => {

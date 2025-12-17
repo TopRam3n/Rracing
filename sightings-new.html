@@ -16,7 +16,6 @@
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
-  <!-- shared nav/auth helpers -->
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -27,25 +26,22 @@
       --shadow:0 40px 120px -30px rgba(0,0,0,.6);
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    body{margin:0;background:radial-gradient(circle at top,#1a1a1a 0,#141414 55%,#000 100%);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
     a{color:var(--fg);text-decoration:none}
-    .container{max-width:900px;margin:0 auto;padding:0 24px}
+    .container{max-width:950px;margin:0 auto;padding:0 24px}
     .sub{color:var(--muted)}
-
-    /* NAV like tickets/build */
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
     .nav{
       position:sticky;top:0;z-index:50;
       background:rgba(18,18,18,.9);
       border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(8px);
+      backdrop-filter:saturate(140%) blur(10px);
     }
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:12px;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:12px}
     .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
     .title small{color:var(--muted)}
-
-    .menu{display:flex;gap:10px;align-items:center}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .btn{
       display:inline-flex;gap:8px;align-items:center;
       padding:10px 14px;border-radius:14px;
@@ -55,26 +51,41 @@
     }
     .btn.primary{background:#fff;color:#000;border-color:#fff}
     .btn[disabled]{opacity:.5;pointer-events:none}
-
     .section{padding:48px 0}
-
-    input[type="text"],
-    select,
-    textarea,
-    input[type="file"]{
+    label{display:block;font-size:14px;margin-bottom:4px;color:var(--muted)}
+    input[type="text"], select, textarea, input[type="file"]{
       width:100%;background:var(--bg2);border:1px solid var(--line);
       color:#fff;padding:10px 12px;border-radius:12px;font:inherit;outline:none;
     }
-    textarea{min-height:70px;resize:vertical}
-    label{display:block;font-size:14px;margin-bottom:4px}
+    textarea{min-height:90px;resize:vertical}
     .field{margin-bottom:14px}
-
     .card{
       background:var(--bg1);
       border:1px solid var(--line);
       border-radius:20px;
       box-shadow:var(--shadow);
       padding:18px;
+    }
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:800px){.two{grid-template-columns:1fr}}
+    .preview{
+      margin-top:10px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      background:#000;
+      aspect-ratio:16/9;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .preview img,.preview video{width:100%;height:100%;object-fit:cover;display:block}
+    .hint{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:10px 12px;
+      margin-top:10px;
     }
 
     /* nav auth */
@@ -101,7 +112,6 @@
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <nav class="nav" role="navigation">
     <div class="container nav-inner">
       <a class="brand" href="/" aria-label="ROK Racers JA home">
@@ -118,6 +128,7 @@
           <a class="btn" href="/garage.html">Garage</a>
           <a class="btn" href="/sightings.html">Sightings</a>
         </div>
+
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Sign in</button>
           <div id="navProfileWrap" class="profile-menu" style="display:none">
@@ -129,6 +140,7 @@
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/bookmarks-sightings.html">Saved Sightings</a>
               <a href="/teams.html">My Teams</a>
               <a href="/activity.html">Activity</a>
               <button id="navSignOutBtn" type="button">Sign out</button>
@@ -141,58 +153,73 @@
 
   <main class="container">
     <section class="section">
-      <h2 style="font-size:40px">Upload a sighting</h2>
-      <p class="sub">Drop a clean shot of a car you caught on the road. Basic info now, we’ll add more filters later.</p>
+      <h2 style="font-size:44px">Upload a sighting</h2>
+      <p class="sub">15 seconds max for videos. Keep it clean. Blur plates.</p>
 
-      <p id="authWarning" class="sub" style="margin-top:8px"></p>
+      <div id="authWarning" class="hint sub" style="display:none"></div>
 
       <form id="sightingForm" class="card" style="margin-top:18px">
         <div class="field">
           <label for="title">Caption</label>
-          <textarea id="title" placeholder="e.g. Clean S15 leaving Half-Way-Tree…" required></textarea>
+          <input id="title" type="text" placeholder="e.g. Clean S15 leaving Half-Way-Tree…" required>
         </div>
 
         <div class="field">
-          <label for="location">Location (optional)</label>
-          <input id="location" type="text" placeholder="e.g. Half-Way-Tree, Kingston" />
+          <label for="description">Description (optional)</label>
+          <textarea id="description" placeholder="Any details? Color, wheels, sound, direction, vibe…"></textarea>
+        </div>
+
+        <div class="two">
+          <div class="field">
+            <label for="location">Location (optional)</label>
+            <input id="location" type="text" placeholder="e.g. Half-Way-Tree, Kingston" />
+          </div>
+
+          <div class="field">
+            <label for="parish">Parish (optional)</label>
+            <select id="parish">
+              <option value="">Select parish…</option>
+              <option value="Kingston">Kingston</option>
+              <option value="St. Andrew">St. Andrew</option>
+              <option value="St. Catherine">St. Catherine</option>
+              <option value="St. Thomas">St. Thomas</option>
+              <option value="Portland">Portland</option>
+              <option value="St. Mary">St. Mary</option>
+              <option value="St. Ann">St. Ann</option>
+              <option value="Trelawny">Trelawny</option>
+              <option value="St. James">St. James</option>
+              <option value="Hanover">Hanover</option>
+              <option value="Westmoreland">Westmoreland</option>
+              <option value="St. Elizabeth">St. Elizabeth</option>
+              <option value="Manchester">Manchester</option>
+              <option value="Clarendon">Clarendon</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="field">
+            <label for="username">Username (optional)</label>
+            <input id="username" type="text" placeholder="e.g. britp / rrxngdriver" />
+          </div>
+
+          <div class="field">
+            <label for="social">Social handle (optional)</label>
+            <input id="social" type="text" placeholder="@rrxng_ja, TikTok, or other handle" />
+          </div>
         </div>
 
         <div class="field">
-          <label for="parish">Parish (optional)</label>
-          <select id="parish">
-            <option value="">Select parish…</option>
-            <option value="Kingston">Kingston</option>
-            <option value="St. Andrew">St. Andrew</option>
-            <option value="St. Catherine">St. Catherine</option>
-            <option value="St. Thomas">St. Thomas</option>
-            <option value="Portland">Portland</option>
-            <option value="St. Mary">St. Mary</option>
-            <option value="St. Ann">St. Ann</option>
-            <option value="Trelawny">Trelawny</option>
-            <option value="St. James">St. James</option>
-            <option value="Hanover">Hanover</option>
-            <option value="Westmoreland">Westmoreland</option>
-            <option value="St. Elizabeth">St. Elizabeth</option>
-            <option value="Manchester">Manchester</option>
-            <option value="Clarendon">Clarendon</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="social">Social handle (optional)</label>
-          <input id="social" type="text" placeholder="@rrxng_ja, TikTok, or other handle" />
-          <p class="sub" style="font-size:12px;margin-top:4px">
-            We’ll show this under your sighting so people know who caught the shot.
+          <label for="media">Photo or 15s video</label>
+          <input id="media" type="file" accept="image/*,video/*" required>
+          <p class="sub" style="font-size:12px;margin-top:6px">
+            Images: JPG/PNG. Videos: MP4/MOV recommended, max 15 seconds.
           </p>
         </div>
 
-        <div class="field">
-          <label for="photo">Photo</label>
-          <input id="photo" type="file" accept="image/*" required>
-          <p class="sub" style="font-size:12px;margin-top:4px">JPG/PNG, keep it under ~5MB if you can.</p>
-        </div>
+        <div id="preview" class="preview" style="display:none"></div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">
+        <div class="row" style="margin-top:14px">
           <button id="saveBtn" type="submit" class="btn primary">Post sighting</button>
           <a href="/sightings.html" class="btn">Cancel</a>
           <span id="formMsg" class="sub"></span>
@@ -202,67 +229,111 @@
   </main>
 
   <script>
-    // Make sure authUI exists before patching
-    window.authUI = window.authUI || {};
-
-    // Fallback requireLogin if auth-ui.js doesn't define one yet
-    if (!window.authUI.requireLogin) {
-      window.authUI.requireLogin = async function(callback){
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          const email = prompt("Enter your email to sign in:");
-          if (!email) return false;
-          const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: location.href }
-          });
-          if (error) { alert("Sign-in error: " + error.message); return false; }
-          alert("Magic link sent. Check your email, then reload.");
-          return false;
-        }
-        if (callback) callback(user);
-        return true;
-      };
-    }
+    const BUCKET = 'sightings'; // ensure storage bucket exists
+    const MAX_VIDEO_SECONDS = 15;
 
     const authWarning = document.getElementById('authWarning');
     const form = document.getElementById('sightingForm');
     const formMsg = document.getElementById('formMsg');
     const saveBtn = document.getElementById('saveBtn');
+    const mediaInput = document.getElementById('media');
+    const preview = document.getElementById('preview');
 
-    let currentUser = null;
-
-    async function ensureUser(){
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
-      if(!user){
-        authWarning.textContent = 'Sign in to post a sighting. We’ll attach it to your profile.';
-        saveBtn.disabled = true;
-      }else{
-        authWarning.textContent = '';
-        saveBtn.disabled = false;
-      }
+    function setWarn(msg){
+      authWarning.style.display = 'inline-flex';
+      authWarning.textContent = msg;
+    }
+    function clearWarn(){
+      authWarning.style.display = 'none';
+      authWarning.textContent = '';
     }
 
-    async function uploadPhoto(user){
-      const input = document.getElementById('photo');
-      const file = input.files[0];
-      if(!file) throw new Error("Please choose a photo.");
+    async function ensureSignedIn(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        setWarn('Sign in to post a sighting. This will attach to your profile.');
+        saveBtn.disabled = true;
+        return null;
+      }
+      clearWarn();
+      saveBtn.disabled = false;
+      return user;
+    }
 
-      const path = `user-${user.id}/${Date.now()}-${file.name}`;
+    // Prompt when they try to upload
+    mediaInput.addEventListener('click', () => {
+      alert('Please blur all license plates before uploading.');
+    });
+
+    // Validate & preview
+    mediaInput.addEventListener('change', async () => {
+      preview.style.display = 'none';
+      preview.innerHTML = '';
+      const file = mediaInput.files?.[0];
+      if(!file) return;
+
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+      if(!isVideo && !isImage){
+        formMsg.textContent = 'Unsupported file type.';
+        mediaInput.value = '';
+        return;
+      }
+
+      if(isImage){
+        const url = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${url}" alt="">`;
+        preview.style.display = 'flex';
+        return;
+      }
+
+      // Video: check duration <= 15s
+      const url = URL.createObjectURL(file);
+      const v = document.createElement('video');
+      v.preload = 'metadata';
+      v.src = url;
+      v.muted = true;
+      v.playsInline = true;
+      v.onloadedmetadata = () => {
+        const dur = v.duration || 0;
+        if(dur > MAX_VIDEO_SECONDS + 0.05){
+          formMsg.textContent = `Video is ${dur.toFixed(1)}s. Max is ${MAX_VIDEO_SECONDS}s.`;
+          mediaInput.value = '';
+          preview.style.display = 'none';
+          preview.innerHTML = '';
+          return;
+        }
+        preview.innerHTML = '';
+        v.controls = true;
+        preview.appendChild(v);
+        preview.style.display = 'flex';
+      };
+    });
+
+    async function uploadMedia(user){
+      const file = mediaInput.files?.[0];
+      if(!file) throw new Error("Please choose a photo or video.");
+
+      const isVideo = file.type.startsWith('video/');
+      const ext = (file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg')).toLowerCase();
+
+      const safeName = file.name.replace(/[^a-z0-9._-]/gi,'_');
+      const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safeName}`;
+
       const { error } = await supabase
         .storage
-        .from('sightings')
+        .from(BUCKET)
         .upload(path, file, { upsert:false });
 
       if(error) throw error;
 
-      const { data } = supabase
-        .storage
-        .from('sightings')
-        .getPublicUrl(path);
-
-      return { publicUrl: data.publicUrl, path };
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      return {
+        publicUrl: data?.publicUrl,
+        path,
+        mediaType: isVideo ? 'video' : 'image',
+        ext
+      };
     }
 
     form.addEventListener('submit', async (e)=>{
@@ -271,7 +342,7 @@
       saveBtn.disabled = true;
       saveBtn.textContent = 'Posting…';
 
-      const ok = await window.authUI.requireLogin();
+      const ok = await window.authUI?.requireLogin?.(null, { silent:true });
       if(!ok){
         saveBtn.disabled = false;
         saveBtn.textContent = 'Post sighting';
@@ -279,7 +350,6 @@
       }
 
       const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
       if(!user){
         formMsg.textContent = 'Sign-in required.';
         saveBtn.disabled = false;
@@ -289,24 +359,34 @@
 
       try{
         const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim() || null;
         const locationTxt = document.getElementById('location').value.trim() || null;
         const parish = document.getElementById('parish').value || null;
+        const username = document.getElementById('username').value.trim() || null;
         const social = document.getElementById('social').value.trim() || null;
 
         if(!title) throw new Error("Caption is required.");
 
-        const { publicUrl, path } = await uploadPhoto(user);
+        // media validation already handled on change, but we re-check here
+        const file = mediaInput.files?.[0];
+        if(!file) throw new Error("Photo or video is required.");
 
+        const { publicUrl, path, mediaType } = await uploadMedia(user);
+        if(!publicUrl) throw new Error("Upload succeeded but URL missing.");
+
+        // NOTE: requires sightings.media_url + sightings.media_type + optional username/description columns
         const { data, error } = await supabase
           .from('sightings')
           .insert({
             user_id: user.id,
             title,
+            description,
             location: locationTxt,
             parish,
+            social_handle: social,
             image_url: publicUrl,
-            storage_path: path,
-            social_handle: social
+            image_type: mediaType,
+            
           })
           .select('id')
           .maybeSingle();
@@ -317,14 +397,17 @@
         window.location.href = `/sighting.html?id=${data.id}`;
       }catch(err){
         console.error(err);
-        formMsg.textContent = 'Couldn’t post sighting: ' + err.message;
+        formMsg.textContent = 'Couldn’t post sighting: ' + (err?.message || String(err));
       }finally{
         saveBtn.disabled = false;
         saveBtn.textContent = 'Post sighting';
       }
     });
 
-    window.addEventListener('DOMContentLoaded', ensureUser);
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      await ensureSignedIn();
+      supabase.auth.onAuthStateChange(ensureSignedIn);
+    });
   </script>
 </body>
 </html>

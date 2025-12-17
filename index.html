@@ -658,6 +658,7 @@
           <a href="#garage">Garage</a>
           <a href="/teams.html">Community</a>
           <a href="#brand">About</a>
+          <a href="/about.html">About</a>
           <a href="/marketplace.html">Marketplace</a>
           <a href="/store.html">Store</a>
         </nav>
@@ -788,10 +789,14 @@
               The island’s most-liked builds — street, track, and show specials. Drop your own and see where it lands.
             </p>
           </div>
-          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="authUI.requireLogin(()=>location.href='/build-new.html')">
-            Start My First Build
-          </button>
         </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  <button class="btn btn-ghost btn-pill-sm" onclick="location.href='/garage.html'">View all builds</button>
+  <button class="btn btn-ghost btn-pill-sm" onclick="authUI.requireLogin(()=>location.href='/build-new.html')">
+    Start My First Build
+  </button>
+</div>
+
 
         <div id="top-builds-grid" class="cards-grid" aria-live="polite">
           <article class="build-card">
@@ -1010,6 +1015,14 @@
   </div>
 
   <script>
+    window.authUI = window.authUI || {};
+    window.authUI.requireLogin = window.authUI.requireLogin || (async (cb)=>{
+      const { data:{ user } } = await supabase.auth.getUser();
+      if(!user){ openAuth('login'); return false; }
+      cb?.();
+      return true;
+    });
+
     // ===== Drift camera animation =====
     const mv = document.getElementById('driftCar');
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -1309,57 +1322,56 @@
           </article>`;
       }).join('');
 
-      grid.addEventListener('click', async (e)=>{
-        const btn = e.target.closest('[data-like]');
-        const card = e.target.closest('.build-card');
-        if (!card) return;
-        const buildId = card.dataset.build;
+grid.onclick = async (e) => {
+  const btn = e.target.closest('[data-like]');
+  const card = e.target.closest('.build-card');
+  if (!card) return;
+  const buildId = card.dataset.build;
 
-        if (btn){
-          const likesEl = card.querySelector('.likes');
+  if (btn){
+    const likesEl = card.querySelector('.likes');
 
-          const { data: auth2 } = await supabase.auth.getUser();
-          if (!auth2?.user){
-            openAuth('login');
-            return;
-          }
+    const { data: auth2 } = await supabase.auth.getUser();
+    if (!auth2?.user){
+      openAuth('login');
+      return;
+    }
 
-          const { data: existing } = await supabase
-            .from('build_likes')
-            .select('build_id')
-            .eq('build_id', buildId)
-            .eq('user_id', auth2.user.id)
-            .maybeSingle();
+    const { data: existing } = await supabase
+      .from('build_likes')
+      .select('build_id')
+      .eq('build_id', buildId)
+      .eq('user_id', auth2.user.id)
+      .maybeSingle();
 
-          if (existing){
-            const { error } = await supabase
-              .from('build_likes')
-              .delete()
-              .eq('build_id', buildId)
-              .eq('user_id', auth2.user.id);
+    if (existing){
+      const { error } = await supabase
+        .from('build_likes')
+        .delete()
+        .eq('build_id', buildId)
+        .eq('user_id', auth2.user.id);
 
-            if (error){ console.error(error); alert('Try again.'); return; }
+      if (error){ console.error(error); alert('Try again.'); return; }
 
-            btn.textContent = '♡';
-            btn.setAttribute('aria-pressed','false');
-            likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-          } else {
-            const { error } = await supabase
-              .from('build_likes')
-              .insert({ build_id: buildId, user_id: auth2.user.id });
+      btn.textContent = '♡';
+      btn.setAttribute('aria-pressed','false');
+      likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+    } else {
+      const { error } = await supabase
+        .from('build_likes')
+        .insert({ build_id: buildId, user_id: auth2.user.id });
 
-            if (error){ console.error(error); alert('Try again.'); return; }
+      if (error){ console.error(error); alert('Try again.'); return; }
 
-            btn.textContent = '♥';
-            btn.setAttribute('aria-pressed','true');
-            likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
-          }
-          return;
-        }
+      btn.textContent = '♥';
+      btn.setAttribute('aria-pressed','true');
+      likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+    }
+    return;
+  }
 
-        // click card (not like button) -> build page
-        location.href = `/build.html?id=${buildId}`;
-      });
+  location.href = `/build.html?id=${buildId}`;
+};
     }
 
     // ===== Events (last created, limit 5) =====
@@ -1415,8 +1427,8 @@
           ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
           : "TBA";
 
-        const tag = e.tag || "Event";
-        const status = e.status || "RSVP Open";
+        const tag = "Event";
+        const status = "RSVP Open";
         const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
         const counts = countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 };
 

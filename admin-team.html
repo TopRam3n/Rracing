@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Team Admin — ROK Racers JA</title>
-<meta name="description" content="Approve members, edit team profile, and manage promoter access." />
+<meta name="description" content="Approve members, edit team profile, and manage invites." />
 <link rel="icon" href="/Assets/og.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,14 +112,14 @@
         <div class="card">
           <div class="pad">
             <h3 style="font-size:28px;text-transform:uppercase;">Team profile</h3>
-            <div class="sub">Edit logo, bio, parish, socials, gallery.</div>
+            <div class="sub">Edit logo, bio, parish, socials, application link, gallery.</div>
 
             <div class="row" style="justify-content:flex-start;gap:14px;margin-top:14px">
               <img id="logoPreview" class="thumb" alt="">
               <div style="flex:1">
                 <div class="sub">Logo (upload)</div>
                 <input id="f_logo" type="file" accept="image/*">
-                <div class="help">Uses bucket <b>team-logos</b>. If not created, upload may fail.</div>
+                <div class="help">Bucket: <b>team-logos</b></div>
               </div>
             </div>
 
@@ -127,17 +127,11 @@
               <label class="sub">Name</label>
               <input id="f_name" placeholder="Team name">
             </div>
-            <div style="margin-top:12px">
-            <label class="sub">Handle (optional)</label>
-            <input id="f_handle" placeholder="rockings">
-            </div>
 
             <div style="margin-top:12px">
-            <label class="sub">Cover URL (optional)</label>
-            <input id="f_cover_url" placeholder="https://...">
-            <div class="help">Optional hero cover image for team.html (if you decide to display it later).</div>
+              <label class="sub">Handle (optional)</label>
+              <input id="f_handle" placeholder="rockings">
             </div>
-
 
             <div class="grid cols-2" style="margin-top:12px">
               <div>
@@ -162,6 +156,12 @@
             </div>
 
             <div style="margin-top:12px">
+              <label class="sub">Application link (optional)</label>
+              <input id="f_app_url" placeholder="Paste Google Form link…">
+              <div class="help">If set, the team page shows an Apply button that opens this link.</div>
+            </div>
+
+            <div style="margin-top:12px">
               <label class="sub">Bio</label>
               <textarea id="f_bio" rows="4" placeholder="Team bio…"></textarea>
             </div>
@@ -169,15 +169,14 @@
             <div style="margin-top:12px">
               <div class="row" style="justify-content:flex-start;gap:10px">
                 <span class="pill" id="promoterPill">Promoter: ?</span>
-                <button id="togglePromoterBtn" class="btn">Toggle promoter</button>
+                <button id="togglePromoterBtn" class="btn" type="button">Toggle promoter</button>
               </div>
-              <div class="help">If ON, team can show in “Promoters only” and can host events (if you kept that rule).</div>
             </div>
 
             <div style="margin-top:14px">
               <label class="sub">Add gallery photos (multiple)</label>
               <input id="f_gallery" type="file" accept="image/*" multiple>
-              <div class="help">Uses bucket <b>team-gallery</b>. We append to existing gallery.</div>
+              <div class="help">Bucket: <b>team-gallery</b> (we append).</div>
             </div>
 
             <div style="margin-top:14px">
@@ -190,9 +189,25 @@
 
         <div class="card">
           <div class="pad">
-            <h3 style="font-size:28px;text-transform:uppercase;">Join requests</h3>
-            <div class="sub">Approve or deny pending members.</div>
-            <div id="pendingList" class="grid" style="margin-top:14px"></div>
+            <h3 style="font-size:28px;text-transform:uppercase;">Invites</h3>
+            <div class="sub">Invite a user to this team (use their user UUID for now).</div>
+
+            <div class="mini" style="margin-top:12px">
+              <div style="flex:1;min-width:220px">
+                <div class="sub">User UUID</div>
+                <input id="inviteUserId" placeholder="paste user_id (uuid)">
+                <div class="help">Later we can add search by handle/email with a secure function.</div>
+              </div>
+              <button id="sendInviteBtn" class="btn primary" type="button">Send invite</button>
+            </div>
+
+            <div id="inviteMsg" class="sub" style="margin-top:10px;min-height:18px"></div>
+
+            <div style="margin-top:18px">
+              <h3 style="font-size:28px;text-transform:uppercase;">Join requests</h3>
+              <div class="sub">Approve or deny pending members.</div>
+              <div id="pendingList" class="grid" style="margin-top:14px"></div>
+            </div>
 
             <div style="margin-top:18px">
               <h3 style="font-size:28px;text-transform:uppercase;">Members</h3>
@@ -253,7 +268,6 @@
       $('statusLine').textContent = user ? `Signed in as ${user.email || 'Driver'}` : 'Not signed in.';
     });
 
-    // check admin role
     const { data:mem, error:memErr } = await supabase
       .from('team_members')
       .select('role')
@@ -272,6 +286,7 @@
     if(!canAdmin){
       $('statusLine').textContent = `Role: ${myRole}. You don’t have admin access.`;
       $('saveBtn').disabled = true;
+      $('sendInviteBtn').disabled = true;
       return;
     }
 
@@ -282,7 +297,7 @@
   async function loadTeam(){
     const { data, error } = await supabase
       .from('teams')
-      .select('id,name,handle,parish,bio,logo_url,cover_url,is_promoter,instagram_handle,tiktok_handle,website_url,gallery_urls')
+      .select('id,name,handle,parish,bio,logo_url,is_promoter,instagram_handle,tiktok_handle,website_url,application_url,gallery_urls')
       .eq('id', teamId)
       .maybeSingle();
 
@@ -297,19 +312,15 @@
 
     $('f_name').value = team.name || '';
     $('f_parish').value = team.parish || '';
-    $('f_ig').value = team.instagram_handle ? (team.instagram_handle.startsWith('@') ? team.instagram_handle : '@' + team.instagram_handle) : '';
-    $('f_tt').value = team.tiktok_handle ? (team.tiktok_handle.startsWith('@') ? team.tiktok_handle : '@' + team.tiktok_handle) : '';
+    $('f_ig').value = team.instagram_handle || '';
+    $('f_tt').value = team.tiktok_handle || '';
     $('f_web').value = team.website_url || '';
     $('f_bio').value = team.bio || '';
     $('f_handle').value = team.handle || '';
-    $('f_cover_url').value = team.cover_url || '';
+    $('f_app_url').value = team.application_url || '';
 
-
-    if(team.logo_url){
-      $('logoPreview').src = team.logo_url;
-    }else{
-      $('logoPreview').removeAttribute('src');
-    }
+    if(team.logo_url) $('logoPreview').src = team.logo_url;
+    else $('logoPreview').removeAttribute('src');
 
     setPromoterPill();
     renderGallery();
@@ -329,7 +340,7 @@
         <a href="${escapeHTML(u)}" target="_blank" rel="noreferrer" class="sub" style="max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
           ${escapeHTML(u)}
         </a>
-        <button class="btn" data-remove="${idx}">Remove</button>
+        <button class="btn" data-remove="${idx}" type="button">Remove</button>
       </div>
     `).join('');
 
@@ -343,7 +354,7 @@
   }
 
   async function loadMembers(){
-    // pending
+    // pending join requests
     const { data:pending, error:pendErr } = await supabase
       .from('team_members')
       .select('user_id,role,created_at')
@@ -363,8 +374,8 @@
             <div class="sub">Requested ${new Date(r.created_at).toLocaleString()}</div>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="btn primary" data-approve="${escapeHTML(r.user_id)}">Approve</button>
-            <button class="btn" data-deny="${escapeHTML(r.user_id)}">Deny</button>
+            <button class="btn primary" data-approve="${escapeHTML(r.user_id)}" type="button">Approve</button>
+            <button class="btn" data-deny="${escapeHTML(r.user_id)}" type="button">Deny</button>
           </div>
         </div>
       `).join('') : `<div class="sub">No pending requests.</div>`;
@@ -377,7 +388,7 @@
       });
     }
 
-    // active
+    // active members
     const { data:members, error:memErr } = await supabase
       .from('team_members')
       .select('user_id,role,created_at')
@@ -403,7 +414,7 @@
             <option value="manager" ${r.role==='manager'?'selected':''}>manager</option>
             <option value="owner" ${r.role==='owner'?'selected':''}>owner</option>
           </select>
-          <button class="btn" data-save-role="${escapeHTML(r.user_id)}">Save</button>
+          <button class="btn" data-save-role="${escapeHTML(r.user_id)}" type="button">Save</button>
         </div>
       </div>
     `).join('') : `<div class="sub">No members.</div>`;
@@ -464,9 +475,49 @@
 
   $('f_logo').addEventListener('change',(e)=>{
     const f = e.target.files?.[0];
-    if(!f){ return; }
+    if(!f) return;
     $('logoPreview').src = URL.createObjectURL(f);
   });
+
+  async function sendInvite(){
+    $('inviteMsg').textContent = '';
+    const invitedUserId = $('inviteUserId').value.trim();
+    if(!invitedUserId){ $('inviteMsg').textContent = 'Paste a user UUID.'; return; }
+
+    const { data:{ user } } = await supabase.auth.getUser();
+    if(!user){ alert('Sign in first.'); return; }
+
+    // prevent inviting existing members
+    const { data:existing } = await supabase
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', invitedUserId)
+      .maybeSingle();
+
+    if(existing?.role){
+      $('inviteMsg').textContent = 'That user is already linked to this team.';
+      return;
+    }
+
+    const { error } = await supabase
+      .from('team_invites')
+      .insert({
+        team_id: teamId,
+        invited_user_id: invitedUserId,
+        invited_by: user.id
+      });
+
+    if(error){
+      $('inviteMsg').textContent = 'Invite failed: ' + error.message;
+      return;
+    }
+
+    $('inviteMsg').textContent = 'Invite sent.';
+    $('inviteUserId').value = '';
+  }
+
+  $('sendInviteBtn').onclick = sendInvite;
 
   async function saveProfile(){
     if(!team) return;
@@ -475,15 +526,13 @@
     if(!name){ alert('Name required.'); return; }
 
     const parish = $('f_parish').value.trim() || null;
-    const ig = $('f_ig').value.trim() ? $('f_ig').value.trim().replace(/^@/,'') : null;
-    const tt = $('f_tt').value.trim() ? $('f_tt').value.trim().replace(/^@/,'') : null;
+    const ig = $('f_ig').value.trim() || null;
+    const tt = $('f_tt').value.trim() || null;
     const web = $('f_web').value.trim() || null;
     const bio = $('f_bio').value.trim() || null;
     const handle = $('f_handle').value.trim() || null;
-    const coverUrl = $('f_cover_url').value.trim() || null;
+    const appUrl = $('f_app_url').value.trim() || null;
 
-
-    // uploads
     let logoUrl = team.logo_url || null;
     try{
       const logoFile = $('f_logo').files?.[0];
@@ -493,7 +542,7 @@
       }
     }catch(e){
       console.warn('logo upload failed', e);
-      alert('Logo upload failed (bucket missing or permissions). Profile still saved without new logo.');
+      alert('Logo upload failed (bucket missing or permissions). Saving other changes.');
     }
 
     try{
@@ -506,18 +555,18 @@
       }
     }catch(e){
       console.warn('gallery upload failed', e);
-      alert('Gallery upload failed (bucket missing or permissions). Profile still saved.');
+      alert('Gallery upload failed (bucket missing or permissions). Saving other changes.');
     }
 
     const payload = {
       name,
       handle,
-      cover_url: coverUrl,
       parish,
       bio,
-      instagram_handle: ig ? '@'+ig : null,
-      tiktok_handle: tt ? '@'+tt : null,
+      instagram_handle: ig,
+      tiktok_handle: tt,
       website_url: web,
+      application_url: appUrl,
       is_promoter: !!team.is_promoter,
       logo_url: logoUrl,
       gallery_urls: galleryUrls
@@ -526,7 +575,6 @@
     const { error } = await supabase.from('teams').update(payload).eq('id', teamId);
     if(error){ alert('Save failed: ' + error.message); return; }
 
-    // refresh team local + UI
     const { data } = await supabase.from('teams').select('*').eq('id', teamId).maybeSingle();
     if(data) team = data;
     galleryUrls = Array.isArray(team.gallery_urls) ? team.gallery_urls : galleryUrls;
@@ -534,12 +582,10 @@
     setPromoterPill();
     $('f_gallery').value = '';
     $('f_logo').value = '';
-
     alert('Saved.');
   }
 
   $('saveBtn').onclick = saveProfile;
-
   window.addEventListener('DOMContentLoaded', boot);
 </script>
 </body>

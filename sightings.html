@@ -1,240 +1,597 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Sightings — ROK Racers JA</title>
-<meta name="description" content="Community car sightings across Jamaica."/>
-<link rel="icon" href="/Assets/og.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sightings — ROK Racers JA</title>
+  <meta name="description" content="Island sightings: cars caught on the road. Photos and 15s clips."/>
+  <link rel="icon" href="/Assets/og.png"/>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<script src="/auth-ui.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-<style>
-:root{
-  --bg:#141414;--bg1:#161616;--bg2:#1b1b1b;
-  --fg:#fff;--muted:#bdbdbd;--accent:#e50914;
-  --line:rgba(255,255,255,.08);--shadow:0 40px 120px -30px rgba(0,0,0,.6)
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--fg);
-  font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif
-}
-a{color:var(--fg);text-decoration:none}
-.container{max-width:1200px;margin:0 auto;padding:0 24px}
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-.nav{
-  position:sticky;top:0;z-index:50;
-  background:rgba(18,18,18,.9);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:saturate(140%) blur(8px)
-}
-.nav-inner{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 0
-}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:44px;height:44px;border-radius:8px}
-h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-.sub{color:var(--muted)}
+  <script src="/auth-ui.js"></script>
 
-.section{padding:56px 0}
-.grid{display:grid;gap:24px}
-.cols-3{grid-template-columns:repeat(3,1fr)}
-@media(max-width:960px){.cols-3{grid-template-columns:1fr}}
+  <style>
+    :root{
+      --bg:#050508;
+      --bg1:#141414;
+      --bg2:#1b1b1b;
+      --fg:#fff;
+      --muted:#bdbdbd;
+      --accent:#e50914;
+      --accent-yellow:#FFD93B;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .sub{color:var(--muted)}
+    .muted{color:var(--muted)}
 
-.card{
-  background:var(--bg1);
-  border:1px solid var(--line);
-  border-radius:20px;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  transition:transform .25s cubic-bezier(.2,.8,.2,1)
-}
-.card:hover{transform:translateY(-6px) scale(1.01)}
-.card img{
-  display:block;width:100%;height:auto;
-  aspect-ratio:16/9;object-fit:cover
-}
-.pad{padding:18px}
+    /* NAV */
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(5,5,8,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(12px);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;gap:16px;flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
 
-.btn{
-  display:inline-flex;gap:8px;align-items:center;
-  padding:10px 14px;border-radius:14px;
-  border:1px solid var(--line);cursor:pointer;
-  background:transparent;color:var(--fg)
-}
-.btn.primary{background:#fff;color:#000;border-color:#fff}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 14px;border-radius:999px;
+      border:1px solid var(--line);
+      cursor:pointer;background:transparent;color:var(--fg);
+      font-family:inherit;font-size:13px;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .btn.primary{
+      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+      color:#fff;border-color:rgba(229,9,20,.9);
+      box-shadow:0 0 18px rgba(229,9,20,.5);
+    }
+    .btn.primary:hover{box-shadow:0 0 26px rgba(229,9,20,.7);transform:translateY(-1px)}
+    .btn[disabled]{opacity:.55;pointer-events:none}
 
-.filters{
-  display:flex;gap:10px;flex-wrap:wrap;
-  margin:14px 0 18px
-}
-input,select{
-  background:var(--bg2);
-  border:1px solid var(--line);
-  color:#fff;padding:12px;
-  border-radius:12px;outline:none;min-width:160px
-}
-.badge{
-  border:1px solid var(--line);
-  background:var(--bg2);
-  padding:6px 10px;
-  border-radius:999px
-}
-</style>
+    /* nav auth */
+    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-size:13px;
+    }
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 16px rgba(255,217,59,.6);
+      transform:translateY(-1px);
+    }
+    .dropdown{
+      position:absolute;right:0;top:40px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border-radius:16px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:13px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    /* HERO */
+    .section{padding:56px 0}
+    .hero{
+      position:relative;
+      padding:22px 18px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,217,59,.12), transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(229,9,20,.14), transparent 55%),
+        rgba(255,255,255,.02);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .hero::after{
+      content:"";
+      position:absolute;inset:-120px -120px auto auto;
+      width:340px;height:340px;border-radius:50%;
+      background:radial-gradient(circle at center, rgba(255,217,59,.18), transparent 60%);
+      filter:blur(2px);
+      pointer-events:none;
+      transform:rotate(14deg);
+    }
+    .hero-top{
+      display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;
+    }
+    .hero h2{font-size:52px}
+    .hero p{margin:6px 0 0}
+
+    /* FILTER BAR */
+    .filters{
+      margin-top:16px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+      position:sticky;top:86px;z-index:20;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(5,5,8,.88);
+      backdrop-filter: blur(10px) saturate(140%);
+    }
+    input,select{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      color:#fff;
+      padding:12px;
+      border-radius:12px;
+      outline:none;
+      min-width:160px;
+      font-family:inherit;
+      font-size:14px;
+    }
+    .badge{
+      border:1px solid var(--line);
+      background:var(--bg2);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* GRID */
+    .grid{display:grid;gap:18px}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:980px){.cols-3{grid-template-columns:1fr}}
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+      position:relative;
+    }
+    .card:hover{transform:translateY(-6px) scale(1.01)}
+    .media{
+      width:100%;
+      aspect-ratio:16/9;
+      background:#000;
+      display:block;
+      object-fit:cover;
+    }
+    .media.video{object-fit:cover}
+    .card .pad{padding:14px 16px}
+    .metaRow{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .titleLine{font-weight:700;font-size:16px;line-height:1.2}
+    .lineClamp{
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      font-size:12px;color:var(--muted);
+      margin-top:10px;
+    }
+    .floatTag{
+      position:absolute;top:10px;left:10px;
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.55);
+      font-size:12px;
+    }
+    .actions{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+      margin-top:10px;
+    }
+    .iconBtn{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid var(--line);
+      background:transparent;color:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .iconBtn[disabled]{opacity:.55;pointer-events:none}
+    .spark{
+      position:absolute;inset:auto -60px -60px auto;
+      width:220px;height:220px;border-radius:50%;
+      background:radial-gradient(circle at center, rgba(229,9,20,.18), transparent 60%);
+      filter:blur(2px);
+      pointer-events:none;
+      transform:rotate(-10deg);
+    }
+  </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="container nav-inner">
-    <a href="/" class="brand">
-      <img src="/Assets/logo.png" alt="" class="logo">
-      <div>
-        <h1>ROK RACERS JA</h1>
-        <small class="sub">Sightings</small>
-      </div>
-    </a>
-    <div style="display:flex;gap:10px;align-items:center">
-      <button id="postSightingBtn" class="btn primary">➕ Upload sighting</button>
-      <a class="btn" href="/garage.html">Garage</a>
-    </div>
-  </div>
-</nav>
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a href="/" class="brand" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" alt="" class="logo">
+        <div>
+          <h1>ROK RACERS JA</h1>
+          <small class="sub">Sightings</small>
+        </div>
+      </a>
 
-<main class="container">
-  <section class="section">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <h2 style="font-size:44px">Sightings feed</h2>
-      <span id="countBadge" class="badge sub">0 sightings</span>
-    </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="/about.html">About</a>
+          <a class="btn" role="menuitem" href="/events.html">Events</a>
+          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="/highlights.html">Highlights</a>
+          <a class="btn" role="menuitem" href="/teams.html">Community</a>
+        </div>
 
-    <div class="filters" aria-label="Sightings filters">
-      <input id="q" placeholder="Search title, location, or handle…">
-      <select id="parish">
-        <option value="">All parishes</option>
-        <option value="Kingston">Kingston</option>
-        <option value="St. Andrew">St. Andrew</option>
-        <option value="St. James">St. James</option>
-        <!-- add the rest later -->
-      </select>
-      <select id="sort">
-        <option value="new">Newest</option>
-        <option value="top">Most liked</option>
-      </select>
-      <button id="apply" class="btn">Apply</button>
-    </div>
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
 
-    <div id="sightingsGrid" class="grid cols-3" role="list" aria-live="polite">
-      <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
-    </div>
-  </section>
-</main>
-
-<script>
-const postBtn = document.getElementById('postSightingBtn');
-postBtn.onclick = () => {
-  // Guard via shared auth helper from auth-ui.js
-  if (window.authUI && typeof authUI.requireLogin === 'function') {
-    authUI.requireLogin(() => {
-      location.href = '/sighting-new.html';
-    });
-  } else {
-    alert('Please sign in on the homepage first.');
-  }
-};
-
-let rows = [];
-
-function renderGrid(pageRows){
-  const grid = document.getElementById('sightingsGrid');
-  if(!pageRows.length){
-    grid.innerHTML = `<article class="card"><div class="pad sub">No sightings found.</div></article>`;
-    return;
-  }
-
-  grid.innerHTML = pageRows.map(s => {
-    const img = s.image_url
-      ? `<img src="${s.image_url}" alt="${s.title}" loading="lazy">`
-      : "";
-    const locLine = [s.parish, s.location].filter(Boolean).join(" • ");
-    const handle = s.social_handle || s.instagram_handle || null; 
-    // support either column name
-
-    return `
-      <article class="card" role="listitem" data-sighting="${s.id}">
-        <a href="/sighting.html?id=${s.id}">
-          ${img}
-          <div class="pad">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-              <strong>${s.title}</strong>
-              <small class="sub">${new Date(s.created_at).toLocaleDateString()}</small>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
             </div>
-            ${locLine ? `<div class="sub" style="margin-top:4px">${locLine}</div>` : ""}
-            ${handle ? `<div class="sub" style="margin-top:4px">📸 ${handle}</div>` : ""}
-            <div class="sub" style="margin-top:8px">♥ <span class="likes">${s.like_count||0}</span></div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/bookmarks-sightings.html">Saved Sightings</a>
+              <a href="/teams.html">My Teams</a>
+              <a href="/activity.html">Activity</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
           </div>
-        </a>
-      </article>
-    `;
-  }).join('');
-}
+        </div>
+      </div>
+    </div>
+  </nav>
 
+  <main class="container">
+    <section class="section">
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <h2>Sightings</h2>
+            <p class="sub">Island grid moments. Photos + 15s clips. Blur plates.</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <span id="countBadge" class="badge">0 posts</span>
+            <a id="uploadBtn" href="/sightings-new.html" class="btn primary" style="display:none">Upload</a>
+          </div>
+        </div>
 
-async function applyFilters(){
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const parish = document.getElementById('parish').value;
-  const sort = document.getElementById('sort').value;
+        <div class="filters" role="region" aria-label="Sighting filters">
+          <input id="q" placeholder="Search caption/description…" aria-label="Search"/>
+          <select id="parish" aria-label="Parish">
+            <option value="">All parishes</option>
+            <option value="Kingston">Kingston</option>
+            <option value="St. Andrew">St. Andrew</option>
+            <option value="St. Catherine">St. Catherine</option>
+            <option value="St. Thomas">St. Thomas</option>
+            <option value="Portland">Portland</option>
+            <option value="St. Mary">St. Mary</option>
+            <option value="St. Ann">St. Ann</option>
+            <option value="Trelawny">Trelawny</option>
+            <option value="St. James">St. James</option>
+            <option value="Hanover">Hanover</option>
+            <option value="Westmoreland">Westmoreland</option>
+            <option value="St. Elizabeth">St. Elizabeth</option>
+            <option value="Manchester">Manchester</option>
+            <option value="Clarendon">Clarendon</option>
+          </select>
+          <select id="type" aria-label="Type">
+            <option value="">All types</option>
+            <option value="image">Photos</option>
+            <option value="video">Videos</option>
+          </select>
+          <select id="sort" aria-label="Sort">
+            <option value="new">Newest</option>
+            <option value="top">Most liked</option>
+          </select>
+          <button id="apply" class="btn">Apply</button>
+          <span class="badge">Tip: click a card to open</span>
+        </div>
 
-  let { data, error } = await supabase
-    .from('sightings_with_like_count')
-    .select('id,title,location,parish,image_url,created_at,like_count,social_handle,instagram_handle');
+        <div class="spark"></div>
+      </div>
 
-  if(error){
-    console.error(error);
-    document.getElementById('sightingsGrid').innerHTML =
-      `<article class="card"><div class="pad sub">Couldn’t load sightings.</div></article>`;
-    return;
-  }
+      <div style="height:18px"></div>
 
-  rows = data || [];
+      <div id="grid" class="grid cols-3" role="list" aria-live="polite">
+        <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
+      </div>
+    </section>
+  </main>
 
-  if(q){
-    rows = rows.filter(s => {
-      const handle = (s.social_handle || s.instagram_handle || '').toLowerCase();
-      return (
-        (s.title||'').toLowerCase().includes(q) ||
-        (s.location||'').toLowerCase().includes(q) ||
-        handle.includes(q)
-      );
+  <script>
+    const $ = (id)=>document.getElementById(id);
+    const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    let currentUser = null;
+    let bookmarksById = new Set(); // if signed in
+    let likesById = new Set();     // optional (for heart fill)
+
+    async function syncAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user || null;
+      $('uploadBtn').style.display = user ? 'inline-flex' : 'none';
+
+      // preload bookmark/like state (non-fatal if tables don’t exist yet)
+      bookmarksById = new Set();
+      likesById = new Set();
+
+      if(user){
+        // bookmarks
+        try{
+          const { data: b } = await supabase
+            .from('sighting_bookmarks')
+            .select('sighting_id')
+            .eq('user_id', user.id);
+          (b||[]).forEach(x => bookmarksById.add(x.sighting_id));
+        }catch(_){}
+
+        // likes (to render filled hearts)
+        try{
+          const { data: l } = await supabase
+            .from('sighting_likes')
+            .select('sighting_id')
+            .eq('user_id', user.id);
+          (l||[]).forEach(x => likesById.add(x.sighting_id));
+        }catch(_){}
+      }
+    }
+
+    // Like count helper (simple + reliable)
+    async function fetchLikeCounts(ids){
+      if(!ids.length) return new Map();
+      // This will be slower if you have many rows.
+      // Later: create a view sightings_with_like_count like you did for highlights.
+      const out = new Map();
+      await Promise.all(ids.map(async (id)=>{
+        const { count } = await supabase
+          .from('sighting_likes')
+          .select('*', { count:'exact', head:true })
+          .eq('sighting_id', id);
+        out.set(id, count || 0);
+      }));
+      return out;
+    }
+
+    function renderMediaCard(h){
+      const type = (h.image_type || '').toLowerCase();
+      const url = h.image_url || '';
+      if(type === 'video'){
+        return `
+          <video class="media video" muted playsinline preload="metadata" src="${escapeHTML(url)}"></video>
+          <div class="floatTag">🎥 15s</div>
+        `;
+      }
+      return `
+        <img class="media" src="${escapeHTML(url)}" alt="${escapeHTML(h.title || 'Sighting')}" loading="lazy">
+        <div class="floatTag">📸 Photo</div>
+      `;
+    }
+
+    function renderGrid(items, likeCounts){
+      const grid = $('grid');
+      if(!items.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">No sightings found. Clear filters or check back soon.</div></article>`;
+        return;
+      }
+
+      grid.innerHTML = items.map(h=>{
+        const dt = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
+        const parish = h.parish ? `<span class="pill">📍 ${escapeHTML(h.parish)}</span>` : '';
+        const loc = h.location ? `<span class="pill">${escapeHTML(h.location)}</span>` : '';
+        const handle = h.social_handle ? `<span class="pill">📸 ${escapeHTML(h.social_handle.startsWith('@') ? h.social_handle : '@'+h.social_handle)}</span>` : '';
+        const likes = likeCounts.get(h.id) || 0;
+
+        const saved = currentUser && bookmarksById.has(h.id);
+        const liked = currentUser && likesById.has(h.id);
+
+        const snippetBase = (h.description || '').trim();
+        const snippet = snippetBase.length > 140 ? snippetBase.slice(0,140) + '…' : snippetBase;
+
+        return `
+          <article class="card" role="listitem" data-id="${h.id}">
+            <a href="/sighting.html?id=${h.id}">
+              ${renderMediaCard(h)}
+              <div class="pad">
+                <div class="metaRow">
+                  <div class="titleLine">${escapeHTML(h.title || 'Untitled')}</div>
+                  <small class="sub">${escapeHTML(dt)}</small>
+                </div>
+
+                ${snippet ? `<p class="sub lineClamp" style="margin:8px 0 0">${escapeHTML(snippet)}</p>` : ''}
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  ${parish}${loc}${handle}
+                </div>
+
+                <div class="actions">
+                  <button class="iconBtn likeBtn" type="button" data-like="${h.id}">
+                    ${liked ? '♥' : '♡'} <span class="sub">${likes}</span>
+                  </button>
+
+                  <button class="iconBtn saveBtn" type="button" data-save="${h.id}">
+                    ${saved ? '🔖 Saved' : '🔖 Save'}
+                  </button>
+                </div>
+              </div>
+            </a>
+          </article>
+        `;
+      }).join('');
+    }
+
+    async function applyFilters(){
+      const q = ($('q').value || '').trim().toLowerCase();
+      const parish = $('parish').value || '';
+      const type = $('type').value || '';
+      const sort = $('sort').value || 'new';
+
+      $('grid').innerHTML = `<article class="card"><div class="pad sub">Loading sightings…</div></article>`;
+
+      const { data, error } = await supabase
+        .from('sightings')
+        .select('id,title,description,location,parish,image_url,image_type,social_handle,created_at')
+        .order('created_at', { ascending:false })
+        .limit(90);
+
+      if(error){
+        console.error(error);
+        $('grid').innerHTML = `<article class="card"><div class="pad sub">Couldn’t load sightings right now.</div></article>`;
+        return;
+      }
+
+      let rows = data || [];
+
+      if(q){
+        rows = rows.filter(r =>
+          (r.title || '').toLowerCase().includes(q) ||
+          (r.description || '').toLowerCase().includes(q)
+        );
+      }
+      if(parish){
+        rows = rows.filter(r => (r.parish || '') === parish);
+      }
+      if(type){
+        rows = rows.filter(r => (r.image_type || '').toLowerCase() === type);
+      }
+
+      const ids = rows.map(r=>r.id);
+      const likeCounts = await fetchLikeCounts(ids);
+
+      if(sort === 'top'){
+        rows.sort((a,b)=> (likeCounts.get(b.id)||0) - (likeCounts.get(a.id)||0));
+      } // else already newest first
+
+      $('countBadge').textContent = `${rows.length} post${rows.length===1?'':'s'}`;
+      renderGrid(rows, likeCounts);
+
+      // wire buttons (stop link navigation)
+      document.querySelectorAll('.likeBtn').forEach(btn=>{
+        btn.addEventListener('click', async (e)=>{
+          e.preventDefault(); e.stopPropagation();
+          const id = btn.getAttribute('data-like');
+          await toggleLike(id, btn);
+        });
+      });
+      document.querySelectorAll('.saveBtn').forEach(btn=>{
+        btn.addEventListener('click', async (e)=>{
+          e.preventDefault(); e.stopPropagation();
+          const id = btn.getAttribute('data-save');
+          await toggleSave(id, btn);
+        });
+      });
+    }
+
+    async function toggleLike(id, btn){
+      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to like sightings." });
+      if(!ok) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      btn.disabled = true;
+
+      const { data: existing } = await supabase
+        .from('sighting_likes')
+        .select('id')
+        .eq('sighting_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if(existing){
+        await supabase.from('sighting_likes').delete().eq('id', existing.id);
+        likesById.delete(id);
+      }else{
+        await supabase.from('sighting_likes').insert({ sighting_id:id, user_id:user.id });
+        likesById.add(id);
+      }
+
+      btn.disabled = false;
+      await applyFilters(); // simple refresh; later we can do inline updates only
+    }
+
+    async function toggleSave(id, btn){
+      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to save sightings." });
+      if(!ok) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return;
+
+      btn.disabled = true;
+
+      try{
+        const { data: existing } = await supabase
+          .from('sighting_bookmarks')
+          .select('id')
+          .eq('sighting_id', id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if(existing){
+          await supabase.from('sighting_bookmarks').delete().eq('id', existing.id);
+          bookmarksById.delete(id);
+        }else{
+          await supabase.from('sighting_bookmarks').insert({ sighting_id:id, user_id:user.id });
+          bookmarksById.add(id);
+        }
+      }catch(err){
+        alert('Saving needs sighting_bookmarks table. Create it, then retry.');
+        console.error(err);
+      }finally{
+        btn.disabled = false;
+        await applyFilters();
+      }
+    }
+
+    $('apply').addEventListener('click', applyFilters);
+
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      await syncAuth();
+      await applyFilters();
+      supabase.auth.onAuthStateChange(async ()=>{
+        await syncAuth();
+        await applyFilters();
+      });
     });
-  }
-
-  if(parish){
-    rows = rows.filter(s => s.parish === parish);
-  }
-
-  if(sort === 'top'){
-    rows.sort((a,b)=> (b.like_count||0) - (a.like_count||0));
-  } else {
-    rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
-  }
-
-  document.getElementById('countBadge').textContent = `${rows.length} sightings`;
-  renderGrid(rows);
-}
-
-document.getElementById('apply').addEventListener('click', applyFilters);
-window.addEventListener('DOMContentLoaded', applyFilters);
-</script>
+  </script>
 </body>
 </html>
