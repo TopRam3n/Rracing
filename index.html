@@ -22,9 +22,12 @@
       --bg-main: #050508;
       --bg-alt: #111111;
       --bg-card: #141414;
-      --accent-main: #E50914;
-      --accent-secondary: #FFD93B;
+
+      /* ✅ Red → Green */
+      --accent-main: #18C964;         /* primary green */
+      --accent-secondary: #FFD93B;    /* yellow stays */
       --accent-cyan: #FFD93B;
+
       --text-main: #ffffff;
       --text-muted: #bdbdbd;
       --border-subtle: rgba(255, 255, 255, 0.06);
@@ -51,9 +54,10 @@
     .page { min-height: 100vh; display:flex; flex-direction:column; }
     .container { width: min(1200px, 100% - 32px); margin: 0 auto; }
     @media (min-width: 1280px){ .container{ width: min(1280px, 100% - 64px);} }
+
     .page::after {
       content:""; position:fixed; inset-inline:0; bottom:-120px; height:220px;
-      background: radial-gradient(circle at bottom, rgba(229, 9, 20, 0.25), transparent 60%);
+      background: radial-gradient(circle at bottom, rgba(24, 201, 100, 0.22), transparent 60%);
       pointer-events:none; z-index:0;
     }
 
@@ -77,8 +81,8 @@
     .logo { display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
     .logo-mark{
       width:36px;height:36px;border-radius:999px;
-      border:1px solid rgba(229, 9, 20, 0.7);
-      box-shadow:0 0 18px rgba(229, 9, 20, 0.4);
+      border:1px solid rgba(24, 201, 100, 0.7);
+      box-shadow:0 0 18px rgba(24, 201, 100, 0.35);
       overflow:hidden; background:#000;
       display:flex;align-items:center;justify-content:center;
     }
@@ -113,11 +117,11 @@
       color:#fff;
     }
     .btn-primary{
-      background: radial-gradient(circle at top left, #ff4d4d, var(--accent-main));
-      box-shadow: 0 0 24px rgba(229, 9, 20, 0.6);
-      border-color: rgba(229, 9, 20, 0.9);
+      background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
+      box-shadow: 0 0 24px rgba(24, 201, 100, 0.55);
+      border-color: rgba(24, 201, 100, 0.85);
     }
-    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(229,9,20,0.75); }
+    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
     .btn-ghost{
       border-color: rgba(255,255,255,0.12);
       color: var(--text-muted);
@@ -129,6 +133,7 @@
     }
     .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
 
+    /* ✅ Stable dropdown */
     .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
       width:32px; height:32px; border-radius:50%;
@@ -138,25 +143,55 @@
       border:1px solid rgba(255,255,255,0.18);
       transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
       font-size:13px;
+      user-select:none;
     }
-    .profile-chip:hover{ border-color:rgba(255,255,255,0.32); box-shadow:0 0 16px rgba(255,217,59,0.6); transform:translateY(-1px); }
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,0.32);
+      box-shadow:0 0 16px rgba(255,217,59,0.6);
+      transform:translateY(-1px);
+    }
     .dropdown{
-      position:absolute; right:0; top:40px;
+      position:absolute; right:0; top:44px;
       background:rgba(10,10,14,0.96);
       border:1px solid var(--border-subtle);
       box-shadow:0 20px 40px rgba(0,0,0,.65);
       border-radius:16px;
-      display:none; flex-direction:column;
-      min-width:200px; z-index:999;
+      display:none;
+      flex-direction:column;
+      min-width:240px;
+      z-index:999;
       backdrop-filter: blur(16px);
       overflow:hidden;
     }
+    .dropdown.open{ display:flex; }
+
+    .dd-head{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
+    .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
     .dropdown a, .dropdown button{
-      padding:10px 16px; text-align:left;
+      padding:10px 14px; text-align:left;
       border:none; background:transparent; color:var(--text-main);
       font-size:13px; width:100%; cursor:pointer;
+      display:flex; justify-content:space-between; align-items:center;
     }
     .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
+    .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
+    .dd-badge{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--text-muted);
+      background:rgba(0,0,0,0.25);
+      white-space:nowrap;
+    }
 
     @media (max-width: 768px){
       .nav-links{ display:none; }
@@ -188,9 +223,9 @@
       text-transform:uppercase;
     }
     .hero-title span.highlight{
-      background: linear-gradient(120deg, #ff7373, #ff2a00, #ffdf40);
+      background: linear-gradient(120deg, #3dff9f, #18C964, #ffdf40);
       -webkit-background-clip:text; background-clip:text; color:transparent;
-      text-shadow: 0 0 18px rgba(229,9,20,0.5);
+      text-shadow: 0 0 18px rgba(24,201,100,0.4);
     }
     .hero-sub{ font-size:14px; color:var(--text-muted); max-width:440px; }
     .hero-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; }
@@ -203,6 +238,7 @@
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.06);
     }
+
     .hero-right{ position:relative; }
     .hero-3d-card{
       position:relative;
@@ -218,7 +254,7 @@
       content:""; position:absolute; inset:-30%;
       background:
         radial-gradient(circle at 10% 0, rgba(255,217,59,0.24), transparent 50%),
-        radial-gradient(circle at 90% 100%, rgba(229,9,20,0.4), transparent 50%);
+        radial-gradient(circle at 90% 100%, rgba(24,201,100,0.35), transparent 50%);
       opacity:0.6; z-index:-1;
     }
     model-viewer{
@@ -285,7 +321,7 @@
       flex: 0 0 min(280px, 78vw);
       border-radius: var(--radius-md);
       border: 1px solid var(--border-subtle);
-      background: radial-gradient(circle at top left, rgba(229,9,20,0.16), rgba(10,10,10,0.98));
+      background: radial-gradient(circle at top left, rgba(24,201,100,0.14), rgba(10,10,10,0.98));
       padding:12px;
       box-shadow: 0 16px 30px rgba(0,0,0,0.7);
       display:flex; flex-direction:column; gap:8px;
@@ -295,9 +331,9 @@
     }
     .event-card:hover{
       transform: translateY(-4px) translateZ(0);
-      border-color: rgba(229,9,20,0.6);
+      border-color: rgba(24,201,100,0.55);
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
-      background: radial-gradient(circle at top left, rgba(229,9,20,0.26), rgba(5,5,8,1));
+      background: radial-gradient(circle at top left, rgba(24,201,100,0.22), rgba(5,5,8,1));
     }
     .event-image{
       position:relative;
@@ -310,7 +346,7 @@
       position:absolute; inset:0;
       background:
         radial-gradient(circle at 10% 10%, rgba(255,217,59,0.3), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(229,9,20,0.5), transparent 50%);
+        radial-gradient(circle at 80% 80%, rgba(24,201,100,0.45), transparent 50%);
       mix-blend-mode: screen;
       opacity:0.8;
     }
@@ -376,7 +412,7 @@
       content:""; position:absolute; inset:-30%;
       background:
         radial-gradient(circle at 0 0, rgba(255,217,59,0.25), transparent 60%),
-        radial-gradient(circle at 100% 100%, rgba(229,9,20,0.5), transparent 60%);
+        radial-gradient(circle at 100% 100%, rgba(24,201,100,0.40), transparent 60%);
       mix-blend-mode:screen; opacity:0.9;
     }
     .build-owner{
@@ -440,7 +476,7 @@
       content:""; position:absolute; inset:-30%;
       background:
         radial-gradient(circle at 20% 20%, rgba(255,217,59,0.3), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(229,9,20,0.5), transparent 60%);
+        radial-gradient(circle at 80% 80%, rgba(24,201,100,0.45), transparent 60%);
       mix-blend-mode:screen; opacity:0.9;
     }
     .sighting-badge{
@@ -471,35 +507,6 @@
     }
     .sighting-side-item span.label{ color:var(--text-main); font-size:12px; }
     .sighting-cta{ margin-top:10px; display:flex; justify-content:flex-end; }
-
-    .brand-grid{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:18px; }
-    @media (max-width:900px){ .brand-grid{ grid-template-columns:1fr; } }
-    .brand-card{
-      border-radius: var(--radius-md);
-      border:1px solid var(--border-subtle);
-      background: radial-gradient(circle at top, rgba(255,255,255,0.05), rgba(10,10,10,0.98));
-      padding:16px;
-      box-shadow: var(--shadow-soft);
-      font-size:13px;
-      color:var(--text-muted);
-    }
-    .brand-card h3{
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:0.18em;
-      margin-bottom:10px;
-      color:var(--text-main);
-    }
-    .brand-pill-row{
-      display:flex; flex-wrap:wrap; gap:8px;
-      margin-top:8px; font-size:11px;
-      text-transform:uppercase; letter-spacing:0.14em;
-    }
-    .brand-pill{
-      padding:4px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.4);
-    }
 
     .subscribe-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     .subscribe-input{
@@ -562,7 +569,7 @@
       z-index:9999;
     }
     .modal{
-      width:min(520px, 96vw);
+      width:min(560px, 96vw);
       border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(12,12,16,.96);
@@ -610,7 +617,7 @@
       box-shadow: 0 0 18px rgba(255,217,59,.18);
     }
     .field label{ font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px; }
-    .field input{
+    .field input, .field select{
       width:100%;
       padding:11px 12px;
       border-radius:12px;
@@ -634,6 +641,12 @@
     .divider::before,.divider::after{
       content:""; flex:1; height:1px; background: rgba(255,255,255,.10);
     }
+    .hint{
+      font-size:12px;
+      color:var(--text-muted);
+      line-height:1.3;
+    }
+    .hint strong{ color:#fff; }
   </style>
 </head>
 
@@ -643,7 +656,7 @@
     <!-- NAV -->
     <div class="nav-wrapper" id="navWrapper">
       <div class="container nav">
-        <a href="/" class="logo">
+        <a href="/index.html" class="logo">
           <div class="logo-mark">
             <img src="/Assets/logo.png" alt="ROK Racers JA logo">
           </div>
@@ -654,10 +667,10 @@
         </a>
 
         <nav class="nav-links">
-          <a href="#events">Events</a>
-          <a href="#garage">Garage</a>
+          <!-- ✅ Navbar should go to pages, not anchors -->
+          <a href="/events.html">Events</a>
+          <a href="/garage.html">Garage</a>
           <a href="/teams.html">Community</a>
-          <a href="#brand">About</a>
           <a href="/about.html">About</a>
           <a href="/marketplace.html">Marketplace</a>
           <a href="/store.html">Store</a>
@@ -668,17 +681,30 @@
           <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
           <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
               <span id="profileInitials">U</span>
             </div>
-            <div id="dropdown" class="dropdown">
+
+            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+              <div class="dd-head">
+                <div class="dd-title">Signed in as</div>
+                <div class="dd-email" id="ddEmail">—</div>
+              </div>
+
+              <!-- ✅ Profile hub you requested -->
+              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+              <div class="dd-sep"></div>
+
               <a href="/garage.html">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
-              <a href="/activity.html">Activity</a>
-              <a href="/admin-store.html">Admin Store</a>
+
+              <!-- Promoter only (toggled by JS) -->
+              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+
+              <div class="dd-sep"></div>
               <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
@@ -756,7 +782,7 @@
     </main>
 
     <!-- EVENTS -->
-    <section id="events" class="section">
+    <section class="section">
       <div class="container">
         <div class="section-header">
           <div>
@@ -780,7 +806,7 @@
     </section>
 
     <!-- TOP BUILDS -->
-    <section id="garage" class="section">
+    <section class="section">
       <div class="container">
         <div class="section-header">
           <div>
@@ -790,13 +816,15 @@
             </p>
           </div>
         </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-  <button class="btn btn-ghost btn-pill-sm" onclick="location.href='/garage.html'">View all builds</button>
-  <button class="btn btn-ghost btn-pill-sm" onclick="authUI.requireLogin(()=>location.href='/build-new.html')">
-    Start My First Build
-  </button>
-</div>
 
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/garage.html'">View all builds</button>
+
+          <!-- ✅ Fix: should go to build-new.html (and require login) -->
+          <button class="btn btn-ghost btn-pill-sm" type="button" id="startBuildBtn">
+            Start My First Build
+          </button>
+        </div>
 
         <div id="top-builds-grid" class="cards-grid" aria-live="polite">
           <article class="build-card">
@@ -808,8 +836,8 @@
       </div>
     </section>
 
-    <!-- COMMUNITY / SIGHTINGS -->
-    <section id="community" class="section">
+    <!-- SIGHTINGS -->
+    <section class="section">
       <div class="container">
         <div class="section-header">
           <div>
@@ -818,7 +846,9 @@
               Gas station link-ups, toll runs, late-night pulls — see what’s been spotted in real time.
             </p>
           </div>
-          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="authUI.requireLogin(()=>location.href='/sighting-new.html')">
+
+          <!-- ✅ Fix: should go to sightings-new.html -->
+          <button class="btn btn-ghost btn-pill-sm" type="button" id="uploadSightingBtn">
             Upload a Sighting
           </button>
         </div>
@@ -861,58 +891,6 @@
       </div>
     </section>
 
-    <!-- BRAND / ABOUT -->
-    <section id="brand" class="section">
-      <div class="container">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">What ROK Racers JA Is</h2>
-            <p class="section-sub">
-              A digital paddock for Jamaican motorsport — events, builds, sightings and the crews that make it all run.
-            </p>
-          </div>
-        </div>
-
-        <div class="brand-grid">
-          <article class="brand-card">
-            <h3>The grid, online</h3>
-            <p>
-              ROK Racers JA connects promoters, drivers and fans in one place. Track nights, gas station link-ups,
-              mountain runs — every meet can live on the same grid instead of getting lost in stories and chats.
-            </p>
-            <p style="margin-top:8px;">
-              Use the Garage to show off your builds, attach them to events, and keep a living history of where your car has been.
-              The goal is simple: make it easier to see what’s on, who’s outside, and what’s being built across the island.
-            </p>
-            <div class="brand-pill-row">
-              <span class="brand-pill">Events Hub</span>
-              <span class="brand-pill">Build Garage</span>
-              <span class="brand-pill">Sightings Feed</span>
-              <span class="brand-pill">Promoter Tools</span>
-            </div>
-          </article>
-
-          <article class="brand-card">
-            <h3>ROC · RRXNG · Community</h3>
-            <p>
-              Built in Jamaica, for Jamaica. ROK Racers JA is the spine for ROC Mobile Mechanics, RRXNG Club events,
-              and future partner crews. Over time, the platform grows into:
-            </p>
-            <ul style="margin:8px 0 0 16px; font-size:13px; color:var(--text-muted);">
-              <li>Ticketing & RSVP tools for promoters</li>
-              <li>Parts & vendor discovery for builds</li>
-              <li>Mechanic and inspection bookings</li>
-              <li>Stories and features on local drivers</li>
-            </ul>
-            <p style="margin-top:8px;">
-              For now, we’re focused on getting the core right: clean events, real builds, and a feed that actually
-              reflects the island’s car culture.
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <!-- HIGHLIGHTS -->
     <section class="section">
       <div class="container">
@@ -927,9 +905,7 @@
         </div>
 
         <div id="highlightsGrid" class="cards-grid" aria-live="polite">
-          <article class="brand-card">
-            <p>Loading highlights…</p>
-          </article>
+          <article class="sighting-main"><p class="section-sub">Loading highlights…</p></article>
         </div>
       </div>
     </section>
@@ -989,6 +965,20 @@
           <button class="tab" id="tabSignup" type="button">Sign up</button>
         </div>
 
+        <!-- ✅ Role selection shown only during Sign up, required -->
+        <div class="field" id="roleField" style="display:none;">
+          <label>Choose your role</label>
+          <select id="authRole">
+            <option value="">Select one…</option>
+            <option value="racer">Racer</option>
+            <option value="promoter">Team Promoter</option>
+          </select>
+          <div class="hint" style="margin-top:6px;">
+            <strong>Racer</strong>: post builds, sightings, RSVP to events.<br>
+            <strong>Team Promoter</strong>: create and promote events for your team.
+          </div>
+        </div>
+
         <div class="field">
           <label>Email</label>
           <input id="authEmail" type="email" autocomplete="email" placeholder="you@email.com"/>
@@ -1015,15 +1005,7 @@
   </div>
 
   <script>
-    window.authUI = window.authUI || {};
-    window.authUI.requireLogin = window.authUI.requireLogin || (async (cb)=>{
-      const { data:{ user } } = await supabase.auth.getUser();
-      if(!user){ openAuth('login'); return false; }
-      cb?.();
-      return true;
-    });
-
-    // ===== Drift camera animation =====
+    // ===== Motion =====
     const mv = document.getElementById('driftCar');
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     let driftFrameId = null;
@@ -1039,7 +1021,6 @@
       mv.cameraOrbit = yaw + "deg " + pitch + "deg " + radius + "m";
       const fov = 40 + Math.sin(driftAngle/16) * 1.4;
       mv.fieldOfView = fov + "deg";
-
       driftFrameId = requestAnimationFrame(driftLoop);
     }
     function enableDrift(){ if (driftFrameId) cancelAnimationFrame(driftFrameId); driftFrameId = requestAnimationFrame(driftLoop); }
@@ -1081,6 +1062,8 @@
     const dropdown    = document.getElementById("dropdown");
     const initialsEl  = document.getElementById("profileInitials");
     const signoutBtn  = document.getElementById("signoutBtn");
+    const ddEmail     = document.getElementById("ddEmail");
+    const myEventsLink = document.getElementById("myEventsLink");
 
     const authBackdrop = document.getElementById('authBackdrop');
     const authClose = document.getElementById('authClose');
@@ -1091,6 +1074,9 @@
     const authSubmit = document.getElementById('authSubmit');
     const authMsg = document.getElementById('authMsg');
     const googleBtn = document.getElementById('googleBtn');
+
+    const roleField = document.getElementById('roleField');
+    const authRole = document.getElementById('authRole');
 
     let authMode = 'login'; // 'login' | 'signup'
 
@@ -1104,6 +1090,11 @@
       tabLogin.classList.toggle('active', authMode === 'login');
       tabSignup.classList.toggle('active', authMode === 'signup');
       authSubmit.textContent = authMode === 'signup' ? 'Sign up' : 'Log in';
+
+      // ✅ Role required on signup
+      roleField.style.display = (authMode === 'signup') ? 'block' : 'none';
+      if(authMode !== 'signup') authRole.value = '';
+
       setAuthMsg('', '');
       authEmail.value = '';
       authPassword.value = '';
@@ -1125,6 +1116,8 @@
       authMode = 'login';
       tabLogin.classList.add('active'); tabSignup.classList.remove('active');
       authSubmit.textContent = 'Log in';
+      roleField.style.display = 'none';
+      authRole.value = '';
       setAuthMsg('', '');
     });
 
@@ -1132,27 +1125,48 @@
       authMode = 'signup';
       tabSignup.classList.add('active'); tabLogin.classList.remove('active');
       authSubmit.textContent = 'Sign up';
+      roleField.style.display = 'block';
       setAuthMsg('', '');
     });
+
+    async function upsertProfileRole(userId, role){
+      // Assumes you have `profiles (id uuid primary key, role text, updated_at timestamptz)`
+      // If your schema differs, adjust here.
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ id: userId, role, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+
+      // If you don't have profiles yet, this will error—safe to ignore for now, but role gating won't work.
+      if (error) console.warn('Profile role upsert failed (check profiles table):', error.message);
+    }
 
     authSubmit?.addEventListener('click', async ()=>{
       const email = (authEmail.value || '').trim();
       const password = (authPassword.value || '').trim();
+      const chosenRole = (authRole?.value || '').trim();
 
       if(!email || !email.includes('@')) { setAuthMsg('Enter a valid email.', 'bad'); return; }
       if(!password || password.length < 6) { setAuthMsg('Password must be at least 6 characters.', 'bad'); return; }
+
+      if(authMode === 'signup' && !chosenRole){
+        setAuthMsg('Select a role to continue.', 'bad');
+        return;
+      }
 
       authSubmit.disabled = true;
       setAuthMsg('Working…', '');
 
       try{
         if(authMode === 'signup'){
-          // Email + password signup
-          const { error } = await supabase.auth.signUp({ email, password });
+          const { data, error } = await supabase.auth.signUp({ email, password });
           if(error) throw error;
+
+          // Try to write role immediately if we have user id
+          const uid = data?.user?.id;
+          if (uid) await upsertProfileRole(uid, chosenRole);
+
           setAuthMsg('Signed up. Check your email if confirmation is enabled.', 'ok');
         } else {
-          // Email + password login
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if(error) throw error;
           setAuthMsg('Logged in.', 'ok');
@@ -1167,12 +1181,9 @@
 
     googleBtn?.addEventListener('click', async ()=>{
       setAuthMsg('Redirecting to Google…', 'ok');
-      // NOTE: Google Client ID is configured in Supabase dashboard, not here.
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/index.html'
-        }
+        options: { redirectTo: window.location.origin + '/index.html' }
       });
       if(error){
         console.error(error);
@@ -1180,24 +1191,52 @@
       }
     });
 
+    // ✅ Stable dropdown open/close
+    function setDropdownOpen(open){
+      if(!dropdown || !profileChip) return;
+      dropdown.classList.toggle('open', !!open);
+      profileChip.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
     profileChip?.addEventListener("click", (e)=>{
       e.stopPropagation();
-      if (!dropdown) return;
-      dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
-      profileChip.setAttribute("aria-expanded", dropdown.style.display === "block" ? "true" : "false");
+      setDropdownOpen(!dropdown.classList.contains('open'));
     });
 
-    document.addEventListener("click", (e)=>{
-      if (!profileMenu?.contains(e.target)){
-        if (dropdown) dropdown.style.display = "none";
-        profileChip?.setAttribute("aria-expanded", "false");
-      }
+    document.addEventListener("click", ()=>{
+      setDropdownOpen(false);
+    });
+
+    dropdown?.addEventListener('click', (e)=>{
+      // allow clicking links/buttons inside without closing before navigation
+      e.stopPropagation();
     });
 
     signoutBtn?.addEventListener("click", async ()=>{
       await supabase.auth.signOut();
-      await updateAuthUI();
+      setDropdownOpen(false);
     });
+
+    function initialsFromEmail(email){
+      const raw = (email || "").split("@")[0] || "u";
+      const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
+      const parts = cleaned.split(" ").filter(Boolean);
+      let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
+      return (initials || 'U').toUpperCase();
+    }
+
+    async function getCurrentRole(userId){
+      try{
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
+        return data?.role || null;
+      } catch {
+        return null;
+      }
+    }
 
     async function updateAuthUI(){
       const { data: { user } } = await supabase.auth.getUser();
@@ -1208,22 +1247,26 @@
         profileMenu.style.display = "flex";
         closeAuth();
 
-        const raw = (user.email || "").split("@")[0] || "u";
-        const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
-        const parts = cleaned.split(" ").filter(Boolean);
-        let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
-        initialsEl.textContent = initials.toUpperCase();
+        initialsEl.textContent = initialsFromEmail(user.email);
+        if (ddEmail) ddEmail.textContent = user.email || '—';
+
+        // Promoter menu item (optional)
+        const role = await getCurrentRole(user.id);
+        if (myEventsLink){
+          myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
+        }
       } else {
         loginBtn.style.display = "inline-flex";
         joinBtn.style.display = "inline-flex";
         profileMenu.style.display = "none";
-        if (dropdown) dropdown.style.display = "none";
+        setDropdownOpen(false);
       }
     }
 
-    supabase.auth.onAuthStateChange(updateAuthUI);
+    // ✅ Critical: fix auth UI across pages
+    supabase.auth.onAuthStateChange(() => updateAuthUI());
 
-    // Auth helper used by other buttons
+    // Auth helper used by buttons
     window.authUI = window.authUI || {};
     window.authUI.requireLogin = async function(callback){
       const { data: { user }} = await supabase.auth.getUser();
@@ -1234,6 +1277,14 @@
       if (callback) callback();
       return true;
     };
+
+    // ✅ Fix button routes
+    document.getElementById('startBuildBtn')?.addEventListener('click', ()=>{
+      authUI.requireLogin(()=> location.href = '/build-new.html');
+    });
+    document.getElementById('uploadSightingBtn')?.addEventListener('click', ()=>{
+      authUI.requireLogin(()=> location.href = '/sightings-new.html');
+    });
 
     // ===== Top 5 builds =====
     async function loadTopBuilds(){
@@ -1322,56 +1373,55 @@
           </article>`;
       }).join('');
 
-grid.onclick = async (e) => {
-  const btn = e.target.closest('[data-like]');
-  const card = e.target.closest('.build-card');
-  if (!card) return;
-  const buildId = card.dataset.build;
+      grid.onclick = async (e) => {
+        const btn = e.target.closest('[data-like]');
+        const card = e.target.closest('.build-card');
+        if (!card) return;
+        const buildId = card.dataset.build;
 
-  if (btn){
-    const likesEl = card.querySelector('.likes');
+        if (btn){
+          const likesEl = card.querySelector('.likes');
+          const { data: auth2 } = await supabase.auth.getUser();
+          if (!auth2?.user){
+            openAuth('login');
+            return;
+          }
 
-    const { data: auth2 } = await supabase.auth.getUser();
-    if (!auth2?.user){
-      openAuth('login');
-      return;
-    }
+          const { data: existing } = await supabase
+            .from('build_likes')
+            .select('build_id')
+            .eq('build_id', buildId)
+            .eq('user_id', auth2.user.id)
+            .maybeSingle();
 
-    const { data: existing } = await supabase
-      .from('build_likes')
-      .select('build_id')
-      .eq('build_id', buildId)
-      .eq('user_id', auth2.user.id)
-      .maybeSingle();
+          if (existing){
+            const { error } = await supabase
+              .from('build_likes')
+              .delete()
+              .eq('build_id', buildId)
+              .eq('user_id', auth2.user.id);
 
-    if (existing){
-      const { error } = await supabase
-        .from('build_likes')
-        .delete()
-        .eq('build_id', buildId)
-        .eq('user_id', auth2.user.id);
+            if (error){ console.error(error); alert('Try again.'); return; }
 
-      if (error){ console.error(error); alert('Try again.'); return; }
+            btn.textContent = '♡';
+            btn.setAttribute('aria-pressed','false');
+            likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+          } else {
+            const { error } = await supabase
+              .from('build_likes')
+              .insert({ build_id: buildId, user_id: auth2.user.id });
 
-      btn.textContent = '♡';
-      btn.setAttribute('aria-pressed','false');
-      likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-    } else {
-      const { error } = await supabase
-        .from('build_likes')
-        .insert({ build_id: buildId, user_id: auth2.user.id });
+            if (error){ console.error(error); alert('Try again.'); return; }
 
-      if (error){ console.error(error); alert('Try again.'); return; }
+            btn.textContent = '♥';
+            btn.setAttribute('aria-pressed','true');
+            likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+          }
+          return;
+        }
 
-      btn.textContent = '♥';
-      btn.setAttribute('aria-pressed','true');
-      likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
-    }
-    return;
-  }
-
-  location.href = `/build.html?id=${buildId}`;
-};
+        location.href = `/build.html?id=${buildId}`;
+      };
     }
 
     // ===== Events (last created, limit 5) =====
@@ -1408,7 +1458,6 @@ grid.onclick = async (e) => {
         return;
       }
 
-      // Optional RSVP counts (if your view exists)
       let countsMap = new Map();
       try{
         const ids = events.map(e => e.id);
@@ -1417,9 +1466,7 @@ grid.onclick = async (e) => {
           .select('event_id,yes_count,maybe_count,no_count')
           .in('event_id', ids);
         countsMap = new Map((counts || []).map(c => [c.event_id, c]));
-      } catch (e){
-        // silent
-      }
+      } catch {}
 
       function render(e){
         const d = e.starts_at ? new Date(e.starts_at) : null;
@@ -1427,8 +1474,6 @@ grid.onclick = async (e) => {
           ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
           : "TBA";
 
-        const tag = "Event";
-        const status = "RSVP Open";
         const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
         const counts = countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 };
 
@@ -1436,7 +1481,7 @@ grid.onclick = async (e) => {
           <article class="event-card" data-id="${e.id}">
             <div class="event-image">
               <div class="event-image-inner"></div>
-              <div class="event-tag">${tag}</div>
+              <div class="event-tag">Event</div>
             </div>
 
             <div class="event-body">
@@ -1444,7 +1489,7 @@ grid.onclick = async (e) => {
 
               <div class="event-meta">
                 <span>${whenLabel}</span>
-                <span class="event-status">${status}</span>
+                <span class="event-status">RSVP Open</span>
               </div>
 
               <div class="event-meta">
@@ -1582,12 +1627,12 @@ grid.onclick = async (e) => {
 
       if (error){
         console.error(error);
-        grid.innerHTML = `<article class="brand-card"><p>Couldn’t load highlights right now. Refresh and try again.</p></article>`;
+        grid.innerHTML = `<article class="sighting-main"><p class="section-sub">Couldn’t load highlights right now. Refresh and try again.</p></article>`;
         return;
       }
 
       if (!data?.length){
-        grid.innerHTML = `<article class="brand-card"><p>The paddock is quiet — new stories will land here soon.</p></article>`;
+        grid.innerHTML = `<article class="sighting-main"><p class="section-sub">The paddock is quiet — new stories will land here soon.</p></article>`;
         return;
       }
 
@@ -1601,14 +1646,12 @@ grid.onclick = async (e) => {
              </div>`
           : '';
         return `
-          <article class="brand-card" onclick="location.href='/highlight.html?id=${h.id}'" style="cursor:pointer">
+          <article class="sighting-main" onclick="location.href='/highlight.html?id=${h.id}'" style="cursor:pointer">
             ${img}
-            <h3 style="margin-bottom:6px;">${h.title}</h3>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">
-              ${h.category || ''} · ${dateStr}
-            </p>
-            <p>${teaser}${more}</p>
-            <p style="margin-top:6px; font-size:11px;">♥ ${h.like_count || 0}</p>
+            <div class="section-title" style="font-size:14px; letter-spacing:.14em; margin-bottom:6px;">${h.title}</div>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">${h.category || ''} · ${dateStr}</p>
+            <p class="section-sub" style="max-width:none;">${teaser}${more}</p>
+            <p style="margin-top:8px; font-size:11px; color:var(--text-muted);">♥ ${h.like_count || 0}</p>
           </article>`;
       }).join('');
     }
