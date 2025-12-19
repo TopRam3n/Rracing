@@ -1,374 +1,436 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>All Events — ROK Racers JA</title>
-<meta name="description" content="See all upcoming and past car events across Jamaica." />
-<link rel="icon" href="/Assets/og.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>All Events — ROK Racers JA</title>
+  <meta name="description" content="See all upcoming and past car events across Jamaica." />
+  <link rel="icon" href="/Assets/og.png" />
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
+  </script>
+
+  <!-- Shared auth UI -->
+  <script src="/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg-main: #050508;
+      --bg-alt: #111111;
+      --bg-card: #141414;
+
+      --accent-main: #189e06;      /* GREEN */
+      --accent-secondary: #FFD93B; /* keep yellow for small highlights */
+      --accent-cyan: #189e06;
+
+      --text-main: #ffffff;
+      --text-muted: #bdbdbd;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.7);
+      --transition-fast: 0.18s ease-out;
+      --transition-med: 0.25s ease-out;
+      --nav-height: 76px;
     }
-  });
-</script>
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{
+      min-height:100%;
+      background: radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--text-main);
+      font-family:"Rajdhani", system-ui, -apple-system, Segoe UI, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a{ color:inherit; text-decoration:none; }
+    .container{ width:min(1200px, 100% - 32px); margin:0 auto; }
+    @media (min-width:1280px){ .container{ width:min(1280px, 100% - 64px);} }
 
-<!-- Shared auth UI (handles navSignInBtn/navJoinBtn/navProfile* etc.) -->
-<script src="/auth-ui.js"></script>
+    /* ===== NAV (match index vibe) ===== */
+    .nav-wrapper{
+      position: sticky; top: 0; z-index: 40;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,5,8,0.92), rgba(5,5,8,0.62));
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+    .nav-wrapper.nav-solid{
+      background: rgba(5,5,8,0.98);
+      border-bottom-color: rgba(255,255,255,0.10);
+      box-shadow: var(--shadow-soft);
+    }
+    .nav{
+      height: var(--nav-height);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:20px;
+    }
+    .logo{ display:flex; align-items:center; gap:10px; letter-spacing:0.04em; }
+    .logo-mark{
+      width:36px; height:36px; border-radius:999px;
+      border:1px solid rgba(24, 158, 6, 0.7);
+      box-shadow:0 0 18px rgba(24, 158, 6, 0.32);
+      overflow:hidden; background:#000;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .logo-mark img{ width:100%; height:100%; object-fit:cover; }
+    .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; }
+    .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; }
 
-<style>
-  :root{
-    --bg:#050508;
-    --bg1:#141414;
-    --bg2:#1b1b1b;
-    --fg:#fff;
-    --muted:#bdbdbd;
-    --accent:#e50914;
-    --accent-yellow:#FFD93B;
-    --line:rgba(255,255,255,.08);
-    --shadow:0 40px 120px -30px rgba(0,0,0,.7);
-  }
+    .nav-links{
+      display:flex; gap:18px; align-items:center;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      color: var(--text-muted);
+    }
+    .nav-links a{ position:relative; padding-bottom:4px; }
+    .nav-links a::after{
+      content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
+      background:linear-gradient(to right, var(--accent-main), var(--accent-secondary));
+      transition: width var(--transition-fast);
+      border-radius:999px;
+    }
+    .nav-links a:hover{ color:var(--text-main); }
+    .nav-links a:hover::after{ width:100%; }
 
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
-    color:var(--fg);
-    font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
-  }
-  a{color:var(--fg);text-decoration:none}
-  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .nav-cta{ display:flex; gap:8px; align-items:center; }
+    .btn{
+      border-radius:999px; padding:8px 16px;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      border:1px solid transparent; background:transparent;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast), transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+      color:#fff;
+      user-select:none;
+    }
+    .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
+    .btn-primary{
+      background: radial-gradient(circle at top left, #2ad714, var(--accent-main));
+      box-shadow: 0 0 24px rgba(24, 158, 6, 0.55);
+      border-color: rgba(24, 158, 6, 0.9);
+    }
+    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,158,6,0.70); }
+    .btn-ghost{
+      border-color: rgba(255,255,255,0.12);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover{
+      color: var(--text-main);
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.02);
+    }
 
-  /* NAV */
-  .nav{
-    position:sticky;
-    top:0;
-    z-index:50;
-    background:rgba(5,5,8,.9);
-    border-bottom:1px solid var(--line);
-    backdrop-filter:saturate(140%) blur(12px);
-  }
-  .nav-inner{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 0;
-    gap:16px;
-  }
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .logo{
-    width:48px;
-    height:48px;
-    border-radius:12px;
-    object-fit:cover;
-  }
-  h1,h2{
-    font-family:"Bebas Neue",system-ui,sans-serif;
-    letter-spacing:2px;
-    margin:0;
-  }
-  .title small{
-    color:var(--muted);
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.16em;
-  }
+    .profile-menu{ position:relative; display:flex; align-items:center; }
+    .profile-chip{
+      width:32px; height:32px; border-radius:50%;
+      background:var(--bg-card);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:600; cursor:pointer;
+      border:1px solid rgba(255,255,255,0.18);
+      transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+      font-size:13px;
+    }
+    .profile-chip:hover{ border-color:rgba(255,255,255,0.32); box-shadow:0 0 16px rgba(255,217,59,0.25); transform:translateY(-1px); }
+    .dropdown{
+      position:absolute; right:0; top:40px;
+      background:rgba(10,10,14,0.96);
+      border:1px solid var(--border-subtle);
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
+      border-radius:16px;
+      display:none; flex-direction:column;
+      min-width:220px; z-index:999;
+      backdrop-filter: blur(16px);
+      overflow:hidden;
+    }
+    .dropdown a, .dropdown button{
+      padding:10px 16px; text-align:left;
+      border:none; background:transparent; color:var(--text-main);
+      font-size:13px; width:100%; cursor:pointer;
+    }
+    .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
 
-  .nav-auth{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-  }
+    @media (max-width: 900px){
+      .nav-links{ display:none; }
+      .logo-text-sub{ display:none; }
+      .nav{ gap:12px; }
+    }
 
-  .btn{
-    display:inline-flex;
-    gap:8px;
-    align-items:center;
-    padding:8px 14px;
-    border-radius:999px;
-    border:1px solid var(--line);
-    cursor:pointer;
-    font-size:13px;
-    background:transparent;
-    color:var(--fg);
-    transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
-  }
-  .btn.primary{
-    background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-    color:#fff;
-    border-color:rgba(229,9,20,.9);
-    box-shadow:0 0 18px rgba(229,9,20,.5);
-  }
-  .btn.primary:hover{
-    box-shadow:0 0 26px rgba(229,9,20,.7);
-    transform:translateY(-1px);
-  }
-  .btn:hover{
-    background:rgba(255,255,255,0.03);
-  }
+    /* ===== PAGE ===== */
+    .page{
+      padding: 26px 0 56px;
+    }
+    .page-title{
+      font-family:"Bebas Neue";
+      font-size: clamp(40px, 6vw, 62px);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 18px 0 6px;
+    }
+    .page-sub{
+      color: var(--text-muted);
+      max-width: 720px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
 
-  /* Profile menu */
-  .profile-menu{
-    position:relative;
-    display:flex;
-    align-items:center;
-  }
-  .profile-chip{
-    width:32px;
-    height:32px;
-    border-radius:50%;
-    background:var(--bg2);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:600;
-    cursor:pointer;
-    border:1px solid var(--line);
-    font-size:13px;
-    transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
-  }
-  .profile-chip:hover{
-    border-color:rgba(255,255,255,.32);
-    box-shadow:0 0 16px rgba(255,217,59,.6);
-    transform:translateY(-1px);
-  }
-  .dropdown{
-    position:absolute;
-    right:0;
-    top:40px;
-    background:#121212;
-    border:1px solid var(--line);
-    box-shadow:0 20px 40px rgba(0,0,0,.6);
-    border-radius:16px;
-    display:flex;
-    flex-direction:column;
-    min-width:190px;
-    z-index:60;
-  }
-  .dropdown a,
-  .dropdown button{
-    padding:10px 16px;
-    text-align:left;
-    border:none;
-    background:transparent;
-    color:var(--fg);
-    font-size:13px;
-    width:100%;
-    cursor:pointer;
-  }
-  .dropdown a:hover,
-  .dropdown button:hover{
-    background:#1f1f1f;
-  }
+    /* Filters */
+    .filters{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin: 14px 0 18px;
+      align-items:center;
+    }
+    input,select,textarea{
+      background: rgba(20,20,24,.9);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:12px;
+      outline:none;
+      font-size:14px;
+      font-family: inherit;
+    }
+    input:focus-visible,select:focus-visible,textarea:focus-visible{
+      border-color: rgba(24,158,6,.7);
+      box-shadow: 0 0 0 1px rgba(24,158,6,.35);
+    }
+    .hint{
+      font-size:12px;
+      color:var(--text-muted);
+    }
 
-  .section{padding:40px 0 56px}
-  .grid{display:grid;gap:24px}
-  .cols-3{grid-template-columns:repeat(3,1fr)}
-  @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
-
-  .card{
-    background:var(--bg1);
-    border:1px solid var(--line);
-    border-radius:20px;
-    overflow:hidden;
-    box-shadow:var(--shadow);
-    transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s;
-  }
-  .card:hover{
-    transform:translateY(-6px) scale(1.01);
-    box-shadow:0 30px 80px rgba(0,0,0,.85);
-    border-color:rgba(255,217,59,0.5);
-  }
-  .card img{display:block;width:100%;height:auto}
-  .pad{padding:18px}
-  .sub{color:var(--muted)}
-
-  .date{
-    background:var(--bg2);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:10px 12px;
-    min-width:64px;
-    text-align:center;
-  }
-  .date .m{
-    font-family:"Bebas Neue";
-    font-size:20px;
-    line-height:1;
-  }
-  .date .d{
-    font-family:"Bebas Neue";
-    font-size:24px;
-    line-height:1;
-  }
-
-  .filters{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin:14px 0 18px;
-  }
-  input,select{
-    background:var(--bg2);
-    border:1px solid var(--line);
-    color:#fff;
-    padding:10px 12px;
-    border-radius:12px;
-    outline:none;
-    font-size:14px;
-  }
-  input:focus-visible,
-  select:focus-visible{
-    border-color:var(--accent-yellow);
-    box-shadow:0 0 0 1px rgba(255,217,59,0.5);
-  }
-
-  .chip{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    background:var(--bg2);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:6px 10px;
-    font-size:12px;
-  }
-
-  .chip-status{
-    border-color:rgba(255,217,59,0.7);
-    color:var(--accent-yellow);
-  }
-  .chip-past{
-    border-color:rgba(255,255,255,0.18);
-    color:var(--muted);
-    background:rgba(255,255,255,0.03);
-  }
-
-  .pagination{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    margin-top:18px;
-  }
-  .pagination .btn[disabled]{
-    opacity:.5;
-    pointer-events:none;
-  }
-
-  /* Modal */
-  .modal-backdrop{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.65);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:80;
-  }
-  .modal{
-    width:min(720px,92vw);
-    background:#121212;
-    border:1px solid var(--line);
-    border-radius:18px;
-    box-shadow:var(--shadow);
-  }
-  .modal header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:16px 18px;
-    border-bottom:1px solid var(--line);
-  }
-  .modal h3{
-    font-family:"Bebas Neue";
-    font-size:28px;
-    margin:0;
-    letter-spacing:2px;
-  }
-  .modal .content{
-    padding:18px;
-    display:grid;
-    gap:12px;
-  }
-  .row{display:grid;gap:10px}
-  .modal .actions{
-    display:flex;
-    gap:10px;
-    justify-content:flex-end;
-    padding:16px 18px;
-    border-top:1px solid var(--line);
-  }
-  .two{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-  }
-  @media(max-width:720px){.two{grid-template-columns:1fr}}
-  .help{font-size:12px;color:var(--muted)}
-  textarea{
-    resize:vertical;
-    background:var(--bg2);
-    border:1px solid var(--line);
-    color:#fff;
-    padding:12px;
-    border-radius:12px;
-    font-family:inherit;
-    font-size:14px;
-  }
-
-  @media(max-width:600px){
-    .nav-inner{
+    /* Calendar */
+    .calendar-wrap{
+      display:grid;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .month-card{
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.05), rgba(10,10,10,0.96));
+      box-shadow: var(--shadow-soft);
+      overflow:hidden;
+    }
+    .month-head{
+      display:flex; justify-content:space-between; align-items:center;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 10px;
       flex-wrap:wrap;
-      align-items:flex-start;
     }
-    .nav-auth{
-      width:100%;
+    .month-name{
+      font-family:"Bebas Neue";
+      letter-spacing:2px;
+      text-transform:uppercase;
+      font-size: 28px;
+    }
+    .month-meta{
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+    }
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      padding: 10px 12px 0;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+    }
+    .dow div{ padding: 6px 8px; }
+
+    .month-grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      padding: 10px 12px 14px;
+    }
+    .day{
+      min-height: 104px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.25);
+      padding: 8px;
+      overflow:hidden;
+      position:relative;
+    }
+    .day.muted{
+      opacity: .55;
+      border-color: rgba(255,255,255,0.04);
+    }
+    .day-num{
+      font-size: 12px;
+      color: var(--text-muted);
+      position:absolute;
+      top: 8px;
+      right: 10px;
+    }
+    .event-pill{
+      display:block;
+      margin-top: 18px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(24,158,6,0.35);
+      background: rgba(24,158,6,0.12);
+      cursor:pointer;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+    }
+    .event-pill:hover{
+      transform: translateY(-1px);
+      border-color: rgba(24,158,6,0.6);
+      background: rgba(24,158,6,0.18);
+    }
+    .event-pill strong{
+      display:block;
+      font-size: 13px;
+      line-height: 1.15;
+    }
+    .event-pill .meta{
+      display:flex;
+      justify-content:space-between;
+      gap: 8px;
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .event-pill .host{
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .tagline{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.25);
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      white-space: nowrap;
+    }
+
+    /* Modals */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.70);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 9999;
+    }
+    .modal{
+      width:min(760px, 96vw);
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(12,12,16,.96);
+      box-shadow: 0 40px 120px -30px rgba(0,0,0,.8);
+      overflow:hidden;
+      backdrop-filter: blur(16px);
+    }
+    .modal header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      gap:10px;
+    }
+    .modal h3{
+      font-family:"Bebas Neue";
+      letter-spacing:2px;
+      text-transform:uppercase;
+      font-size:28px;
+      margin:0;
+    }
+    .modal .content{
+      padding: 16px;
+      display:grid;
+      gap: 12px;
+    }
+    .two{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:720px){ .two{ grid-template-columns: 1fr; } }
+
+    .modal .actions{
+      padding:14px 16px;
+      display:flex;
       justify-content:flex-end;
+      gap:10px;
+      border-top:1px solid rgba(255,255,255,.08);
+      flex-wrap:wrap;
     }
-  }
-</style>
+
+    .cover-preview{
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
+      overflow:hidden;
+    }
+    .cover-preview img{ display:block; width:100%; height:auto; }
+
+    .empty-card{
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.05), rgba(10,10,10,0.96));
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
+
 <body>
   <!-- NAV -->
-  <nav class="nav" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
-      <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo">
-        <div class="title">
-          <h1>ROK RACERS JA</h1>
-          <small>Events</small>
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="/index.html" class="logo" aria-label="ROK Racers JA home">
+        <div class="logo-mark">
+          <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+        </div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Events</div>
         </div>
       </a>
 
-      <div class="nav-auth">
-        <a class="btn" href="/">Home</a>
-        <button id="addEventBtn" class="btn primary">+ Create Event</button>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="/events.html">Events</a>
+        <a href="/garage.html">Garage</a>
+        <a href="/teams.html">Community</a>
+        <a href="/about.html">About</a>
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/store.html">Store</a>
+      </nav>
 
-        <!-- Shared auth buttons (handled by auth-ui.js) -->
-        <button id="navSignInBtn" class="btn">Log in</button>
-        <button id="navJoinBtn" class="btn primary">Join the grid</button>
+      <div class="nav-cta">
+
+        <!-- Auth buttons (auth-ui.js supports these IDs) -->
+        <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+        <button id="navJoinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
         <div id="navProfileWrap" class="profile-menu" style="display:none">
           <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
             <span id="navProfileInitials">U</span>
           </div>
           <div id="navProfileDropdown" class="dropdown" style="display:none">
+            <a href="/profile.html">My Profile</a>
             <a href="/garage.html">My Garage</a>
             <a href="/tickets.html">My Tickets</a>
             <a href="/likes-builds.html">Liked Builds</a>
@@ -380,281 +442,198 @@
         </div>
       </div>
     </div>
-  </nav>
+  </div>
 
-  <main class="container">
-    <section class="section">
-      <h2 style="font-size:44px; letter-spacing:2px; text-transform:uppercase;">All Events</h2>
+  <main class="container page">
+    <h1 class="page-title">All Events</h1>
+    <p class="page-sub">
+      Full calendar view by month. Filter it down and the layout stays the same. Click any event to expand.
+    </p>
+    <div>
+     <button id="addEventBtn" class="btn btn-primary btn-pill-sm" type="button">+ Create Event</button>
+    </div>
 
-      <div class="filters" role="region" aria-label="Event filters">
-        <input id="q" placeholder="Search title or location…" aria-label="Search"/>
+    <div class="filters" role="region" aria-label="Event filters">
+      <input id="q" placeholder="Search title, location, parish, host…" aria-label="Search"/>
 
-        <select id="month" aria-label="Month">
-          <option value="">Any month</option>
-          <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
-          <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
-          <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
-          <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
-        </select>
+      <select id="month" aria-label="Month">
+        <option value="">Any month</option>
+        <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+        <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+        <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+        <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+      </select>
 
-        <select id="when" aria-label="When">
-          <option value="upcoming">Upcoming</option>
-          <option value="past">Past</option>
-          <option value="all">All</option>
-        </select>
+      <select id="when" aria-label="When">
+        <option value="upcoming">Upcoming</option>
+        <option value="past">Past</option>
+        <option value="all">All</option>
+      </select>
 
-        <select id="hostFilter" aria-label="Host">
-          <option value="all">All hosts</option>
-          <option value="promoters">Promoters</option>
-          <option value="team">Specific team…</option>
-        </select>
+      <select id="hostFilter" aria-label="Host">
+        <option value="all">All hosts</option>
+        <option value="promoters">Promoters</option>
+        <option value="team">Specific team…</option>
+      </select>
 
-        <select id="hostTeam" aria-label="Team" style="display:none; min-width:220px">
-          <option value="">Select a team…</option>
-        </select>
+      <select id="hostTeam" aria-label="Team" style="display:none; min-width:220px">
+        <option value="">Select a team…</option>
+      </select>
 
-        <button class="btn" id="apply">Apply</button>
-      </div>
+      <button class="btn btn-ghost btn-pill-sm" id="apply" type="button">Apply</button>
 
-      <div id="eventsList" class="grid cols-3" role="list" aria-live="polite">
-        <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
-      </div>
+      <span class="hint" id="resultsHint"></span>
+    </div>
 
-      <div class="pagination">
-        <button class="btn" id="prev">← Prev</button>
-        <button class="btn" id="next">Next →</button>
-      </div>
-    </section>
+    <div id="calendarWrap" class="calendar-wrap" aria-live="polite">
+      <div class="empty-card">Loading events…</div>
+    </div>
   </main>
 
-  <!-- Create Event Modal -->
+  <!-- EVENT DETAILS MODAL (expand) -->
+  <div id="detailsBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+      <header>
+        <h3 id="detailsTitle">Event</h3>
+        <button id="detailsClose" class="btn btn-ghost btn-pill-sm" type="button" aria-label="Close">✕</button>
+      </header>
+      <div class="content">
+        <div id="detailsCover" class="cover-preview" style="display:none"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <span class="tagline" id="detailsWhen">—</span>
+          <span class="tagline" id="detailsWhere">—</span>
+          <span class="tagline" id="detailsHost" style="display:none">—</span>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <span class="tagline" id="detailsStatus">—</span>
+          <span class="tagline" id="detailsCounts">✅ 0 · 🤔 0 · ❌ 0</span>
+        </div>
+
+        <div id="detailsDesc" class="hint" style="font-size:14px; line-height:1.45; color:var(--text-muted)"></div>
+
+        <div class="actions">
+          <button id="detailsGo" class="btn btn-primary btn-pill-sm" type="button">Open Event Page</button>
+          <button id="detailsRSVP" class="btn btn-ghost btn-pill-sm" type="button">RSVP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE EVENT MODAL -->
   <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <header>
         <h3 id="modalTitle">Create Event</h3>
-        <button id="modalClose" class="btn" aria-label="Close">✕</button>
+        <button id="modalClose" class="btn btn-ghost btn-pill-sm" type="button" aria-label="Close">✕</button>
       </header>
+
       <div class="content">
-        <div class="row">
-          <label>Title
-            <input id="f_title" required placeholder="Event name" />
-          </label>
+        <div>
+          <label class="hint" style="display:block; margin-bottom:6px">Title</label>
+          <input id="f_title" required placeholder="Event name" />
         </div>
+
         <div class="two">
-          <label>Starts at
+          <div>
+            <label class="hint" style="display:block; margin-bottom:6px">Starts at</label>
             <input id="f_starts" type="datetime-local" required />
-          </label>
-          <label>Ends at <span class="help">(optional)</span>
+          </div>
+          <div>
+            <label class="hint" style="display:block; margin-bottom:6px">Ends at <span class="hint">(optional)</span></label>
             <input id="f_ends" type="datetime-local" />
-          </label>
-        </div>
-        <div class="row">
-          <label>Location <span class="help">(optional)</span>
-            <input id="f_location" placeholder="Kingston, Fairview Parking Lot…" />
-          </label>
+          </div>
         </div>
 
-        <div class="row">
-          <label>Post as
-            <select id="f_team">
-              <option value="">My account</option>
-            </select>
-          </label>
-          <div class="help">Only teams you manage show here</div>
-        </div>
-
-        <div class="row">
-          <label>Parish <span class="help">(optional)</span>
-            <input id="f_parish" placeholder="St. Andrew, St. James…" />
-          </label>
-        </div>
         <div class="two">
-          <label>Type / Tag <span class="help">(optional)</span>
-            <input id="f_tag" placeholder="Track day, gas station meet…" />
-          </label>
-          <label>Status <span class="help">(optional)</span>
-            <input id="f_status" placeholder="RSVP Open, Sold Out…" />
-          </label>
+          <div>
+            <label class="hint" style="display:block; margin-bottom:6px">Parish <span class="hint">(optional)</span></label>
+            <input id="f_parish" placeholder="St. Andrew, St. James…" />
+          </div>
+          <div>
+            <label class="hint" style="display:block; margin-bottom:6px">Location <span class="hint">(optional)</span></label>
+            <input id="f_location" placeholder="Kingston, Fairview Parking Lot…" />
+          </div>
         </div>
-        <div class="row">
-          <label>Cover image URL <span class="help">(optional, HTTPS)</span>
-            <input id="f_cover" placeholder="https://…" />
-          </label>
+
+        <div>
+          <label class="hint" style="display:block; margin-bottom:6px">Post as</label>
+          <select id="f_team">
+            <option value="">My account</option>
+          </select>
+          <div class="hint" style="margin-top:6px">Only teams you manage show here.</div>
         </div>
-        <div class="row">
-          <label>Description <span class="help">(optional)</span>
-            <textarea id="f_desc" rows="4"></textarea>
-          </label>
+
+        <div>
+          <label class="hint" style="display:block; margin-bottom:6px">Cover image <span class="hint">(optional, JPG/PNG/WEBP ≤ 6MB)</span></label>
+          <input id="f_cover_file" type="file" accept="image/*" />
+          <div class="hint" style="margin-top:6px">
+            Uploads to the <strong>event-covers</strong> storage bucket and saves the public URL to <code>events.cover_url</code>.
+          </div>
         </div>
+
+        <div>
+          <label class="hint" style="display:block; margin-bottom:6px">Description <span class="hint">(optional)</span></label>
+          <textarea id="f_desc" rows="4" placeholder="What’s happening, what to bring, rules, pricing…"></textarea>
+        </div>
+
+        <div id="createMsg" class="hint" style="min-height:18px"></div>
       </div>
+
       <div class="actions">
-        <button id="modalCancel" class="btn">Cancel</button>
-        <button id="modalCreate" class="btn primary">Create</button>
+        <button id="modalCancel" class="btn btn-ghost btn-pill-sm" type="button">Cancel</button>
+        <button id="modalCreate" class="btn btn-primary btn-pill-sm" type="button">Create</button>
       </div>
     </div>
   </div>
 
   <script>
+    /* ========= Nav solid on scroll ========= */
+    const navWrapper = document.getElementById('navWrapper');
+    function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
+    updateNavSolid();
+    window.addEventListener('scroll', updateNavSolid, { passive:true });
+
     /* ========= Helpers ========= */
-
-    const pageSize = 9;
-    let page      = 0;
-    let cached    = [];
-    let filtered  = [];
-
-    let teamsIndex = new Map(); // team_id -> {id,name,is_promoter}
-    let promoterTeamIds = new Set();
-
     function escapeHTML(s){
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
-
-    function withinMonth(dateStr, monthIndex){
-      if (monthIndex === "" || monthIndex == null) return true;
-      const d = new Date(dateStr);
-      return d.getMonth() === Number(monthIndex);
-    }
-
     function isUpcoming(dateStr){
       const now = new Date();
       const d   = new Date(dateStr);
       return d >= now;
     }
-
-    function isPromoterEvent(e){
-      // treat as promoter-hosted if the joined team row exists and is_promoter = true
-      return !!(e.teams && e.teams.is_promoter);
+    function withinMonth(dateStr, monthIndex){
+      if (monthIndex === "" || monthIndex == null) return true;
+      const d = new Date(dateStr);
+      return d.getMonth() === Number(monthIndex);
+    }
+    function toISO(localDT){
+      if (!localDT) return null;
+      const [date, time] = localDT.split('T');
+      return new Date(`${date}T${time}:00`).toISOString();
+    }
+    function fmtMonthKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+    function monthLabel(year, month0){
+      const d = new Date(year, month0, 1);
+      return d.toLocaleString("en-US", { month:"long", year:"numeric" });
+    }
+    function fmtWhen(d){
+      return d.toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+    }
+    function fmtShortTime(d){
+      return d.toLocaleString("en-US", { hour:"numeric", minute:"2-digit" });
     }
 
-    function renderEventListCard(e){
-      const d   = e.starts_at ? new Date(e.starts_at) : null;
-      const m   = d ? d.toLocaleString("en-US",{ month:"short" }).toUpperCase() : "--";
-      const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-      const when = d
-        ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
-        : "";
+    /* ========= Data state ========= */
+    let cached   = [];
+    let filtered = [];
 
-      const parish = e.parish || "";
-      const locLabel = [parish, e.location].filter(Boolean).join(" · ");
-      const loc  = when
-        ? (locLabel ? `${when} • ${locLabel}` : when)
-        : locLabel;
+    let teamsIndex = new Map(); // team_id -> {id,name,is_promoter,logo_url?}
+    let promoterTeamIds = new Set();
 
-      const counts = e.counts || { yes_count:0, maybe_count:0, no_count:0 };
-      const past = e.starts_at && !isUpcoming(e.starts_at);
-      const statusText = e.status || (past ? "Completed" : "RSVP Open");
-      const tagText = e.tag || "Event";
-
-      const host = e.team_id ? teamsIndex.get(e.team_id) : null;
-      const hostLine = host
-        ? `<div class="sub" style="margin-top:4px">Host: <a href="/team.html?id=${encodeURIComponent(host.id)}" style="text-decoration:underline">${escapeHTML(host.name)}</a></div>`
-        : "";
-
-      return `
-        <article class="card" role="listitem">
-          ${e.cover_url ? `<img src="${escapeHTML(e.cover_url)}" alt="${escapeHTML(e.title)}" loading="lazy">` : ""}
-          <div class="pad">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
-              <div class="date">
-                <div class="m">${m}</div>
-                <div class="d">${day}</div>
-              </div>
-              <div>
-                <strong>${escapeHTML(e.title)}</strong>
-                ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ""}
-                ${hostLine}
-              </div>
-            </div>
-
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
-              <span class="chip chip-status">${escapeHTML(tagText)}</span>
-              <span class="chip ${past ? 'chip-past' : 'chip-status'}">${escapeHTML(statusText)}</span>
-              ${host?.is_promoter ? `<span class="chip chip-status">Promoter</span>` : ``}
-            </div>
-
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <span class="chip">✅ ${counts.yes_count}</span>
-              <span class="chip">🤔 ${counts.maybe_count}</span>
-              <span class="chip">❌ ${counts.no_count}</span>
-              <a class="btn" href="/event.html?id=${encodeURIComponent(e.id)}" style="margin-left:auto">
-                Details / Tickets
-              </a>
-            </div>
-          </div>
-        </article>`;
-    }
-
-    function renderCurrentPage(){
-      const listEl = document.getElementById('eventsList');
-      const prevEl = document.getElementById('prev');
-      const nextEl = document.getElementById('next');
-
-      if (!filtered.length){
-        listEl.innerHTML =
-          `<article class="card"><div class="pad sub">
-            No events match these filters yet. Try clearing search or switching to “All”.
-          </div></article>`;
-        if (prevEl) prevEl.disabled = true;
-        if (nextEl) nextEl.disabled = true;
-        return;
-      }
-
-      const start = page * pageSize;
-      const slice = filtered.slice(start, start + pageSize);
-
-      listEl.innerHTML = slice.map(renderEventListCard).join('');
-
-      if (prevEl) prevEl.disabled = (page === 0);
-      if (nextEl) nextEl.disabled = (start + pageSize) >= filtered.length;
-    }
-
-    function applyFilters(){
-      const q     = document.getElementById('q').value.trim().toLowerCase();
-      const month = document.getElementById('month').value;
-      const when  = document.getElementById('when').value;
-
-      // Host filter UI (hostFilter + hostTeam)
-      const hostFilter = document.getElementById('hostFilter').value; // all | promoters | team
-      const hostTeamId = document.getElementById('hostTeam').value;
-
-      let rows = cached.slice(0);
-
-      // When: upcoming / past / all
-      if (when === 'upcoming'){
-        rows = rows.filter(r => r.starts_at && isUpcoming(r.starts_at));
-      } else if (when === 'past'){
-        rows = rows.filter(r => r.starts_at && !isUpcoming(r.starts_at));
-      }
-
-      // Month filter
-      if (month !== ""){
-        rows = rows.filter(r => r.starts_at && withinMonth(r.starts_at, month));
-      }
-
-      // Host filter (this is your team filtering)
-      if (hostFilter === 'promoters'){
-        rows = rows.filter(isPromoterEvent);
-      } else if (hostFilter === 'team'){
-        if (hostTeamId){
-          rows = rows.filter(r => r.team_id === hostTeamId);
-        } else {
-          rows = []; // picked "Specific team" but didn't choose a team yet
-        }
-      }
-
-      // Search (title + location + parish + host name)
-      if (q){
-        rows = rows.filter(r => {
-          const hostName = r.team_id ? (teamsIndex.get(r.team_id)?.name || '') : '';
-          return (`${r.title||""} ${r.location||""} ${r.parish||""} ${hostName}`.toLowerCase().includes(q));
-        });
-      }
-
-      filtered = rows;
-      page = 0;
-      renderCurrentPage();
-    }
-
+    /* ========= Host teams for filters ========= */
     async function loadHostTeamsForFilter(){
       const sel = document.getElementById('hostTeam');
       if(!sel) return;
@@ -663,7 +642,7 @@
 
       const { data, error } = await supabase
         .from('teams')
-        .select('id,name,is_promoter')
+        .select('id,name,is_promoter,logo_url')
         .order('name', { ascending:true });
 
       if(error){
@@ -682,30 +661,34 @@
       });
     }
 
-    async function fetchAll(){
-      const list = document.getElementById('eventsList');
-      list.innerHTML =
-        `<article class="card"><div class="pad sub">Loading events…</div></article>`;
+    function isPromoterEvent(e){
+      const t = e.team_id ? teamsIndex.get(e.team_id) : null;
+      return !!(t && t.is_promoter);
+    }
 
-      // teamsIndex + promoterTeamIds (needed for host links + filters)
+    /* ========= Fetch all events (NO embedded join; avoids relationship errors) ========= */
+    async function fetchAll(){
+      const wrap = document.getElementById('calendarWrap');
+      wrap.innerHTML = `<div class="empty-card">Loading events…</div>`;
+
       await loadHostTeamsForFilter();
 
       const [eventsRes, countsRes] = await Promise.all([
         supabase
           .from('events')
-          .select('id,title,starts_at,location,cover_url,tag,status,parish,promoter_handle,team_id,teams:team_id(id,name,is_promoter,logo_url)')
-          .order('starts_at',{ ascending:true, nullsLast:true }),
+          .select('id,title,starts_at,ends_at,location,description,cover_url,created_by,team_id,promoter_handle,payment_url,payment_label,payment_instructions,parish,created_at')
+          .order('starts_at', { ascending:true, nullsLast:true }),
         supabase
           .from('event_rsvp_counts')
           .select('event_id,yes_count,maybe_count,no_count')
       ]);
 
       if (eventsRes.error){
-        console.error(eventsRes.error);
-        list.innerHTML =
-          `<article class="card"><div class="pad sub">
-             Couldn’t load events right now. Refresh the page in a bit.
-           </div></article>`;
+        console.error('eventsRes.error', eventsRes.error);
+        wrap.innerHTML = `<div class="empty-card">
+          Couldn’t load events right now.<br/>
+          <span class="hint">${escapeHTML(eventsRes.error.message || '')}</span>
+        </div>`;
         return [];
       }
 
@@ -717,153 +700,330 @@
       }));
     }
 
-    // Host filter UI behavior
+    /* ========= Filters ========= */
+    function applyFilters(){
+      const q     = document.getElementById('q').value.trim().toLowerCase();
+      const month = document.getElementById('month').value;
+      const when  = document.getElementById('when').value;
+
+      const hostFilter = document.getElementById('hostFilter').value; // all | promoters | team
+      const hostTeamId = document.getElementById('hostTeam').value;
+
+      let rows = cached.slice(0);
+
+      if (when === 'upcoming'){
+        rows = rows.filter(r => r.starts_at && isUpcoming(r.starts_at));
+      } else if (when === 'past'){
+        rows = rows.filter(r => r.starts_at && !isUpcoming(r.starts_at));
+      }
+
+      if (month !== ""){
+        rows = rows.filter(r => r.starts_at && withinMonth(r.starts_at, month));
+      }
+
+      if (hostFilter === 'promoters'){
+        rows = rows.filter(isPromoterEvent);
+      } else if (hostFilter === 'team'){
+        if (hostTeamId){
+          rows = rows.filter(r => r.team_id === hostTeamId);
+        } else {
+          rows = [];
+        }
+      }
+
+      if (q){
+        rows = rows.filter(r => {
+          const hostName = r.team_id ? (teamsIndex.get(r.team_id)?.name || '') : '';
+          return (`${r.title||""} ${r.location||""} ${r.parish||""} ${hostName}`.toLowerCase().includes(q));
+        });
+      }
+
+      filtered = rows;
+      renderCalendar(filtered);
+
+      const hint = document.getElementById('resultsHint');
+      if (hint){
+        hint.textContent = filtered.length
+          ? `${filtered.length} event${filtered.length===1?'':'s'}`
+          : `No matches`;
+      }
+    }
+
+    /* ========= Calendar renderer ========= */
+    function groupByMonth(events){
+      const map = new Map(); // key -> [events]
+      for (const e of events){
+        if (!e.starts_at) continue;
+        const d = new Date(e.starts_at);
+        const key = fmtMonthKey(d);
+        if(!map.has(key)) map.set(key, []);
+        map.get(key).push(e);
+      }
+      // sort events inside month
+      for (const [k, arr] of map.entries()){
+        arr.sort((a,b)=> new Date(a.starts_at) - new Date(b.starts_at));
+      }
+      // sort month keys
+      return [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
+    }
+
+    function renderCalendar(events){
+      const wrap = document.getElementById('calendarWrap');
+      if (!events || !events.length){
+        wrap.innerHTML = `<div class="empty-card">
+          No events match these filters yet. Try switching “When” to <strong>All</strong>, or clear the search.
+        </div>`;
+        return;
+      }
+
+      const months = groupByMonth(events);
+      wrap.innerHTML = months.map(([key, monthEvents]) => renderMonth(key, monthEvents)).join('');
+    }
+
+    function renderMonth(key, monthEvents){
+      const [yy, mm] = key.split('-').map(Number);
+      const year = yy;
+      const month0 = mm - 1;
+
+      const first = new Date(year, month0, 1);
+      const last  = new Date(year, month0 + 1, 0);
+      const daysInMonth = last.getDate();
+      const startDow = first.getDay(); // 0 Sun .. 6 Sat
+
+      // Build cells (42 max)
+      const cells = [];
+      const prevLast = new Date(year, month0, 0).getDate();
+
+      // leading muted days
+      for(let i=0;i<startDow;i++){
+        const dayNum = prevLast - (startDow - 1 - i);
+        cells.push({ num:dayNum, muted:true, date:null });
+      }
+      // month days
+      for(let d=1; d<=daysInMonth; d++){
+        cells.push({ num:d, muted:false, date:new Date(year, month0, d) });
+      }
+      // trailing muted days to complete weeks
+      while(cells.length % 7 !== 0) cells.push({ num: (cells.length - (startDow + daysInMonth) + 1), muted:true, date:null });
+
+      // index events by day
+      const byDay = new Map(); // day -> [events]
+      for(const e of monthEvents){
+        const d = new Date(e.starts_at);
+        const day = d.getDate();
+        if(!byDay.has(day)) byDay.set(day, []);
+        byDay.get(day).push(e);
+      }
+
+      const dowLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+      return `
+        <section class="month-card">
+          <div class="month-head">
+            <div>
+              <div class="month-name">${escapeHTML(monthLabel(year, month0))}</div>
+              <div class="month-meta">${monthEvents.length} event${monthEvents.length===1?'':'s'}</div>
+            </div>
+            <div class="tagline">Click an event to expand</div>
+          </div>
+
+          <div class="dow">
+            ${dowLabels.map(d=>`<div>${d}</div>`).join('')}
+          </div>
+
+          <div class="month-grid">
+            ${cells.map(c=>{
+              const dayEvents = (!c.muted && c.date) ? (byDay.get(c.num) || []) : [];
+              const pills = dayEvents.slice(0,3).map(e=> renderEventPill(e)).join('');
+              const more = dayEvents.length > 3
+                ? `<div class="hint" style="margin-top:6px;color:var(--text-muted)">+${dayEvents.length-3} more…</div>`
+                : '';
+              return `
+                <div class="day ${c.muted?'muted':''}">
+                  <div class="day-num">${c.num}</div>
+                  ${pills}
+                  ${more}
+                </div>`;
+            }).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderEventPill(e){
+      const d = new Date(e.starts_at);
+      const t = fmtShortTime(d);
+      const host = e.team_id ? teamsIndex.get(e.team_id) : null;
+
+      const loc = [e.parish, e.location].filter(Boolean).join(' · ');
+      const hostLine = host ? `Host: ${escapeHTML(host.name)}` : '';
+
+      const yes = e.counts?.yes_count || 0;
+      const maybe = e.counts?.maybe_count || 0;
+
+      return `
+        <a class="event-pill" data-event="${escapeHTML(e.id)}" href="javascript:void(0)" role="button" aria-label="Open event details">
+          <strong>${escapeHTML(e.title || 'Event')}</strong>
+          <div class="meta">
+            <span>${escapeHTML(t)}</span>
+            <span>✅ ${yes} · 🤔 ${maybe}</span>
+          </div>
+          ${loc ? `<div class="host">${escapeHTML(loc)}</div>` : (hostLine ? `<div class="host">${hostLine}</div>` : '')}
+          ${hostLine && loc ? `<div class="host">${hostLine}</div>` : ``}
+        </a>
+      `;
+    }
+
+    /* ========= Expand modal wiring ========= */
+    const detailsBackdrop = document.getElementById('detailsBackdrop');
+    const detailsClose = document.getElementById('detailsClose');
+    const detailsTitle = document.getElementById('detailsTitle');
+    const detailsCover = document.getElementById('detailsCover');
+    const detailsWhen  = document.getElementById('detailsWhen');
+    const detailsWhere = document.getElementById('detailsWhere');
+    const detailsHost  = document.getElementById('detailsHost');
+    const detailsStatus= document.getElementById('detailsStatus');
+    const detailsCounts= document.getElementById('detailsCounts');
+    const detailsDesc  = document.getElementById('detailsDesc');
+    const detailsGo    = document.getElementById('detailsGo');
+    const detailsRSVP  = document.getElementById('detailsRSVP');
+
+    let activeEventId = null;
+
+    function openDetails(e){
+      activeEventId = e.id;
+
+      const d = new Date(e.starts_at);
+      detailsTitle.textContent = e.title || "Event";
+      detailsWhen.textContent = e.starts_at ? fmtWhen(d) : "TBA";
+
+      const loc = [e.parish, e.location].filter(Boolean).join(" · ");
+      detailsWhere.textContent = loc || "Location TBA";
+
+      const host = e.team_id ? teamsIndex.get(e.team_id) : null;
+      if (host){
+        detailsHost.style.display = 'inline-flex';
+        detailsHost.textContent = `Hosted by ${host.name}`;
+      } else {
+        detailsHost.style.display = 'none';
+      }
+
+      const past = e.starts_at && !isUpcoming(e.starts_at);
+      const statusText = e.status || (past ? "Completed" : "RSVP Open");
+      detailsStatus.textContent = statusText;
+
+      const yes = e.counts?.yes_count || 0;
+      const maybe = e.counts?.maybe_count || 0;
+      const no = e.counts?.no_count || 0;
+      detailsCounts.textContent = `✅ ${yes} · 🤔 ${maybe} · ❌ ${no}`;
+
+      if (e.cover_url){
+        detailsCover.style.display = 'block';
+        detailsCover.innerHTML = `<img src="${escapeHTML(e.cover_url)}" alt="${escapeHTML(e.title||'Event cover')}" loading="lazy">`;
+      } else {
+        detailsCover.style.display = 'none';
+        detailsCover.innerHTML = '';
+      }
+
+      detailsDesc.textContent = e.description || "No description yet.";
+
+      detailsGo.onclick = () => location.href = `/event.html?id=${encodeURIComponent(e.id)}`;
+      detailsRSVP.onclick = () => {
+        if (window.authUI && typeof authUI.requireLogin === 'function'){
+          authUI.requireLogin(()=> location.href = `/event.html?id=${encodeURIComponent(e.id)}#rsvp`, {
+            message: "Please log in or sign up to RSVP."
+          });
+        } else {
+          location.href = `/event.html?id=${encodeURIComponent(e.id)}#rsvp`;
+        }
+      };
+
+      detailsBackdrop.style.display = 'flex';
+      detailsBackdrop.setAttribute('aria-hidden','false');
+    }
+
+    function closeDetails(){
+      detailsBackdrop.style.display = 'none';
+      detailsBackdrop.setAttribute('aria-hidden','true');
+      activeEventId = null;
+    }
+
+    detailsClose.addEventListener('click', closeDetails);
+    detailsBackdrop.addEventListener('click', (ev)=>{ if (ev.target === detailsBackdrop) closeDetails(); });
+
+    document.addEventListener('click', (ev)=>{
+      const pill = ev.target.closest('.event-pill');
+      if(!pill) return;
+      const id = pill.getAttribute('data-event');
+      const e = cached.find(x => x.id === id);
+      if(e) openDetails(e);
+    });
+
+    /* ========= Filter UI behavior ========= */
     document.getElementById('hostFilter').addEventListener('change', async ()=>{
       const mode = document.getElementById('hostFilter').value;
       const teamSel = document.getElementById('hostTeam');
 
       if(mode === 'team'){
         teamSel.style.display = 'inline-block';
-        if(teamSel.options.length <= 1){
-          await loadHostTeamsForFilter();
-        }
+        if(teamSel.options.length <= 1) await loadHostTeamsForFilter();
       } else {
         teamSel.style.display = 'none';
         teamSel.value = '';
       }
       applyFilters();
     });
-
     document.getElementById('hostTeam').addEventListener('change', applyFilters);
-
-    // Apply + pagination
     document.getElementById('apply').addEventListener('click', applyFilters);
 
-    document.getElementById('prev').addEventListener('click', () => {
-      if (page > 0){
-        page--;
-        renderCurrentPage();
-      }
-    });
-
-    document.getElementById('next').addEventListener('click', () => {
-      if ((page + 1) * pageSize < filtered.length){
-        page++;
-        renderCurrentPage();
-      }
-    });
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      // preload teams so the team dropdown is ready
-      await loadHostTeamsForFilter();
-
-      cached = await fetchAll();
-      filtered = cached.slice(0);
-      page = 0;
-      renderCurrentPage();
-    });
-
-    /* ========= Create Event Modal ========= */
-
-    const backdrop    = document.getElementById('modalBackdrop');
+    /* ========= Create Event (with image upload) ========= */
+    const modalBackdrop = document.getElementById('modalBackdrop');
     const addEventBtn = document.getElementById('addEventBtn');
+    const modalClose = document.getElementById('modalClose');
+    const modalCancel = document.getElementById('modalCancel');
+    const modalCreate = document.getElementById('modalCreate');
+    const createMsg = document.getElementById('createMsg');
 
-    const openModal = () => {
-      backdrop.style.display = 'flex';
-      backdrop.setAttribute('aria-hidden','false');
-    };
+    function setCreateMsg(text){
+      createMsg.textContent = text || '';
+    }
 
-    const closeModal = () => {
-      backdrop.style.display = 'none';
-      backdrop.setAttribute('aria-hidden','true');
-    };
+    function openCreateModal(){
+      setCreateMsg('');
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+    }
+    function closeCreateModal(){
+      modalBackdrop.style.display = 'none';
+      modalBackdrop.setAttribute('aria-hidden','true');
+    }
+    modalClose.addEventListener('click', closeCreateModal);
+    modalCancel.addEventListener('click', closeCreateModal);
+    modalBackdrop.addEventListener('click', (e)=>{ if(e.target === modalBackdrop) closeCreateModal(); });
 
-    if (addEventBtn){
-      addEventBtn.addEventListener('click', async () => {
-        if (window.authUI && typeof authUI.requireLogin === 'function'){
-          authUI.requireLogin(async () => {
-            await loadMyTeamOptions();
-            openModal();
-          });
-          return;
-        }
+    async function uploadEventCover(file, userId){
+      if(!file) return null;
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user){
-          alert("Sign in to create an event.");
-          return;
-        }
-        await loadMyTeamOptions();
-        openModal();
+      const ok = ["image/jpeg","image/png","image/webp"];
+      if(!ok.includes(file.type)) throw new Error("Upload JPG, PNG, or WEBP.");
+      if(file.size > 6 * 1024 * 1024) throw new Error("Max image size is 6MB.");
+
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `covers/${userId}/${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`;
+
+      const { error: upErr } = await supabase.storage.from("event-covers").upload(path, file, {
+        upsert:false,
+        contentType:file.type
       });
+      if(upErr) throw upErr;
+
+      const { data } = supabase.storage.from("event-covers").getPublicUrl(path);
+      return data?.publicUrl || null;
     }
-
-    document.getElementById('modalClose').addEventListener('click', closeModal);
-    document.getElementById('modalCancel').addEventListener('click', closeModal);
-    backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeModal();
-    });
-
-    function toISO(localDT){
-      if (!localDT) return null;
-      const [date, time] = localDT.split('T');
-      return new Date(`${date}T${time}:00`).toISOString();
-    }
-
-    document.getElementById('modalCreate').addEventListener('click', async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user){
-        alert("Sign in to create an event.");
-        return;
-      }
-
-      const title       = document.getElementById('f_title').value.trim();
-      const startsRaw   = document.getElementById('f_starts').value;
-      const endsRaw     = document.getElementById('f_ends').value;
-      const locationTxt = document.getElementById('f_location').value.trim() || null;
-      const parishTxt   = document.getElementById('f_parish').value.trim() || null;
-      const tag         = document.getElementById('f_tag').value.trim() || null;
-      const status      = document.getElementById('f_status').value.trim() || null;
-      const cover       = document.getElementById('f_cover').value.trim() || null;
-      const desc        = document.getElementById('f_desc').value.trim()  || null;
-
-      if (!title || !startsRaw){
-        alert("Title and start time are required.");
-        return;
-      }
-
-      const teamId = document.getElementById('f_team')?.value || null;
-
-      const row = {
-        title,
-        starts_at: toISO(startsRaw),
-        ends_at:   endsRaw ? toISO(endsRaw) : null,
-        location:  locationTxt,
-        parish:    parishTxt,
-        tag,
-        status,
-        cover_url: cover,
-        description: desc,
-        created_by: user.id,
-        team_id: teamId || null
-      };
-
-      const { error } = await supabase.from('events').insert(row);
-      if (error){
-        alert("Couldn’t create event: " + error.message);
-        return;
-      }
-
-      closeModal();
-      cached = await fetchAll();
-      applyFilters();
-      alert("Event created and added to the board.");
-    });
 
     async function loadMyTeamOptions(){
       const sel = document.getElementById('f_team');
       if (!sel) return;
-
       sel.innerHTML = `<option value="">My account</option>`;
 
       const { data:{ user } } = await supabase.auth.getUser();
@@ -888,17 +1048,131 @@
       }
 
       const teams = (data || []).map(r => r.teams).filter(Boolean);
-
-      const allowed = teams;
-
-      allowed.forEach(t => {
+      teams.forEach(t => {
         const opt = document.createElement('option');
         opt.value = t.id;
-        opt.textContent = `${t.name}`;
+        opt.textContent = t.name || 'Team';
         sel.appendChild(opt);
       });
     }
-  </script>
 
+    if (addEventBtn){
+      addEventBtn.addEventListener('click', async ()=>{
+        // Must be logged in + promoter
+        if (window.authUI && typeof authUI.ensurePromoter === 'function'){
+          const res = await authUI.ensurePromoter({
+            autoOffer: false,
+            signInMessage: "Please log in or sign up to create events.",
+            confirmText: "Promoter accounts only."
+          });
+          if (!res?.promoter){
+            alert("Promoter accounts only. If you need access, switch your role to Team Promoter.");
+            return;
+          }
+          await loadMyTeamOptions();
+          openCreateModal();
+          return;
+        }
+
+        // fallback if authUI missing
+        const { data:{ user } } = await supabase.auth.getUser();
+        if (!user){
+          alert("Please log in or sign up to create events.");
+          return;
+        }
+        await loadMyTeamOptions();
+        openCreateModal();
+      });
+    }
+
+    modalCreate.addEventListener('click', async ()=>{
+      setCreateMsg('');
+      modalCreate.disabled = true;
+
+      try{
+        const { data:{ user } } = await supabase.auth.getUser();
+        if (!user){
+          alert("Please log in or sign up to create events.");
+          return;
+        }
+
+        // Require promoter again (in case UI gets bypassed)
+        if (window.authUI && typeof authUI.ensurePromoter === 'function'){
+          const res = await authUI.ensurePromoter({ autoOffer:false, signInMessage:"Please log in to create events." });
+          if (!res?.promoter){
+            alert("Promoter accounts only.");
+            return;
+          }
+        }
+
+        const title       = document.getElementById('f_title').value.trim();
+        const startsRaw   = document.getElementById('f_starts').value;
+        const endsRaw     = document.getElementById('f_ends').value;
+        const locationTxt = document.getElementById('f_location').value.trim() || null;
+        const parishTxt   = document.getElementById('f_parish').value.trim() || null;
+        const desc        = document.getElementById('f_desc').value.trim() || null;
+        const teamId      = document.getElementById('f_team')?.value || null;
+        const file        = document.getElementById('f_cover_file')?.files?.[0] || null;
+
+        if (!title || !startsRaw){
+          alert("Title and start time are required.");
+          return;
+        }
+
+        setCreateMsg('Uploading cover (if provided)…');
+
+        let coverUrl = null;
+        if (file){
+          coverUrl = await uploadEventCover(file, user.id);
+        }
+
+        setCreateMsg('Creating event…');
+
+        const row = {
+          title,
+          starts_at: toISO(startsRaw),
+          ends_at: endsRaw ? toISO(endsRaw) : null,
+          location: locationTxt,
+          parish: parishTxt,
+          description: desc,
+          cover_url: coverUrl,
+          created_by: user.id,
+          team_id: teamId || null,
+          promoter_handle: null,          // optional
+          payment_url: "",                // NOT NULL in your schema
+          payment_label: "",
+          payment_instructions: ""
+        };
+
+        const { error } = await supabase.from('events').insert(row);
+        if (error){
+          console.error(error);
+          alert("Couldn’t create event: " + (error.message || "Try again."));
+          return;
+        }
+
+        closeCreateModal();
+        cached = await fetchAll();
+        filtered = cached.slice(0);
+        applyFilters();
+        alert("Event created and added to the calendar.");
+      } catch(err){
+        console.error(err);
+        alert(err.message || "Something stalled. Try again.");
+      } finally {
+        modalCreate.disabled = false;
+        setCreateMsg('');
+      }
+    });
+
+    /* ========= Boot ========= */
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      await loadHostTeamsForFilter();
+
+      cached = await fetchAll();
+      filtered = cached.slice(0);
+      applyFilters();
+    });
+  </script>
 </body>
 </html>

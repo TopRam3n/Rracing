@@ -1,0 +1,225 @@
+<!-- NAV -->
+    <div class="nav-wrapper" id="navWrapper">
+      <div class="container nav">
+        <a href="/index.html" class="logo">
+          <div class="logo-mark">
+            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+          </div>
+          <div>
+            <div class="logo-text-main">ROK RACERS JA</div>
+            <div class="logo-text-sub">Motorsport Community</div>
+          </div>
+        </a>
+
+        <nav class="nav-links">
+          <!-- ✅ Navbar should go to pages, not anchors -->
+          <a href="/events.html">Events</a>
+          <a href="/garage.html">Garage</a>
+          <a href="/teams.html">Community</a>
+          <a href="/about.html">About</a>
+          <a href="/marketplace.html">Marketplace</a>
+          <a href="/store.html">Store</a>
+        </nav>
+
+        <div class="nav-cta">
+          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+              <span id="profileInitials">U</span>
+            </div>
+
+            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+              <div class="dd-head">
+                <div class="dd-title">Signed in as</div>
+                <div class="dd-email" id="ddEmail">—</div>
+              </div>
+
+              <!-- ✅ Profile hub you requested -->
+              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+              <div class="dd-sep"></div>
+
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/teams.html">My Teams</a>
+
+              <!-- Promoter only (toggled by JS) -->
+              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+
+              <div class="dd-sep"></div>
+              <button id="signoutBtn" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header>
+        <h3 id="modalTitle">Create Event</h3>
+        <button id="modalClose" class="btn" aria-label="Close">✕</button>
+      </header>
+      <div class="content">
+        <div class="row">
+          <label>Title
+            <input id="f_title" required placeholder="Event name" />
+          </label>
+        </div>
+        <div class="two">
+          <label>Starts at
+            <input id="f_starts" type="datetime-local" required />
+          </label>
+          <label>Ends at <span class="help">(optional)</span>
+            <input id="f_ends" type="datetime-local" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Location <span class="help">(optional)</span>
+            <input id="f_location" placeholder="Kingston, Fairview Parking Lot…" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Post as
+            <select id="f_team">
+              <option value="">My account</option>
+            </select>
+          </label>
+          <div class="help">Only teams you manage show here</div>
+        </div>
+
+        <div class="row">
+          <label>Parish <span class="help">(optional)</span>
+            <input id="f_parish" placeholder="St. Andrew, St. James…" />
+          </label>
+        </div>
+        <div class="two">
+          <label>Type / Tag <span class="help">(optional)</span>
+            <input id="f_tag" placeholder="Track day, gas station meet…" />
+          </label>
+          <label>Status <span class="help">(optional)</span>
+            <input id="f_status" placeholder="RSVP Open, Sold Out…" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Cover image URL <span class="help">(optional, HTTPS)</span>
+            <input id="f_cover" placeholder="https://…" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Description <span class="help">(optional)</span>
+            <textarea id="f_desc" rows="4"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="modalCancel" class="btn">Cancel</button>
+        <button id="modalCreate" class="btn primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+   /* ========= Create Event Modal ========= */
+
+    const backdrop    = document.getElementById('modalBackdrop');
+    const addEventBtn = document.getElementById('addEventBtn');
+
+    const openModal = () => {
+      backdrop.style.display = 'flex';
+      backdrop.setAttribute('aria-hidden','false');
+    };
+
+    const closeModal = () => {
+      backdrop.style.display = 'none';
+      backdrop.setAttribute('aria-hidden','true');
+    };
+
+    if (addEventBtn){
+      addEventBtn.addEventListener('click', async () => {
+        if (window.authUI && typeof authUI.requireLogin === 'function'){
+          authUI.requireLogin(async () => {
+            await loadMyTeamOptions();
+            openModal();
+          });
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user){
+          alert("Sign in to create an event.");
+          return;
+        }
+        await loadMyTeamOptions();
+        openModal();
+      });
+    }
+
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+
+    function toISO(localDT){
+      if (!localDT) return null;
+      const [date, time] = localDT.split('T');
+      return new Date(`${date}T${time}:00`).toISOString();
+    }
+
+    document.getElementById('modalCreate').addEventListener('click', async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user){
+        alert("Sign in to create an event.");
+        return;
+      }
+
+      const title       = document.getElementById('f_title').value.trim();
+      const startsRaw   = document.getElementById('f_starts').value;
+      const endsRaw     = document.getElementById('f_ends').value;
+      const locationTxt = document.getElementById('f_location').value.trim() || null;
+      const parishTxt   = document.getElementById('f_parish').value.trim() || null;
+      const tag         = document.getElementById('f_tag').value.trim() || null;
+      const status      = document.getElementById('f_status').value.trim() || null;
+      const cover       = document.getElementById('f_cover').value.trim() || null;
+      const desc        = document.getElementById('f_desc').value.trim()  || null;
+
+      if (!title || !startsRaw){
+        alert("Title and start time are required.");
+        return;
+      }
+
+      const teamId = document.getElementById('f_team')?.value || null;
+
+      const row = {
+        title,
+        starts_at: toISO(startsRaw),
+        ends_at:   endsRaw ? toISO(endsRaw) : null,
+        location:  locationTxt,
+        parish:    parishTxt,
+        tag,
+        status,
+        cover_url: cover,
+        description: desc,
+        created_by: user.id,
+        team_id: teamId || null
+      };
+
+      const { error } = await supabase.from('events').insert(row);
+      if (error){
+        alert("Couldn’t create event: " + error.message);
+        return;
+      }
+
+      closeModal();
+      cached = await fetchAll();
+      applyFilters();
+      alert("Event created and added to the board.");
+    });
+    </script>
+
+   
