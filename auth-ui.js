@@ -50,6 +50,46 @@
 
   const $ = (id) => document.getElementById(id);
 
+    // -----------------------
+  // Toast helper (nice prompts)
+  // -----------------------
+  function toast(message = "Please log in / sign up.", kind = "info") {
+    let el = document.getElementById("authUiToast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "authUiToast";
+      el.style.cssText = `
+        position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+        background:rgba(10,10,14,.92);
+        border:1px solid rgba(255,255,255,.12);
+        color:#fff;
+        padding:10px 14px;
+        border-radius:999px;
+        font-size:13px;
+        letter-spacing:.02em;
+        z-index:10000;
+        box-shadow:0 18px 40px rgba(0,0,0,.6);
+        backdrop-filter: blur(14px);
+        opacity:0; transition:opacity .18s ease, transform .18s ease;
+        pointer-events:none;
+        max-width:min(520px, 92vw);
+        text-align:center;
+      `;
+      document.body.appendChild(el);
+    }
+
+    el.textContent = message;
+    el.style.opacity = "1";
+    el.style.transform = "translateX(-50%) translateY(-2px)";
+
+    clearTimeout(el._t);
+    el._t = setTimeout(() => {
+      el.style.opacity = "0";
+      el.style.transform = "translateX(-50%) translateY(6px)";
+    }, 2400);
+  }
+
+
   function escapeHTML(s) {
     return (s || "").replace(/[&<>"']/g, (m) => ({
       "&": "&amp;",
@@ -512,10 +552,14 @@
       if (callback) callback(state.user);
       return true;
     }
-    if (!opts.silent) alert(opts.message || "Please sign in first.");
-    openAuthModal("login");
+
+    const msg = opts.message || "Please log in / sign up.";
+    if (!opts.silent) toast(msg);
+
+    openAuthModal(opts.mode || "login");
     return false;
   }
+
 
   async function ensurePromoter(opts = {}) {
     const { autoOffer = false, signInMessage, confirmText } = opts;

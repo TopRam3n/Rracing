@@ -32,7 +32,7 @@
       --bg-card: #141414;
 
       /* ✅ Red → Green */
-      --accent-main: #189e06;         /* primary green */
+      --accent-main: #128b02;         /* primary green */
       --accent-secondary: #FFD93B;    /* yellow stays */
       --accent-cyan: #FFD93B;
 
@@ -822,16 +822,12 @@
             <p class="section-sub">
               The island’s most-liked builds — street, track, and show specials. Drop your own and see where it lands.
             </p>
+            <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/garage.html'">View all builds</button>
           </div>
         </div>
 
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/garage.html'">View all builds</button>
-
-          <!-- ✅ Fix: should go to build-new.html (and require login) -->
-          <button class="btn btn-ghost btn-pill-sm" type="button" id="startBuildBtn">
-            Start My First Build
-          </button>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">          <!-- ✅ Fix: should go to build-new.html (and require login) -->
+            <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/build-new.html'">Start My First Build</button>
         </div>
 
         <div id="top-builds-grid" class="cards-grid" aria-live="polite">
@@ -856,9 +852,7 @@
           </div>
 
           <!-- ✅ Fix: should go to sightings-new.html -->
-          <button class="btn btn-ghost btn-pill-sm" type="button" id="uploadSightingBtn">
-            Upload a Sighting
-          </button>
+          <button class="btn btn-ghost btn-pill-sm" type="button" id="uploadSightingBtn" onclick="location.href='/sightings-new.html'"> Upload a Sighting </button>
         </div>
 
         <div class="sightings-grid">
@@ -1288,9 +1282,11 @@
     // ✅ Fix button routes
     document.getElementById('startBuildBtn')?.addEventListener('click', ()=>{
       authUI.requireLogin(()=> location.href = '/build-new.html');
+      message: "Please log in / sign up to start your first build."
     });
     document.getElementById('uploadSightingBtn')?.addEventListener('click', ()=>{
       authUI.requireLogin(()=> location.href = '/sightings-new.html');
+      message: "Please log in / sign up to start your first build."
     });
 
     // ===== Top 5 builds =====
