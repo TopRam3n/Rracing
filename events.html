@@ -130,6 +130,19 @@
       background: rgba(255,255,255,0.02);
     }
 
+    /* ===== Danger button (Delete) ===== */
+    .btn-danger{
+      border-color: rgba(255, 77, 77, 0.55);
+      color: #ffd2d2;
+      background: rgba(255, 77, 77, 0.10);
+    }
+    .btn-danger:hover{
+      border-color: rgba(255, 77, 77, 0.85);
+      background: rgba(255, 77, 77, 0.16);
+      box-shadow: 0 0 18px rgba(255, 77, 77, 0.28);
+      transform: translateY(-1px);
+    }
+
     .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
       width:32px; height:32px; border-radius:50%;
@@ -166,9 +179,7 @@
     }
 
     /* ===== PAGE ===== */
-    .page{
-      padding: 26px 0 56px;
-    }
+    .page{ padding: 26px 0 56px; }
     .page-title{
       font-family:"Bebas Neue";
       font-size: clamp(40px, 6vw, 62px);
@@ -203,17 +214,10 @@
       border-color: rgba(24,158,6,.7);
       box-shadow: 0 0 0 1px rgba(24,158,6,.35);
     }
-    .hint{
-      font-size:12px;
-      color:var(--text-muted);
-    }
+    .hint{ font-size:12px; color:var(--text-muted); }
 
     /* Calendar */
-    .calendar-wrap{
-      display:grid;
-      gap: 14px;
-      margin-top: 10px;
-    }
+    .calendar-wrap{ display:grid; gap: 14px; margin-top: 10px; }
     .month-card{
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255,255,255,0.08);
@@ -251,7 +255,6 @@
       letter-spacing: .14em;
     }
     .dow div{ padding: 6px 8px; }
-
     .month-grid{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
@@ -367,7 +370,6 @@
     }
     .two{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media(max-width:720px){ .two{ grid-template-columns: 1fr; } }
-
     .modal .actions{
       padding:14px 16px;
       display:flex;
@@ -376,7 +378,6 @@
       border-top:1px solid rgba(255,255,255,.08);
       flex-wrap:wrap;
     }
-
     .cover-preview{
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.10);
@@ -393,6 +394,77 @@
       padding: 16px;
       color: var(--text-muted);
     }
+
+    /* ===== Toasts ===== */
+    .toast-wrap{
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 20000;
+      display: grid;
+      gap: 10px;
+      width: min(420px, calc(100vw - 28px));
+      pointer-events: none;
+    }
+    .toast{
+      pointer-events: auto;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(10,10,14,0.92);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.65);
+      padding: 12px 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      overflow: hidden;
+      animation: toastIn .18s ease-out;
+    }
+    @keyframes toastIn{
+      from{ transform: translateY(6px); opacity: 0; }
+      to{ transform: translateY(0); opacity: 1; }
+    }
+    .toast .title{
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .toast .msg{
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--text-main);
+      opacity: .95;
+    }
+    .toast .x{
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .toast.success{ border-color: rgba(24,158,6,0.35); }
+    .toast.success::before{
+      content:"";
+      height: 2px;
+      width: 100%;
+      display:block;
+      background: linear-gradient(to right, rgba(24,158,6,0.9), rgba(255,217,59,0.35));
+      margin: -12px -12px 10px;
+    }
+    .toast.error{ border-color: rgba(255,77,77,0.35); }
+    .toast.error::before{
+      content:"";
+      height: 2px;
+      width: 100%;
+      display:block;
+      background: linear-gradient(to right, rgba(255,77,77,0.9), rgba(255,77,77,0.2));
+      margin: -12px -12px 10px;
+    }
+    .toast.info{ border-color: rgba(255,255,255,0.14); }
   </style>
 </head>
 
@@ -420,8 +492,6 @@
       </nav>
 
       <div class="nav-cta">
-
-        <!-- Auth buttons (auth-ui.js supports these IDs) -->
         <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
         <button id="navJoinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
@@ -449,8 +519,9 @@
     <p class="page-sub">
       Full calendar view by month. Filter it down and the layout stays the same. Click any event to expand.
     </p>
+
     <div>
-     <button id="addEventBtn" class="btn btn-primary btn-pill-sm" type="button">+ Create Event</button>
+      <button id="addEventBtn" class="btn btn-primary btn-pill-sm" type="button">+ Create Event</button>
     </div>
 
     <div class="filters" role="region" aria-label="Event filters">
@@ -490,6 +561,9 @@
     </div>
   </main>
 
+  <!-- Toast container -->
+  <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+
   <!-- EVENT DETAILS MODAL (expand) -->
   <div id="detailsBackdrop" class="modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
@@ -516,12 +590,14 @@
         <div class="actions">
           <button id="detailsGo" class="btn btn-primary btn-pill-sm" type="button">Open Event Page</button>
           <button id="detailsRSVP" class="btn btn-ghost btn-pill-sm" type="button">RSVP</button>
+          <button id="detailsEdit" class="btn btn-ghost btn-pill-sm" type="button" style="display:none">Edit</button>
+          <button id="detailsDelete" class="btn btn-danger btn-pill-sm" type="button" style="display:none">Delete</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CREATE EVENT MODAL -->
+  <!-- CREATE / EDIT EVENT MODAL -->
   <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <header>
@@ -583,7 +659,7 @@
 
       <div class="actions">
         <button id="modalCancel" class="btn btn-ghost btn-pill-sm" type="button">Cancel</button>
-        <button id="modalCreate" class="btn btn-primary btn-pill-sm" type="button">Create</button>
+        <button id="modalCreate" class="btn btn-primary btn-pill-sm" type="button">Save</button>
       </div>
     </div>
   </div>
@@ -594,6 +670,25 @@
     function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
     updateNavSolid();
     window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+    /* ========= Toasts ========= */
+    const toastWrap = document.getElementById('toastWrap');
+    function toast(type, title, msg, ms=3200){
+      const el = document.createElement('div');
+      el.className = `toast ${type||'info'}`;
+      el.innerHTML = `
+        <div>
+          <div class="title">${escapeHTML(title || 'Notice')}</div>
+          <div class="msg">${escapeHTML(msg || '')}</div>
+        </div>
+        <button class="x" type="button" aria-label="Dismiss">✕</button>
+      `;
+      const btn = el.querySelector('.x');
+      const kill = ()=>{ el.style.opacity = '0'; el.style.transform = 'translateY(6px)'; setTimeout(()=> el.remove(), 160); };
+      btn.addEventListener('click', kill);
+      toastWrap.appendChild(el);
+      setTimeout(kill, ms);
+    }
 
     /* ========= Helpers ========= */
     function escapeHTML(s){
@@ -625,13 +720,29 @@
     function fmtShortTime(d){
       return d.toLocaleString("en-US", { hour:"numeric", minute:"2-digit" });
     }
+    function toLocalInput(iso){
+      if (!iso) return '';
+      const d = new Date(iso);
+      const pad = (n)=> String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
 
     /* ========= Data state ========= */
     let cached   = [];
     let filtered = [];
-
     let teamsIndex = new Map(); // team_id -> {id,name,is_promoter,logo_url?}
-    let promoterTeamIds = new Set();
+
+    /* ========= Permissions ========= */
+    async function getCanManageEvent(e){
+      const { data:{ user } } = await supabase.auth.getUser();
+      if (window.authUI?.refresh) await authUI.refresh();
+
+      const isAdmin = window.authUI?.isAdmin?.() === true;
+      const isProm  = window.authUI?.isPromoter?.() === true;
+      const isOwner = !!(user && e?.created_by && user.id === e.created_by);
+
+      return { canManage: (isAdmin || isProm || isOwner), user, isAdmin, isProm, isOwner };
+    }
 
     /* ========= Host teams for filters ========= */
     async function loadHostTeamsForFilter(){
@@ -651,8 +762,6 @@
       }
 
       teamsIndex = new Map((data || []).map(t => [t.id, t]));
-      promoterTeamIds = new Set((data || []).filter(t => t.is_promoter).map(t => t.id));
-
       (data || []).forEach(t=>{
         const opt = document.createElement('option');
         opt.value = t.id;
@@ -666,7 +775,7 @@
       return !!(t && t.is_promoter);
     }
 
-    /* ========= Fetch all events (NO embedded join; avoids relationship errors) ========= */
+    /* ========= Fetch all events ========= */
     async function fetchAll(){
       const wrap = document.getElementById('calendarWrap');
       wrap.innerHTML = `<div class="empty-card">Loading events…</div>`;
@@ -759,11 +868,9 @@
         if(!map.has(key)) map.set(key, []);
         map.get(key).push(e);
       }
-      // sort events inside month
       for (const [k, arr] of map.entries()){
         arr.sort((a,b)=> new Date(a.starts_at) - new Date(b.starts_at));
       }
-      // sort month keys
       return [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
     }
 
@@ -775,7 +882,6 @@
         </div>`;
         return;
       }
-
       const months = groupByMonth(events);
       wrap.innerHTML = months.map(([key, monthEvents]) => renderMonth(key, monthEvents)).join('');
     }
@@ -790,24 +896,19 @@
       const daysInMonth = last.getDate();
       const startDow = first.getDay(); // 0 Sun .. 6 Sat
 
-      // Build cells (42 max)
       const cells = [];
       const prevLast = new Date(year, month0, 0).getDate();
 
-      // leading muted days
       for(let i=0;i<startDow;i++){
         const dayNum = prevLast - (startDow - 1 - i);
         cells.push({ num:dayNum, muted:true, date:null });
       }
-      // month days
       for(let d=1; d<=daysInMonth; d++){
         cells.push({ num:d, muted:false, date:new Date(year, month0, d) });
       }
-      // trailing muted days to complete weeks
       while(cells.length % 7 !== 0) cells.push({ num: (cells.length - (startDow + daysInMonth) + 1), muted:true, date:null });
 
-      // index events by day
-      const byDay = new Map(); // day -> [events]
+      const byDay = new Map();
       for(const e of monthEvents){
         const d = new Date(e.starts_at);
         const day = d.getDate();
@@ -843,7 +944,8 @@
                   <div class="day-num">${c.num}</div>
                   ${pills}
                   ${more}
-                </div>`;
+                </div>
+              `;
             }).join('')}
           </div>
         </section>
@@ -874,7 +976,7 @@
       `;
     }
 
-    /* ========= Expand modal wiring ========= */
+    /* ========= Details modal ========= */
     const detailsBackdrop = document.getElementById('detailsBackdrop');
     const detailsClose = document.getElementById('detailsClose');
     const detailsTitle = document.getElementById('detailsTitle');
@@ -887,12 +989,10 @@
     const detailsDesc  = document.getElementById('detailsDesc');
     const detailsGo    = document.getElementById('detailsGo');
     const detailsRSVP  = document.getElementById('detailsRSVP');
-
-    let activeEventId = null;
+    const detailsEdit  = document.getElementById('detailsEdit');
+    const detailsDelete= document.getElementById('detailsDelete');
 
     function openDetails(e){
-      activeEventId = e.id;
-
       const d = new Date(e.starts_at);
       detailsTitle.textContent = e.title || "Event";
       detailsWhen.textContent = e.starts_at ? fmtWhen(d) : "TBA";
@@ -909,8 +1009,7 @@
       }
 
       const past = e.starts_at && !isUpcoming(e.starts_at);
-      const statusText = e.status || (past ? "Completed" : "RSVP Open");
-      detailsStatus.textContent = statusText;
+      detailsStatus.textContent = e.status || (past ? "Completed" : "RSVP Open");
 
       const yes = e.counts?.yes_count || 0;
       const maybe = e.counts?.maybe_count || 0;
@@ -938,6 +1037,22 @@
         }
       };
 
+      // show manage buttons based on permission
+      (async ()=>{
+        const { canManage } = await getCanManageEvent(e);
+        detailsEdit.style.display = canManage ? 'inline-flex' : 'none';
+        detailsDelete.style.display = canManage ? 'inline-flex' : 'none';
+
+        if (canManage){
+          detailsEdit.onclick = async ()=> startEdit(e);
+          detailsDelete.onclick = async ()=> doDelete(e);
+        }
+      })().catch(err=>{
+        console.error(err);
+        detailsEdit.style.display = 'none';
+        detailsDelete.style.display = 'none';
+      });
+
       detailsBackdrop.style.display = 'flex';
       detailsBackdrop.setAttribute('aria-hidden','false');
     }
@@ -945,7 +1060,6 @@
     function closeDetails(){
       detailsBackdrop.style.display = 'none';
       detailsBackdrop.setAttribute('aria-hidden','true');
-      activeEventId = null;
     }
 
     detailsClose.addEventListener('click', closeDetails);
@@ -959,7 +1073,7 @@
       if(e) openDetails(e);
     });
 
-    /* ========= Filter UI behavior ========= */
+    /* ========= Filter UI ========= */
     document.getElementById('hostFilter').addEventListener('change', async ()=>{
       const mode = document.getElementById('hostFilter').value;
       const teamSel = document.getElementById('hostTeam');
@@ -976,7 +1090,7 @@
     document.getElementById('hostTeam').addEventListener('change', applyFilters);
     document.getElementById('apply').addEventListener('click', applyFilters);
 
-    /* ========= Create Event (with image upload) ========= */
+    /* ========= Create/Edit modal ========= */
     const modalBackdrop = document.getElementById('modalBackdrop');
     const addEventBtn = document.getElementById('addEventBtn');
     const modalClose = document.getElementById('modalClose');
@@ -984,21 +1098,57 @@
     const modalCreate = document.getElementById('modalCreate');
     const createMsg = document.getElementById('createMsg');
 
-    function setCreateMsg(text){
-      createMsg.textContent = text || '';
+    const f_title = document.getElementById('f_title');
+    const f_starts= document.getElementById('f_starts');
+    const f_ends  = document.getElementById('f_ends');
+    const f_parish= document.getElementById('f_parish');
+    const f_location = document.getElementById('f_location');
+    const f_team  = document.getElementById('f_team');
+    const f_cover = document.getElementById('f_cover_file');
+    const f_desc  = document.getElementById('f_desc');
+
+    let modalMode = "create";               // "create" | "edit"
+    let editingEventId = null;
+    let editingExistingCoverUrl = null;
+
+    function setCreateMsg(text){ createMsg.textContent = text || ''; }
+
+    function setModalTitle(text){
+      const t = document.getElementById('modalTitle');
+      if (t) t.textContent = text;
+    }
+
+    function resetForm(){
+      f_title.value = '';
+      f_starts.value = '';
+      f_ends.value = '';
+      f_parish.value = '';
+      f_location.value = '';
+      f_desc.value = '';
+      f_team.value = '';
+      if (f_cover) f_cover.value = '';
+      setCreateMsg('');
     }
 
     function openCreateModal(){
-      setCreateMsg('');
       modalBackdrop.style.display = 'flex';
       modalBackdrop.setAttribute('aria-hidden','false');
     }
     function closeCreateModal(){
       modalBackdrop.style.display = 'none';
       modalBackdrop.setAttribute('aria-hidden','true');
+      setCreateMsg('');
     }
     modalClose.addEventListener('click', closeCreateModal);
-    modalCancel.addEventListener('click', closeCreateModal);
+    modalCancel.addEventListener('click', ()=>{
+      // leaving edit mode? reset to create
+      modalMode = "create";
+      editingEventId = null;
+      editingExistingCoverUrl = null;
+      setModalTitle("Create Event");
+      resetForm();
+      closeCreateModal();
+    });
     modalBackdrop.addEventListener('click', (e)=>{ if(e.target === modalBackdrop) closeCreateModal(); });
 
     async function uploadEventCover(file, userId){
@@ -1033,11 +1183,7 @@
         .from('team_members')
         .select(`
           role,
-          teams:team_id (
-            id,
-            name,
-            is_promoter
-          )
+          teams:team_id ( id, name, is_promoter )
         `)
         .eq('user_id', user.id)
         .in('role', ['owner','manager']);
@@ -1056,35 +1202,94 @@
       });
     }
 
+    // Start editing from details modal
+    async function startEdit(e){
+      await loadMyTeamOptions();
+
+      modalMode = "edit";
+      editingEventId = e.id;
+      editingExistingCoverUrl = e.cover_url || null;
+
+      setModalTitle("Edit Event");
+      setCreateMsg('Optional: upload a new cover to replace the current one.');
+
+      f_title.value = e.title || '';
+      f_parish.value = e.parish || '';
+      f_location.value = e.location || '';
+      f_desc.value = e.description || '';
+      f_team.value = e.team_id || '';
+
+      f_starts.value = toLocalInput(e.starts_at);
+      f_ends.value = toLocalInput(e.ends_at);
+
+      if (f_cover) f_cover.value = '';
+
+      closeDetails();
+      openCreateModal();
+    }
+
+    async function doDelete(e){
+      const ok = confirm("Delete this event permanently? This can’t be undone.");
+      if (!ok) return;
+
+      const { error } = await supabase.from('events').delete().eq('id', e.id);
+      if (error){
+        toast('error', 'Delete failed', error.message || "Couldn’t delete event.");
+        return;
+      }
+
+      closeDetails();
+      cached = await fetchAll();
+      filtered = cached.slice(0);
+      applyFilters();
+      toast('success', 'Deleted', 'Event removed from the calendar.');
+    }
+
+    // Create button permissions: Admin OR Promoter
     if (addEventBtn){
       addEventBtn.addEventListener('click', async ()=>{
-        // Must be logged in + promoter
-        if (window.authUI && typeof authUI.ensurePromoter === 'function'){
-          const res = await authUI.ensurePromoter({
-            autoOffer: false,
-            signInMessage: "Please log in or sign up to create events.",
-            confirmText: "Promoter accounts only."
-          });
-          if (!res?.promoter){
-            alert("Promoter accounts only. If you need access, switch your role to Team Promoter.");
+        if (window.authUI){
+          const okLogin = await authUI.requireLogin(null, { message: "Please log in or sign up to create events." });
+          if (!okLogin) return;
+
+          await authUI.refresh();
+          const isAdmin = authUI?.isAdmin?.() === true;
+          const isProm  = authUI?.isPromoter?.() === true;
+
+          if (!isAdmin && !isProm){
+            toast('error', 'No access', 'Promoter or Admin accounts only.');
             return;
           }
+
+          modalMode = "create";
+          editingEventId = null;
+          editingExistingCoverUrl = null;
+          setModalTitle("Create Event");
+          resetForm();
+
           await loadMyTeamOptions();
           openCreateModal();
           return;
         }
 
-        // fallback if authUI missing
         const { data:{ user } } = await supabase.auth.getUser();
         if (!user){
-          alert("Please log in or sign up to create events.");
+          toast('info', 'Sign in required', 'Please log in or sign up to create events.');
           return;
         }
+
+        modalMode = "create";
+        editingEventId = null;
+        editingExistingCoverUrl = null;
+        setModalTitle("Create Event");
+        resetForm();
+
         await loadMyTeamOptions();
         openCreateModal();
       });
     }
 
+    // Save (create OR edit)
     modalCreate.addEventListener('click', async ()=>{
       setCreateMsg('');
       modalCreate.disabled = true;
@@ -1092,43 +1297,85 @@
       try{
         const { data:{ user } } = await supabase.auth.getUser();
         if (!user){
-          alert("Please log in or sign up to create events.");
+          toast('info', 'Sign in required', 'Please log in or sign up to manage events.');
           return;
         }
 
-        // Require promoter again (in case UI gets bypassed)
-        if (window.authUI && typeof authUI.ensurePromoter === 'function'){
-          const res = await authUI.ensurePromoter({ autoOffer:false, signInMessage:"Please log in to create events." });
-          if (!res?.promoter){
-            alert("Promoter accounts only.");
+        // Admin or Promoter required (UI)
+        if (window.authUI){
+          await authUI.refresh();
+          const isAdmin = authUI?.isAdmin?.() === true;
+          const isProm  = authUI?.isPromoter?.() === true;
+          if (!isAdmin && !isProm){
+            toast('error', 'No access', 'Promoter or Admin accounts only.');
             return;
           }
         }
 
-        const title       = document.getElementById('f_title').value.trim();
-        const startsRaw   = document.getElementById('f_starts').value;
-        const endsRaw     = document.getElementById('f_ends').value;
-        const locationTxt = document.getElementById('f_location').value.trim() || null;
-        const parishTxt   = document.getElementById('f_parish').value.trim() || null;
-        const desc        = document.getElementById('f_desc').value.trim() || null;
-        const teamId      = document.getElementById('f_team')?.value || null;
-        const file        = document.getElementById('f_cover_file')?.files?.[0] || null;
+        const title = f_title.value.trim();
+        const startsRaw = f_starts.value;
+        const endsRaw = f_ends.value;
+        const parishTxt = f_parish.value.trim() || null;
+        const locationTxt = f_location.value.trim() || null;
+        const desc = f_desc.value.trim() || null;
+        const teamId = f_team.value || null;
+        const file = f_cover?.files?.[0] || null;
 
         if (!title || !startsRaw){
-          alert("Title and start time are required.");
+          toast('error', 'Missing fields', 'Title and start time are required.');
           return;
         }
 
-        setCreateMsg('Uploading cover (if provided)…');
+        setCreateMsg(file ? 'Uploading cover…' : 'Saving…');
 
         let coverUrl = null;
+
+        if (modalMode === "edit"){
+          coverUrl = editingExistingCoverUrl || null;
+        }
         if (file){
           coverUrl = await uploadEventCover(file, user.id);
         }
 
-        setCreateMsg('Creating event…');
+        if (modalMode === "create"){
+          const row = {
+            title,
+            starts_at: toISO(startsRaw),
+            ends_at: endsRaw ? toISO(endsRaw) : null,
+            location: locationTxt,
+            parish: parishTxt,
+            description: desc,
+            cover_url: coverUrl,
+            created_by: user.id,
+            team_id: teamId,
+            promoter_handle: null,
+            payment_url: "",
+            payment_label: "",
+            payment_instructions: ""
+          };
 
-        const row = {
+          const { error } = await supabase.from('events').insert(row);
+          if (error){
+            toast('error', 'Create failed', error.message || "Couldn’t create event.");
+            return;
+          }
+
+          closeCreateModal();
+          cached = await fetchAll();
+          filtered = cached.slice(0);
+          applyFilters();
+          toast('success', 'Created', 'Event added to the calendar.');
+          resetForm();
+          return;
+        }
+
+        // Edit mode
+        if (!editingEventId){
+          toast('error', 'Edit failed', 'No event selected to edit.');
+          return;
+        }
+
+        const patch = {
           title,
           starts_at: toISO(startsRaw),
           ends_at: endsRaw ? toISO(endsRaw) : null,
@@ -1136,29 +1383,31 @@
           parish: parishTxt,
           description: desc,
           cover_url: coverUrl,
-          created_by: user.id,
-          team_id: teamId || null,
-          promoter_handle: null,          // optional
-          payment_url: "",                // NOT NULL in your schema
-          payment_label: "",
-          payment_instructions: ""
+          team_id: teamId
         };
 
-        const { error } = await supabase.from('events').insert(row);
+        const { error } = await supabase.from('events').update(patch).eq('id', editingEventId);
         if (error){
-          console.error(error);
-          alert("Couldn’t create event: " + (error.message || "Try again."));
+          toast('error', 'Update failed', error.message || "Couldn’t update event.");
           return;
         }
 
         closeCreateModal();
+        toast('success', 'Updated', 'Event changes saved.');
+
+        // reset mode back to create
+        modalMode = "create";
+        editingEventId = null;
+        editingExistingCoverUrl = null;
+        setModalTitle("Create Event");
+        resetForm();
+
         cached = await fetchAll();
         filtered = cached.slice(0);
         applyFilters();
-        alert("Event created and added to the calendar.");
       } catch(err){
         console.error(err);
-        alert(err.message || "Something stalled. Try again.");
+        toast('error', 'Something stalled', err.message || 'Try again.');
       } finally {
         modalCreate.disabled = false;
         setCreateMsg('');
@@ -1168,7 +1417,6 @@
     /* ========= Boot ========= */
     window.addEventListener('DOMContentLoaded', async ()=>{
       await loadHostTeamsForFilter();
-
       cached = await fetchAll();
       filtered = cached.slice(0);
       applyFilters();
