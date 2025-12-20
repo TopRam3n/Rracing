@@ -334,13 +334,15 @@
       position:fixed; inset:0;
       background: rgba(0,0,0,.70);
       display:none;
-      align-items:center;
       justify-content:center;
       padding: 18px;
       z-index: 9999;
+      align-items: flex-start;
+      overflow-y: auto;
     }
     .modal{
       width:min(760px, 96vw);
+      max-height: calc(100vh - 44px);
       border-radius: 18px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(12,12,16,.96);
@@ -355,6 +357,10 @@
       padding:14px 16px;
       border-bottom:1px solid rgba(255,255,255,.08);
       gap:10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(12,12,16,.96);
     }
     .modal h3{
       font-family:"Bebas Neue";
@@ -367,6 +373,10 @@
       padding: 16px;
       display:grid;
       gap: 12px;
+      max-height: calc(100vh - 44px - 58px - 64px); 
+      /* = viewport - outer padding - header - actions (rough) */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .two{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media(max-width:720px){ .two{ grid-template-columns: 1fr; } }
@@ -377,6 +387,10 @@
       gap:10px;
       border-top:1px solid rgba(255,255,255,.08);
       flex-wrap:wrap;
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      background: rgba(12,12,16,.96);
     }
     .cover-preview{
       border-radius: 14px;
