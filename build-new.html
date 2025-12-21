@@ -30,38 +30,44 @@
 
   <style>
     :root{
-      --bg:#050508;
-      --bg1:#0f0f14;
-      --bg2:#14141c;
-      --card:#121218;
-      --fg:#fff;
-      --muted:#bdbdbd;
+      /* index-compatible tokens */
+      --bg-main: #050508;
+      --bg-alt: #111111;
+      --bg-card: #141414;
 
-      --green:#128b02;
-      --yellow:#FFD93B;
+      --accent-main: #128b02;         /* primary green */
+      --accent-secondary: #FFD93B;    /* yellow */
+      --accent-cyan: #FFD93B;
 
-      --line:rgba(255,255,255,.08);
-      --line2:rgba(255,255,255,.12);
+      --text-main: #ffffff;
+      --text-muted: #bdbdbd;
+      --border-subtle: rgba(255, 255, 255, 0.06);
 
-      --shadow: 0 40px 120px -30px rgba(0,0,0,.75);
-      --shadow2: 0 24px 60px rgba(0,0,0,.85);
+      --radius-lg: 24px;
+      --radius-md: 18px;
 
-      --radius:24px;
-      --radius2:18px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.7);
+      --shadow-heavy: 0 40px 120px -30px rgba(0,0,0,.8);
+
+      --transition-fast: 0.18s ease-out;
+      --transition-med: 0.25s ease-out;
+
+      --nav-height: 76px;
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      color:var(--fg);
+      color:var(--text-main);
       font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
-      background:
-        radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      background: radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
       overflow-x:hidden;
+      -webkit-font-smoothing: antialiased;
     }
     a{color:inherit;text-decoration:none}
-    .container{max-width:1240px;margin:0 auto;padding:0 24px; position:relative; z-index:1;}
+    .container{width:min(1200px, 100% - 32px);margin:0 auto;position:relative;z-index:1;}
+    @media (min-width: 1280px){ .container{ width: min(1280px, 100% - 64px);} }
 
     /* Workshop overlays */
     body::before{
@@ -99,10 +105,12 @@
       margin:0;
       text-transform:uppercase;
     }
-    .sub{color:var(--muted);font-size:14px; line-height:1.4}
+    .sub{color:var(--text-muted);font-size:14px;line-height:1.4}
 
-    /* NAV (standard ids for auth-ui.js) */
-   .nav-wrapper {
+    /* =========================
+       NAV (matches index.html)
+       ========================= */
+    .nav-wrapper {
       position: sticky; top: 0; z-index: 40;
       backdrop-filter: blur(16px);
       background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
@@ -114,12 +122,12 @@
       border-bottom-color: rgba(255,255,255,0.10);
       box-shadow: 0 18px 40px rgba(0,0,0,0.7);
     }
-    .nav {
+    .nav{
       height: var(--nav-height);
       display:flex; align-items:center; justify-content:space-between;
       gap: 20px;
     }
-    .logo { display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
+    .logo{ display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
     .logo-mark{
       width:36px;height:36px;border-radius:999px;
       border:1px solid rgba(24, 201, 100, 0.7);
@@ -156,6 +164,7 @@
         border-color var(--transition-fast), transform var(--transition-fast),
         box-shadow var(--transition-fast);
       color:#fff;
+      font-family: inherit;
     }
     .btn-primary{
       background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
@@ -173,6 +182,12 @@
       background: rgba(255,255,255,0.02);
     }
     .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
+    .btn-yellow{
+      background: radial-gradient(circle at top left, #ffe58a, var(--accent-secondary));
+      color:#111; font-weight:900;
+      border-color: rgba(255,217,59,.75);
+      box-shadow: 0 0 18px rgba(255,217,59,.22);
+    }
 
     .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
@@ -204,7 +219,6 @@
       overflow:hidden;
     }
     .dropdown.open{ display:flex; }
-
     .dd-head{
       padding:12px 14px;
       border-bottom:1px solid rgba(255,255,255,0.08);
@@ -212,12 +226,12 @@
     }
     .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
     .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
     .dropdown a, .dropdown button{
       padding:10px 14px; text-align:left;
       border:none; background:transparent; color:var(--text-main);
       font-size:13px; width:100%; cursor:pointer;
       display:flex; justify-content:space-between; align-items:center;
+      font-family: inherit;
     }
     .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
     .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
@@ -238,108 +252,23 @@
       .nav-cta{ gap:6px; }
       .logo-text-sub{ display:none; }
     }
-    .title small{
-      color:var(--yellow);
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-    }
 
-    .menu{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
-    .nav-auth{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    }
-
-    .btn{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:8px 14px; border-radius:999px;
-      border:1px solid rgba(255,255,255,0.10);
-      cursor:pointer; font-size:13px;
-      background:rgba(0,0,0,0.18);
-      color:var(--fg);
-      transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
-      letter-spacing:.10em;
-      text-transform:uppercase;
-      font-family:inherit;
-    }
-    .btn:hover{
-      background:rgba(255,255,255,0.04);
-      border-color:rgba(255,255,255,0.18);
-      transform:translateY(-1px);
-    }
-    .btn.small{ padding:6px 10px; font-size:12px; letter-spacing:.12em; }
-    .btn.primary{
-      background: radial-gradient(circle at top left, #39ff96, var(--green));
-      border-color: rgba(18, 139, 2, 0.85);
-      box-shadow: 0 0 18px rgba(18, 139, 2, 0.55);
-      color:#fff;
-    }
-    .btn.primary:hover{ box-shadow:0 0 28px rgba(18, 139, 2, 0.75); }
-    .btn.yellow{
-      background: radial-gradient(circle at top left, #ffe58a, var(--yellow));
-      color:#111; font-weight:900;
-      border-color: rgba(255,217,59,.75);
-      box-shadow: 0 0 18px rgba(255,217,59,.22);
-    }
-
-    /* Profile menu */
-    .profile-menu{ position:relative; display:flex; align-items:center; }
-    .profile-chip{
-      width:32px; height:32px; border-radius:50%;
-      background:rgba(255,255,255,0.04);
-      display:flex; align-items:center; justify-content:center;
-      font-weight:700;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,0.12);
-      font-size:13px;
-      transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
-      user-select:none;
-    }
-    .profile-chip:hover{
-      border-color:rgba(255,255,255,.24);
-      box-shadow:0 0 16px rgba(255,217,59,.55);
-      transform:translateY(-1px);
-    }
-    .dropdown{
-      position:absolute; right:0; top:40px;
-      background:rgba(10,10,14,0.96);
-      border:1px solid rgba(255,255,255,0.10);
-      box-shadow:0 20px 40px rgba(0,0,0,.65);
-      border-radius:16px;
-      display:none;
-      flex-direction:column;
-      min-width:210px;
-      z-index:60;
-      overflow:hidden;
-      backdrop-filter: blur(14px);
-    }
-    .dropdown a,.dropdown button{
-      padding:10px 16px;
-      text-align:left;
-      border:none;
-      background:transparent;
-      color:var(--fg);
-      font-size:13px;
-      width:100%;
-      cursor:pointer;
-      font-family:inherit;
-    }
-    .dropdown a:hover,.dropdown button:hover{ background:rgba(255,255,255,0.06); }
-
+    /* =========================
+       WORKSHOP LAYOUT
+       ========================= */
     main{padding:28px 0 64px}
-
-    /* Workshop hero */
     .hero{
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       border:1px solid rgba(255,255,255,0.10);
       background:
         radial-gradient(circle at 15% 20%, rgba(255,217,59,0.14), transparent 55%),
         radial-gradient(circle at 80% 70%, rgba(18,139,2,0.12), transparent 60%),
         linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(0,0,0,0.30));
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-heavy);
       overflow:hidden;
       position:relative;
       padding:18px 18px 16px;
+      margin-top:16px;
     }
     .hero::before{
       content:"";
@@ -371,7 +300,7 @@
       padding:6px 10px;border-radius:999px;
       border:1px solid rgba(255,255,255,0.10);
       background:rgba(0,0,0,0.18);
-      font-size:12px;color:var(--muted);
+      font-size:12px;color:var(--text-muted);
       letter-spacing:.14em;
       text-transform:uppercase;
       white-space:nowrap;
@@ -386,20 +315,20 @@
     }
     .banner strong{color:#fff}
 
-    /* Grid */
     .grid{ display:grid; gap:18px; }
     .cols-2{ grid-template-columns: 1.2fr 1fr; }
     @media(max-width:980px){ .cols-2{ grid-template-columns:1fr; } }
 
     .card{
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       border:1px solid rgba(255,255,255,0.10);
       background: linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(0,0,0,0.35));
-      box-shadow: var(--shadow2);
+      box-shadow: 0 24px 60px rgba(0,0,0,.85);
       padding:16px;
       overflow:hidden;
     }
-    label{display:block;font-size:12px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin:12px 0 6px}
+
+    label{display:block;font-size:12px;color:var(--text-muted);letter-spacing:.18em;text-transform:uppercase;margin:12px 0 6px}
     input,select,textarea{
       width:100%;
       background:rgba(10,10,14,0.7);
@@ -413,16 +342,14 @@
     }
     textarea{ min-height:96px; resize:vertical; }
     input:focus-visible, select:focus-visible, textarea:focus-visible{
-      border-color:var(--yellow);
+      border-color:var(--accent-secondary);
       box-shadow:0 0 0 1px rgba(255,217,59,0.45);
     }
 
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .row > *{flex:1; min-width:160px}
-
     .divider{height:1px;background:rgba(255,255,255,0.08);border:none;margin:16px 0}
 
-    /* Parts selection */
     .parts-wrap{display:grid; gap:10px;}
     .part-add{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .part-add select, .part-add input{flex:1; min-width:160px}
@@ -438,7 +365,7 @@
       align-items:flex-start;
     }
     .part-item strong{font-size:14px}
-    .part-item .meta{color:var(--muted);font-size:12px;margin-top:2px}
+    .part-item .meta{color:var(--text-muted);font-size:12px;margin-top:2px}
     .icon-btn{
       border:1px solid rgba(255,255,255,0.12);
       background:transparent;
@@ -449,11 +376,11 @@
       font-size:12px;
       letter-spacing:.12em;
       text-transform:uppercase;
+      font-family: inherit;
     }
     .icon-btn:hover{background:rgba(255,255,255,0.06)}
     .icon-btn.danger{border-color:rgba(255,120,120,0.35); color:#ffb3b3}
 
-    /* Upload previews */
     .preview-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
@@ -472,7 +399,6 @@
       font-size:11px;
     }
 
-    /* 3D */
     .model-panel{
       border-radius:18px;
       border:1px solid rgba(255,255,255,0.10);
@@ -487,7 +413,7 @@
       border-radius:16px;
       border:1px solid rgba(255,255,255,0.10);
     }
-    .tiny{font-size:12px;color:var(--muted)}
+    .tiny{font-size:12px;color:var(--text-muted)}
     .status{
       display:none;
       margin-top:10px;
@@ -496,7 +422,7 @@
       border:1px solid rgba(255,255,255,0.12);
       background:rgba(0,0,0,0.22);
       font-size:12px;
-      color:var(--muted);
+      color:var(--text-muted);
     }
     .status.bad{ border-color:rgba(255,120,120,0.35); color:#ffb3b3; }
     .status.ok{ border-color:rgba(120,255,190,0.35); color:#bfffdc; }
@@ -512,63 +438,63 @@
 </head>
 
 <body>
-<!-- NAV (matches index) -->
-    <div class="nav-wrapper" id="navWrapper">
-      <div class="container nav">
-        <a href="/index.html" class="logo">
-          <div class="logo-mark">
-            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+  <!-- NAV -->
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="/index.html" class="logo">
+        <div class="logo-mark">
+          <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+        </div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Build Workspace</div>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/events.html">Events</a>
+        <a href="/garage.html">Garage</a>
+        <a href="/teams.html">Community</a>
+        <a href="/about.html">About</a>
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/store.html">Store</a>
+      </nav>
+
+      <div class="nav-cta">
+        <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+        <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="profileInitials">U</span>
           </div>
-          <div>
-            <div class="logo-text-main">ROK RACERS JA</div>
-            <div class="logo-text-sub">Build Workspace</div>
-          </div>
-        </a>
 
-        <nav class="nav-links">
-          <a href="/events.html">Events</a>
-          <a href="/garage.html">Garage</a>
-          <a href="/teams.html">Community</a>
-          <a href="/about.html">About</a>
-          <a href="/marketplace.html">Marketplace</a>
-          <a href="/store.html">Store</a>
-        </nav>
-
-        <div class="nav-cta">
-          <!-- We keep these IDs exactly like index -->
-          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
-          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
-
-          <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
-              <span id="profileInitials">U</span>
+          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
             </div>
 
-            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-              <div class="dd-head">
-                <div class="dd-title">Signed in as</div>
-                <div class="dd-email" id="ddEmail">—</div>
-              </div>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
 
-              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
-              <div class="dd-sep"></div>
+            <a href="/garage.html?view=my">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
 
-              <a href="/garage.html?view=my">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
 
-              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
-
-              <div class="dd-sep"></div>
-              <button id="signoutBtn" type="button">Sign out</button>
-            </div>
+            <div class="dd-sep"></div>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
+  <main class="container">
     <section class="hero" aria-label="Build workshop header">
       <div class="hero-row">
         <div>
@@ -589,15 +515,14 @@
         </div>
 
         <div class="hero-actions">
-          <a class="btn yellow" href="/garage.html">Back to Garage</a>
-          <button class="btn" type="button" id="resetBtn">Reset</button>
+          <a class="btn btn-yellow" href="/garage.html">Back to Garage</a>
+          <button class="btn btn-ghost" type="button" id="resetBtn">Reset</button>
         </div>
       </div>
     </section>
 
     <div class="grid cols-2" style="margin-top:18px">
-
-      <!-- LEFT: Specs + Parts -->
+      <!-- LEFT -->
       <section class="card">
         <h3 style="font-size:28px">Specs</h3>
         <p class="sub">Give it a name and define the car. This powers search + discover.</p>
@@ -628,7 +553,7 @@
         </div>
 
         <label style="margin-top:14px">
-          <input id="isPublic" type="checkbox" checked style="accent-color: var(--green); transform: translateY(1px); margin-right:8px;">
+          <input id="isPublic" type="checkbox" checked style="accent-color: var(--accent-main); transform: translateY(1px); margin-right:8px;">
           Public build (eligible for Top 5)
         </label>
 
@@ -686,21 +611,21 @@
               <option value="other">Other</option>
             </select>
             <input id="partName" placeholder="e.g. BC Racing coilovers, TE37 wheels, BorgWarner turbo" />
-            <button class="btn primary" type="button" id="addPartBtn">Add</button>
+            <button class="btn btn-primary" type="button" id="addPartBtn">Add</button>
           </div>
 
           <div id="partsList" class="part-list"></div>
         </div>
       </section>
 
-      <!-- RIGHT: Media + Build type selector -->
+      <!-- RIGHT -->
       <section class="card">
         <h3 style="font-size:28px">Visual</h3>
         <p class="sub">Choose how your build is displayed: Photo (unlimited) or 3D (max 2).</p>
 
         <div class="seg">
-          <button id="modePhotoBtn" class="btn yellow" type="button">Use Photo Build</button>
-          <button id="mode3DBtn" class="btn primary" type="button">Use 3D Build</button>
+          <button id="modePhotoBtn" class="btn btn-yellow" type="button">Use Photo Build</button>
+          <button id="mode3DBtn" class="btn btn-primary" type="button">Use 3D Build</button>
         </div>
 
         <div class="status" id="statusBadge"></div>
@@ -722,7 +647,7 @@
         <!-- 3D BUILD -->
         <div id="modelPanel" class="model-panel" style="display:none">
           <h3 style="font-size:22px">3D model search</h3>
-          <p class="tiny">Search the <strong>car_models</strong> table, then load the file from bucket <strong>builds</strong>.</p>
+          <p class="tiny">Search your car model table, then load the file from bucket <strong>builds</strong>.</p>
 
           <div class="row" style="margin-top:8px">
             <div>
@@ -741,7 +666,7 @@
               <input id="cmYear" type="number" min="1960" max="2050" placeholder="1998" />
             </div>
             <div style="flex:0 0 auto; min-width:200px; display:flex; align-items:flex-end">
-              <button class="btn primary" type="button" id="searchModelsBtn" style="width:100%; justify-content:center">
+              <button class="btn btn-primary" type="button" id="searchModelsBtn" style="width:100%; justify-content:center">
                 Search models
               </button>
             </div>
@@ -761,21 +686,20 @@
           </div>
 
           <div class="row" style="margin-top:10px">
-            <button class="btn" type="button" id="requestModelBtn">Don’t see your car? Request it</button>
-            <a class="btn yellow" href="/garage.html" style="justify-content:center">Back</a>
+            <button class="btn btn-ghost" type="button" id="requestModelBtn">Don’t see your car? Request it</button>
+            <a class="btn btn-yellow" href="/garage.html" style="justify-content:center">Back</a>
           </div>
         </div>
 
         <hr class="divider">
 
-        <button id="saveBtn" class="btn primary" type="button" style="width:100%;justify-content:center">
+        <button id="saveBtn" class="btn btn-primary" type="button" style="width:100%;justify-content:center">
           Save build
         </button>
-        <button id="cancelBtn" class="btn" type="button" style="width:100%;justify-content:center;margin-top:10px">
+        <button id="cancelBtn" class="btn btn-ghost" type="button" style="width:100%;justify-content:center;margin-top:10px">
           Cancel
         </button>
       </section>
-
     </div>
   </main>
 
@@ -812,13 +736,14 @@
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[m]));
     }
+    function safeTrim(s){ return (s || '').toString().trim(); }
 
     async function getUser(){
       const { data: { user } } = await supabase.auth.getUser();
       return user || null;
     }
 
-    // IMPORTANT: DO NOT force login on page load (prevents re-login loops)
+    // IMPORTANT: DO NOT force login on page load
     async function requireLogin(){
       if (window.authUI && typeof authUI.requireLogin === 'function'){
         const ok = await authUI.requireLogin();
@@ -833,12 +758,17 @@
     }
 
     /* =========================
+       NAV solid on scroll (index behavior)
+    ========================== */
+    const navWrapper = document.getElementById('navWrapper');
+    function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
+    updateNavSolid();
+    window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+    /* =========================
        3D QUOTA (TRUE ENFORCEMENT)
-       - count only builds where is_3d=true OR car_model_id IS NOT NULL OR model_url IS NOT NULL
-       - Photo builds are unlimited
     ========================== */
     async function count3DBuilds(userId){
-      // Try columns in order, stop at first working query
       const tries = [
         () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
         () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id', 'is', null),
@@ -851,8 +781,6 @@
         const msg = (res.error.message||'').toLowerCase();
         if (!msg.includes('column')) break;
       }
-
-      // If schema is different, safest fallback is 0 (do NOT block users)
       return 0;
     }
 
@@ -915,7 +843,7 @@
 
     $('addPartBtn').addEventListener('click', ()=>{
       const cat = $('partCategory').value || 'other';
-      const name = ($('partName').value || '').trim();
+      const name = safeTrim($('partName').value);
       if(!name) return;
 
       partsState.push({ category:cat, name });
@@ -948,24 +876,20 @@
     ========================== */
     const mode = {
       type: 'photo', // 'photo' | '3d'
-      selectedCarModel: null, // { id, make, model, year_from, year_to, storage_path, thumb_url }
+      selectedCarModel: null,
       modelUrl: null
     };
 
     function setMode(next){
       mode.type = next;
-
       $('photoPanel').style.display = (next === 'photo') ? 'block' : 'none';
       $('modelPanel').style.display = (next === '3d') ? 'block' : 'none';
-
       clearStatus();
     }
 
     $('modePhotoBtn').addEventListener('click', ()=> setMode('photo'));
     $('mode3DBtn').addEventListener('click', async ()=>{
       const { at3DLimit } = await refreshQuotaUI();
-
-      // If limit reached, still allow them to open 3D panel but block saving 3D later
       setMode('3d');
       if(at3DLimit){
         setStatus("3D slots are full (2/2). You can still save as Photo build.", "bad");
@@ -973,7 +897,10 @@
     });
 
     /* =========================
-       3D SEARCH: Option A (car_models)
+       3D SEARCH
+       - Fixes: car_model vs car_models mismatch
+       - Case-insensitive
+       - Requires storage_path (preferred) or glb_url
     ========================== */
     function inYearRange(year, from, to){
       if(!year) return true;
@@ -983,12 +910,27 @@
       return true;
     }
 
+    async function trySearch(tableName, make, modelText){
+      let q = supabase
+        .from(tableName)
+        .select('id,make,model,year_from,year_to,storage_path,thumb_url,glb_url')
+        .order('make', { ascending:true })
+        .order('model', { ascending:true });
+
+      if(make) q = q.ilike('make', `%${make}%`);
+      if(modelText) q = q.ilike('model', `%${modelText}%`);
+
+      const res = await q;
+      if(res.error) throw res.error;
+      return res.data || [];
+    }
+
     async function searchCarModels(){
       clearStatus();
 
-      const make = ($('cmMake').value || '').trim();
-      const modelText = ($('cmModel').value || '').trim();
-      const year = ($('cmYear').value || '').trim();
+      const make = safeTrim($('cmMake').value);
+      const modelText = safeTrim($('cmModel').value);
+      const year = safeTrim($('cmYear').value);
 
       if(!make && !modelText){
         setStatus("Type at least a make or model to search.", "bad");
@@ -999,20 +941,18 @@
       $('searchModelsBtn').textContent = 'Searching…';
 
       try{
-        // broad query + client-side filter keeps it simple and bug-free
-        // (you can tighten later with ilike on both)
-        let q = supabase.from('car_models')
-          .select('id,make,model,year_from,year_to,storage_path,thumb_url')
-          .order('make', { ascending:true })
-          .order('model', { ascending:true });
+        // ✅ Try singular then plural (your current bug)
+        let rows = [];
+        let usedTable = 'car_model';
 
-        if(make) q = q.ilike('make', `%${make}%`);
-        if(modelText) q = q.ilike('model', `%${modelText}%`);
+        try{
+          rows = await trySearch('car_model', make, modelText);
+        } catch (e1){
+          // fallback
+          usedTable = 'car_models';
+          rows = await trySearch('car_models', make, modelText);
+        }
 
-        const res = await q;
-        if(res.error) throw res.error;
-
-        let rows = res.data || [];
         if(year){
           rows = rows.filter(r => inYearRange(year, r.year_from, r.year_to));
         }
@@ -1034,13 +974,13 @@
           return `<option value="${esc(r.id)}">${esc(label)}</option>`;
         }).join('');
 
-        // Keep in memory
         sel._rows = rows;
+        sel._table = usedTable;
 
-        setStatus(`Found ${rows.length} model(s). Select one to preview.`, "ok");
+        setStatus(`Found ${rows.length} model(s) in ${usedTable}. Select one to preview.`, "ok");
       } catch(e){
-        console.error(e);
-        setStatus("Model search failed. Check table permissions and try again.", "bad");
+        console.error('Model search error:', e);
+        setStatus(`Model search failed: ${e.message || 'unknown error'}`, "bad");
       } finally {
         $('searchModelsBtn').disabled = false;
         $('searchModelsBtn').textContent = 'Search models';
@@ -1048,6 +988,24 @@
     }
 
     $('searchModelsBtn').addEventListener('click', searchCarModels);
+
+    async function getModelUrlFromRow(row){
+      // preferred: storage_path in builds bucket
+      if(row?.storage_path){
+        // public url
+        const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(row.storage_path);
+        if(urlData?.publicUrl) return urlData.publicUrl;
+
+        // fallback: signed url (if bucket is private)
+        const signed = await supabase.storage.from(BUCKET_MODELS).createSignedUrl(row.storage_path, 60 * 60);
+        if(!signed.error && signed.data?.signedUrl) return signed.data.signedUrl;
+      }
+
+      // fallback: explicit glb_url column if you store it
+      if(row?.glb_url) return row.glb_url;
+
+      return null;
+    }
 
     $('modelResults').addEventListener('change', async ()=>{
       clearStatus();
@@ -1064,17 +1022,9 @@
         return;
       }
 
-      if(!picked.storage_path){
-        setStatus("This model entry has no storage_path. Add it in car_models.", "bad");
-        return;
-      }
-
-      // Convert storage_path -> URL
-      const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(picked.storage_path);
-      const url = urlData?.publicUrl;
-
+      const url = await getModelUrlFromRow(picked);
       if(!url){
-        setStatus("Could not generate a public URL. Check bucket public policy or use signed URLs.", "bad");
+        setStatus("This model has no usable URL. Add storage_path (preferred) or glb_url in the car model row.", "bad");
         return;
       }
 
@@ -1089,10 +1039,8 @@
       setStatus("3D model loaded. You can save as a 3D build.", "ok");
     });
 
-    // Request button (send to paid request flow on Garage you already added)
     $('requestModelBtn').addEventListener('click', ()=>{
-      // You can route this to your request modal page or a mailto for now
-      alert("Request flow: we’ll wire this to your paid request table + checkout next.");
+      alert("Request flow: wire this to your request table + checkout when ready.");
     });
 
     /* =========================
@@ -1115,7 +1063,7 @@
 
       if(error || !data){
         console.error(error);
-        setStatus("Could not load build for editing.", "bad");
+        setStatus(`Could not load build: ${error?.message || 'unknown error'}`, "bad");
         return;
       }
 
@@ -1136,7 +1084,6 @@
       $('powerGoal').value = data.power_goal || '';
       $('tags').value = data.tags || '';
 
-      // Mode
       if (data.is_3d || data.car_model_id || data.model_url){
         setMode('3d');
         if (data.model_url){
@@ -1149,7 +1096,6 @@
         setMode('photo');
       }
 
-      // Load parts
       try{
         const p = await supabase.from('build_parts').select('category,name').eq('build_id', buildId).order('created_at', { ascending:true });
         if(!p.error && p.data){
@@ -1161,9 +1107,7 @@
 
     /* =========================
        UPLOAD PHOTO FILES
-       - Upload to picture-builds
-       - Store primary as thumb_url + custom_image_url
-       - Optionally insert into build_images if you want
+       - Fix: surface real errors (policy/path)
     ========================== */
     async function uploadPhotos(buildId, files){
       if(!files || !files.length) return null;
@@ -1184,17 +1128,27 @@
         });
 
         if(up.error){
-          console.error(up.error);
-          continue;
+          console.error('Upload error:', up.error);
+          throw up.error; // ✅ stop immediately, show real message
         }
 
+        // public url
         const { data: urlData } = supabase.storage.from(BUCKET_PHOTOS).getPublicUrl(path);
-        const url = urlData?.publicUrl || null;
-        if(!url) continue;
+        let url = urlData?.publicUrl || null;
+
+        // if bucket private, fallback signed URL
+        if(!url){
+          const signed = await supabase.storage.from(BUCKET_PHOTOS).createSignedUrl(path, 60 * 60);
+          if(!signed.error && signed.data?.signedUrl) url = signed.data.signedUrl;
+        }
+
+        if(!url){
+          throw new Error("Upload succeeded but no URL could be generated. Make bucket public or use signed URLs everywhere.");
+        }
 
         if(!firstUrl) firstUrl = url;
 
-        // Optional: if you have build_images table
+        // optional table
         try{
           await supabase.from('build_images').insert({ build_id: buildId, image_url: url, sort_order: i });
         } catch {}
@@ -1205,6 +1159,7 @@
 
     /* =========================
        SAVE
+       - Fix: show real insert error message
     ========================== */
     async function saveBuild(){
       clearStatus();
@@ -1222,7 +1177,7 @@
       $('saveBtn').textContent = "Saving…";
 
       try{
-        const title = ($('title').value || '').trim();
+        const title = safeTrim($('title').value);
         if(!title){
           setStatus("Add a build name.", "bad");
           return;
@@ -1233,24 +1188,21 @@
           build_type: $('buildType').value || 'owned',
           stage: $('stage').value || null,
           is_public: !!$('isPublic').checked,
-          description: ($('description').value || '').trim() || null,
-          make: ($('make').value || '').trim() || null,
-          model: ($('model').value || '').trim() || null,
+          description: safeTrim($('description').value) || null,
+          make: safeTrim($('make').value) || null,
+          model: safeTrim($('model').value) || null,
           year: $('year').value ? parseInt($('year').value,10) : null,
           power_goal: $('powerGoal').value ? parseInt($('powerGoal').value,10) : null,
-          tags: ($('tags').value || '').trim() || null,
+          tags: safeTrim($('tags').value) || null,
         };
 
-        // Decide photo vs 3D
         const { at3DLimit } = await refreshQuotaUI();
 
         if(mode.type === '3d'){
           if(at3DLimit && !buildId){
-            // Hard block new 3D builds when at limit
             setStatus("3D limit reached (2/2). Switch to Photo build to save.", "bad");
             return;
           }
-
           if(!mode.modelUrl || !mode.selectedCarModel){
             setStatus("Pick a 3D model first (or switch to Photo build).", "bad");
             return;
@@ -1260,18 +1212,15 @@
           payload.car_model_id = mode.selectedCarModel.id;
           payload.model_url = mode.modelUrl;
 
-          // Do NOT force image upload for 3D builds. Thumbnail can come from car_models.thumb_url if you want.
           if(mode.selectedCarModel.thumb_url){
             payload.thumb_url = mode.selectedCarModel.thumb_url;
           }
         } else {
-          // Photo build
           payload.is_3d = false;
           payload.car_model_id = null;
           payload.model_url = null;
         }
 
-        // Create or update build row
         let buildRow = null;
 
         if(buildId){
@@ -1284,16 +1233,13 @@
             .maybeSingle();
 
           if(res.error || !res.data){
-            console.error(res.error);
-            setStatus("Could not save changes.", "bad");
+            console.error('Update error:', res.error);
+            setStatus(`Could not save changes: ${res.error?.message || 'unknown error'}`, "bad");
             return;
           }
           buildRow = res.data;
 
-          // If they switched to 3D while at limit, allow only if this build already is 3D OR it doesn't increase count
-          // We'll enforce by counting excluding current build (best-effort):
           if(mode.type === '3d' && at3DLimit){
-            // If already 3D, fine. If not, they'd be exceeding.
             const was3D = !!(buildRow.is_3d);
             if(!was3D){
               setStatus("3D slots are full. This build can’t be converted to 3D right now.", "bad");
@@ -1308,30 +1254,32 @@
             .single();
 
           if(res.error || !res.data){
-            console.error(res.error);
-            setStatus("Could not create build.", "bad");
+            console.error('Insert error:', res.error);
+            setStatus(`Could not create build: ${res.error?.message || 'unknown error'}`, "bad");
             return;
           }
           buildRow = res.data;
         }
 
-        // Photo uploads (only if photo mode)
+        // Photo uploads only when photo mode
         if(mode.type === 'photo'){
           const files = $('images').files;
           if(files && files.length){
             const firstUrl = await uploadPhotos(buildRow.id, files);
             if(firstUrl){
-              // Store on builds for easy rendering
-              await supabase.from('builds')
+              const upd = await supabase.from('builds')
                 .update({ thumb_url: firstUrl, custom_image_url: firstUrl })
                 .eq('id', buildRow.id)
                 .eq('user_id', user.id);
+
+              if(upd.error){
+                console.warn('Thumb update warning:', upd.error);
+              }
             }
           }
         }
 
-        // Save parts: replace set for this build
-        // (delete then insert keeps it clean and prevents duplicates)
+        // Save parts
         try{
           await supabase.from('build_parts').delete().eq('build_id', buildRow.id);
           if(partsState.length){
@@ -1340,7 +1288,8 @@
               category: p.category,
               name: p.name
             }));
-            await supabase.from('build_parts').insert(rows);
+            const ins = await supabase.from('build_parts').insert(rows);
+            if(ins.error) console.warn('Parts insert warning:', ins.error);
           }
         } catch(e){
           console.warn("Parts save warning:", e);
@@ -1350,8 +1299,8 @@
         setTimeout(()=> location.href = `/build.html?id=${buildRow.id}`, 650);
 
       } catch(e){
-        console.error(e);
-        setStatus("Save failed. Try again.", "bad");
+        console.error('Save failed:', e);
+        setStatus(`Save failed: ${e?.message || 'unknown error'}`, "bad");
       } finally {
         $('saveBtn').disabled = false;
         $('saveBtn').textContent = "Save build";
@@ -1359,10 +1308,8 @@
     }
 
     $('saveBtn').addEventListener('click', saveBuild);
-
     $('cancelBtn').addEventListener('click', ()=> location.href = '/garage.html');
     $('resetBtn').addEventListener('click', ()=>{
-      // Only resets form, not DB
       if(confirm("Reset the workshop form? Unsaved changes will be lost.")){
         location.href = buildId ? `/build-new.html?id=${buildId}` : `/build-new.html`;
       }
@@ -1372,7 +1319,6 @@
        INIT
     ========================== */
     window.addEventListener('DOMContentLoaded', async ()=>{
-      // DO NOT call requireLogin here (fixes your re-login bug)
       await refreshQuotaUI();
       await loadBuild();
       renderParts();
