@@ -23,40 +23,39 @@
 <script src="/auth-ui.js"></script>
 
 <style>
-  :root{
-    --bg:#050508;
-    --bg1:#0b0b10;
-    --bg2:#12121a;
-    --card:#121218;
-    --card2:#14141c;
-    --fg:#fff;
-    --muted:#bdbdbd;
+  :root {
+    --bg-main: #050508;
+    --bg-alt: #111111;
+    --bg-card: #141414;
 
-    --accent:#e50914;
-    --yellow:#FFD93B;
+    --accent-main: #128b02;         /* primary green */
+    --accent-secondary: #FFD93B;    /* yellow */
+    --accent-cyan: #FFD93B;
 
-    --line:rgba(255,255,255,.08);
-    --line2:rgba(255,255,255,.12);
+    --text-main: #ffffff;
+    --text-muted: #bdbdbd;
+    --border-subtle: rgba(255, 255, 255, 0.06);
+
+    --radius: 24px;
+    --radius2: 18px;
 
     --shadow: 0 40px 120px -30px rgba(0,0,0,.75);
     --shadow2: 0 30px 80px rgba(0,0,0,.85);
 
-    --radius:24px;
-    --radius2:18px;
-
-    --track: rgba(255,217,59,0.18);
-    --track2: rgba(229,9,20,0.16);
+    --transition-fast: 0.18s ease-out;
+    --transition-med: 0.25s ease-out;
+    --nav-height: 76px;
   }
 
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;
-    color:var(--fg);
+    color:var(--text-main);
     font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
-    background:
-      radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+    background: radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
     overflow-x:hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* Racing background overlays */
@@ -98,110 +97,150 @@
     margin:0;
     text-transform:uppercase;
   }
-  .sub{color:var(--muted);font-size:14px; line-height:1.4}
+  .sub{color:var(--text-muted);font-size:14px; line-height:1.4}
   .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
 
-  /* NAV (keep ids for auth-ui.js) */
+  /* =========================
+     NAV (MATCHES INDEX.HTML)
+     ========================= */
+  .nav-wrapper{
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(16px);
+    background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .nav-wrapper.nav-solid{
+    background: rgba(5,5,8,0.98);
+    border-bottom-color: rgba(255,255,255,0.10);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+  }
   .nav{
-    position:sticky; top:0; z-index:50;
-    background:rgba(5,5,8,.88);
-    border-bottom:1px solid rgba(255,255,255,0.06);
-    backdrop-filter:saturate(140%) blur(14px);
-  }
-  .nav-inner{
+    height: var(--nav-height);
     display:flex; align-items:center; justify-content:space-between;
-    padding:14px 0; gap:16px;
+    gap: 20px;
   }
-  .brand{display:flex; align-items:center; gap:12px}
-  .logo{
-    width:46px; height:46px; border-radius:14px; object-fit:cover;
-    border:1px solid rgba(255,255,255,0.10);
-    box-shadow:0 0 26px rgba(255,217,59,0.12);
+  .logo { display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
+  .logo-mark{
+    width:36px;height:36px;border-radius:999px;
+    border:1px solid rgba(24, 201, 100, 0.7);
+    box-shadow:0 0 18px rgba(24, 201, 100, 0.35);
+    overflow:hidden; background:#000;
+    display:flex;align-items:center;justify-content:center;
   }
-  .title small{
-    color:var(--yellow);
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.18em;
-  }
+  .logo-mark img{ width:100%; height:100%; object-fit:cover; }
+  .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; }
+  .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; }
 
-  .nav-auth{
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+  .nav-links{
+    display:flex; gap:18px; align-items:center;
+    font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+    color: var(--text-muted);
   }
+  .nav-links a{ position:relative; padding-bottom:4px; cursor:pointer; }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
+    background:linear-gradient(to right, var(--accent-main), var(--accent-cyan));
+    transition: width var(--transition-fast);
+    border-radius:999px;
+  }
+  .nav-links a:hover{ color:var(--text-main); }
+  .nav-links a:hover::after{ width:100%; }
+
+  .nav-cta{ display:flex; gap:8px; align-items:center; }
 
   .btn{
-    display:inline-flex; gap:8px; align-items:center;
-    padding:8px 14px; border-radius:999px;
-    border:1px solid rgba(255,255,255,0.10);
-    cursor:pointer; font-size:13px;
-    background:rgba(0,0,0,0.18);
-    color:var(--fg);
-    transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
-    letter-spacing:.10em;
-    text-transform:uppercase;
+    border-radius:999px; padding:8px 16px;
+    font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+    border:1px solid transparent; background:transparent;
+    cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    transition: background var(--transition-fast), color var(--transition-fast),
+      border-color var(--transition-fast), transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+    color:#fff;
   }
-  .btn:hover{
-    background:rgba(255,255,255,0.04);
-    border-color:rgba(255,255,255,0.18);
-    transform:translateY(-1px);
+  .btn-primary{
+    background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
+    box-shadow: 0 0 24px rgba(24, 201, 100, 0.55);
+    border-color: rgba(24, 201, 100, 0.85);
   }
-  .btn.small{ padding:6px 10px; font-size:12px; letter-spacing:.12em; }
-  .btn.primary{
-    background: radial-gradient(circle at top left, #ff4d4d, var(--accent));
-    border-color: rgba(229,9,20,.9);
-    box-shadow: 0 0 18px rgba(229,9,20,.55);
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
+  .btn-ghost{
+    border-color: rgba(255,255,255,0.12);
+    color: var(--text-muted);
   }
-  .btn.primary:hover{ box-shadow:0 0 28px rgba(229,9,20,.75); }
-  .btn.yellow{
-    background: radial-gradient(circle at top left, #ffe58a, var(--yellow));
-    color:#111; font-weight:900;
-    border-color: rgba(255,217,59,.75);
-    box-shadow: 0 0 18px rgba(255,217,59,.22);
+  .btn-ghost:hover{
+    color: var(--text-main);
+    border-color: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.02);
   }
-  .btn.yellow:hover{ box-shadow:0 0 30px rgba(255,217,59,.32); }
+  .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
 
-  /* Profile menu (same ids as other pages) */
+  /* Profile menu */
   .profile-menu{ position:relative; display:flex; align-items:center; }
   .profile-chip{
     width:32px; height:32px; border-radius:50%;
-    background:rgba(255,255,255,0.04);
+    background:var(--bg-card);
     display:flex; align-items:center; justify-content:center;
-    font-weight:700;
-    cursor:pointer;
-    border:1px solid rgba(255,255,255,0.12);
+    font-weight:600; cursor:pointer;
+    border:1px solid rgba(255,255,255,0.18);
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
     font-size:13px;
-    transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
     user-select:none;
   }
   .profile-chip:hover{
-    border-color:rgba(255,255,255,.24);
-    box-shadow:0 0 16px rgba(255,217,59,.55);
+    border-color:rgba(255,255,255,0.32);
+    box-shadow:0 0 16px rgba(255,217,59,0.6);
     transform:translateY(-1px);
   }
   .dropdown{
-    position:absolute; right:0; top:40px;
+    position:absolute; right:0; top:44px;
     background:rgba(10,10,14,0.96);
-    border:1px solid rgba(255,255,255,0.10);
+    border:1px solid var(--border-subtle);
     box-shadow:0 20px 40px rgba(0,0,0,.65);
     border-radius:16px;
     display:none;
     flex-direction:column;
-    min-width:210px;
+    min-width:240px;
     z-index:60;
+    backdrop-filter: blur(16px);
     overflow:hidden;
-    backdrop-filter: blur(14px);
   }
-  .dropdown a,.dropdown button{
-    padding:10px 16px;
-    text-align:left;
-    border:none;
-    background:transparent;
-    color:var(--fg);
-    font-size:13px;
-    width:100%;
-    cursor:pointer;
+  .dropdown.open{ display:flex; }
+
+  .dd-head{
+    padding:12px 14px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    display:flex; flex-direction:column; gap:2px;
   }
-  .dropdown a:hover,.dropdown button:hover{ background:rgba(255,255,255,0.06); }
+  .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
+  .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .dropdown a, .dropdown button{
+    padding:10px 14px; text-align:left;
+    border:none; background:transparent; color:var(--text-main);
+    font-size:13px; width:100%; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
+  .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
+  .dd-badge{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    padding:3px 8px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.16);
+    color:var(--text-muted);
+    background:rgba(0,0,0,0.25);
+    white-space:nowrap;
+  }
+
+  @media (max-width: 768px){
+    .nav-links{ display:none; }
+    .nav-cta{ gap:6px; }
+    .logo-text-sub{ display:none; }
+  }
 
   main{padding:28px 0 56px}
 
@@ -247,6 +286,15 @@
 
   .hero-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
+  /* Yellow button on this page keeps your “Browse Events” look */
+  .btn-yellow{
+    background: radial-gradient(circle at top left, #ffe58a, var(--accent-secondary));
+    color:#111; font-weight:900;
+    border-color: rgba(255,217,59,.75);
+    box-shadow: 0 0 18px rgba(255,217,59,.22);
+  }
+  .btn-yellow:hover{ box-shadow:0 0 30px rgba(255,217,59,.32); }
+
   /* Filter pills */
   .filter-row{
     display:flex; flex-wrap:wrap; gap:8px;
@@ -257,7 +305,7 @@
     font-size:12px;
     text-transform:uppercase;
     letter-spacing:.18em;
-    color:var(--muted);
+    color:var(--text-muted);
     margin-right:6px;
   }
   .filter-pill{
@@ -266,7 +314,7 @@
     border-radius:999px;
     background:rgba(255,255,255,0.03);
     border:1px solid rgba(255,255,255,0.10);
-    color:var(--fg);
+    color:var(--text-main);
     font-size:12px;
     cursor:pointer;
     letter-spacing:.14em;
@@ -316,7 +364,6 @@
         rgba(0,0,0,0.10) 0 50%,
         rgba(255,255,255,0.20) 0 75%,
         rgba(0,0,0,0.10) 0 100%);
-    filter: blur(0px);
     opacity:0.35;
     transform: rotate(8deg);
     pointer-events:none;
@@ -334,7 +381,6 @@
     transform: scale(1.03);
     display:block;
   }
-  /* Racing overlay on image */
   .media::after{
     content:"";
     position:absolute; inset:0;
@@ -369,7 +415,7 @@
     letter-spacing:.02em;
     line-height:1.1;
   }
-  .meta{ color:var(--muted); font-size:13px; margin-top:4px; }
+  .meta{ color:var(--text-muted); font-size:13px; margin-top:4px; }
 
   .pill{
     display:inline-flex; align-items:center; gap:6px;
@@ -384,7 +430,7 @@
   }
   .pill.confirmed{
     border-color: rgba(255,217,59,0.65);
-    color: var(--yellow);
+    color: var(--accent-secondary);
     box-shadow: 0 0 16px rgba(255,217,59,0.14);
   }
   .pill.hold{
@@ -411,7 +457,7 @@
   }
   .lane-label{
     font-size:11px;
-    color:var(--muted);
+    color:var(--text-muted);
     text-transform:uppercase;
     letter-spacing:.20em;
   }
@@ -458,7 +504,7 @@
   .code-sub{
     margin-top:4px;
     font-size:12px;
-    color:var(--muted);
+    color:var(--text-muted);
   }
 
   /* Fake QR (visual only) */
@@ -499,7 +545,7 @@
 
   .tiny{
     font-size:12px;
-    color:var(--muted);
+    color:var(--text-muted);
   }
 
   .empty{
@@ -512,8 +558,6 @@
   }
 
   @media(max-width:600px){
-    .nav-inner{flex-wrap:wrap;}
-    .nav-auth{width:100%;justify-content:flex-end;}
     .hero h2{font-size:40px;}
     .media{height:200px;}
   }
@@ -521,41 +565,62 @@
 </head>
 
 <body>
-  <!-- NAV -->
-  <nav class="nav" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
-      <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo">
-        <div class="title">
-          <h1>ROK RACERS JA</h1>
-          <small>Ticket wallet</small>
+  <!-- NAV (INDEX MATCH) -->
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="/index.html" class="logo">
+        <div class="logo-mark">
+          <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+        </div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Ticket wallet</div>
         </div>
       </a>
 
-      <div class="nav-auth">
-        <a class="btn" href="/events.html">Events</a>
-        <a class="btn" href="/garage.html">Garage</a>
+      <nav class="nav-links">
+        <a href="/events.html">Events</a>
+        <a href="/garage.html">Garage</a>
+        <a href="/teams.html">Community</a>
+        <a href="/about.html">About</a>
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/store.html">Store</a>
+      </nav>
 
-        <button id="navSignInBtn" class="btn">Log in</button>
-        <button id="navJoinBtn" class="btn primary">Join the grid</button>
+      <div class="nav-cta">
+        <!-- ✅ IDs MATCH INDEX (AUTH UI EXPECTS THESE) -->
+        <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+        <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
-        <div id="navProfileWrap" class="profile-menu" style="display:none">
-          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-            <span id="navProfileInitials">U</span>
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="profileInitials">U</span>
           </div>
-          <div id="navProfileDropdown" class="dropdown">
+
+          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+
             <a href="/garage.html">My Garage</a>
             <a href="/tickets.html">My Tickets</a>
             <a href="/likes-builds.html">Liked Builds</a>
             <a href="/likes-sightings.html">Liked Sightings</a>
             <a href="/teams.html">My Teams</a>
-            <a href="/activity.html">Activity</a>
+
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+
+            <div class="dd-sep"></div>
             <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
     </div>
-  </nav>
+  </div>
 
   <main class="container">
     <!-- HERO -->
@@ -571,8 +636,8 @@
         </div>
 
         <div class="hero-actions">
-          <button class="btn yellow" type="button" onclick="location.href='/events.html'">Browse Events</button>
-          <button class="btn" type="button" onclick="location.reload()">Refresh</button>
+          <button class="btn btn-yellow" type="button" onclick="location.href='/events.html'">Browse Events</button>
+          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.reload()">Refresh</button>
         </div>
       </div>
     </section>
@@ -594,6 +659,12 @@
   </main>
 
 <script>
+  // ===== Nav solid on scroll (matches index) =====
+  const navWrapper = document.getElementById('navWrapper');
+  function updateNavSolid(){ if(navWrapper) navWrapper.classList.toggle('nav-solid', window.scrollY > 40); }
+  updateNavSolid();
+  window.addEventListener('scroll', updateNavSolid, { passive:true });
+
   const FALLBACK_COVER = "/Assets/logo.png";
 
   const pageState = {
@@ -637,9 +708,7 @@
   }
 
   function ticketKeyText(rsvp){
-    // Prefer rsvp_code if your schema has it
     if (rsvp?.rsvp_code) return rsvp.rsvp_code;
-    // Fallback: stable-ish reference
     const short = (rsvp?.event_id || "").slice(0,8).toUpperCase();
     return short ? `RR-${short}` : "RR-XXXXX";
   }
@@ -667,7 +736,7 @@
           <p class="sub" style="margin:0 0 12px;">
             Switch views, or jump on the board and RSVP “Yes”.
           </p>
-          <button class="btn primary" type="button" onclick="location.href='/events.html'">View events</button>
+          <button class="btn btn-primary" type="button" onclick="location.href='/events.html'">View events</button>
         </div>`;
       return;
     }
@@ -722,8 +791,8 @@
                   </div>
 
                   <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <button class="btn small" type="button" data-copy="${escapeHTML(code)}">Copy code</button>
-                    <a class="btn small" href="/event.html?id=${event.id}">View event</a>
+                    <button class="btn btn-ghost btn-pill-sm" type="button" data-copy="${escapeHTML(code)}">Copy code</button>
+                    <a class="btn btn-ghost btn-pill-sm" href="/event.html?id=${event.id}">View event</a>
                   </div>
                 </div>
 
@@ -733,7 +802,7 @@
 
             <div class="actions">
               <span class="tiny">Tip: screenshot this pass if you’re heading out.</span>
-              <button class="btn small yellow" type="button" onclick="location.href='/event.html?id=${event.id}#rsvp'">
+              <button class="btn btn-yellow" type="button" onclick="location.href='/event.html?id=${event.id}#rsvp'">
                 Manage RSVP
               </button>
             </div>
@@ -742,10 +811,8 @@
       `;
     }).join('');
 
-    // blur-up on all images
     document.querySelectorAll("img[data-blurup]").forEach(applyBlurUp);
 
-    // copy buttons
     document.querySelectorAll("[data-copy]").forEach(btn=>{
       btn.addEventListener("click", ()=> copyText(btn.getAttribute("data-copy")));
     });
@@ -765,7 +832,7 @@
       grid.innerHTML = `
         <div class="empty">
           <p style="margin:0 0 8px;">You’re not signed in.</p>
-          <button class="btn primary" type="button"
+          <button class="btn btn-primary" type="button"
             onclick="window.authUI && authUI.requireLogin(()=>location.reload())">
             Log in to view tickets
           </button>
@@ -777,7 +844,6 @@
     authMsg.textContent = "";
     filterRow.style.display = 'flex';
 
-    // Try to include rsvp_code + build_id. If column missing, fallback.
     let rsvpRes = await supabase
       .from('event_rsvps')
       .select('event_id,status,created_at,rsvp_code,build_id')
@@ -809,13 +875,12 @@
           <p class="sub" style="margin:0 0 12px;">
             RSVP “Yes” to an event and it will appear here as a Gate Pass.
           </p>
-          <button class="btn primary" type="button" onclick="location.href='/events.html'">Browse events</button>
+          <button class="btn btn-primary" type="button" onclick="location.href='/events.html'">Browse events</button>
         </div>`;
       filterRow.style.display = 'none';
       return;
     }
 
-    // Keep only latest RSVP per event
     const latestByEvent = new Map();
     rsvps.forEach(r=>{
       const prev = latestByEvent.get(r.event_id);
@@ -837,7 +902,6 @@
 
     const evMap = new Map((evRes.data || []).map(e => [e.id, e]));
 
-    // Optional: fetch attached build titles (if build_id exists)
     let buildTitleById = new Map();
     const buildIds = [...new Set([...latestByEvent.values()].map(r=>r.build_id).filter(Boolean))];
     if (buildIds.length){
@@ -858,7 +922,6 @@
       });
     });
 
-    // sort by event date (soonest first; missing dates sink)
     rows.sort((a,b)=>{
       const da = a.event.starts_at ? new Date(a.event.starts_at) : new Date(8640000000000000);
       const db = b.event.starts_at ? new Date(b.event.starts_at) : new Date(8640000000000000);
@@ -869,7 +932,6 @@
     renderTickets();
   }
 
-  // filter pills
   document.addEventListener('click', (e) => {
     const pill = e.target.closest('.filter-pill');
     if (!pill) return;
