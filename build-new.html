@@ -943,10 +943,10 @@
       try{
         // ✅ Try singular then plural (your current bug)
         let rows = [];
-        let usedTable = 'car_model';
+        let usedTable = 'car_models';
 
         try{
-          rows = await trySearch('car_model', make, modelText);
+          rows = await trySearch('car_models', make, modelText);
         } catch (e1){
           // fallback
           usedTable = 'car_models';
