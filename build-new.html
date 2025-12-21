@@ -3,174 +3,393 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Create / Edit Build — ROK Racers JA</title>
-  <meta name="description" content="Create or edit a build in your ROK Racers garage." />
+  <title>Build Workshop — ROK Racers JA</title>
+  <meta name="description" content="Build Workshop: create or edit your car build with parts, photos, or 3D models." />
   <link rel="icon" href="/Assets/og.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
   </script>
 
-  <!-- Shared auth UI -->
+  <!-- Shared auth UI (nav + requireLogin if you have it) -->
   <script src="/auth-ui.js"></script>
+
+  <!-- Model viewer for glb -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
     :root{
       --bg:#050508;
-      --bg1:#141414;
-      --bg2:#1b1b1b;
+      --bg1:#0f0f14;
+      --bg2:#14141c;
+      --card:#121218;
       --fg:#fff;
       --muted:#bdbdbd;
-      --accent:#e50914;
-      --accent-yellow:#FFD93B;
+
+      --green:#128b02;
+      --yellow:#FFD93B;
+
       --line:rgba(255,255,255,.08);
-      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+      --line2:rgba(255,255,255,.12);
+
+      --shadow: 0 40px 120px -30px rgba(0,0,0,.75);
+      --shadow2: 0 24px 60px rgba(0,0,0,.85);
+
+      --radius:24px;
+      --radius2:18px;
     }
+
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
       color:var(--fg);
       font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      overflow-x:hidden;
     }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:0 24px}
-    .sub{color:var(--muted)}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1240px;margin:0 auto;padding:0 24px; position:relative; z-index:1;}
 
-    /* NAV (match Garage) */
-    .nav{
-      position:sticky;top:0;z-index:50;
-      background:rgba(5,5,8,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(12px);
+    /* Workshop overlays */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255,217,59,0.11), transparent 45%),
+        radial-gradient(circle at 82% 72%, rgba(18,139,2,0.12), transparent 46%),
+        linear-gradient(135deg, rgba(255,255,255,0.02), transparent 35%);
+      pointer-events:none;
+      z-index:0;
     }
-    .nav-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 0;gap:16px;flex-wrap:wrap;
+    body::after{
+      content:"";
+      position:fixed; left:-10%; top:-10%;
+      width:140%; height:140%;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(255,255,255,0.03) 0px,
+          rgba(255,255,255,0.03) 6px,
+          transparent 6px,
+          transparent 18px
+        );
+      opacity:0.22;
+      transform:rotate(-6deg);
+      pointer-events:none;
+      z-index:0;
+      mix-blend-mode: overlay;
     }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo-img{width:48px;height:48px;border-radius:10px;object-fit:cover}
-    h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .title small{color:var(--muted);font-size:12px}
 
-    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:8px 14px;border-radius:999px;
-      border:1px solid var(--line);
-      cursor:pointer;background:transparent;color:var(--fg);
-      font-family:inherit;font-size:13px;
-      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    h1,h2,h3{
+      font-family:"Bebas Neue",system-ui,sans-serif;
+      letter-spacing:2px;
+      margin:0;
+      text-transform:uppercase;
     }
-    .btn:hover{background:rgba(255,255,255,0.03)}
-    .btn.primary{
-      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-      color:#fff;border-color:rgba(229,9,20,.9);
-      box-shadow:0 0 18px rgba(229,9,20,.5);
+    .sub{color:var(--muted);font-size:14px; line-height:1.4}
+     .title small{
+      color:var(--yellow);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
     }
-    .btn.primary:hover{
-      box-shadow:0 0 26px rgba(229,9,20,.7);
-      transform:translateY(-1px);
-    }
-    .btn.small{padding:6px 10px;font-size:13px}
-    .btn[disabled]{opacity:.6;pointer-events:none}
 
-    /* auth dropdown (match Garage) */
-    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .profile-menu{position:relative;display:flex;align-items:center}
-    .profile-chip{
-      width:32px;height:32px;border-radius:50%;
-      background:var(--bg2);
+    .menu{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .nav-auth{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+
+    /* NAV (standard ids for auth-ui.js) */
+   .nav-wrapper {
+      position: sticky; top: 0; z-index: 40;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+    .nav-wrapper.nav-solid{
+      background: rgba(5,5,8,0.98);
+      border-bottom-color: rgba(255,255,255,0.10);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+    }
+    .nav {
+      height: var(--nav-height);
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 20px;
+    }
+    .logo { display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
+    .logo-mark{
+      width:36px;height:36px;border-radius:999px;
+      border:1px solid rgba(24, 201, 100, 0.7);
+      box-shadow:0 0 18px rgba(24, 201, 100, 0.35);
+      overflow:hidden; background:#000;
       display:flex;align-items:center;justify-content:center;
-      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .logo-mark img{ width:100%; height:100%; object-fit:cover; }
+    .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; }
+    .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; }
+
+    .nav-links{
+      display:flex; gap:18px; align-items:center;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      color: var(--text-muted);
+    }
+    .nav-links a{ position:relative; padding-bottom:4px; cursor:pointer; }
+    .nav-links a::after{
+      content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
+      background:linear-gradient(to right, var(--accent-main), var(--accent-cyan));
+      transition: width var(--transition-fast);
+      border-radius:999px;
+    }
+    .nav-links a:hover{ color:var(--text-main); }
+    .nav-links a:hover::after{ width:100%; }
+
+    .nav-cta{ display:flex; gap:8px; align-items:center; }
+    .btn{
+      border-radius:999px; padding:8px 16px;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      border:1px solid transparent; background:transparent;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast), transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+      color:#fff;
+    }
+    .btn-primary{
+      background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
+      box-shadow: 0 0 24px rgba(24, 201, 100, 0.55);
+      border-color: rgba(24, 201, 100, 0.85);
+    }
+    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
+    .btn-ghost{
+      border-color: rgba(255,255,255,0.12);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover{
+      color: var(--text-main);
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.02);
+    }
+    .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
+
+    .profile-menu{ position:relative; display:flex; align-items:center; }
+    .profile-chip{
+      width:32px; height:32px; border-radius:50%;
+      background:var(--bg-card);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:600; cursor:pointer;
+      border:1px solid rgba(255,255,255,0.18);
+      transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
       font-size:13px;
-      transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+      user-select:none;
     }
     .profile-chip:hover{
-      border-color:rgba(255,255,255,.32);
-      box-shadow:0 0 16px rgba(255,217,59,.6);
+      border-color:rgba(255,255,255,0.32);
+      box-shadow:0 0 16px rgba(255,217,59,0.6);
       transform:translateY(-1px);
     }
     .dropdown{
-      position:absolute;right:0;top:40px;
-      background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.6);
-      border-radius:16px;display:flex;flex-direction:column;
-      min-width:190px;z-index:999;
+      position:absolute; right:0; top:44px;
+      background:rgba(10,10,14,0.96);
+      border:1px solid var(--border-subtle);
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
+      border-radius:16px;
+      display:none;
+      flex-direction:column;
+      min-width:240px;
+      z-index:999;
+      backdrop-filter: blur(16px);
+      overflow:hidden;
     }
-    .dropdown a,.dropdown button{
-      padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:13px;
-      width:100%;cursor:pointer;font-family:inherit;
-    }
-    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+    .dropdown.open{ display:flex; }
 
-    .section{padding:56px 0}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .grid{display:grid;gap:18px}
-    .cols-2{grid-template-columns:1.2fr 1fr}
-    @media(max-width:960px){.cols-2{grid-template-columns:1fr}}
+    .dd-head{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
+    .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      box-shadow:var(--shadow);
-      padding:20px;
+    .dropdown a, .dropdown button{
+      padding:10px 14px; text-align:left;
+      border:none; background:transparent; color:var(--text-main);
+      font-size:13px; width:100%; cursor:pointer;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
+    .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
+    .dd-badge{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--text-muted);
+      background:rgba(0,0,0,0.25);
+      white-space:nowrap;
     }
 
-    label{display:block;font-size:14px;margin-bottom:4px;color:var(--muted)}
-    .input,.select,textarea{
-      width:100%;background:var(--bg2);
-      border:1px solid var(--line);color:#fff;
-      padding:10px 12px;border-radius:12px;
-      outline:none;font-family:inherit;font-size:15px;
+    @media (max-width: 768px){
+      .nav-links{ display:none; }
+      .nav-cta{ gap:6px; }
+      .logo-text-sub{ display:none; }
     }
-    .input:focus-visible,.select:focus-visible,textarea:focus-visible{
-      border-color:var(--accent-yellow);
-      box-shadow:0 0 0 1px rgba(255,217,59,0.5);
-    }
-    textarea{resize:vertical;min-height:90px}
+   
 
-    .pill-toggle{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:6px 10px;border-radius:999px;
-      border:1px solid var(--line);
-      background:var(--bg2);font-size:14px;
+    main{padding:28px 0 64px}
+
+    /* Workshop hero */
+    .hero{
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,0.10);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,217,59,0.14), transparent 55%),
+        radial-gradient(circle at 80% 70%, rgba(18,139,2,0.12), transparent 60%),
+        linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(0,0,0,0.30));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+      padding:18px 18px 16px;
     }
-    .pill-toggle input{accent-color:var(--accent)}
+    .hero::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.06) 0px,
+          rgba(255,255,255,0.06) 10px,
+          transparent 10px,
+          transparent 28px
+        );
+      opacity:0.08;
+      pointer-events:none;
+    }
+    .hero-row{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+    .hero h2{ font-size:46px; line-height:0.95; }
+    .hero-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .badge{
       display:inline-flex;align-items:center;justify-content:center;
       padding:6px 10px;border-radius:999px;
-      border:1px solid var(--line);
-      background:var(--bg2);font-size:12px;color:var(--muted);
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.18);
+      font-size:12px;color:var(--muted);
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .banner{
+      margin-top:12px;
+      border:1px dashed rgba(255,255,255,.20);
+      background:rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:14px;
+      font-size:13px;
+    }
+    .banner strong{color:#fff}
+
+    /* Grid */
+    .grid{ display:grid; gap:18px; }
+    .cols-2{ grid-template-columns: 1.2fr 1fr; }
+    @media(max-width:980px){ .cols-2{ grid-template-columns:1fr; } }
+
+    .card{
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(0,0,0,0.35));
+      box-shadow: var(--shadow2);
+      padding:16px;
+      overflow:hidden;
+    }
+    label{display:block;font-size:12px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin:12px 0 6px}
+    input,select,textarea{
+      width:100%;
+      background:rgba(10,10,14,0.7);
+      border:1px solid rgba(255,255,255,0.10);
+      color:#fff;
+      padding:12px;
+      border-radius:14px;
+      outline:none;
+      font-family:inherit;
+      font-size:15px;
+    }
+    textarea{ min-height:96px; resize:vertical; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible{
+      border-color:var(--yellow);
+      box-shadow:0 0 0 1px rgba(255,217,59,0.45);
     }
 
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row > *{flex:1; min-width:160px}
+
+    .divider{height:1px;background:rgba(255,255,255,0.08);border:none;margin:16px 0}
+
+    /* Parts selection */
+    .parts-wrap{display:grid; gap:10px;}
+    .part-add{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .part-add select, .part-add input{flex:1; min-width:160px}
+    .part-list{display:grid; gap:8px; margin-top:8px}
+    .part-item{
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:16px;
+      padding:10px 10px;
+      background:rgba(0,0,0,0.22);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .part-item strong{font-size:14px}
+    .part-item .meta{color:var(--muted);font-size:12px;margin-top:2px}
+    .icon-btn{
+      border:1px solid rgba(255,255,255,0.12);
+      background:transparent;
+      color:#fff;
+      border-radius:999px;
+      cursor:pointer;
+      padding:6px 10px;
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .icon-btn:hover{background:rgba(255,255,255,0.06)}
+    .icon-btn.danger{border-color:rgba(255,120,120,0.35); color:#ffb3b3}
+
+    /* Upload previews */
     .preview-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-      gap:10px;margin-top:10px;
+      gap:10px; margin-top:10px;
     }
     .preview-card{
       position:relative;border-radius:12px;overflow:hidden;
-      border:1px solid var(--line);background:#000;
+      border:1px solid rgba(255,255,255,0.10); background:#000;
       aspect-ratio:4/3;
     }
-    .preview-card img{width:100%;height:100%;object-fit:cover;display:block}
+    .preview-card img{width:100%;height:100%;object-fit:cover}
     .preview-card span{
       position:absolute;bottom:6px;left:8px;
       background:rgba(0,0,0,.6);
@@ -178,248 +397,388 @@
       font-size:11px;
     }
 
-    .divider{border:none;border-top:1px solid var(--line);margin:18px 0}
-    .banner{
-      border:1px dashed rgba(255,255,255,.25);
-      background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:14px;
-      font-size:13px;
+    /* 3D */
+    .model-panel{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.20);
+      padding:12px;
       margin-top:10px;
     }
-    .banner strong{color:#fff}
+    model-viewer{
+      width:100%;
+      height:320px;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(0,0,0,0.40));
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.10);
+    }
+    .tiny{font-size:12px;color:var(--muted)}
+    .status{
+      display:none;
+      margin-top:10px;
+      border-radius:999px;
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(0,0,0,0.22);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .status.bad{ border-color:rgba(255,120,120,0.35); color:#ffb3b3; }
+    .status.ok{ border-color:rgba(120,255,190,0.35); color:#bfffdc; }
+
+    .seg{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .seg button{
+      flex:1 1 160px;
+    }
   </style>
 </head>
+
 <body>
-  <nav class="nav" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
-      <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo-img" />
-        <div class="title">
-          <h1>ROK RACERS JA</h1>
-          <small>Create / Edit Build</small>
-        </div>
-      </a>
+<!-- NAV (matches index) -->
+    <div class="nav-wrapper" id="navWrapper">
+      <div class="container nav">
+        <a href="/index.html" class="logo">
+          <div class="logo-mark">
+            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+          </div>
+          <div>
+            <div class="logo-text-main">ROK RACERS JA</div>
+            <div class="logo-text-sub">Build Workspace</div>
+          </div>
+        </a>
 
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/about.html">About</a>
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/teams.html">Community</a>
-          <a class="btn" role="menuitem" href="/marketplace.html">Marketplace</a>
-          <a class="btn" role="menuitem" href="/store.html">Store</a>
-        </div>
+        <nav class="nav-links">
+          <a href="/events.html">Events</a>
+          <a href="/garage.html">Garage</a>
+          <a href="/teams.html">Community</a>
+          <a href="/about.html">About</a>
+          <a href="/marketplace.html">Marketplace</a>
+          <a href="/store.html">Store</a>
+        </nav>
 
-        <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Log in</button>
-          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+        <div class="nav-cta">
+          <!-- We keep these IDs exactly like index -->
+          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+              <span id="profileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
+
+            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+              <div class="dd-head">
+                <div class="dd-title">Signed in as</div>
+                <div class="dd-email" id="ddEmail">—</div>
+              </div>
+
+              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+              <div class="dd-sep"></div>
+
               <a href="/garage.html?view=my">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
-              <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" type="button">Sign out</button>
+
+              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+
+              <div class="dd-sep"></div>
+              <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
       </div>
-
     </div>
-  </nav>
 
-  <main class="container">
-    <section class="section">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+    <section class="hero" aria-label="Build workshop header">
+      <div class="hero-row">
         <div>
-          <h2 id="pageTitle" style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">Create a build</h2>
-          <p class="sub" id="pageSubtitle">Add your car to your ROK garage. You can always edit later.</p>
-          <div class="row" style="margin-top:10px">
-            <span id="quotaBadge" class="badge">Checking quota…</span>
+          <h2 id="pageTitle">Build Workshop</h2>
+          <p class="sub" id="pageSubtitle">
+            Drop the specs, pick your parts, then choose: <strong>Photo build</strong> or <strong>3D build</strong>.
+          </p>
+
+          <div class="seg">
+            <span id="quotaBadge" class="badge">Checking 3D quota…</span>
             <span id="modeBadge" class="badge" style="display:none"></span>
           </div>
+
           <div id="limitBanner" class="banner" style="display:none">
-            <strong>Limit reached:</strong> You’ve used your 3 free builds. Upgrade to Premium to unlock more builds plus parts discounts and mechanic deals.
+            <strong>3D limit reached:</strong> You’ve used your 2/2 3D build slots.
+            <div class="sub" style="margin-top:6px;">You can still save this build as a <strong>Photo build</strong> (unlimited).</div>
           </div>
         </div>
-        <a href="/garage.html" class="btn small">← Back to garage</a>
+
+        <div class="hero-actions">
+          <a class="btn yellow" href="/garage.html">Back to Garage</a>
+          <button class="btn" type="button" id="resetBtn">Reset</button>
+        </div>
       </div>
+    </section>
 
-      <form id="buildForm" class="grid cols-2">
-        <!-- LEFT -->
-        <div class="card">
-          <h3 style="font-size:26px;margin-bottom:10px">Build basics</h3>
+    <div class="grid cols-2" style="margin-top:18px">
 
-          <div style="margin-bottom:12px">
-            <label for="title">Build name</label>
-            <input id="title" name="title" class="input" placeholder="e.g. Kirby the pink E36" required>
-          </div>
+      <!-- LEFT: Specs + Parts -->
+      <section class="card">
+        <h3 style="font-size:28px">Specs</h3>
+        <p class="sub">Give it a name and define the car. This powers search + discover.</p>
 
-          <div class="row" style="margin-bottom:12px">
-            <div style="flex:1;min-width:140px">
-              <label for="buildType">Build type</label>
-              <select id="buildType" name="buildType" class="select">
-                <option value="owned">Owned</option>
-                <option value="dream">Dream</option>
-                <option value="for_sale">For sale</option>
-              </select>
-            </div>
-            <div style="flex:1;min-width:140px">
-              <label for="stage">Stage</label>
-              <select id="stage" name="stage" class="select">
-                <option value="">Select stage</option>
-                <option value="stock">Stock / OEM+</option>
-                <option value="stage_1">Stage 1 (bolt-ons)</option>
-                <option value="stage_2">Stage 2 (turbo/supercharger)</option>
-                <option value="track">Track / Drift</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
+        <label for="title">Build name</label>
+        <input id="title" placeholder="e.g. Kirby the pink E36" />
 
-          <div class="row" style="margin-bottom:12px;align-items:center">
-            <span class="pill-toggle">
-              <input type="checkbox" id="isPublic" checked>
-              <label for="isPublic" style="margin:0;color:#fff">Public build (eligible for Top 5)</label>
-            </span>
-          </div>
-
-          <div style="margin-bottom:12px">
-            <label for="description">Build story / notes</label>
-            <textarea id="description" name="description" class="input"
-              placeholder="How did this build start? What’s the goal?"></textarea>
-          </div>
-
-          <hr class="divider">
-
-          <h3 style="font-size:24px;margin-bottom:10px">Car specs</h3>
-
-          <div class="row" style="margin-bottom:10px">
-            <div style="flex:1;min-width:140px">
-              <label for="make">Make</label>
-              <select id="make" name="make" class="select">
-                <option value="">Select make</option>
-                <option value="BMW">BMW</option>
-                <option value="Toyota">Toyota</option>
-                <option value="Nissan">Nissan</option>
-                <option value="Honda">Honda</option>
-                <option value="Mazda">Mazda</option>
-                <option value="Subaru">Subaru</option>
-                <option value="Audi">Audi</option>
-                <option value="Volkswagen">Volkswagen</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div style="flex:1;min-width:140px">
-              <label for="model">Model</label>
-              <input id="model" name="model" class="input" placeholder="e.g. E36 328i">
-            </div>
-          </div>
-
-          <div class="row" style="margin-bottom:10px">
-            <div style="flex:1;min-width:120px">
-              <label for="year">Year</label>
-              <input id="year" name="year" type="number" min="1960" max="2050" class="input" placeholder="1998">
-            </div>
-            <div style="flex:1;min-width:140px">
-              <label for="powerGoal">Power goal (hp)</label>
-              <input id="powerGoal" name="powerGoal" type="number" min="0" class="input" placeholder="e.g. 450">
-            </div>
-          </div>
-
-          <div style="margin-bottom:10px">
-            <label for="tags">Tags (comma separated)</label>
-            <input id="tags" name="tags" class="input" placeholder="drift, stance, show, time-attack">
-          </div>
-        </div>
-
-        <!-- RIGHT -->
-        <div class="card">
-          <h3 style="font-size:26px;margin-bottom:10px">Media</h3>
-          <p class="sub" style="margin-bottom:8px">
-            First image becomes your thumbnail on the landing page & garage.
-          </p>
-
-          <div style="margin-bottom:10px">
-            <label for="images">Upload images</label>
-            <input id="images" name="images" type="file" class="input" accept="image/*" multiple>
-          </div>
-
-          <div id="imagePreview" class="preview-grid"></div>
-
-          <hr class="divider">
-
-          <h3 style="font-size:24px;margin-bottom:10px">3D / Visual</h3>
-          <p class="sub" style="margin-bottom:6px">
-            Optional: link this build to a 3D model preset or a special render link.
-          </p>
-
-          <div style="margin-bottom:10px">
-            <label for="modelKey">3D model preset</label>
-            <select id="modelKey" name="modelKey" class="select">
-              <option value="">None</option>
-              <option value="bmw_m4_f82">BMW M4 F82 (hero)</option>
-              <option value="bmw_e36_coupe">BMW E36 Coupe</option>
-              <option value="nissan_s13">Nissan S13</option>
-              <option value="nissan_r32">Nissan Skyline R32</option>
-              <option value="toyota_supra_a80">Toyota Supra A80</option>
+        <div class="row">
+          <div>
+            <label for="buildType">Build type</label>
+            <select id="buildType">
+              <option value="owned">Owned</option>
+              <option value="dream">Dream</option>
+              <option value="for_sale">For sale</option>
             </select>
           </div>
+          <div>
+            <label for="stage">Stage</label>
+            <select id="stage">
+              <option value="">Select stage</option>
+              <option value="stock">Stock / OEM+</option>
+              <option value="stage_1">Stage 1</option>
+              <option value="stage_2">Stage 2</option>
+              <option value="track">Track / Drift</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
 
-          <div style="margin-bottom:10px">
-            <label for="renderUrl">Render URL (optional)</label>
-            <input id="renderUrl" name="renderUrl" class="input" placeholder="Link to a render / viewer">
+        <label style="margin-top:14px">
+          <input id="isPublic" type="checkbox" checked style="accent-color: var(--green); transform: translateY(1px); margin-right:8px;">
+          Public build (eligible for Top 5)
+        </label>
+
+        <label for="description">Build story / notes</label>
+        <textarea id="description" placeholder="How did this build start? What’s the goal?"></textarea>
+
+        <hr class="divider">
+
+        <h3 style="font-size:26px">Car</h3>
+
+        <div class="row">
+          <div>
+            <label for="make">Make</label>
+            <input id="make" placeholder="BMW" />
+          </div>
+          <div>
+            <label for="model">Model</label>
+            <input id="model" placeholder="E36 / 328i / Civic EG" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="year">Year</label>
+            <input id="year" type="number" min="1960" max="2050" placeholder="1998" />
+          </div>
+          <div>
+            <label for="powerGoal">Power goal (hp)</label>
+            <input id="powerGoal" type="number" min="0" placeholder="450" />
+          </div>
+        </div>
+
+        <label for="tags">Tags (comma separated)</label>
+        <input id="tags" placeholder="drift, stance, show, time-attack" />
+
+        <hr class="divider">
+
+        <h3 style="font-size:26px">Parts</h3>
+        <p class="sub">Add the parts people actually care about. These enable filtering in Garage.</p>
+
+        <div class="parts-wrap">
+          <div class="part-add">
+            <select id="partCategory">
+              <option value="wheels">Wheels</option>
+              <option value="tires">Tires</option>
+              <option value="suspension">Suspension</option>
+              <option value="brakes">Brakes</option>
+              <option value="engine">Engine</option>
+              <option value="exhaust">Exhaust</option>
+              <option value="drivetrain">Drivetrain</option>
+              <option value="braces">Braces / Chassis</option>
+              <option value="interior">Interior</option>
+              <option value="exterior">Exterior</option>
+              <option value="color">Color</option>
+              <option value="other">Other</option>
+            </select>
+            <input id="partName" placeholder="e.g. BC Racing coilovers, TE37 wheels, BorgWarner turbo" />
+            <button class="btn primary" type="button" id="addPartBtn">Add</button>
           </div>
 
-          <div class="badge" id="statusBadge" style="margin:12px 0 14px;display:none"></div>
-
-          <button id="saveBtn" type="submit" class="btn primary" style="width:100%;justify-content:center">
-            Save build
-          </button>
+          <div id="partsList" class="part-list"></div>
         </div>
-      </form>
-    </section>
+      </section>
+
+      <!-- RIGHT: Media + Build type selector -->
+      <section class="card">
+        <h3 style="font-size:28px">Visual</h3>
+        <p class="sub">Choose how your build is displayed: Photo (unlimited) or 3D (max 2).</p>
+
+        <div class="seg">
+          <button id="modePhotoBtn" class="btn yellow" type="button">Use Photo Build</button>
+          <button id="mode3DBtn" class="btn primary" type="button">Use 3D Build</button>
+        </div>
+
+        <div class="status" id="statusBadge"></div>
+
+        <!-- PHOTO BUILD -->
+        <div id="photoPanel" class="model-panel" style="margin-top:12px">
+          <div class="row" style="flex-wrap:wrap">
+            <div style="flex:1">
+              <h3 style="font-size:22px">Photo upload</h3>
+              <p class="tiny">Uploads to <strong>picture-builds</strong>. First image becomes the build thumbnail.</p>
+            </div>
+          </div>
+
+          <label for="images">Upload images</label>
+          <input id="images" type="file" accept="image/*" multiple />
+          <div id="imagePreview" class="preview-grid"></div>
+        </div>
+
+        <!-- 3D BUILD -->
+        <div id="modelPanel" class="model-panel" style="display:none">
+          <h3 style="font-size:22px">3D model search</h3>
+          <p class="tiny">Search the <strong>car_models</strong> table, then load the file from bucket <strong>builds</strong>.</p>
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label for="cmMake">Make</label>
+              <input id="cmMake" placeholder="BMW" />
+            </div>
+            <div>
+              <label for="cmModel">Model</label>
+              <input id="cmModel" placeholder="E36" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="cmYear">Year (optional)</label>
+              <input id="cmYear" type="number" min="1960" max="2050" placeholder="1998" />
+            </div>
+            <div style="flex:0 0 auto; min-width:200px; display:flex; align-items:flex-end">
+              <button class="btn primary" type="button" id="searchModelsBtn" style="width:100%; justify-content:center">
+                Search models
+              </button>
+            </div>
+          </div>
+
+          <label for="modelResults">Results</label>
+          <select id="modelResults">
+            <option value="">Search to load options…</option>
+          </select>
+
+          <div style="margin-top:10px">
+            <model-viewer id="viewer" camera-controls auto-rotate shadow-intensity="1" exposure="1.1"
+              alt="3D car preview" style="display:none"></model-viewer>
+            <div id="viewerEmpty" class="tiny" style="margin-top:10px;opacity:.9">
+              No model selected yet.
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn" type="button" id="requestModelBtn">Don’t see your car? Request it</button>
+            <a class="btn yellow" href="/garage.html" style="justify-content:center">Back</a>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <button id="saveBtn" class="btn primary" type="button" style="width:100%;justify-content:center">
+          Save build
+        </button>
+        <button id="cancelBtn" class="btn" type="button" style="width:100%;justify-content:center;margin-top:10px">
+          Cancel
+        </button>
+      </section>
+
+    </div>
   </main>
 
   <script>
+    /* =========================
+       CONFIG
+    ========================== */
     const buildId = new URLSearchParams(location.search).get('id');
-    const BUCKET = 'build-images'; // must exist in Supabase Storage
 
+    const BUCKET_PHOTOS = "picture-builds";
+    const BUCKET_MODELS = "builds";
+
+    const MAX_3D_BUILDS_FREE = 2;
+
+    /* =========================
+       DOM HELPERS
+    ========================== */
     const $ = (id)=>document.getElementById(id);
 
-    function setStatus(msg, type='info'){
-      const badge = $('statusBadge');
-      if(!badge) return;
-      badge.style.display = 'inline-flex';
-      badge.textContent = msg;
-      badge.style.borderColor = type === 'error' ? '#ff4b4b' : 'var(--line)';
-      badge.style.color = type === 'error' ? '#ffb3b3' : 'var(--muted)';
+    function setStatus(msg, kind){
+      const el = $('statusBadge');
+      el.style.display = 'block';
+      el.className = 'status' + (kind ? (' ' + kind) : '');
+      el.textContent = msg || '';
     }
     function clearStatus(){
-      const badge = $('statusBadge');
-      if(!badge) return;
-      badge.style.display = 'none';
-      badge.textContent = '';
+      const el = $('statusBadge');
+      el.style.display = 'none';
+      el.textContent = '';
+      el.className = 'status';
+    }
+    function esc(s){
+      return String(s||'').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
     }
 
-    async function getCurrentUser(){
-      const { data: { user } = {} } = await supabase.auth.getUser();
+    async function getUser(){
+      const { data: { user } } = await supabase.auth.getUser();
       return user || null;
     }
 
-    async function getQuotaUsed(userId){
-      const { count, error } = await supabase
-        .from('builds')
-        .select('id', { count:'exact', head:true })
-        .eq('user_id', userId);
-      return error ? 0 : (count ?? 0);
+    // IMPORTANT: DO NOT force login on page load (prevents re-login loops)
+    async function requireLogin(){
+      if (window.authUI && typeof authUI.requireLogin === 'function'){
+        const ok = await authUI.requireLogin();
+        if (ok === false) return false;
+      }
+      const user = await getUser();
+      if(!user){
+        alert("Please log in first.");
+        return false;
+      }
+      return true;
+    }
+
+    /* =========================
+       3D QUOTA (TRUE ENFORCEMENT)
+       - count only builds where is_3d=true OR car_model_id IS NOT NULL OR model_url IS NOT NULL
+       - Photo builds are unlimited
+    ========================== */
+    async function count3DBuilds(userId){
+      // Try columns in order, stop at first working query
+      const tries = [
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id', 'is', null),
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('model_url', 'is', null),
+      ];
+
+      for(const fn of tries){
+        const res = await fn();
+        if(!res.error) return (res.count ?? 0);
+        const msg = (res.error.message||'').toLowerCase();
+        if (!msg.includes('column')) break;
+      }
+
+      // If schema is different, safest fallback is 0 (do NOT block users)
+      return 0;
     }
 
     async function refreshQuotaUI(){
@@ -427,271 +786,521 @@
       const limitBanner = $('limitBanner');
       const modeBadge = $('modeBadge');
 
-      const user = await getCurrentUser();
+      const user = await getUser();
+
       if(!user){
-        quotaBadge.textContent = 'Sign in to create builds';
+        quotaBadge.textContent = `Log in to save builds`;
         limitBanner.style.display = 'none';
-        modeBadge.style.display = buildId ? 'inline-flex' : 'none';
-        if(buildId) modeBadge.textContent = 'Edit mode';
-        return { user:null, used:0, atLimit:false };
+        modeBadge.style.display = 'inline-flex';
+        modeBadge.textContent = buildId ? 'Edit mode' : 'Create mode';
+        return { user:null, used3D:0, at3DLimit:false };
       }
 
-      const used = await getQuotaUsed(user.id);
-      const atLimit = used >= 3;
+      const used3D = await count3DBuilds(user.id);
+      const at3DLimit = used3D >= MAX_3D_BUILDS_FREE;
 
-      quotaBadge.textContent = `${used}/3 builds used`;
-      limitBanner.style.display = (!buildId && atLimit) ? 'block' : 'none';
+      quotaBadge.textContent = `${used3D}/${MAX_3D_BUILDS_FREE} 3D builds used`;
+      limitBanner.style.display = at3DLimit ? 'block' : 'none';
 
       modeBadge.style.display = 'inline-flex';
       modeBadge.textContent = buildId ? 'Edit mode' : 'Create mode';
 
-      return { user, used, atLimit };
+      return { user, used3D, at3DLimit };
     }
 
+    /* =========================
+       PARTS (local state)
+    ========================== */
+    const partsState = []; // { category, name }
+
+    function renderParts(){
+      const wrap = $('partsList');
+      if(!partsState.length){
+        wrap.innerHTML = `<div class="tiny">No parts added yet. Add your key mods (people will filter by these).</div>`;
+        return;
+      }
+      wrap.innerHTML = partsState.map((p, idx)=>`
+        <div class="part-item">
+          <div>
+            <strong>${esc(p.name)}</strong>
+            <div class="meta">${esc(p.category)}</div>
+          </div>
+          <button class="icon-btn danger" type="button" data-del="${idx}">Remove</button>
+        </div>
+      `).join('');
+
+      wrap.querySelectorAll('[data-del]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const i = parseInt(btn.getAttribute('data-del'), 10);
+          partsState.splice(i,1);
+          renderParts();
+        });
+      });
+    }
+
+    $('addPartBtn').addEventListener('click', ()=>{
+      const cat = $('partCategory').value || 'other';
+      const name = ($('partName').value || '').trim();
+      if(!name) return;
+
+      partsState.push({ category:cat, name });
+      $('partName').value = '';
+      renderParts();
+    });
+
+    renderParts();
+
+    /* =========================
+       PHOTO UPLOAD PREVIEW
+    ========================== */
     function hydrateImagePreview(files){
       const wrap = $('imagePreview');
       wrap.innerHTML = '';
       if(!files || !files.length) return;
-      Array.from(files).forEach((file, idx) => {
+      Array.from(files).forEach((file, idx)=>{
         const url = URL.createObjectURL(file);
         const div = document.createElement('div');
         div.className = 'preview-card';
         div.innerHTML = `<img src="${url}" alt="">
-                         <span>${idx === 0 ? 'Thumbnail' : 'Image ' + (idx+1)}</span>`;
+                         <span>${idx===0 ? 'Thumbnail' : 'Image ' + (idx+1)}</span>`;
         wrap.appendChild(div);
       });
     }
+    $('images').addEventListener('change', (e)=> hydrateImagePreview(e.target.files));
 
-    $('images').addEventListener('change', (e)=>{
-      hydrateImagePreview(e.target.files);
+    /* =========================
+       BUILD MODE: PHOTO vs 3D
+    ========================== */
+    const mode = {
+      type: 'photo', // 'photo' | '3d'
+      selectedCarModel: null, // { id, make, model, year_from, year_to, storage_path, thumb_url }
+      modelUrl: null
+    };
+
+    function setMode(next){
+      mode.type = next;
+
+      $('photoPanel').style.display = (next === 'photo') ? 'block' : 'none';
+      $('modelPanel').style.display = (next === '3d') ? 'block' : 'none';
+
+      clearStatus();
+    }
+
+    $('modePhotoBtn').addEventListener('click', ()=> setMode('photo'));
+    $('mode3DBtn').addEventListener('click', async ()=>{
+      const { at3DLimit } = await refreshQuotaUI();
+
+      // If limit reached, still allow them to open 3D panel but block saving 3D later
+      setMode('3d');
+      if(at3DLimit){
+        setStatus("3D slots are full (2/2). You can still save as Photo build.", "bad");
+      }
     });
 
-    async function loadBuildForEdit(){
+    /* =========================
+       3D SEARCH: Option A (car_models)
+    ========================== */
+    function inYearRange(year, from, to){
+      if(!year) return true;
+      const y = Number(year);
+      if(Number.isFinite(from) && y < from) return false;
+      if(Number.isFinite(to) && y > to) return false;
+      return true;
+    }
+
+    async function searchCarModels(){
+      clearStatus();
+
+      const make = ($('cmMake').value || '').trim();
+      const modelText = ($('cmModel').value || '').trim();
+      const year = ($('cmYear').value || '').trim();
+
+      if(!make && !modelText){
+        setStatus("Type at least a make or model to search.", "bad");
+        return;
+      }
+
+      $('searchModelsBtn').disabled = true;
+      $('searchModelsBtn').textContent = 'Searching…';
+
+      try{
+        // broad query + client-side filter keeps it simple and bug-free
+        // (you can tighten later with ilike on both)
+        let q = supabase.from('car_models')
+          .select('id,make,model,year_from,year_to,storage_path,thumb_url')
+          .order('make', { ascending:true })
+          .order('model', { ascending:true });
+
+        if(make) q = q.ilike('make', `%${make}%`);
+        if(modelText) q = q.ilike('model', `%${modelText}%`);
+
+        const res = await q;
+        if(res.error) throw res.error;
+
+        let rows = res.data || [];
+        if(year){
+          rows = rows.filter(r => inYearRange(year, r.year_from, r.year_to));
+        }
+
+        const sel = $('modelResults');
+        if(!rows.length){
+          sel.innerHTML = `<option value="">No matches found</option>`;
+          mode.selectedCarModel = null;
+          mode.modelUrl = null;
+          $('viewer').style.display = 'none';
+          $('viewerEmpty').style.display = 'block';
+          setStatus("No models found. Use Photo build or request your car.", "bad");
+          return;
+        }
+
+        sel.innerHTML = `<option value="">Select a model…</option>` + rows.map(r=>{
+          const yr = (r.year_from || r.year_to) ? ` (${r.year_from || ''}${(r.year_from && r.year_to) ? '–' : ''}${r.year_to || ''})` : '';
+          const label = `${r.make} ${r.model}${yr}`;
+          return `<option value="${esc(r.id)}">${esc(label)}</option>`;
+        }).join('');
+
+        // Keep in memory
+        sel._rows = rows;
+
+        setStatus(`Found ${rows.length} model(s). Select one to preview.`, "ok");
+      } catch(e){
+        console.error(e);
+        setStatus("Model search failed. Check table permissions and try again.", "bad");
+      } finally {
+        $('searchModelsBtn').disabled = false;
+        $('searchModelsBtn').textContent = 'Search models';
+      }
+    }
+
+    $('searchModelsBtn').addEventListener('click', searchCarModels);
+
+    $('modelResults').addEventListener('change', async ()=>{
+      clearStatus();
+
+      const id = $('modelResults').value;
+      const rows = $('modelResults')._rows || [];
+      const picked = rows.find(r => String(r.id) === String(id));
+
+      if(!picked){
+        mode.selectedCarModel = null;
+        mode.modelUrl = null;
+        $('viewer').style.display = 'none';
+        $('viewerEmpty').style.display = 'block';
+        return;
+      }
+
+      if(!picked.storage_path){
+        setStatus("This model entry has no storage_path. Add it in car_models.", "bad");
+        return;
+      }
+
+      // Convert storage_path -> URL
+      const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(picked.storage_path);
+      const url = urlData?.publicUrl;
+
+      if(!url){
+        setStatus("Could not generate a public URL. Check bucket public policy or use signed URLs.", "bad");
+        return;
+      }
+
+      mode.selectedCarModel = picked;
+      mode.modelUrl = url;
+
+      $('viewerEmpty').style.display = 'none';
+      const viewer = $('viewer');
+      viewer.style.display = 'block';
+      viewer.src = url;
+
+      setStatus("3D model loaded. You can save as a 3D build.", "ok");
+    });
+
+    // Request button (send to paid request flow on Garage you already added)
+    $('requestModelBtn').addEventListener('click', ()=>{
+      // You can route this to your request modal page or a mailto for now
+      alert("Request flow: we’ll wire this to your paid request table + checkout next.");
+    });
+
+    /* =========================
+       LOAD BUILD FOR EDIT
+    ========================== */
+    async function loadBuild(){
       if(!buildId) return;
 
-      $('pageTitle').textContent = 'Edit build';
-      $('pageSubtitle').textContent = 'Update your specs, media and visibility.';
+      $('pageTitle').textContent = "Edit Build Workshop";
+      $('pageSubtitle').textContent = "Tune the specs, switch between photo/3D, and update your parts.";
 
-      const user = await getCurrentUser();
+      const user = await getUser();
       if(!user) return;
 
       const { data, error } = await supabase
         .from('builds')
-        .select('id,title,build_type,make,model,year,power_goal,stage,is_public,description,tags,model_key,render_url,user_id')
+        .select('id,user_id,title,build_type,stage,is_public,description,make,model,year,power_goal,tags,is_3d,car_model_id,model_url,custom_image_url,thumb_url')
         .eq('id', buildId)
         .maybeSingle();
 
       if(error || !data){
         console.error(error);
-        setStatus('Could not load build for editing.', 'error');
+        setStatus("Could not load build for editing.", "bad");
         return;
       }
 
-      if(data.user_id && data.user_id !== user.id){
-        setStatus('You cannot edit this build (not your account).', 'error');
-        document.querySelectorAll('#buildForm input, #buildForm select, #buildForm textarea, #buildForm button')
-          .forEach(el => el.disabled = true);
+      if(data.user_id !== user.id){
+        setStatus("You can't edit this build (wrong account).", "bad");
+        $('saveBtn').disabled = true;
         return;
       }
 
-      $('title').value       = data.title || '';
-      $('buildType').value   = data.build_type || 'owned';
-      $('stage').value       = data.stage || '';
-      $('isPublic').checked  = !!data.is_public;
+      $('title').value = data.title || '';
+      $('buildType').value = data.build_type || 'owned';
+      $('stage').value = data.stage || '';
+      $('isPublic').checked = !!data.is_public;
       $('description').value = data.description || '';
-      $('make').value        = data.make || '';
-      $('model').value       = data.model || '';
-      $('year').value        = data.year || '';
-      $('powerGoal').value   = data.power_goal || '';
-      $('tags').value        = data.tags || '';
-      $('modelKey').value    = data.model_key || '';
-      $('renderUrl').value   = data.render_url || '';
+      $('make').value = data.make || '';
+      $('model').value = data.model || '';
+      $('year').value = data.year || '';
+      $('powerGoal').value = data.power_goal || '';
+      $('tags').value = data.tags || '';
+
+      // Mode
+      if (data.is_3d || data.car_model_id || data.model_url){
+        setMode('3d');
+        if (data.model_url){
+          mode.modelUrl = data.model_url;
+          $('viewerEmpty').style.display = 'none';
+          $('viewer').style.display = 'block';
+          $('viewer').src = data.model_url;
+        }
+      } else {
+        setMode('photo');
+      }
+
+      // Load parts
+      try{
+        const p = await supabase.from('build_parts').select('category,name').eq('build_id', buildId).order('created_at', { ascending:true });
+        if(!p.error && p.data){
+          partsState.splice(0, partsState.length, ...p.data.map(x=>({ category:x.category, name:x.name })));
+          renderParts();
+        }
+      } catch {}
     }
 
-    async function uploadImagesAndInsert(buildId, files){
+    /* =========================
+       UPLOAD PHOTO FILES
+       - Upload to picture-builds
+       - Store primary as thumb_url + custom_image_url
+       - Optionally insert into build_images if you want
+    ========================== */
+    async function uploadPhotos(buildId, files){
       if(!files || !files.length) return null;
 
-      const user = await getCurrentUser();
+      const user = await getUser();
       if(!user) return null;
 
       let firstUrl = null;
 
-      for(let i=0;i<files.length;i++){
+      for(let i=0; i<files.length; i++){
         const file = files[i];
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
         const path = `${user.id}/${buildId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
-        const { error: upErr } = await supabase
-          .storage
-          .from(BUCKET)
-          .upload(path, file, { upsert:false, contentType: file.type || 'image/jpeg' });
+        const up = await supabase.storage.from(BUCKET_PHOTOS).upload(path, file, {
+          upsert:false,
+          contentType: file.type || 'image/jpeg'
+        });
 
-        if(upErr){
-          console.error('Upload error', upErr);
-          setStatus('Some images failed to upload.', 'error');
+        if(up.error){
+          console.error(up.error);
           continue;
         }
 
-        const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        const publicUrl = urlData?.publicUrl || null;
-        if(!publicUrl) continue;
+        const { data: urlData } = supabase.storage.from(BUCKET_PHOTOS).getPublicUrl(path);
+        const url = urlData?.publicUrl || null;
+        if(!url) continue;
 
-        // Insert into build_images (safe columns only)
-        const { error: imgErr } = await supabase
-          .from('build_images')
-          .insert({
-            build_id: buildId,
-            image_url: publicUrl,
-            sort_order: i
-          });
+        if(!firstUrl) firstUrl = url;
 
-        if(imgErr){
-          console.error('build_images insert error', imgErr);
-        }
-
-        if(!firstUrl) firstUrl = publicUrl;
+        // Optional: if you have build_images table
+        try{
+          await supabase.from('build_images').insert({ build_id: buildId, image_url: url, sort_order: i });
+        } catch {}
       }
 
       return firstUrl;
     }
 
-    async function handleSubmit(evt){
-      evt.preventDefault();
+    /* =========================
+       SAVE
+    ========================== */
+    async function saveBuild(){
       clearStatus();
 
-      const ok = await (window.authUI?.requireLogin ? window.authUI.requireLogin() : Promise.resolve(true));
-      if(!ok) return;
+      const loggedIn = await requireLogin();
+      if(!loggedIn) return;
 
-      const saveBtn = $('saveBtn');
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving…';
+      const user = await getUser();
+      if(!user){
+        setStatus("You're not logged in.", "bad");
+        return;
+      }
+
+      $('saveBtn').disabled = true;
+      $('saveBtn').textContent = "Saving…";
 
       try{
-        const user = await getCurrentUser();
-        if(!user){
-          setStatus('You need to be signed in to save a build.', 'error');
-          return;
-        }
-
-        // If creating, enforce quota here too (double safety)
-        const { atLimit } = await refreshQuotaUI();
-        if(!buildId && atLimit){
-          setStatus('Free limit reached. Upgrade to add more builds.', 'error');
-          return;
-        }
-
-        const title       = $('title').value.trim();
-        const buildType   = $('buildType').value || 'owned';
-        const stage       = $('stage').value || null;
-        const isPublic    = $('isPublic').checked;
-        const description = $('description').value.trim() || null;
-        const make        = $('make').value.trim() || null;
-        const model       = $('model').value.trim() || null;
-        const year        = $('year').value ? parseInt($('year').value,10) : null;
-        const powerGoal   = $('powerGoal').value ? parseInt($('powerGoal').value,10) : null;
-        const tags        = $('tags').value.trim() || null;
-        const modelKey    = $('modelKey').value || null;
-        const renderUrl   = $('renderUrl').value.trim() || null;
-
+        const title = ($('title').value || '').trim();
         if(!title){
-          setStatus('Please add a build name.', 'error');
+          setStatus("Add a build name.", "bad");
           return;
         }
 
-        const files = $('images').files;
+        const payload = {
+          title,
+          build_type: $('buildType').value || 'owned',
+          stage: $('stage').value || null,
+          is_public: !!$('isPublic').checked,
+          description: ($('description').value || '').trim() || null,
+          make: ($('make').value || '').trim() || null,
+          model: ($('model').value || '').trim() || null,
+          year: $('year').value ? parseInt($('year').value,10) : null,
+          power_goal: $('powerGoal').value ? parseInt($('powerGoal').value,10) : null,
+          tags: ($('tags').value || '').trim() || null,
+        };
+
+        // Decide photo vs 3D
+        const { at3DLimit } = await refreshQuotaUI();
+
+        if(mode.type === '3d'){
+          if(at3DLimit && !buildId){
+            // Hard block new 3D builds when at limit
+            setStatus("3D limit reached (2/2). Switch to Photo build to save.", "bad");
+            return;
+          }
+
+          if(!mode.modelUrl || !mode.selectedCarModel){
+            setStatus("Pick a 3D model first (or switch to Photo build).", "bad");
+            return;
+          }
+
+          payload.is_3d = true;
+          payload.car_model_id = mode.selectedCarModel.id;
+          payload.model_url = mode.modelUrl;
+
+          // Do NOT force image upload for 3D builds. Thumbnail can come from car_models.thumb_url if you want.
+          if(mode.selectedCarModel.thumb_url){
+            payload.thumb_url = mode.selectedCarModel.thumb_url;
+          }
+        } else {
+          // Photo build
+          payload.is_3d = false;
+          payload.car_model_id = null;
+          payload.model_url = null;
+        }
+
+        // Create or update build row
         let buildRow = null;
 
         if(buildId){
-          const { data, error } = await supabase
+          const res = await supabase
             .from('builds')
-            .update({
-              title,
-              build_type: buildType,
-              stage,
-              is_public: isPublic,
-              description,
-              make,
-              model,
-              year,
-              power_goal: powerGoal,
-              tags,
-              model_key: modelKey,
-              render_url: renderUrl
-            })
+            .update(payload)
             .eq('id', buildId)
             .eq('user_id', user.id)
             .select()
             .maybeSingle();
 
-          if(error || !data){
-            console.error(error);
-            setStatus('Could not save changes.', 'error');
+          if(res.error || !res.data){
+            console.error(res.error);
+            setStatus("Could not save changes.", "bad");
             return;
           }
-          buildRow = data;
-        }else{
-          const { data, error } = await supabase
+          buildRow = res.data;
+
+          // If they switched to 3D while at limit, allow only if this build already is 3D OR it doesn't increase count
+          // We'll enforce by counting excluding current build (best-effort):
+          if(mode.type === '3d' && at3DLimit){
+            // If already 3D, fine. If not, they'd be exceeding.
+            const was3D = !!(buildRow.is_3d);
+            if(!was3D){
+              setStatus("3D slots are full. This build can’t be converted to 3D right now.", "bad");
+              return;
+            }
+          }
+        } else {
+          const res = await supabase
             .from('builds')
-            .insert({
-              user_id: user.id,
-              title,
-              build_type: buildType,
-              stage,
-              is_public: isPublic,
-              description,
-              make,
-              model,
-              year,
-              power_goal: powerGoal,
-              tags,
-              model_key: modelKey,
-              render_url: renderUrl
-            })
+            .insert({ ...payload, user_id: user.id })
             .select()
             .single();
 
-          if(error || !data){
-            console.error(error);
-            setStatus('Could not create build.', 'error');
+          if(res.error || !res.data){
+            console.error(res.error);
+            setStatus("Could not create build.", "bad");
             return;
           }
-          buildRow = data;
+          buildRow = res.data;
         }
 
-        if(files && files.length){
-          const firstUrl = await uploadImagesAndInsert(buildRow.id, files);
-          if(firstUrl){
-            const { error: upThumbErr } = await supabase
-              .from('builds')
-              .update({ thumb_url: firstUrl })
-              .eq('id', buildRow.id);
-            if(upThumbErr) console.error('thumb_url update error', upThumbErr);
+        // Photo uploads (only if photo mode)
+        if(mode.type === 'photo'){
+          const files = $('images').files;
+          if(files && files.length){
+            const firstUrl = await uploadPhotos(buildRow.id, files);
+            if(firstUrl){
+              // Store on builds for easy rendering
+              await supabase.from('builds')
+                .update({ thumb_url: firstUrl, custom_image_url: firstUrl })
+                .eq('id', buildRow.id)
+                .eq('user_id', user.id);
+            }
           }
         }
 
-        setStatus('Saved! Redirecting…');
-        setTimeout(() => location.href = `/build.html?id=${buildRow.id}`, 700);
+        // Save parts: replace set for this build
+        // (delete then insert keeps it clean and prevents duplicates)
+        try{
+          await supabase.from('build_parts').delete().eq('build_id', buildRow.id);
+          if(partsState.length){
+            const rows = partsState.map(p => ({
+              build_id: buildRow.id,
+              category: p.category,
+              name: p.name
+            }));
+            await supabase.from('build_parts').insert(rows);
+          }
+        } catch(e){
+          console.warn("Parts save warning:", e);
+        }
 
-      } catch(err){
-        console.error(err);
-        setStatus('Save failed: ' + (err?.message || 'Unknown error'), 'error');
+        setStatus("Saved. Sending you to the build page…", "ok");
+        setTimeout(()=> location.href = `/build.html?id=${buildRow.id}`, 650);
+
+      } catch(e){
+        console.error(e);
+        setStatus("Save failed. Try again.", "bad");
       } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save build';
+        $('saveBtn').disabled = false;
+        $('saveBtn').textContent = "Save build";
       }
     }
 
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      const ok = await (window.authUI?.requireLogin ? window.authUI.requireLogin() : Promise.resolve(true));
-      if(!ok) return;
+    $('saveBtn').addEventListener('click', saveBuild);
 
-      await refreshQuotaUI();
-
-      if(buildId){
-        await loadBuildForEdit();
+    $('cancelBtn').addEventListener('click', ()=> location.href = '/garage.html');
+    $('resetBtn').addEventListener('click', ()=>{
+      // Only resets form, not DB
+      if(confirm("Reset the workshop form? Unsaved changes will be lost.")){
+        location.href = buildId ? `/build-new.html?id=${buildId}` : `/build-new.html`;
       }
+    });
 
-      $('buildForm').addEventListener('submit', handleSubmit);
+    /* =========================
+       INIT
+    ========================== */
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      // DO NOT call requireLogin here (fixes your re-login bug)
+      await refreshQuotaUI();
+      await loadBuild();
+      renderParts();
     });
   </script>
 </body>

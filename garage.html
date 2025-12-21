@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
@@ -9,260 +9,514 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
   </script>
 
-  <!-- Shared auth UI (nav + requireLogin) -->
+  <!-- Keep if other pages rely on it (safe) -->
   <script src="/auth-ui.js"></script>
 
   <style>
-    :root{
-      --bg:#050508;
-      --bg1:#141414;
-      --bg2:#1b1b1b;
-      --fg:#fff;
-      --muted:#bdbdbd;
-      --accent:#e50914;
-      --accent-yellow:#FFD93B;
-      --line:rgba(255,255,255,.08);
-      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
-      color:var(--fg);
-      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
-    }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    :root {
+      --bg-main: #050508;
+      --bg-alt: #111111;
+      --bg-card: #141414;
 
-    /* NAV */
+      --accent-main: #128b02;      /* primary green */
+      --accent-secondary: #FFD93B; /* yellow */
+      --accent-cyan: #FFD93B;
+
+      --text-main: #ffffff;
+      --text-muted: #bdbdbd;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+
+      --radius-lg: 24px;
+      --radius-md: 18px;
+
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.7);
+      --transition-fast: 0.18s ease-out;
+      --transition-med: 0.25s ease-out;
+      --nav-height: 76px;
+    }
+
+    * { box-sizing: border-box; margin:0; padding:0; }
+    html, body {
+      height: 100%;
+      background: radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color: var(--text-main);
+      font-family: "Rajdhani", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .sr-only{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+
+    .page { min-height: 100vh; display:flex; flex-direction:column; }
+    .container { width: min(1200px, 100% - 32px); margin: 0 auto; }
+    @media (min-width: 1280px){ .container{ width: min(1280px, 100% - 64px);} }
+
+    .page::after{
+      content:""; position:fixed; inset-inline:0; bottom:-120px; height:220px;
+      background: radial-gradient(circle at bottom, rgba(24, 201, 100, 0.22), transparent 60%);
+      pointer-events:none; z-index:0;
+    }
+
+    /* ===== NAV (matches index) ===== */
+    .nav-wrapper {
+      position: sticky; top: 0; z-index: 40;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+    .nav-wrapper.nav-solid{
+      background: rgba(5,5,8,0.98);
+      border-bottom-color: rgba(255,255,255,0.10);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+    }
     .nav{
-      position:sticky;top:0;z-index:50;
-      background:rgba(5,5,8,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(12px);
+      height: var(--nav-height);
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 20px;
     }
-    .nav-inner{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 0;
-      gap:16px;
+    .logo{ display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
+    .logo-mark{
+      width:36px;height:36px;border-radius:999px;
+      border:1px solid rgba(24, 201, 100, 0.7);
+      box-shadow:0 0 18px rgba(24, 201, 100, 0.35);
+      overflow:hidden; background:#000;
+      display:flex;align-items:center;justify-content:center;
     }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:48px;height:48px;border-radius:10px;object-fit:cover}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .title small,.sub{color:var(--muted);font-size:12px}
+    .logo-mark img{ width:100%; height:100%; object-fit:cover; }
+    .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; }
+    .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; }
 
-    .menu{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
+    .nav-links{
+      display:flex; gap:18px; align-items:center;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      color: var(--text-muted);
     }
+    .nav-links a{ position:relative; padding-bottom:4px; cursor:pointer; }
+    .nav-links a::after{
+      content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
+      background:linear-gradient(to right, var(--accent-main), var(--accent-cyan));
+      transition: width var(--transition-fast);
+      border-radius:999px;
+    }
+    .nav-links a:hover{ color:var(--text-main); }
+    .nav-links a:hover::after{ width:100%; }
+
+    .nav-cta{ display:flex; gap:8px; align-items:center; }
 
     .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:8px 14px;border-radius:999px;
-      border:1px solid var(--line);
-      cursor:pointer;background:transparent;color:var(--fg);
-      font-family:inherit;font-size:13px;
-      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      border-radius:999px; padding:8px 16px;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      border:1px solid transparent; background:transparent;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast), transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+      color:#fff;
     }
-    .btn:hover{background:rgba(255,255,255,0.03)}
-    .btn.primary{
-      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-      color:#fff;border-color:rgba(229,9,20,.9);
-      box-shadow:0 0 18px rgba(229,9,20,.5);
+    .btn-primary{
+      background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
+      box-shadow: 0 0 24px rgba(24, 201, 100, 0.55);
+      border-color: rgba(24, 201, 100, 0.85);
     }
-    .btn.primary:hover{
-      box-shadow:0 0 26px rgba(229,9,20,.7);
-      transform:translateY(-1px);
+    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
+
+    .btn-ghost{
+      border-color: rgba(255,255,255,0.12);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover{
+      color: var(--text-main);
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.02);
+    }
+    .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
+
+    .btn-yellow{
+      border-color: rgba(255,217,59,0.55);
+      color: var(--accent-secondary);
+      background: rgba(41,31,0,0.35);
+    }
+    .btn-yellow:hover{
+      border-color: rgba(255,217,59,0.85);
+      background: rgba(41,31,0,0.55);
+      box-shadow: 0 0 18px rgba(255,217,59,0.18);
+      transform: translateY(-1px);
     }
 
-    .section{padding:56px 0}
-    .grid{display:grid;gap:24px}
-    .cols-3{grid-template-columns:repeat(3,1fr)}
-    @media(max-width:960px){.cols-3{grid-template-columns:1fr}}
-
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s;
-    }
-    .card:hover{
-      transform:translateY(-6px) scale(1.01);
-      box-shadow:0 30px 80px rgba(0,0,0,.85);
-      border-color:rgba(255,217,59,0.5);
-    }
-    .card img{display:block;width:100%;height:auto}
-    .pad{padding:18px}
-
-    .filters{
-      display:flex;gap:10px;flex-wrap:wrap;
-      margin:14px 0 18px;
-    }
-    input,select{
-      background:var(--bg2);
-      border:1px solid var(--line);
-      color:#fff;padding:12px;border-radius:12px;
-      outline:none;min-width:160px;
-      font-family:inherit;font-size:14px;
-    }
-    input:focus-visible, select:focus-visible{
-      border-color:var(--accent-yellow);
-      box-shadow:0 0 0 1px rgba(255,217,59,0.5);
+    .gold-plus{
+      color: var(--accent-secondary);
+      text-shadow: 0 0 10px rgba(255,217,59,0.35);
+      font-weight:900;
+      margin-right:2px;
     }
 
-    .browse-head{
-      display:flex;gap:10px;align-items:center;
-      justify-content:space-between;flex-wrap:wrap;
-    }
-    .badge{
-      border:1px solid var(--line);
-      background:var(--bg2);
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-    .pagination{display:flex;gap:10px;justify-content:center;margin-top:18px}
-    .pagination .btn[disabled]{opacity:.5;pointer-events:none}
-
-    .banner{
-      border:1px dashed rgba(255,255,255,.25);
-      background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:14px;
-      font-size:13px;
-    }
-    .banner strong{color:#fff}
-
-    /* nav auth (shared pattern) */
-    .nav-auth{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .profile-menu{
-      position:relative;
-      display:flex;
-      align-items:center;
-    }
+    /* Profile menu (same feel as index) */
+    .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
-      width:32px;height:32px;border-radius:50%;
-      background:var(--bg2);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      width:32px; height:32px; border-radius:50%;
+      background:var(--bg-card);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:600; cursor:pointer;
+      border:1px solid rgba(255,255,255,0.18);
+      transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
       font-size:13px;
-      transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+      user-select:none;
     }
     .profile-chip:hover{
-      border-color:rgba(255,255,255,.32);
-      box-shadow:0 0 16px rgba(255,217,59,.6);
+      border-color:rgba(255,255,255,0.32);
+      box-shadow:0 0 16px rgba(255,217,59,0.6);
       transform:translateY(-1px);
     }
     .dropdown{
-      position:absolute;right:0;top:40px;
-      background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.6);
-      border-radius:16px;display:flex;flex-direction:column;
-      min-width:190px;z-index:999;
+      position:absolute; right:0; top:44px;
+      background:rgba(10,10,14,0.96);
+      border:1px solid var(--border-subtle);
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
+      border-radius:16px;
+      display:none;
+      flex-direction:column;
+      min-width:240px;
+      z-index:999;
+      backdrop-filter: blur(16px);
+      overflow:hidden;
     }
-    .dropdown a,.dropdown button{
-      padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:13px;
-      width:100%;cursor:pointer;font-family:inherit;
+    .dropdown.open{ display:flex; }
+    .dd-head{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex; flex-direction:column; gap:2px;
     }
-    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+    .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
+    .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dropdown a, .dropdown button{
+      padding:10px 14px; text-align:left;
+      border:none; background:transparent; color:var(--text-main);
+      font-size:13px; width:100%; cursor:pointer;
+      display:flex; justify-content:space-between; align-items:center;
+      font-family:inherit;
+    }
+    .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
+    .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
+    .dd-badge{
+      font-size:10px; text-transform:uppercase; letter-spacing:.14em;
+      padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--text-muted);
+      background:rgba(0,0,0,0.25);
+      white-space:nowrap;
+    }
 
-    @media(max-width:640px){
-      .nav-inner{flex-wrap:wrap}
-      .menu{order:3;width:100%;justify-content:flex-start}
-      .nav-auth{order:2;width:100%;justify-content:flex-end}
+    @media (max-width: 768px){
+      .nav-links{ display:none; }
+      .logo-text-sub{ display:none; }
+      .nav-cta{ gap:6px; }
     }
+
+    /* ===== Page layout ===== */
+    main{ position:relative; z-index:1; padding: 26px 0 56px; }
+
+    .header-row{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap:14px; flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .page-title{
+      font-family:"Bebas Neue";
+      font-size: clamp(40px, 6vw, 54px);
+      letter-spacing:2px;
+      text-transform:uppercase;
+      line-height:0.95;
+    }
+    .sub{ color:var(--text-muted); font-size:13px; line-height:1.4; max-width:720px; }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+    .badge{
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      white-space:nowrap;
+    }
+
+    .banner{
+      border:1px dashed rgba(255,255,255,.20);
+      background:rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:12px 14px;
+      font-size:13px;
+      margin: 12px 0 0;
+    }
+    .banner strong{ color:#fff; }
+    .banner .hint{ color:var(--text-muted); font-size:12px; margin-top:6px; }
+
+    /* Filters */
+    .filters{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin:16px 0 18px;
+    }
+    input,select{
+      background: rgba(10,10,12,0.75);
+      border:1px solid rgba(255,255,255,0.10);
+      color:#fff;
+      padding:12px;
+      border-radius:12px;
+      outline:none;
+      min-width:160px;
+      font-family:inherit;
+      font-size:14px;
+    }
+    input:focus-visible, select:focus-visible{
+      border-color:var(--accent-secondary);
+      box-shadow:0 0 0 1px rgba(255,217,59,0.5);
+    }
+
+    /* Grid */
+    .grid{ display:grid; gap:16px; }
+    .cols-3{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 1000px){ .cols-3{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 680px){ .cols-3{ grid-template-columns: minmax(0, 1fr); } }
+
+    .card{
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
+      box-shadow: var(--shadow-soft);
+      overflow:hidden;
+      transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
+    }
+    .card:hover{
+      transform: translateY(-4px);
+      border-color: rgba(255,217,59,0.50);
+      box-shadow: 0 26px 60px rgba(0,0,0,0.85);
+    }
+    .card-media{
+      position:relative;
+      height: 150px;
+      background: linear-gradient(135deg, #171717, #262626);
+      overflow:hidden;
+    }
+    .card-media img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .chip{
+      position:absolute;
+      top:10px;
+      left:10px;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.16em;
+      padding:4px 10px;
+      border-radius:999px;
+      background: rgba(0,0,0,0.65);
+      border: 1px solid rgba(255,255,255,0.20);
+      color: #fff;
+    }
+    .chip.yellow{
+      border-color: rgba(255,217,59,0.55);
+      color: var(--accent-secondary);
+    }
+    .pad{ padding: 12px 12px 14px; }
+    .title-strong{ font-weight:700; font-size:14px; }
+    .subline{ color:var(--text-muted); font-size:12px; margin-top:4px; }
+    .meta-row{ margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+    .meta-pill{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      padding:4px 10px;
+      border-radius:999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.25);
+      color: var(--text-muted);
+    }
+
+    .like-row{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .like-count{ color:var(--text-muted); font-size:12px; }
+    .like-count .likes{ color:#ff4d7d; font-weight:700; }
+
+    .pagination{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-top:18px;
+    }
+    .pagination .btn[disabled]{ opacity:.5; pointer-events:none; }
+
+    /* ===== Request modal ===== */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.72);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:9999;
+    }
+    .modal{
+      width:min(560px, 96vw);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(12,12,16,.96);
+      box-shadow: 0 40px 120px -30px rgba(0,0,0,.8);
+      overflow:hidden;
+      backdrop-filter: blur(16px);
+    }
+    .modal-head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .modal-title{
+      font-family:"Bebas Neue";
+      letter-spacing:2px;
+      text-transform:uppercase;
+      font-size:28px;
+      margin:0;
+    }
+    .modal-close{
+      border:1px solid rgba(255,255,255,.14);
+      background:transparent;
+      color:#fff;
+      border-radius:999px;
+      padding:6px 10px;
+      cursor:pointer;
+    }
+    .modal-body{ padding:16px; display:grid; gap:10px; }
+    .field label{ font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px; }
+    .field input, .field textarea{
+      width:100%;
+      padding:11px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(20,20,24,.9);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+      font-family:inherit;
+    }
+    .field textarea{ min-height:90px; resize:vertical; }
+    .msg{ font-size:12px; color:var(--text-muted); min-height:16px; }
+    .msg.ok{ color:#9affc5; }
+    .msg.bad{ color:#ff9a9a; }
+    .btn-wide{ width:100%; justify-content:center; }
+
   </style>
 </head>
+
 <body>
-  <nav class="nav" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
-      <a class="brand" href="/" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo">
-        <div class="title">
-          <h1>ROK RACERS JA</h1>
-          <small>Garage</small>
-        </div>
-      </a>
+  <div class="page">
 
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/about.html">About</a>
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/teams.html">Community</a>
-          <a class="btn" role="menuitem" href="/marketplace.html">Marketplace</a>
-          <a class="btn" role="menuitem" href="/store.html">Store</a>
-        </div>
+    <!-- NAV (matches index) -->
+    <div class="nav-wrapper" id="navWrapper">
+      <div class="container nav">
+        <a href="/index.html" class="logo">
+          <div class="logo-mark">
+            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+          </div>
+          <div>
+            <div class="logo-text-main">ROK RACERS JA</div>
+            <div class="logo-text-sub">Garage</div>
+          </div>
+        </a>
 
-        <div class="nav-auth">
-          <!-- Controlled by auth-ui.js -->
-          <button id="navSignInBtn" class="btn">Log in</button>
-          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+        <nav class="nav-links">
+          <a href="/events.html">Events</a>
+          <a href="/garage.html">Garage</a>
+          <a href="/teams.html">Community</a>
+          <a href="/about.html">About</a>
+          <a href="/marketplace.html">Marketplace</a>
+          <a href="/store.html">Store</a>
+        </nav>
 
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
+        <div class="nav-cta">
+          <!-- We keep these IDs exactly like index -->
+          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+              <span id="profileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
+
+            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+              <div class="dd-head">
+                <div class="dd-title">Signed in as</div>
+                <div class="dd-email" id="ddEmail">—</div>
+              </div>
+
+              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+              <div class="dd-sep"></div>
+
               <a href="/garage.html?view=my">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
+
+              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+
+              <div class="dd-sep"></div>
               <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
-
       </div>
     </div>
-  </nav>
 
-  <main class="container">
-    <section class="section">
-      <div class="browse-head">
-        <h2 style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">Garage</h2>
+    <main class="container">
+      <div class="header-row">
+        <div>
+          <div class="page-title">Garage</div>
+          <p class="sub" style="margin-top:10px;">
+            Browse the island’s builds, filter by parts, and boost your favourites. Your own builds live here too.
+          </p>
+        </div>
 
         <div class="row">
-          <button id="newBuildBtn" class="btn primary">➕ New Build</button>
-          <span id="buildQuota" class="badge">0/3 builds used</span>
+          <button id="newBuildBtn" class="btn btn-primary" type="button">
+            <span class="gold-plus">＋</span> New Build
+          </button>
+
+          <button id="requestCarBtn" class="btn btn-yellow" type="button">
+            Don’t see your car? Make a request
+          </button>
+
+          <span id="buildQuota" class="badge">0/2 3D builds used</span>
         </div>
       </div>
 
-      <div id="upgradeBanner" class="banner" style="display:none;margin-top:10px">
-        <strong>Limit reached:</strong> You’ve used your 3 free builds. Upgrade to Premium to unlock more builds plus parts discounts and mechanic deals.
+      <div id="upgradeBanner" class="banner" style="display:none">
+        <strong>3D build limit reached:</strong> You’ve used your 2/2 3D build slots.
+        <div class="hint">You can still create a build using a <strong>photo</strong>, or upgrade to add more <strong>3D builds</strong>.</div>
       </div>
 
       <div class="filters" role="region" aria-label="Garage filters">
@@ -295,7 +549,7 @@
           <option value="new">Newest</option>
         </select>
 
-        <button id="apply" class="btn">Apply</button>
+        <button id="apply" class="btn btn-ghost" type="button">Apply</button>
       </div>
 
       <div id="buildsGrid" class="grid cols-3" role="list" aria-live="polite">
@@ -303,15 +557,66 @@
       </div>
 
       <div class="pagination">
-        <button id="prev" class="btn">← Prev</button>
-        <button id="next" class="btn">Next →</button>
+        <button id="prev" class="btn btn-ghost" type="button">← Prev</button>
+        <button id="next" class="btn btn-ghost" type="button">Next →</button>
       </div>
-    </section>
-  </main>
+    </main>
+  </div>
+
+  <!-- REQUEST MODAL -->
+  <div id="reqBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reqTitle">
+      <div class="modal-head">
+        <h2 class="modal-title" id="reqTitle">3D Model Request</h2>
+        <button class="modal-close" id="reqClose" type="button">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="sub" style="margin:0">
+          Tell us the exact car you want. This is a <strong>paid</strong> service (we’ll contact you with the price + turnaround).
+        </p>
+
+        <div class="field">
+          <label>Make</label>
+          <input id="reqMake" placeholder="e.g. BMW" />
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <input id="reqModel" placeholder="e.g. E36 / 3 Series" />
+        </div>
+        <div class="field">
+          <label>Year (optional)</label>
+          <input id="reqYear" placeholder="e.g. 1996" />
+        </div>
+        <div class="field">
+          <label>Notes (trim, body style, etc.)</label>
+          <textarea id="reqNotes" placeholder="Coupe, M3-style bumper, widebody…"></textarea>
+        </div>
+
+        <div id="reqMsg" class="msg"></div>
+
+        <button id="reqSubmit" class="btn btn-primary btn-wide" type="button">Send Request</button>
+        <button id="reqCancel" class="btn btn-ghost btn-wide" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    /* ========= Small helper: auth wrapper (P0-safe) ========= */
+    // ===== Nav solid on scroll =====
+    const navWrapper = document.getElementById('navWrapper');
+    function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
+    updateNavSolid();
+    window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+    // ===== Small helpers =====
+    function esc(s){
+      return String(s || '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
     async function requireLogin(callback){
+      // Prefer your established authUI helper (index has it)
       if (window.authUI && typeof authUI.requireLogin === 'function'){
         return authUI.requireLogin(callback);
       }
@@ -324,92 +629,257 @@
       return true;
     }
 
-    /* ========= Quota (3 builds per user) ========= */
-    const buildQuotaEl   = document.getElementById('buildQuota');
-    const upgradeBanner  = document.getElementById('upgradeBanner');
-    const newBuildBtn    = document.getElementById('newBuildBtn');
+    // ===== Index-style auth UI (minimal, consistent) =====
+    const loginBtn    = document.getElementById("loginBtn");
+    const joinBtn     = document.getElementById("joinBtn");
+    const profileMenu = document.getElementById("profileMenu");
+    const profileChip = document.getElementById("profileChip");
+    const dropdown    = document.getElementById("dropdown");
+    const initialsEl  = document.getElementById("profileInitials");
+    const signoutBtn  = document.getElementById("signoutBtn");
+    const ddEmail     = document.getElementById("ddEmail");
+    const myEventsLink = document.getElementById("myEventsLink");
+
+    function initialsFromEmail(email){
+      const raw = (email || "").split("@")[0] || "u";
+      const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
+      const parts = cleaned.split(" ").filter(Boolean);
+      let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
+      return (initials || 'U').toUpperCase();
+    }
+
+    function setDropdownOpen(open){
+      if(!dropdown || !profileChip) return;
+      dropdown.classList.toggle('open', !!open);
+      profileChip.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    profileChip?.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      setDropdownOpen(!dropdown.classList.contains('open'));
+    });
+    document.addEventListener("click", ()=> setDropdownOpen(false));
+    dropdown?.addEventListener('click', (e)=> e.stopPropagation());
+
+    signoutBtn?.addEventListener("click", async ()=>{
+      await supabase.auth.signOut();
+      setDropdownOpen(false);
+    });
+
+    async function getCurrentRole(userId){
+      try{
+        const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+        return data?.role || null;
+      } catch { return null; }
+    }
+
+    async function updateAuthUI(){
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user){
+        loginBtn.style.display = "none";
+        joinBtn.style.display = "none";
+        profileMenu.style.display = "flex";
+
+        initialsEl.textContent = initialsFromEmail(user.email);
+        if (ddEmail) ddEmail.textContent = user.email || '—';
+
+        const role = await getCurrentRole(user.id);
+        if (myEventsLink){
+          myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
+        }
+      } else {
+        loginBtn.style.display = "inline-flex";
+        joinBtn.style.display = "inline-flex";
+        profileMenu.style.display = "none";
+        setDropdownOpen(false);
+      }
+    }
+
+    // If your auth-ui.js already provides auth modal, use it; otherwise just redirect
+    loginBtn?.addEventListener('click', ()=> {
+      if (window.authUI && typeof authUI.requireLogin === 'function') {
+        authUI.requireLogin();
+      } else {
+        alert("Auth UI not found on this page. (auth-ui.js)"); 
+      }
+    });
+    joinBtn?.addEventListener('click', ()=> {
+      if (window.authUI && typeof authUI.requireLogin === 'function') {
+        authUI.requireLogin();
+      } else {
+        alert("Auth UI not found on this page. (auth-ui.js)");
+      }
+    });
+
+    supabase.auth.onAuthStateChange(() => updateAuthUI());
+
+    // Provide a stable helper for other buttons on this page
+    window.authUI = window.authUI || {};
+    window.authUI.requireLogin = window.authUI.requireLogin || (async function(cb){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user){
+        alert("Please log in.");
+        return false;
+      }
+      if (cb) cb(user);
+      return true;
+    });
+
+    // ===== Quota: limit 2 "3D builds" only =====
+    const buildQuotaEl  = document.getElementById('buildQuota');
+    const upgradeBanner = document.getElementById('upgradeBanner');
+    const newBuildBtn   = document.getElementById('newBuildBtn');
+
+    async function count3DBuilds(userId){
+      // We try common column names. If missing, fallback gracefully.
+      // Supported patterns:
+      // - builds.model_url (string)
+      // - builds.glb_url (string)
+      // - builds.car_model_id (uuid/int)
+      // - builds.is_3d (bool)
+      const tryQueries = [
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('model_url','is',null),
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('glb_url','is',null),
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id','is',null),
+        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
+      ];
+
+      for (const q of tryQueries){
+        const res = await q();
+        if (!res.error) return (res.count ?? 0);
+        // if error is "column does not exist", try next
+        const msg = (res.error.message || '').toLowerCase();
+        if (!msg.includes('column') && !msg.includes('does not exist')) break;
+      }
+
+      // Ultimate fallback: count total builds
+      const fallback = await supabase
+        .from('builds')
+        .select('id', { count:'exact', head:true })
+        .eq('user_id', userId);
+      return fallback.error ? 0 : (fallback.count ?? 0);
+    }
 
     async function updateQuota(){
       const { data: { user } = {} } = await supabase.auth.getUser();
 
       if(!user){
-        if (buildQuotaEl) buildQuotaEl.textContent = '0/3 builds used';
-        if (upgradeBanner) upgradeBanner.style.display = 'none';
-        if (newBuildBtn){
-          newBuildBtn.disabled = false; // let them click and authUI will prompt
-          newBuildBtn.title = 'Log in to add a build';
-        }
+        buildQuotaEl.textContent = '0/2 3D builds used';
+        upgradeBanner.style.display = 'none';
+        newBuildBtn.disabled = false;
+        newBuildBtn.title = 'Log in to add a build';
         return;
       }
 
-      const { count, error } = await supabase
-        .from('builds')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+      const used3D = await count3DBuilds(user.id);
+      buildQuotaEl.textContent = `${used3D}/2 3D builds used`;
 
-      const used = error ? 0 : (count ?? 0);
-      if (buildQuotaEl) buildQuotaEl.textContent = `${used}/3 builds used`;
-
-      const atLimit = used >= 3;
-      if (upgradeBanner) upgradeBanner.style.display = atLimit ? 'block' : 'none';
-      if (newBuildBtn){
-        newBuildBtn.disabled = atLimit;
-        newBuildBtn.title = atLimit
-          ? 'Free limit reached. Upgrade to unlock more builds, parts discounts and mechanic deals.'
-          : '';
-      }
+      const atLimit = used3D >= 2;
+      upgradeBanner.style.display = atLimit ? 'block' : 'none';
+      newBuildBtn.disabled = false; // still allow (build-new can choose photo build)
+      newBuildBtn.title = atLimit ? 'You can still create a photo build. 3D slots are full.' : '';
     }
 
-    supabase.auth.onAuthStateChange(() => {
-      updateQuota();
-      applyFilters();
-    });
-
-    /* ========= New Build (enforce 3-build quota) ========= */
+    // ===== New Build button now goes to build-new.html =====
     newBuildBtn?.addEventListener('click', () =>
-      requireLogin(async (user)=> {
-        if (!user) return;
-
-        const { count, error } = await supabase
-          .from('builds')
-          .select('id', { count:'exact', head:true })
-          .eq('user_id', user.id);
-
-        const used = error ? 0 : (count ?? 0);
-        if(used >= 3){
-          alert('Free limit reached. Upgrade to add more builds and unlock perks.');
-          await updateQuota();
-          return;
-        }
-
-        const title = prompt('Name this build:');
-        if(!title) return;
-
-        const pub = confirm('Make this build public? (OK = public, Cancel = private)');
-        const { data, error: insErr } = await supabase.from('builds').insert({
-          title,
-          is_public: !!pub,
-          user_id: user.id
-        }).select('id').single();
-
-        if(insErr){
-          console.error(insErr);
-          alert('Couldn’t create build. Try again in a few seconds.');
-          return;
-        }
-
-        alert('Build created! Let’s set it up.');
-        await updateQuota();
-
-        if (data?.id){
-          location.href = `/build-new.html?id=${data.id}`;
-        } else {
-          location.href = `/build-new.html`;
-        }
+      requireLogin(async ()=> {
+        // Build creation happens in build-new.html (workshop page)
+        location.href = `/build-new.html`;
       })
     );
 
-    /* ========= Builds listing + filters + pagination ========= */
+    // ===== Request Modal (paid service) =====
+    const reqBackdrop = document.getElementById('reqBackdrop');
+    const requestCarBtn = document.getElementById('requestCarBtn');
+    const reqClose = document.getElementById('reqClose');
+    const reqCancel = document.getElementById('reqCancel');
+    const reqSubmit = document.getElementById('reqSubmit');
+    const reqMsg = document.getElementById('reqMsg');
+
+    const reqMake = document.getElementById('reqMake');
+    const reqModel = document.getElementById('reqModel');
+    const reqYear = document.getElementById('reqYear');
+    const reqNotes = document.getElementById('reqNotes');
+
+    function setReqMsg(text, kind){
+      reqMsg.textContent = text || '';
+      reqMsg.className = 'msg' + (kind ? (' ' + kind) : '');
+    }
+
+    function openReq(){
+      setReqMsg('', '');
+      reqMake.value = '';
+      reqModel.value = '';
+      reqYear.value = '';
+      reqNotes.value = '';
+      reqBackdrop.style.display = 'flex';
+      setTimeout(()=>reqMake.focus(), 50);
+    }
+    function closeReq(){
+      reqBackdrop.style.display = 'none';
+      setReqMsg('', '');
+    }
+
+    requestCarBtn?.addEventListener('click', ()=> openReq());
+    reqClose?.addEventListener('click', closeReq);
+    reqCancel?.addEventListener('click', closeReq);
+    reqBackdrop?.addEventListener('click', (e)=>{ if(e.target === reqBackdrop) closeReq(); });
+
+    reqSubmit?.addEventListener('click', async ()=>{
+      const make = (reqMake.value || '').trim();
+      const model = (reqModel.value || '').trim();
+      const year = (reqYear.value || '').trim();
+      const notes = (reqNotes.value || '').trim();
+
+      if (!make || !model){
+        setReqMsg('Add at least Make + Model.', 'bad');
+        return;
+      }
+
+      reqSubmit.disabled = true;
+      setReqMsg('Sending…', '');
+
+      try{
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // Preferred: store request in a table
+        // Table suggestion: car_model_requests(id, user_id, email, make, model, year, notes, status, created_at)
+        const payload = {
+          make, model,
+          year: year || null,
+          notes: notes || null,
+          user_id: user?.id || null,
+          email: user?.email || null,
+          status: 'new',
+          created_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase.from('car_model_requests').insert(payload);
+
+        if (error){
+          // If table doesn't exist yet: fallback to email
+          console.warn('car_model_requests insert failed:', error.message);
+          const subject = encodeURIComponent('ROK Racers JA — 3D Model Request (Paid)');
+          const body = encodeURIComponent(
+            `Make: ${make}\nModel: ${model}\nYear: ${year}\nNotes: ${notes}\n\n(Submitted from Garage page)`
+          );
+          window.location.href = `mailto:youremail@domain.com?subject=${subject}&body=${body}`;
+          setReqMsg('Opening email draft…', 'ok');
+          return;
+        }
+
+        setReqMsg('Request sent. We’ll contact you with price + turnaround.', 'ok');
+        setTimeout(closeReq, 900);
+      } catch (e){
+        console.error(e);
+        setReqMsg('Couldn’t send request. Try again.', 'bad');
+      } finally {
+        reqSubmit.disabled = false;
+      }
+    });
+
+    // ===== Builds listing + filters + pagination =====
     const pageSize = 12;
     let page = 0;
     let currentRows = [];
@@ -432,6 +902,10 @@
       }[b.stage] || b.stage) : null;
 
       const power = b.power_goal ? `${b.power_goal} hp` : null;
+
+      // 3D detection (best-effort)
+      const is3D = !!(b.model_url || b.glb_url || b.car_model_id || b.is_3d);
+
       const visibility = b.is_public ? 'Public' : 'Private';
       const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
 
@@ -439,29 +913,34 @@
       const heart = liked ? '♥' : '♡';
 
       return `
-        <article class="card" role="listitem" data-build="${b.id}">
-          <a href="/build.html?id=${b.id}" style="display:block">
-            <img src="${img}" alt="${b.title}" loading="lazy">
+        <article class="card" role="listitem" data-build="${esc(b.id)}">
+          <a href="/build.html?id=${esc(b.id)}" style="display:block">
+            <div class="card-media">
+              <img src="${esc(img)}" alt="${esc(b.title || 'Build')}" loading="lazy">
+              <div class="chip ${is3D ? 'yellow' : ''}">${is3D ? '3D Build' : 'Photo Build'}</div>
+            </div>
           </a>
-          <div class="pad">
-            <strong>${b.title}</strong>
-            ${carLabel ? `<div class="sub">${carLabel}</div>` : ''}
 
-            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
-              <span class="badge">${typeLabel}</span>
-              ${stageLabel ? `<span class="badge">${stageLabel}</span>` : ''}
-              ${power ? `<span class="badge">${power}</span>` : ''}
-              <span class="badge" style="border-color:${b.is_public ? 'var(--accent)' : 'var(--line)'}">
-                ${visibility}
+          <div class="pad">
+            <div class="title-strong">${esc(b.title || 'Untitled build')}</div>
+            ${carLabel ? `<div class="subline">${esc(carLabel)}</div>` : ''}
+
+            <div class="meta-row">
+              <span class="meta-pill">${esc(typeLabel)}</span>
+              ${stageLabel ? `<span class="meta-pill">${esc(stageLabel)}</span>` : ''}
+              ${power ? `<span class="meta-pill">${esc(power)}</span>` : ''}
+              <span class="meta-pill" style="border-color:${b.is_public ? 'rgba(24,201,100,0.55)' : 'rgba(255,255,255,0.12)'};color:${b.is_public ? '#fff' : 'var(--text-muted)'}">
+                ${esc(visibility)}
               </span>
             </div>
-            
-            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-              <span class="sub">♥ <span class="likes">${Number(b.like_count || 0)}</span></span>
-              <button class="btn" data-like
+
+            <div class="like-row">
+              <span class="like-count">❤ <span class="likes">${Number(b.like_count || 0)}</span></span>
+              <button class="btn btn-ghost btn-pill-sm" data-like
                 aria-pressed="${liked ? 'true':'false'}"
                 aria-label="${liked ? 'Remove boost from this build' : 'Boost this build'}"
-                title="${liked ? 'Remove boost from this build' : 'Boost this build'}">
+                title="${liked ? 'Remove boost from this build' : 'Boost this build'}"
+                type="button">
                 ${heart}
               </button>
             </div>
@@ -472,7 +951,7 @@
     function renderEmptyState(message){
       buildsGrid.innerHTML = `
         <article class="card">
-          <div class="pad sub">${message}</div>
+          <div class="pad sub">${esc(message)}</div>
         </article>`;
       prevBtn.disabled = true;
       nextBtn.disabled = true;
@@ -505,7 +984,6 @@
 
       const { data: { user } = {} } = await supabase.auth.getUser();
 
-      // UX: if user asked for "my" while logged out, show a proper message
       if (vis === 'my' && !user){
         currentRows = [];
         page = 0;
@@ -517,45 +995,35 @@
 
       try{
         if (vis === 'my' && user){
+          // Fetch your builds (best-effort columns)
           const my = await supabase.from('builds')
-            .select('id,title,is_public,created_at')
+            .select('id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,glb_url,car_model_id,is_3d')
             .eq('user_id', user.id)
             .order('created_at',{ascending:false});
 
           if(my.error) throw my.error;
 
+          // Like counts
           const ids = (my.data||[]).map(r => r.id);
-          let counts = []; let thumbs = [];
+          let counts = [];
           if(ids.length){
             const c = await supabase
               .from('build_like_counts')
               .select('build_id, like_count')
               .in('build_id', ids);
-            const t = await supabase
-              .from('build_primary_image')
-              .select('build_id, image_url')
-              .in('build_id', ids);
             if(c.error) throw c.error;
-            if(t.error) throw t.error;
             counts = c.data || [];
-            thumbs = t.data || [];
           }
-
           const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
-          const thumbMap = new Map(thumbs.map(r => [r.build_id, r.image_url]));
+
           rows = (my.data||[]).map(b => ({
-            id: b.id,
-            title: b.title,
-            like_count: countMap.get(b.id)||0,
-            thumb_url: thumbMap.get(b.id)||null,
-            is_public: b.is_public,
-            created_at: b.created_at
+            ...b,
+            like_count: countMap.get(b.id)||0
           }));
         } else {
           const pub = await supabase
             .from('public_builds_with_like_count_and_trophies')
-            .select('id,title,thumb_url,build_type,stage,power_goal,parish,owner_handle,like_count,created_at,trophy_labels')
-            .order('like_count', { ascending: sort !== 'top' })
+            .select('id,title,thumb_url,custom_image_url,build_type,stage,power_goal,parish,owner_handle,like_count,created_at,year,make,model,model_url,glb_url,car_model_id,is_3d,is_public')
             .order('id', { ascending: true });
 
           if(pub.error) throw pub.error;
@@ -585,7 +1053,7 @@
 
         if(sort === 'new'){
           rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
-        }else if(sort === 'top'){
+        } else {
           rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
         }
 
@@ -604,13 +1072,13 @@
         currentRows = rows;
         page = 0;
         renderPage();
-      }catch(err){
+      } catch(err){
         console.error(err);
         renderEmptyState("We couldn’t load builds just now. Refresh the page or try again in a few seconds.");
       }
     }
 
-    /* ========= Like / Unlike ========= */
+    // ===== Like / Unlike =====
     buildsGrid.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-like]');
       if(!btn) return;
@@ -658,7 +1126,7 @@
         btn.setAttribute('aria-label','Boost this build');
         btn.title = 'Boost this build';
         likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-      }else{
+      } else {
         const { error: insErr } = await supabase
           .from('build_likes')
           .insert({ build_id: id, user_id: user.id });
@@ -676,27 +1144,29 @@
       }
     });
 
-    /* ========= Live like updates ========= */
+    // ===== Live likes =====
     let likesChannel;
     function setupLiveLikes(){
-      likesChannel?.unsubscribe();
+      likesChannel?.unsubscribe?.();
       likesChannel = supabase.channel('build-likes-live-garage')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
           const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
           if(!card) return;
           const el = card.querySelector('.likes');
+          if(!el) return;
           el.textContent = (parseInt(el.textContent)||0) + 1;
         })
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
           const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
           if(!card) return;
           const el = card.querySelector('.likes');
+          if(!el) return;
           el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
         })
         .subscribe();
     }
 
-    /* ========= Init ========= */
+    // ===== Init =====
     function initDefaultViewFromQuery(){
       const params = new URLSearchParams(location.search);
       const view = params.get('view');
@@ -719,6 +1189,7 @@
 
     window.addEventListener('DOMContentLoaded', async ()=>{
       initDefaultViewFromQuery();
+      await updateAuthUI();
       await updateQuota();
       setupLiveLikes();
       await applyFilters();
