@@ -13,28 +13,22 @@
 
   // --------- Optional config (safe defaults) ----------
   const AUTH_UI_CONFIG = {
-    // Where Supabase should send password reset links
     resetRedirectTo: (location.origin + "/reset-password.html"),
 
-    // profiles (optional)
     profileTable: "profiles",
     profileIdColumn: "id",
     profileHandleColumn: "handle",
     handleMin: 3,
     handleMax: 20,
 
-    // roles (optional tables)
-    promoterTable: "event_admins",     // promoter = can manage events
+    promoterTable: "event_promoters",
     promoterEmailColumn: "email",
 
-    adminTable: "admin_users",         // admin = can upload highlights, etc.
+    adminTable: "event_admins",
     adminEmailColumn: "email",
 
-    // Optional hard allowlist (works even if admin_users table doesn't exist)
-    // Put emails here if you want a quick override:
     adminAllowlist: [
       // "admin@rokracersja.com",
-      // "you@email.com"
     ],
   };
 
@@ -50,10 +44,10 @@
 
   const $ = (id) => document.getElementById(id);
 
-    // -----------------------
-  // Toast helper (nice prompts)
   // -----------------------
-  function toast(message = "Please log in / sign up.", kind = "info") {
+  // Toast helper
+  // -----------------------
+  function toast(message = "Please log in / sign up.", _kind = "info") {
     let el = document.getElementById("authUiToast");
     if (!el) {
       el = document.createElement("div");
@@ -89,7 +83,6 @@
     }, 2400);
   }
 
-
   function escapeHTML(s) {
     return (s || "").replace(/[&<>"']/g, (m) => ({
       "&": "&amp;",
@@ -110,27 +103,19 @@
     return s.replace(/[^a-z0-9._]/g, "");
   }
 
-  // -----------------------
-  // Core: load user + roles
-  // -----------------------
-  async function loadUserAndRoles() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      state.user = user || null;
-
-      // Run role checks (non-fatal)
-      await Promise.allSettled([
-        checkPromoter(),
-        checkAdmin(),
-      ]);
-
-      updateNavUI();
-      notifyListeners();
-    } catch (err) {
-      console.error("[auth-ui] loadUserAndRoles error:", err);
-    }
+  function notifyListeners() {
+    state.listeners.forEach((fn) => {
+      try {
+        fn({ user: state.user, isPromoter: state.isPromoter, isAdmin: state.isAdmin });
+      } catch (err) {
+        console.error("[auth-ui] listener error:", err);
+      }
+    });
   }
 
+  // -----------------------
+  // Role checks (non-fatal)
+  // -----------------------
   async function checkPromoter() {
     state.isPromoter = false;
     if (!state.user?.email) return;
@@ -144,12 +129,12 @@
         .maybeSingle();
 
       if (error) {
-        console.warn("[auth-ui] checkPromoter error (non-fatal):", error);
+        // table/policy missing should NOT break auth
         return;
       }
       state.isPromoter = !!data;
-    } catch (err) {
-      console.warn("[auth-ui] checkPromoter thrown error (non-fatal):", err);
+    } catch {
+      // silent
     }
   }
 
@@ -159,13 +144,11 @@
 
     const email = state.user.email.toLowerCase();
 
-    // Allowlist override
     if ((AUTH_UI_CONFIG.adminAllowlist || []).map(e => String(e).toLowerCase()).includes(email)) {
       state.isAdmin = true;
       return;
     }
 
-    // Table check (optional)
     try {
       const { data, error } = await supabase
         .from(AUTH_UI_CONFIG.adminTable)
@@ -173,24 +156,54 @@
         .eq(AUTH_UI_CONFIG.adminEmailColumn, email)
         .maybeSingle();
 
-      if (error) {
-        // If table/policy missing, fail silently (do NOT block login)
-        return;
-      }
+      if (error) return;
       state.isAdmin = !!data;
     } catch {
       // silent
     }
   }
 
-  function notifyListeners() {
-    state.listeners.forEach((fn) => {
-      try {
-        fn({ user: state.user, isPromoter: state.isPromoter, isAdmin: state.isAdmin });
-      } catch (err) {
-        console.error("[auth-ui] listener error:", err);
+  // -----------------------
+  // Load user + roles (hardened)
+  // -----------------------
+  let _loading = false;
+  let _rolesTimer = null;
+
+  async function loadUserAndRoles() {
+    if (_loading) return;
+    _loading = true;
+
+    try {
+      // Use persisted session first (prevents "logged out flash")
+      const { data: { session }, error: sErr } = await supabase.auth.getSession();
+      if (sErr) console.warn("[auth-ui] getSession error (non-fatal):", sErr);
+
+      state.user = session?.user || null;
+
+      // Fallback if needed
+      if (!state.user) {
+        const { data: { user } } = await supabase.auth.getUser();
+        state.user = user || null;
       }
-    });
+
+      // roles (non-blocking feel, but still reliable)
+      await Promise.allSettled([checkPromoter(), checkAdmin()]);
+
+      updateNavUI();
+      notifyListeners();
+    } catch (err) {
+      console.error("[auth-ui] loadUserAndRoles error:", err);
+    } finally {
+      _loading = false;
+    }
+  }
+
+  function scheduleRoleRefresh() {
+    clearTimeout(_rolesTimer);
+    _rolesTimer = setTimeout(() => {
+      // roles can change after login; keep light
+      loadUserAndRoles();
+    }, 80);
   }
 
   // -----------------------
@@ -356,6 +369,23 @@
     state.modalOpen = false;
   }
 
+  async function upsertProfileHandle(userId, handle) {
+    try {
+      const payload = {
+        [AUTH_UI_CONFIG.profileIdColumn]: userId,
+        [AUTH_UI_CONFIG.profileHandleColumn]: handle,
+      };
+
+      const { error } = await supabase
+        .from(AUTH_UI_CONFIG.profileTable)
+        .upsert(payload, { onConflict: AUTH_UI_CONFIG.profileIdColumn });
+
+      if (error) console.warn("[auth-ui] profile handle upsert failed (non-fatal):", error.message);
+    } catch {
+      // silent
+    }
+  }
+
   async function submitAuth() {
     const email = clampStr($("authUiEmail")?.value, 240).toLowerCase();
     const password = $("authUiPassword")?.value || "";
@@ -373,11 +403,10 @@
 
         state.user = data?.user || null;
         closeAuthModal();
-        await loadUserAndRoles();
+        scheduleRoleRefresh();
         return;
       }
 
-      // signup
       const handle = normalizeHandle(handleRaw);
       if (handle && (handle.length < AUTH_UI_CONFIG.handleMin || handle.length > AUTH_UI_CONFIG.handleMax)) {
         return setMsg(`Username must be ${AUTH_UI_CONFIG.handleMin}-${AUTH_UI_CONFIG.handleMax} chars.`, "bad");
@@ -395,7 +424,7 @@
       if (newUser && handle) await upsertProfileHandle(newUser.id, handle);
 
       setMsg("Signup complete. Check your email if confirmation is required.", "ok");
-      await loadUserAndRoles();
+      scheduleRoleRefresh();
     } catch (err) {
       console.error(err);
       setMsg("Something stalled. Try again.", "bad");
@@ -420,23 +449,6 @@
       setMsg("Reset stalled. Try again.", "bad");
     } finally {
       $("authUiForgot").disabled = false;
-    }
-  }
-
-  async function upsertProfileHandle(userId, handle) {
-    try {
-      const payload = {
-        [AUTH_UI_CONFIG.profileIdColumn]: userId,
-        [AUTH_UI_CONFIG.profileHandleColumn]: handle,
-      };
-
-      const { error } = await supabase
-        .from(AUTH_UI_CONFIG.profileTable)
-        .upsert(payload, { onConflict: AUTH_UI_CONFIG.profileIdColumn });
-
-      if (error) console.warn("[auth-ui] profile handle upsert failed (non-fatal):", error.message);
-    } catch (err) {
-      console.warn("[auth-ui] profile handle upsert threw (non-fatal):", err);
     }
   }
 
@@ -502,6 +514,7 @@
       if (els.dropdown) els.dropdown.style.display = "none";
     }
 
+    // Bind once per page (prevents duplicate handlers)
     if (state.navBound) return;
     state.navBound = true;
 
@@ -524,7 +537,11 @@
       });
     }
 
-    if (els.signOutBtn) els.signOutBtn.addEventListener("click", async () => { await signOut(); });
+    if (els.signOutBtn) {
+      els.signOutBtn.addEventListener("click", async () => {
+        await signOut();
+      });
+    }
   }
 
   // -----------------------
@@ -560,7 +577,6 @@
     return false;
   }
 
-
   async function ensurePromoter(opts = {}) {
     const { autoOffer = false, signInMessage, confirmText } = opts;
 
@@ -579,8 +595,11 @@
     if (!accept) return { promoter: false, declined: true };
 
     const email = state.user.email.toLowerCase();
-    const { error } = await supabase.from(AUTH_UI_CONFIG.promoterTable).insert({ [AUTH_UI_CONFIG.promoterEmailColumn]: email });
+    const { error } = await supabase
+      .from(AUTH_UI_CONFIG.promoterTable)
+      .insert({ [AUTH_UI_CONFIG.promoterEmailColumn]: email });
 
+    // ignore "already exists"
     if (error && error.code !== "23505") {
       console.error("[auth-ui] ensurePromoter insert error:", error);
       alert("Could not register as promoter: " + error.message);
@@ -606,16 +625,18 @@
   }
 
   // -----------------------
-  // Auth listener
+  // Auth listener (hardened)
   // -----------------------
   supabase.auth.onAuthStateChange((_event, session) => {
+    // Set immediately, then refresh roles/UI
     state.user = session?.user || null;
-    loadUserAndRoles();
+    updateNavUI();
+    notifyListeners();
+    scheduleRoleRefresh();
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
-    updateNavUI();
-    loadUserAndRoles();
+  document.addEventListener("DOMContentLoaded", async () => {
+    await loadUserAndRoles();
   });
 
   // -----------------------

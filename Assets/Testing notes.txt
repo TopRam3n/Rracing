@@ -1,0 +1,94 @@
+Testing notes:
+Index.html: 
+
+Profile.html 
+1. needs a my-events.html for promoters
+
+My-profile.html
+1. A mini visual display of a users dropdown
+
+
+Auth-ui.js 
+1. Remove "Google login requires setup in Supabase Dashboard → Auth → Providers → Google." prompt.
+
+Garage.html
+1. Nav does not match index.html/ it should match it. 
+2. "+ New build" should take you to a another page where you can actually create a build. It should be a creative/worksop aesthetic page that also matches with the rest of the website. It should allow you to sleect from an array of things to add to your car (juts car parts stuff that the car community cares about" and then finally allow you to SEARCH the website (From the supabase table where ill store the glb files" for the a 3d model of the car itself (so theyll search BMW brand and e36 model for example and if we have that, they can select it and have a 3D model show up in their garage with a NICELY displayed schemtics of the car. The gragae should show this final product only. Users are allowed up to 2 builds in the garage until they pay for an extra build.The garage should also allow the user to see all public builds and filter for their build or all public builds, the parts and liked. Also if we dont have the 3d model there should be a prompt to request it to me to upload it AND they should be given the option to just use a picture of their car instead. 3D builds are the only thing limited to 2 on the site. They choose to upload a picture of their car instead.
+3. Button should be green not red.Purple plus should be gold. 
+
+Events.html
+1. Events are not showing here. Maybe a table reference issue.
+2. dispaly all events like a huge calendar by month. when filters are applied, try to keep the same calendar layout. Clcik on event to expand on it.
+3. Nav bar does not match index.html
+4. Create Event button should be in the homepage. 
+5. Create event does NOT allow me to upload an image. i dont want a url i want to be able to upload an image
+6. Couldn’t create event: Could not find the 'parish' column of 'events' in the schema cache
+
+Event.html
+1. RSVP failed: insert or update on table "event_rsvps" violates foreign key constraint "event_rsvps_user_id_fkey"
+2. ensure "attach build" section is pulling from the current user's public OWNED builds (The one they uploaded) and then they can attach it. 
+3. Couldn’t post: insert or update on table "comments" violates foreign key constraint "comments_user_id_fkey"
+4. Nav bar does not match index.html. PLEASE keep the viewsing thing. Everything else should stil be the same.
+5. the cover image is too large. control the display size that takes up half the page.  
+
+
+Sightings.html
+1. Nav bar does not atch with index.html
+2. 2. Not sure how to deisgn he layout of this page. Please suggest
+
+Sightings-new.html
+1. 
+Couldn’t post sighting: new row violates row-level security policy for photos and videos
+2. Page needs a redesign that matches with the rest of the page. Please suggest soemthign best for User engagemnts
+3. Nav bar does not match with index.html
+
+HIGhlights.html
+1. Nav bar mach index.html
+2. I actually love this design. Please give ADMIN role users ONLY that are signed in a button to upload a highlight. Right now i cant create one.
+
+Profile: 
+1.Liked-builds:
+404: NOT_FOUND
+Code: NOT_FOUND
+ID: iad1::hcscb-1765965253870-c50f2140c01e
+
+Backend:
+1. There are 4 total types of users:
+1. Admin- all access
+2. Promoter - can create events, upload sigtings, create a team page, send team invites, upload higlights. Cannot create a build. Can not edit anything in the store or marketplace. Can send trophies which is just a image with a description to racers to attach to their profile.
+3. Team member- These are regular users. They only get this role on their profile when they accept a team invite. They still only have basic user access- can upload sightings, make builds, rsvp to events (tickets), rsvp with builds, etc etc. 
+4. Racer- basic user. can make build, rsvp with build, apply to teams, receive team invites, rsvp to events, canot upload an event, can upload a sighting, cannot upload a highlight. Can receieve and attach "trophies" to their car build and profile in garage.
+2. There needs to be a MY events page that is included in the dropdown for a Promotor user that just shows them ...idk needed analytics for the event that they posted. the total number of RSVPs, the types of builds responded and they should be able to click on each build and it takes them to the user's garage and build detailds. 
+3. Configure newsletter. 
+
+
+Fix the bottom of index. 
+
+add RESET PASSWORD to auth-ui.js
+hyperlink needed for store
+Fix SIGN IN WITH GOOGLE to ensure it happens ACROOS THE FUCVL9NG PAGE
+implememt apple log in
+Switch roles button to profile.
+Register anpther email- takes to registration/ sign ip modal
+log in with google
+put an error message that end time cant be afyer the start time 
+in that, add done button tot he calandar for time events
+
+
+TICKETS.html
+1. important “works” note (so your wallet is legit)
+
+Right now this ticket wallet is driven by event_rsvps. That’s perfect for “free or paid later” because:
+
+“Paid” can simply mean the RSVP exists + code exists.
+
+Later you can add paid_status, payment_ref, checked_in_at without changing the core page.
+
+If you want the wallet to show ONLY confirmed (YES) as tickets, change:
+
+.in('status', ['yes','maybe'])
+
+
+to:
+
+.eq('status', 'yes')

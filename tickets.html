@@ -9,166 +9,189 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
   window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
+    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
   });
 </script>
 
-<!-- Shared auth / nav behaviour -->
 <script src="/auth-ui.js"></script>
 
 <style>
   :root{
     --bg:#050508;
-    --bg1:#141414;
-    --bg2:#1b1b1b;
+    --bg1:#0b0b10;
+    --bg2:#12121a;
+    --card:#121218;
+    --card2:#14141c;
     --fg:#fff;
     --muted:#bdbdbd;
+
     --accent:#e50914;
-    --accent-yellow:#FFD93B;
+    --yellow:#FFD93B;
+
     --line:rgba(255,255,255,.08);
-    --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+    --line2:rgba(255,255,255,.12);
+
+    --shadow: 0 40px 120px -30px rgba(0,0,0,.75);
+    --shadow2: 0 30px 80px rgba(0,0,0,.85);
+
+    --radius:24px;
+    --radius2:18px;
+
+    --track: rgba(255,217,59,0.18);
+    --track2: rgba(229,9,20,0.16);
   }
 
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{
     margin:0;
-    background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
     color:var(--fg);
     font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+    overflow-x:hidden;
   }
+
+  /* Racing background overlays */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(255,217,59,0.12), transparent 45%),
+      radial-gradient(circle at 85% 70%, rgba(229,9,20,0.10), transparent 45%),
+      linear-gradient(135deg, rgba(255,255,255,0.02), transparent 35%);
+    pointer-events:none;
+    z-index:0;
+  }
+  body::after{
+    content:"";
+    position:fixed; left:-10%; top:-10%;
+    width:140%; height:140%;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        rgba(255,255,255,0.03) 0px,
+        rgba(255,255,255,0.03) 6px,
+        transparent 6px,
+        transparent 18px
+      );
+    opacity:0.25;
+    transform:rotate(-6deg);
+    pointer-events:none;
+    z-index:0;
+    mix-blend-mode: overlay;
+  }
+
   a{color:inherit;text-decoration:none}
-  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  .container{max-width:1240px;margin:0 auto;padding:0 24px; position:relative; z-index:1;}
+
   h1,h2{
     font-family:"Bebas Neue",system-ui,sans-serif;
     letter-spacing:2px;
     margin:0;
+    text-transform:uppercase;
   }
-  .sub{color:var(--muted);font-size:14px}
+  .sub{color:var(--muted);font-size:14px; line-height:1.4}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
 
-  /* NAV (matches events / likes pages) */
+  /* NAV (keep ids for auth-ui.js) */
   .nav{
-    position:sticky;
-    top:0;
-    z-index:50;
-    background:rgba(5,5,8,.9);
-    border-bottom:1px solid var(--line);
-    backdrop-filter:saturate(140%) blur(12px);
+    position:sticky; top:0; z-index:50;
+    background:rgba(5,5,8,.88);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:saturate(140%) blur(14px);
   }
   .nav-inner{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 0;
-    gap:16px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; gap:16px;
   }
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
+  .brand{display:flex; align-items:center; gap:12px}
   .logo{
-    width:48px;
-    height:48px;
-    border-radius:12px;
-    object-fit:cover;
+    width:46px; height:46px; border-radius:14px; object-fit:cover;
+    border:1px solid rgba(255,255,255,0.10);
+    box-shadow:0 0 26px rgba(255,217,59,0.12);
   }
   .title small{
-    color:var(--muted);
-    font-size:12px;
+    color:var(--yellow);
+    font-size:11px;
     text-transform:uppercase;
-    letter-spacing:.16em;
+    letter-spacing:.18em;
   }
 
   .nav-auth{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
   }
 
   .btn{
-    display:inline-flex;
-    gap:8px;
-    align-items:center;
-    padding:8px 14px;
-    border-radius:999px;
-    border:1px solid var(--line);
-    cursor:pointer;
-    font-size:13px;
-    background:transparent;
+    display:inline-flex; gap:8px; align-items:center;
+    padding:8px 14px; border-radius:999px;
+    border:1px solid rgba(255,255,255,0.10);
+    cursor:pointer; font-size:13px;
+    background:rgba(0,0,0,0.18);
     color:var(--fg);
     transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
-  }
-  .btn.small{
-    padding:6px 10px;
-    font-size:12px;
-  }
-  .btn.primary{
-    background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-    color:#fff;
-    border-color:rgba(229,9,20,.9);
-    box-shadow:0 0 18px rgba(229,9,20,.5);
-  }
-  .btn.primary:hover{
-    box-shadow:0 0 26px rgba(229,9,20,.7);
-    transform:translateY(-1px);
+    letter-spacing:.10em;
+    text-transform:uppercase;
   }
   .btn:hover{
-    background:rgba(255,255,255,0.03);
+    background:rgba(255,255,255,0.04);
+    border-color:rgba(255,255,255,0.18);
+    transform:translateY(-1px);
   }
+  .btn.small{ padding:6px 10px; font-size:12px; letter-spacing:.12em; }
+  .btn.primary{
+    background: radial-gradient(circle at top left, #ff4d4d, var(--accent));
+    border-color: rgba(229,9,20,.9);
+    box-shadow: 0 0 18px rgba(229,9,20,.55);
+  }
+  .btn.primary:hover{ box-shadow:0 0 28px rgba(229,9,20,.75); }
+  .btn.yellow{
+    background: radial-gradient(circle at top left, #ffe58a, var(--yellow));
+    color:#111; font-weight:900;
+    border-color: rgba(255,217,59,.75);
+    box-shadow: 0 0 18px rgba(255,217,59,.22);
+  }
+  .btn.yellow:hover{ box-shadow:0 0 30px rgba(255,217,59,.32); }
 
-  /* Profile nav (same ids as other pages for auth-ui.js) */
-  .profile-menu{
-    position:relative;
-    display:flex;
-    align-items:center;
-  }
+  /* Profile menu (same ids as other pages) */
+  .profile-menu{ position:relative; display:flex; align-items:center; }
   .profile-chip{
-    width:32px;
-    height:32px;
-    border-radius:50%;
-    background:var(--bg2);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:600;
+    width:32px; height:32px; border-radius:50%;
+    background:rgba(255,255,255,0.04);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700;
     cursor:pointer;
-    border:1px solid var(--line);
+    border:1px solid rgba(255,255,255,0.12);
     font-size:13px;
     transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+    user-select:none;
   }
   .profile-chip:hover{
-    border-color:rgba(255,255,255,.32);
-    box-shadow:0 0 16px rgba(255,217,59,.6);
+    border-color:rgba(255,255,255,.24);
+    box-shadow:0 0 16px rgba(255,217,59,.55);
     transform:translateY(-1px);
   }
   .dropdown{
-    position:absolute;
-    right:0;
-    top:40px;
-    background:#121212;
-    border:1px solid var(--line);
-    box-shadow:0 20px 40px rgba(0,0,0,.6);
+    position:absolute; right:0; top:40px;
+    background:rgba(10,10,14,0.96);
+    border:1px solid rgba(255,255,255,0.10);
+    box-shadow:0 20px 40px rgba(0,0,0,.65);
     border-radius:16px;
-    display:flex;
+    display:none;
     flex-direction:column;
-    min-width:190px;
+    min-width:210px;
     z-index:60;
+    overflow:hidden;
+    backdrop-filter: blur(14px);
   }
-  .dropdown a,
-  .dropdown button{
+  .dropdown a,.dropdown button{
     padding:10px 16px;
     text-align:left;
     border:none;
@@ -178,151 +201,325 @@
     width:100%;
     cursor:pointer;
   }
-  .dropdown a:hover,
-  .dropdown button:hover{
-    background:#1f1f1f;
+  .dropdown a:hover,.dropdown button:hover{ background:rgba(255,255,255,0.06); }
+
+  main{padding:28px 0 56px}
+
+  /* HERO */
+  .hero{
+    border-radius: var(--radius);
+    border:1px solid rgba(255,255,255,0.10);
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,217,59,0.16), transparent 55%),
+      radial-gradient(circle at 80% 70%, rgba(229,9,20,0.14), transparent 60%),
+      linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(0,0,0,0.30));
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    position:relative;
+    padding:18px 18px 16px;
   }
-
-  main{padding:32px 0 48px}
-
-  .header-row{
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.06) 0px,
+        rgba(255,255,255,0.06) 10px,
+        transparent 10px,
+        transparent 28px
+      );
+    opacity:0.08;
+    pointer-events:none;
+  }
+  .hero-row{
     display:flex;
+    align-items:flex-end;
     justify-content:space-between;
     gap:16px;
-    align-items:flex-end;
     flex-wrap:wrap;
-    margin-bottom:16px;
+    position:relative;
+    z-index:1;
   }
 
-  /* Filter pills (Upcoming / Past / All) */
+  .hero h2{ font-size:46px; line-height:0.95; }
+  .hero .sub{ max-width:720px; }
+
+  .hero-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+  /* Filter pills */
   .filter-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-bottom:18px;
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin:16px 0 18px;
     align-items:center;
   }
   .filter-label{
-    font-size:13px;
+    font-size:12px;
     text-transform:uppercase;
-    letter-spacing:.16em;
+    letter-spacing:.18em;
     color:var(--muted);
+    margin-right:6px;
   }
   .filter-pill{
     border:none;
-    padding:6px 12px;
+    padding:7px 12px;
     border-radius:999px;
-    background:var(--bg2);
-    border:1px solid var(--line);
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.10);
     color:var(--fg);
     font-size:12px;
     cursor:pointer;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    transition: transform .18s ease-out, background .18s ease-out, border-color .18s ease-out;
   }
+  .filter-pill:hover{ transform:translateY(-1px); border-color:rgba(255,255,255,0.18); }
   .filter-pill.active{
-    background:#fff;
+    background: #fff;
     color:#000;
     border-color:#fff;
   }
 
+  /* GRID */
   .grid{
     display:grid;
     gap:18px;
     grid-template-columns:repeat(2,1fr);
   }
-  @media(max-width:960px){
-    .grid{grid-template-columns:1fr;}
-  }
+  @media(max-width:980px){ .grid{grid-template-columns:1fr;} }
 
-  .card{
-    background:var(--bg1);
-    border:1px solid var(--line);
-    border-radius:20px;
-    box-shadow:var(--shadow);
+  /* Ticket card: “Gate Pass” */
+  .ticket{
+    border-radius: var(--radius);
+    border:1px solid rgba(255,255,255,0.10);
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(0,0,0,0.35));
+    box-shadow: var(--shadow2);
     overflow:hidden;
-    transition:transform .22s ease-out, box-shadow .22s ease-out, border-color .22s ease-out;
+    position:relative;
+    transition: transform .22s ease-out, border-color .22s ease-out, box-shadow .22s ease-out;
   }
-  .card:hover{
-    transform:translateY(-4px);
-    border-color:rgba(255,217,59,0.7);
-    box-shadow:0 30px 80px rgba(0,0,0,.9);
+  .ticket:hover{
+    transform: translateY(-4px);
+    border-color: rgba(255,217,59,0.70);
+    box-shadow: 0 34px 90px rgba(0,0,0,0.92);
   }
 
-  .card img{
-    display:block;
-    width:100%;
-    height:auto;
-    max-height:220px;
+  /* Checkered corner */
+  .ticket::before{
+    content:"";
+    position:absolute; right:-26px; top:-26px;
+    width:140px; height:140px;
+    background:
+      conic-gradient(from 45deg,
+        rgba(255,255,255,0.20) 0 25%,
+        rgba(0,0,0,0.10) 0 50%,
+        rgba(255,255,255,0.20) 0 75%,
+        rgba(0,0,0,0.10) 0 100%);
+    filter: blur(0px);
+    opacity:0.35;
+    transform: rotate(8deg);
+    pointer-events:none;
+  }
+
+  .media{
+    position:relative;
+    height:220px;
+    background:#0a0a10;
+    overflow:hidden;
+  }
+  .media img{
+    width:100%; height:100%;
     object-fit:cover;
+    transform: scale(1.03);
+    display:block;
+  }
+  /* Racing overlay on image */
+  .media::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(255,217,59,0.22), transparent 55%),
+      radial-gradient(circle at 85% 70%, rgba(229,9,20,0.18), transparent 60%),
+      linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.62));
+    pointer-events:none;
   }
 
-  .pad{
-    padding:14px 16px 16px;
+  /* Blur-up */
+  .blur-up{
+    filter: blur(18px);
+    transform: scale(1.08);
+    transition: filter 350ms ease, transform 350ms ease;
+  }
+  .blur-up.is-loaded{
+    filter: blur(0);
+    transform: scale(1.03);
   }
 
-  .date-block{
-    background:var(--bg2);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:8px 10px;
-    min-width:60px;
-    text-align:center;
-  }
-  .date-block .m{
-    font-family:"Bebas Neue";
-    font-size:20px;
-    line-height:1;
-  }
-  .date-block .d{
-    font-family:"Bebas Neue";
-    font-size:24px;
-    line-height:1;
+  .pad{ padding:14px 16px 16px; }
+  .topline{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:10px; flex-wrap:wrap;
+    margin-bottom:10px;
   }
 
-  .row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:10px;
+  .event-title{
+    font-weight:900;
+    font-size:18px;
+    letter-spacing:.02em;
+    line-height:1.1;
   }
+  .meta{ color:var(--muted); font-size:13px; margin-top:4px; }
 
   .pill{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:4px 10px;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px;
     border-radius:999px;
-    border:1px solid var(--line);
-    background:var(--bg2);
+    border:1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.25);
     font-size:11px;
     text-transform:uppercase;
     letter-spacing:.14em;
+    white-space:nowrap;
   }
-  .pill.status{
-    border-color:rgba(255,217,59,0.7);
-    color:var(--accent-yellow);
+  .pill.confirmed{
+    border-color: rgba(255,217,59,0.65);
+    color: var(--yellow);
+    box-shadow: 0 0 16px rgba(255,217,59,0.14);
+  }
+  .pill.hold{
+    border-color: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.90);
+    opacity:0.9;
+  }
+
+  /* Ticket barcode / QR lane */
+  .lane{
+    margin-top:12px;
+    border-radius: 16px;
+    border:1px solid rgba(255,255,255,0.10);
+    background: rgba(0,0,0,0.22);
+    overflow:hidden;
+  }
+  .lane-top{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; flex-wrap:wrap;
+    padding:10px 12px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    background:
+      linear-gradient(to right, rgba(255,217,59,0.06), rgba(229,9,20,0.05));
+  }
+  .lane-label{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.20em;
+  }
+  .lane-body{
+    padding:12px;
+    display:flex;
+    gap:12px;
+    align-items:stretch;
+    flex-wrap:wrap;
+  }
+  .codebox{
+    flex: 1 1 260px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.10);
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,217,59,0.10), transparent 55%),
+      radial-gradient(circle at 85% 70%, rgba(229,9,20,0.08), transparent 60%),
+      rgba(0,0,0,0.22);
+    padding:12px;
+    position:relative;
+    overflow:hidden;
+  }
+  .codebox::after{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.06) 0px,
+      rgba(255,255,255,0.06) 4px,
+      transparent 4px,
+      transparent 10px
+    );
+    opacity:0.12;
+    pointer-events:none;
+  }
+  .codebox > *{ position:relative; z-index:1; }
+
+  .code{
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+  .code-sub{
+    margin-top:4px;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* Fake QR (visual only) */
+  .qr{
+    width:110px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.10);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.08), rgba(0,0,0,0.15));
+    position:relative;
+    overflow:hidden;
+    flex: 0 0 auto;
+  }
+  .qr::before{
+    content:"";
+    position:absolute; inset:10px;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.20) 0 3px, transparent 3px 7px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.35) 0 3px, transparent 3px 7px);
+    opacity:0.35;
+    border-radius:10px;
+    mix-blend-mode: overlay;
+  }
+  .qr::after{
+    content:"SCAN";
+    position:absolute; bottom:10px; left:10px;
+    font-size:10px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .actions{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:10px; flex-wrap:wrap;
+    margin-top:12px;
+  }
+
+  .tiny{
+    font-size:12px;
+    color:var(--muted);
   }
 
   .empty{
-    border-radius:18px;
+    border-radius: var(--radius);
     border:1px dashed rgba(255,255,255,0.16);
     padding:20px 18px;
-    background:rgba(5,5,8,0.9);
+    background:rgba(5,5,8,0.82);
     text-align:left;
     box-shadow:0 24px 60px rgba(0,0,0,0.9);
-  }
-
-  #authMessage{
-    margin-top:8px;
   }
 
   @media(max-width:600px){
     .nav-inner{flex-wrap:wrap;}
     .nav-auth{width:100%;justify-content:flex-end;}
-    .header-row{align-items:flex-start;}
+    .hero h2{font-size:40px;}
+    .media{height:200px;}
   }
 </style>
 </head>
+
 <body>
   <!-- NAV -->
   <nav class="nav" role="navigation" aria-label="Primary">
@@ -331,7 +528,7 @@
         <img src="/Assets/logo.png" alt="" class="logo">
         <div class="title">
           <h1>ROK RACERS JA</h1>
-          <small>My tickets</small>
+          <small>Ticket wallet</small>
         </div>
       </a>
 
@@ -346,7 +543,7 @@
           <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
             <span id="navProfileInitials">U</span>
           </div>
-          <div id="navProfileDropdown" class="dropdown" style="display:none">
+          <div id="navProfileDropdown" class="dropdown">
             <a href="/garage.html">My Garage</a>
             <a href="/tickets.html">My Tickets</a>
             <a href="/likes-builds.html">Liked Builds</a>
@@ -361,258 +558,330 @@
   </nav>
 
   <main class="container">
-    <section>
-      <div class="header-row">
+    <!-- HERO -->
+    <section class="hero" aria-label="Ticket wallet header">
+      <div class="hero-row">
         <div>
-          <h2 style="font-size:40px;letter-spacing:2px;text-transform:uppercase;">My tickets</h2>
+          <h2>My Tickets</h2>
           <p class="sub">
-            Events you’ve locked in with an RSVP. As payments roll in later, this page becomes your full ticket wallet.
+            Your <strong>Gate Pass</strong> for every meet you RSVP’d to — free or paid.
+            Show your code at entry, and you’re good.
           </p>
+          <p id="authMessage" class="sub" style="margin-top:8px;"></p>
         </div>
-        <button class="btn" onclick="location.href='/events.html'">
-          Browse events
-        </button>
+
+        <div class="hero-actions">
+          <button class="btn yellow" type="button" onclick="location.href='/events.html'">Browse Events</button>
+          <button class="btn" type="button" onclick="location.reload()">Refresh</button>
+        </div>
       </div>
+    </section>
 
-      <p id="authMessage" class="sub"></p>
+    <!-- FILTERS -->
+    <div class="filter-row" id="filterRow" style="display:none">
+      <span class="filter-label">View</span>
+      <button class="filter-pill active" data-when="upcoming">Upcoming</button>
+      <button class="filter-pill" data-when="past">Past</button>
+      <button class="filter-pill" data-when="all">All</button>
+    </div>
 
-      <div class="filter-row" id="filterRow" style="display:none">
-        <span class="filter-label">Show</span>
-        <button class="filter-pill active" data-when="upcoming">Upcoming</button>
-        <button class="filter-pill" data-when="past">Past</button>
-        <button class="filter-pill" data-when="all">All</button>
-      </div>
-
+    <!-- GRID -->
+    <section>
       <div id="ticketsGrid" class="grid" aria-live="polite">
-        <div class="empty">
-          Loading your tickets…
-        </div>
+        <div class="empty">Loading your tickets…</div>
       </div>
     </section>
   </main>
 
-  <script>
-    const pageState = {
-      allTickets: [],
-      filterWhen: 'upcoming'
-    };
+<script>
+  const FALLBACK_COVER = "/Assets/logo.png";
 
-    function escapeHTML(s){
-      return (s || "").replace(/[&<>"']/g, m => (
-        {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-      ));
+  const pageState = {
+    allTickets: [],
+    filterWhen: 'upcoming'
+  };
+
+  function escapeHTML(s){
+    return (s || "").replace(/[&<>"']/g, m => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+    ));
+  }
+
+  function applyBlurUp(img){
+    if(!img) return;
+    img.classList.add("blur-up");
+    const done = ()=> img.classList.add("is-loaded");
+    if (img.complete) done();
+    else img.addEventListener("load", done, { once:true });
+    img.addEventListener("error", done, { once:true });
+  }
+
+  function isUpcoming(dateStr){
+    if (!dateStr) return false;
+    const now = new Date();
+    const d = new Date(dateStr);
+    return d >= now;
+  }
+
+  function fmtDate(dStr){
+    if(!dStr) return "";
+    const d = new Date(dStr);
+    return d.toLocaleString("en-US", { weekday:"short", month:"short", day:"2-digit", hour:"numeric", minute:"2-digit" });
+  }
+
+  function pickStatus(status){
+    const s = (status || "").toLowerCase();
+    if (s === "yes") return { label:"Confirmed Ticket", cls:"confirmed", icon:"✅" };
+    if (s === "maybe") return { label:"Hold (Maybe)", cls:"hold", icon:"🤔" };
+    return { label:`RSVP: ${String(status||"unknown").toUpperCase()}`, cls:"hold", icon:"🎟" };
+  }
+
+  function ticketKeyText(rsvp){
+    // Prefer rsvp_code if your schema has it
+    if (rsvp?.rsvp_code) return rsvp.rsvp_code;
+    // Fallback: stable-ish reference
+    const short = (rsvp?.event_id || "").slice(0,8).toUpperCase();
+    return short ? `RR-${short}` : "RR-XXXXX";
+  }
+
+  async function copyText(text){
+    try{ await navigator.clipboard.writeText(text); alert("Copied."); }
+    catch{ prompt("Copy:", text); }
+  }
+
+  function renderTickets(){
+    const grid = document.getElementById('ticketsGrid');
+    const when = pageState.filterWhen;
+    let rows = pageState.allTickets.slice(0);
+
+    if (when === 'upcoming'){
+      rows = rows.filter(r => r.event.starts_at && isUpcoming(r.event.starts_at));
+    } else if (when === 'past'){
+      rows = rows.filter(r => r.event.starts_at && !isUpcoming(r.event.starts_at));
     }
 
-    function isUpcoming(dateStr){
-      if (!dateStr) return false;
-      const now = new Date();
-      const d = new Date(dateStr);
-      return d >= now;
+    if (!rows.length){
+      grid.innerHTML = `
+        <div class="empty">
+          <p style="margin:0 0 6px;">No tickets in this lane yet.</p>
+          <p class="sub" style="margin:0 0 12px;">
+            Switch views, or jump on the board and RSVP “Yes”.
+          </p>
+          <button class="btn primary" type="button" onclick="location.href='/events.html'">View events</button>
+        </div>`;
+      return;
     }
 
-    function renderTickets(){
-      const grid = document.getElementById('ticketsGrid');
-      const when = pageState.filterWhen;
-      let rows = pageState.allTickets.slice(0);
+    grid.innerHTML = rows.map(({ rsvp, event, buildTitle }) => {
+      const cover = event.cover_url ? event.cover_url : FALLBACK_COVER;
 
-      if (when === 'upcoming'){
-        rows = rows.filter(r => r.event.starts_at && isUpcoming(r.event.starts_at));
-      } else if (when === 'past'){
-        rows = rows.filter(r => r.event.starts_at && !isUpcoming(r.event.starts_at));
-      }
+      const status = pickStatus(rsvp.status);
+      const whenText = fmtDate(event.starts_at);
+      const locText = event.location ? `• ${event.location}` : "";
+      const booked = rsvp.created_at
+        ? new Date(rsvp.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
+        : "";
 
-      if (!rows.length){
-        grid.innerHTML = `
-          <div class="empty">
-            <p style="margin-bottom:6px;">No tickets in this view yet.</p>
-            <p class="sub" style="margin-bottom:10px;">
-              Try switching filters, or hit the events board and RSVP “Yes” to a meet.
-            </p>
-            <button class="btn primary" type="button" onclick="location.href='/events.html'">
-              View events
-            </button>
-          </div>`;
-        return;
-      }
+      const code = ticketKeyText(rsvp);
 
-      grid.innerHTML = rows.map(({ rsvp, event }) => {
-        const d = event.starts_at ? new Date(event.starts_at) : null;
-        const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
-        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
-        const whenStr = d
-          ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
-          : "";
-        const loc = event.location
-          ? `${whenStr ? whenStr + " • " : ""}${event.location}`
-          : whenStr;
+      return `
+        <article class="ticket" aria-label="Ticket for ${escapeHTML(event.title)}">
+          <div class="media">
+            <img data-blurup src="${escapeHTML(cover)}" alt="${escapeHTML(event.title)}" loading="lazy">
+          </div>
 
-        const booked = rsvp.created_at
-          ? new Date(rsvp.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
-          : "";
+          <div class="pad">
+            <div class="topline">
+              <div style="min-width:0; flex:1 1 auto;">
+                <div class="event-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${escapeHTML(event.title)}
+                </div>
+                <div class="meta">
+                  ${escapeHTML(whenText)} ${locText ? escapeHTML(locText) : ""}
+                </div>
+              </div>
 
-        const statusLabel = (rsvp.status || '').toUpperCase();
-        const isConfirmed = rsvp.status === 'yes';
+              <span class="pill ${status.cls}">
+                ${escapeHTML(status.icon)} ${escapeHTML(status.label)}
+              </span>
+            </div>
 
-        const statusText = isConfirmed ? 'Confirmed RSVP' : `RSVP: ${statusLabel || 'UNKNOWN'}`;
+            <div class="lane" role="group" aria-label="Gate pass details">
+              <div class="lane-top">
+                <div class="lane-label">Gate Pass</div>
+                <div class="tiny">${booked ? `Booked ${escapeHTML(booked)}` : ""}</div>
+              </div>
 
-        return `
-          <article class="card">
-            ${event.cover_url
-              ? `<img src="${escapeHTML(event.cover_url)}" alt="${escapeHTML(event.title)}" loading="lazy">`
-              : ''}
-            <div class="pad">
-              <div class="row" style="margin-bottom:8px">
-                <div style="display:flex;gap:10px;align-items:center;flex:1 1 auto;min-width:0;">
-                  <div class="date-block">
-                    <div class="m">${m}</div>
-                    <div class="d">${day}</div>
+              <div class="lane-body">
+                <div class="codebox">
+                  <div class="tiny" style="margin-bottom:6px;">Ticket code</div>
+                  <div class="code mono">${escapeHTML(code)}</div>
+                  <div class="code-sub">
+                    Use at gate or as transfer reference if asked.
+                    ${buildTitle ? `<br><span class="tiny">Attached build: <strong>${escapeHTML(buildTitle)}</strong></span>` : ""}
                   </div>
-                  <div style="min-width:0;">
-                    <strong style="display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">
-                      ${escapeHTML(event.title)}
-                    </strong>
-                    ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ''}
+
+                  <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn small" type="button" data-copy="${escapeHTML(code)}">Copy code</button>
+                    <a class="btn small" href="/event.html?id=${event.id}">View event</a>
                   </div>
                 </div>
-                <span class="pill status">
-                  ${escapeHTML(statusText)}
-                </span>
-              </div>
 
-              <div class="row" style="margin-top:6px">
-                <span class="sub">
-                  ${booked ? `Booked on ${escapeHTML(booked)}` : ''}
-                </span>
-                <a class="btn small" href="/event.html?id=${event.id}">
-                  View event
-                </a>
+                <div class="qr" aria-hidden="true"></div>
               </div>
             </div>
-          </article>`;
-      }).join('');
+
+            <div class="actions">
+              <span class="tiny">Tip: screenshot this pass if you’re heading out.</span>
+              <button class="btn small yellow" type="button" onclick="location.href='/event.html?id=${event.id}#rsvp'">
+                Manage RSVP
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    // blur-up on all images
+    document.querySelectorAll("img[data-blurup]").forEach(applyBlurUp);
+
+    // copy buttons
+    document.querySelectorAll("[data-copy]").forEach(btn=>{
+      btn.addEventListener("click", ()=> copyText(btn.getAttribute("data-copy")));
+    });
+  }
+
+  async function loadTickets(){
+    const grid = document.getElementById('ticketsGrid');
+    const authMsg = document.getElementById('authMessage');
+    const filterRow = document.getElementById('filterRow');
+
+    grid.innerHTML = `<div class="empty">Loading your tickets…</div>`;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user){
+      authMsg.textContent = "Sign in to see your ticket wallet.";
+      grid.innerHTML = `
+        <div class="empty">
+          <p style="margin:0 0 8px;">You’re not signed in.</p>
+          <button class="btn primary" type="button"
+            onclick="window.authUI && authUI.requireLogin(()=>location.reload())">
+            Log in to view tickets
+          </button>
+        </div>`;
+      filterRow.style.display = 'none';
+      return;
     }
 
-    async function loadTickets(){
-      const grid = document.getElementById('ticketsGrid');
-      const authMsg = document.getElementById('authMessage');
-      const filterRow = document.getElementById('filterRow');
+    authMsg.textContent = "";
+    filterRow.style.display = 'flex';
 
-      grid.innerHTML = `<div class="empty">Loading your tickets…</div>`;
+    // Try to include rsvp_code + build_id. If column missing, fallback.
+    let rsvpRes = await supabase
+      .from('event_rsvps')
+      .select('event_id,status,created_at,rsvp_code,build_id')
+      .eq('user_id', user.id)
+      .in('status', ['yes','maybe'])
+      .order('created_at',{ ascending:false });
 
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user){
-        authMsg.textContent = "Sign in to see your tickets and RSVPs.";
-        grid.innerHTML = `
-          <div class="empty">
-            <p style="margin-bottom:8px;">You’re not signed in.</p>
-            <button class="btn primary" type="button"
-              onclick="window.authUI && authUI.requireLogin(()=>location.reload())">
-              Log in to view tickets
-            </button>
-          </div>`;
-        filterRow.style.display = 'none';
-        return;
-      }
-
-      authMsg.textContent = "";
-      filterRow.style.display = 'flex';
-
-      // Fetch RSVPs where status = 'yes' (i.e. confirmed / ticket)
-      const rsvpRes = await supabase
+    if (rsvpRes.error && (rsvpRes.error.message || "").toLowerCase().includes("column") ){
+      rsvpRes = await supabase
         .from('event_rsvps')
         .select('event_id,status,created_at')
         .eq('user_id', user.id)
-        .in('status', ['yes', 'maybe'])           // in case you want to show maybes as soft tickets
+        .in('status', ['yes','maybe'])
         .order('created_at',{ ascending:false });
-
-      if (rsvpRes.error){
-        console.error(rsvpRes.error);
-        grid.innerHTML = `
-          <div class="empty">
-            Couldn’t load your tickets right now. Refresh in a bit.
-          </div>`;
-        filterRow.style.display = 'none';
-        return;
-      }
-
-      const rsvps = rsvpRes.data || [];
-      if (!rsvps.length){
-        grid.innerHTML = `
-          <div class="empty">
-            <p style="margin-bottom:6px;">No tickets yet.</p>
-            <p class="sub" style="margin-bottom:10px;">
-              Once you RSVP “Yes” to an event, it’ll show up here as your ticket.
-            </p>
-            <button class="btn primary" type="button" onclick="location.href='/events.html'">
-              Browse events
-            </button>
-          </div>`;
-        filterRow.style.display = 'none';
-        return;
-      }
-
-      const eventIds = [...new Set(rsvps.map(r => r.event_id))];
-
-      const evRes = await supabase
-        .from('events')
-        .select('id,title,starts_at,location,cover_url')
-        .in('id', eventIds);
-
-      if (evRes.error){
-        console.error(evRes.error);
-        grid.innerHTML = `
-          <div class="empty">
-            Couldn’t load events linked to your tickets. Try again shortly.
-          </div>`;
-        return;
-      }
-
-      const events = evRes.data || [];
-      const evMap = new Map(events.map(e => [e.id, e]));
-
-      // keep only latest RSVP per event
-      const latestByEvent = new Map();
-      rsvps.forEach(r => {
-        const prev = latestByEvent.get(r.event_id);
-        if (!prev || new Date(r.created_at) > new Date(prev.created_at)){
-          latestByEvent.set(r.event_id, r);
-        }
-      });
-
-      const rows = [];
-      latestByEvent.forEach((rsvp, eventId) => {
-        const event = evMap.get(eventId);
-        if (event) rows.push({ rsvp, event });
-      });
-
-      // sort by event date (soonest first)
-      rows.sort((a,b) => {
-        const da = a.event.starts_at ? new Date(a.event.starts_at) : new Date(0);
-        const db = b.event.starts_at ? new Date(b.event.starts_at) : new Date(0);
-        return da - db;
-      });
-
-      pageState.allTickets = rows;
-      renderTickets();
     }
 
-    // hook up filter pills
-    document.addEventListener('click', (e) => {
-      const pill = e.target.closest('.filter-pill');
-      if (!pill) return;
-      const when = pill.dataset.when;
-      if (!when) return;
+    if (rsvpRes.error){
+      console.error(rsvpRes.error);
+      grid.innerHTML = `<div class="empty">Couldn’t load your tickets. Refresh in a bit.</div>`;
+      filterRow.style.display = 'none';
+      return;
+    }
 
-      document.querySelectorAll('.filter-pill').forEach(p => {
-        p.classList.toggle('active', p === pill);
-      });
+    const rsvps = rsvpRes.data || [];
+    if (!rsvps.length){
+      grid.innerHTML = `
+        <div class="empty">
+          <p style="margin:0 0 6px;">No tickets yet.</p>
+          <p class="sub" style="margin:0 0 12px;">
+            RSVP “Yes” to an event and it will appear here as a Gate Pass.
+          </p>
+          <button class="btn primary" type="button" onclick="location.href='/events.html'">Browse events</button>
+        </div>`;
+      filterRow.style.display = 'none';
+      return;
+    }
 
-      pageState.filterWhen = when;
-      renderTickets();
+    // Keep only latest RSVP per event
+    const latestByEvent = new Map();
+    rsvps.forEach(r=>{
+      const prev = latestByEvent.get(r.event_id);
+      if (!prev || new Date(r.created_at) > new Date(prev.created_at)) latestByEvent.set(r.event_id, r);
     });
 
-    document.addEventListener('DOMContentLoaded', loadTickets);
-  </script>
+    const eventIds = [...latestByEvent.keys()];
+
+    const evRes = await supabase
+      .from('events')
+      .select('id,title,starts_at,location,cover_url')
+      .in('id', eventIds);
+
+    if (evRes.error){
+      console.error(evRes.error);
+      grid.innerHTML = `<div class="empty">Couldn’t load events linked to your tickets.</div>`;
+      return;
+    }
+
+    const evMap = new Map((evRes.data || []).map(e => [e.id, e]));
+
+    // Optional: fetch attached build titles (if build_id exists)
+    let buildTitleById = new Map();
+    const buildIds = [...new Set([...latestByEvent.values()].map(r=>r.build_id).filter(Boolean))];
+    if (buildIds.length){
+      const bRes = await supabase.from('builds').select('id,title').in('id', buildIds);
+      if (!bRes.error){
+        buildTitleById = new Map((bRes.data||[]).map(b=>[b.id, b.title || "Untitled build"]));
+      }
+    }
+
+    const rows = [];
+    latestByEvent.forEach((rsvp, eid)=>{
+      const event = evMap.get(eid);
+      if (!event) return;
+      rows.push({
+        rsvp,
+        event,
+        buildTitle: rsvp.build_id ? (buildTitleById.get(rsvp.build_id) || "") : ""
+      });
+    });
+
+    // sort by event date (soonest first; missing dates sink)
+    rows.sort((a,b)=>{
+      const da = a.event.starts_at ? new Date(a.event.starts_at) : new Date(8640000000000000);
+      const db = b.event.starts_at ? new Date(b.event.starts_at) : new Date(8640000000000000);
+      return da - db;
+    });
+
+    pageState.allTickets = rows;
+    renderTickets();
+  }
+
+  // filter pills
+  document.addEventListener('click', (e) => {
+    const pill = e.target.closest('.filter-pill');
+    if (!pill) return;
+    const when = pill.dataset.when;
+    if (!when) return;
+
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p === pill));
+    pageState.filterWhen = when;
+    renderTickets();
+  });
+
+  document.addEventListener('DOMContentLoaded', loadTickets);
+</script>
 </body>
 </html>

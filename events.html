@@ -29,8 +29,8 @@
       --bg-alt: #111111;
       --bg-card: #141414;
 
-      --accent-main: #189e06;      /* GREEN */
-      --accent-secondary: #FFD93B; /* keep yellow for small highlights */
+      --accent-main: #189e06;
+      --accent-secondary: #FFD93B;
       --accent-cyan: #189e06;
 
       --text-main: #ffffff;
@@ -56,7 +56,7 @@
     .container{ width:min(1200px, 100% - 32px); margin:0 auto; }
     @media (min-width:1280px){ .container{ width:min(1280px, 100% - 64px);} }
 
-    /* ===== NAV (match index vibe) ===== */
+    /* ===== NAV ===== */
     .nav-wrapper{
       position: sticky; top: 0; z-index: 40;
       backdrop-filter: blur(16px);
@@ -130,7 +130,7 @@
       background: rgba(255,255,255,0.02);
     }
 
-    /* ===== Danger button (Delete) ===== */
+    /* Danger button (Delete) */
     .btn-danger{
       border-color: rgba(255, 77, 77, 0.55);
       color: #ffd2d2;
@@ -218,6 +218,14 @@
 
     /* Calendar */
     .calendar-wrap{ display:grid; gap: 14px; margin-top: 10px; }
+    #monthLabel{
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    #monthLabel.bump{
+      opacity: .6;
+      transform: translateY(1px);
+    }
+
     .month-card{
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255,255,255,0.08);
@@ -369,12 +377,12 @@
       font-size:28px;
       margin:0;
     }
+    /* ✅ Fix: content area scroll so buttons are always reachable */
     .modal .content{
       padding: 16px;
       display:grid;
       gap: 12px;
-      max-height: calc(100vh - 44px - 58px - 64px); 
-      /* = viewport - outer padding - header - actions (rough) */
+      max-height: calc(100vh - 44px - 58px - 64px);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -409,7 +417,7 @@
       color: var(--text-muted);
     }
 
-    /* ===== Toasts ===== */
+    /* Toasts */
     .toast-wrap{
       position: fixed;
       right: 14px;
@@ -505,42 +513,36 @@
         <a href="/store.html">Store</a>
       </nav>
 
-       <div class="nav-cta">
-          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
-          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+      <div class="nav-cta">
+        <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+        <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
-          <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
-              <span id="profileInitials">U</span>
-            </div>
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="profileInitials">U</span>
+          </div>
 
-            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <a href="/my-profile.html">My Profile</a>
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
 
-              <!-- ✅ Profile hub you requested -->
-              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
-              <div class="dd-sep"></div>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events</a>
 
-              <a href="/garage.html">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
-
-              <!-- Promoter only (toggled by JS) -->
-              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
-
-              <div class="dd-sep"></div>
-              <button id="signoutBtn" type="button">Sign out</button>
-            </div>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
   <main class="container page">
     <h1 class="page-title">All Events</h1>
     <p class="page-sub">
-      Full calendar view by month. Filter it down and the layout stays the same. Click any event to expand.
+      Single month view with arrows. Filter it down and the layout stays the same. Click any event to expand.
     </p>
 
     <div>
@@ -550,13 +552,23 @@
     <div class="filters" role="region" aria-label="Event filters">
       <input id="q" placeholder="Search title, location, parish, host…" aria-label="Search"/>
 
+      <select id="year" aria-label="Year"></select>
+
       <select id="month" aria-label="Month">
-        <option value="">Any month</option>
         <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
         <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
         <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
         <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
       </select>
+
+      <button class="btn btn-ghost btn-pill-sm" id="prevMonth" type="button">←</button>
+
+      <span id="monthLabel" class="hint" style="min-width:120px; text-align:center">
+        —
+      </span>
+
+      <button class="btn btn-ghost btn-pill-sm" id="nextMonth" type="button">→</button>
+
 
       <select id="when" aria-label="When">
         <option value="upcoming">Upcoming</option>
@@ -584,10 +596,9 @@
     </div>
   </main>
 
-  <!-- Toast container -->
   <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- EVENT DETAILS MODAL (expand) -->
+  <!-- EVENT DETAILS MODAL -->
   <div id="detailsBackdrop" class="modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
       <header>
@@ -722,21 +733,27 @@
       const d   = new Date(dateStr);
       return d >= now;
     }
-    function withinMonth(dateStr, monthIndex){
-      if (monthIndex === "" || monthIndex == null) return true;
-      const d = new Date(dateStr);
-      return d.getMonth() === Number(monthIndex);
-    }
     function toISO(localDT){
       if (!localDT) return null;
       const [date, time] = localDT.split('T');
       return new Date(`${date}T${time}:00`).toISOString();
     }
-    function fmtMonthKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
     function monthLabel(year, month0){
       const d = new Date(year, month0, 1);
       return d.toLocaleString("en-US", { month:"long", year:"numeric" });
     }
+
+    function updateMonthLabel(){
+      const el = document.getElementById('monthLabel');
+      if (!el) return;
+
+      el.classList.add('bump');
+      el.textContent = monthLabel(viewYear, viewMonth);
+
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('bump'), 160);
+    }
+
     function fmtWhen(d){
       return d.toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
     }
@@ -748,6 +765,51 @@
       const d = new Date(iso);
       const pad = (n)=> String(n).padStart(2,'0');
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    /* ========= View state (single month) ========= */
+    let viewYear  = new Date().getFullYear();
+    let viewMonth = new Date().getMonth();
+
+    function setMonthUI(){
+      const y = document.getElementById('year');
+      const m = document.getElementById('month');
+      if (y) y.value = String(viewYear);
+      if (m) m.value = String(viewMonth);
+    }
+
+    function buildYearOptions(){
+      const y = document.getElementById('year');
+      if (!y) return;
+
+      const yearsInData = (cached || [])
+        .filter(e => e.starts_at)
+        .map(e => new Date(e.starts_at).getFullYear());
+
+      const minY = Math.min(viewYear, ...(yearsInData.length ? yearsInData : [viewYear]));
+      const maxY = Math.max(viewYear, ...(yearsInData.length ? yearsInData : [viewYear]));
+
+      y.innerHTML = '';
+      for (let yy = minY; yy <= maxY; yy++){
+        const opt = document.createElement('option');
+        opt.value = String(yy);
+        opt.textContent = String(yy);
+        y.appendChild(opt);
+      }
+    }
+
+    function stepMonth(delta){
+      let y = viewYear;
+      let m = viewMonth + delta;
+      if (m < 0){ m = 11; y -= 1; }
+      if (m > 11){ m = 0; y += 1; }
+      viewYear = y;
+      viewMonth = m;
+      buildYearOptions();
+      setMonthUI();
+      applyFilters();
+      updateMonthLabel();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /* ========= Data state ========= */
@@ -835,7 +897,6 @@
     /* ========= Filters ========= */
     function applyFilters(){
       const q     = document.getElementById('q').value.trim().toLowerCase();
-      const month = document.getElementById('month').value;
       const when  = document.getElementById('when').value;
 
       const hostFilter = document.getElementById('hostFilter').value; // all | promoters | team
@@ -843,16 +904,14 @@
 
       let rows = cached.slice(0);
 
+      // When
       if (when === 'upcoming'){
         rows = rows.filter(r => r.starts_at && isUpcoming(r.starts_at));
       } else if (when === 'past'){
         rows = rows.filter(r => r.starts_at && !isUpcoming(r.starts_at));
       }
 
-      if (month !== ""){
-        rows = rows.filter(r => r.starts_at && withinMonth(r.starts_at, month));
-      }
-
+      // Host
       if (hostFilter === 'promoters'){
         rows = rows.filter(isPromoterEvent);
       } else if (hostFilter === 'team'){
@@ -863,6 +922,7 @@
         }
       }
 
+      // Search
       if (q){
         rows = rows.filter(r => {
           const hostName = r.team_id ? (teamsIndex.get(r.team_id)?.name || '') : '';
@@ -870,43 +930,32 @@
         });
       }
 
+      // ✅ Single month view filter (year + month)
+      rows = rows.filter(r => {
+        if (!r.starts_at) return false;
+        const d = new Date(r.starts_at);
+        return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+      });
+
       filtered = rows;
       renderCalendar(filtered);
 
       const hint = document.getElementById('resultsHint');
       if (hint){
         hint.textContent = filtered.length
-          ? `${filtered.length} event${filtered.length===1?'':'s'}`
-          : `No matches`;
+          ? `${filtered.length} event${filtered.length===1?'':'s'} · ${monthLabel(viewYear, viewMonth)}`
+          : `No matches · ${monthLabel(viewYear, viewMonth)}`;
       }
     }
 
-    /* ========= Calendar renderer ========= */
-    function groupByMonth(events){
-      const map = new Map(); // key -> [events]
-      for (const e of events){
-        if (!e.starts_at) continue;
-        const d = new Date(e.starts_at);
-        const key = fmtMonthKey(d);
-        if(!map.has(key)) map.set(key, []);
-        map.get(key).push(e);
-      }
-      for (const [k, arr] of map.entries()){
-        arr.sort((a,b)=> new Date(a.starts_at) - new Date(b.starts_at));
-      }
-      return [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
-    }
-
-    function renderCalendar(events){
+    /* ========= Calendar renderer (single month only) ========= */
+    function renderCalendar(rows){
       const wrap = document.getElementById('calendarWrap');
-      if (!events || !events.length){
-        wrap.innerHTML = `<div class="empty-card">
-          No events match these filters yet. Try switching “When” to <strong>All</strong>, or clear the search.
-        </div>`;
-        return;
-      }
-      const months = groupByMonth(events);
-      wrap.innerHTML = months.map(([key, monthEvents]) => renderMonth(key, monthEvents)).join('');
+      if (!wrap) return;
+
+      // Render the selected month grid even if no events match
+      const key = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
+      wrap.innerHTML = renderMonth(key, rows || []);
     }
 
     function renderMonth(key, monthEvents){
@@ -971,6 +1020,12 @@
               `;
             }).join('')}
           </div>
+
+          ${monthEvents.length ? `` : `
+            <div style="padding:0 16px 16px">
+              <div class="hint">No events in this month yet. Promoters/admins can post one.</div>
+            </div>
+          `}
         </section>
       `;
     }
@@ -1032,7 +1087,7 @@
       }
 
       const past = e.starts_at && !isUpcoming(e.starts_at);
-      detailsStatus.textContent = e.status || (past ? "Completed" : "RSVP Open");
+      detailsStatus.textContent = past ? "Completed" : "RSVP Open";
 
       const yes = e.counts?.yes_count || 0;
       const maybe = e.counts?.maybe_count || 0;
@@ -1060,7 +1115,6 @@
         }
       };
 
-      // show manage buttons based on permission
       (async ()=>{
         const { canManage } = await getCanManageEvent(e);
         detailsEdit.style.display = canManage ? 'inline-flex' : 'none';
@@ -1096,7 +1150,7 @@
       if(e) openDetails(e);
     });
 
-    /* ========= Filter UI ========= */
+    /* ========= Filter UI wiring ========= */
     document.getElementById('hostFilter').addEventListener('change', async ()=>{
       const mode = document.getElementById('hostFilter').value;
       const teamSel = document.getElementById('hostTeam');
@@ -1110,8 +1164,26 @@
       }
       applyFilters();
     });
+
     document.getElementById('hostTeam').addEventListener('change', applyFilters);
     document.getElementById('apply').addEventListener('click', applyFilters);
+
+    // ✅ Year/month controls + arrows (single month view)
+    document.getElementById('prevMonth').addEventListener('click', ()=> stepMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', ()=> stepMonth(1));
+
+    document.getElementById('year').addEventListener('change', (e)=>{
+      viewYear = Number(e.target.value);
+      setMonthUI();
+      applyFilters();
+      updateMonthLabel();
+    });
+    document.getElementById('month').addEventListener('change', (e)=>{
+      viewMonth = Number(e.target.value);
+      setMonthUI();
+      applyFilters();
+      updateMonthLabel();
+    });
 
     /* ========= Create/Edit modal ========= */
     const modalBackdrop = document.getElementById('modalBackdrop');
@@ -1135,12 +1207,10 @@
     let editingExistingCoverUrl = null;
 
     function setCreateMsg(text){ createMsg.textContent = text || ''; }
-
     function setModalTitle(text){
       const t = document.getElementById('modalTitle');
       if (t) t.textContent = text;
     }
-
     function resetForm(){
       f_title.value = '';
       f_starts.value = '';
@@ -1162,9 +1232,9 @@
       modalBackdrop.setAttribute('aria-hidden','true');
       setCreateMsg('');
     }
+
     modalClose.addEventListener('click', closeCreateModal);
     modalCancel.addEventListener('click', ()=>{
-      // leaving edit mode? reset to create
       modalMode = "create";
       editingEventId = null;
       editingExistingCoverUrl = null;
@@ -1225,7 +1295,6 @@
       });
     }
 
-    // Start editing from details modal
     async function startEdit(e){
       await loadMyTeamOptions();
 
@@ -1263,12 +1332,12 @@
 
       closeDetails();
       cached = await fetchAll();
-      filtered = cached.slice(0);
+      buildYearOptions();
+      setMonthUI();
       applyFilters();
       toast('success', 'Deleted', 'Event removed from the calendar.');
     }
 
-    // Create button permissions: Admin OR Promoter
     if (addEventBtn){
       addEventBtn.addEventListener('click', async ()=>{
         if (window.authUI){
@@ -1312,7 +1381,6 @@
       });
     }
 
-    // Save (create OR edit)
     modalCreate.addEventListener('click', async ()=>{
       setCreateMsg('');
       modalCreate.disabled = true;
@@ -1324,7 +1392,6 @@
           return;
         }
 
-        // Admin or Promoter required (UI)
         if (window.authUI){
           await authUI.refresh();
           const isAdmin = authUI?.isAdmin?.() === true;
@@ -1352,13 +1419,8 @@
         setCreateMsg(file ? 'Uploading cover…' : 'Saving…');
 
         let coverUrl = null;
-
-        if (modalMode === "edit"){
-          coverUrl = editingExistingCoverUrl || null;
-        }
-        if (file){
-          coverUrl = await uploadEventCover(file, user.id);
-        }
+        if (modalMode === "edit") coverUrl = editingExistingCoverUrl || null;
+        if (file) coverUrl = await uploadEventCover(file, user.id);
 
         if (modalMode === "create"){
           const row = {
@@ -1385,14 +1447,14 @@
 
           closeCreateModal();
           cached = await fetchAll();
-          filtered = cached.slice(0);
+          buildYearOptions();
+          setMonthUI();
           applyFilters();
           toast('success', 'Created', 'Event added to the calendar.');
           resetForm();
           return;
         }
 
-        // Edit mode
         if (!editingEventId){
           toast('error', 'Edit failed', 'No event selected to edit.');
           return;
@@ -1418,7 +1480,6 @@
         closeCreateModal();
         toast('success', 'Updated', 'Event changes saved.');
 
-        // reset mode back to create
         modalMode = "create";
         editingEventId = null;
         editingExistingCoverUrl = null;
@@ -1426,7 +1487,8 @@
         resetForm();
 
         cached = await fetchAll();
-        filtered = cached.slice(0);
+        buildYearOptions();
+        setMonthUI();
         applyFilters();
       } catch(err){
         console.error(err);
@@ -1440,9 +1502,20 @@
     /* ========= Boot ========= */
     window.addEventListener('DOMContentLoaded', async ()=>{
       await loadHostTeamsForFilter();
+
       cached = await fetchAll();
-      filtered = cached.slice(0);
+
+      // If there are events, default view to the first upcoming event month (nice UX)
+      const upcoming = (cached || []).find(e => e.starts_at && isUpcoming(e.starts_at));
+      const base = upcoming?.starts_at ? new Date(upcoming.starts_at) : new Date();
+      viewYear = base.getFullYear();
+      viewMonth = base.getMonth();
+
+      buildYearOptions();
+      setMonthUI();
+
       applyFilters();
+      updateMonthLabel();
     });
   </script>
 </body>

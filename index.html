@@ -15,23 +15,18 @@
     const SUPABASE_ANON_KEY =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
   </script>
 
-<script src="/auth-ui.js"></script>
+  <script src="/auth-ui.js"></script>
+
   <style>
     :root {
       --bg-main: #050508;
       --bg-alt: #111111;
       --bg-card: #141414;
 
-      /* ✅ Red → Green */
       --accent-main: #128b02;         /* primary green */
       --accent-secondary: #FFD93B;    /* yellow stays */
       --accent-cyan: #FFD93B;
@@ -141,7 +136,6 @@
     }
     .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
 
-    /* ✅ Stable dropdown */
     .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
       width:32px; height:32px; border-radius:50%;
@@ -343,21 +337,7 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
       background: radial-gradient(circle at top left, rgba(24,201,100,0.22), rgba(5,5,8,1));
     }
-    .event-image{
-      position:relative;
-      border-radius:16px;
-      overflow:hidden;
-      height:140px;
-      background: linear-gradient(135deg, #171717, #262626);
-    }
-    .event-image-inner{
-      position:absolute; inset:0;
-      background:
-        radial-gradient(circle at 10% 10%, rgba(255,217,59,0.3), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(24,201,100,0.45), transparent 50%);
-      mix-blend-mode: screen;
-      opacity:0.8;
-    }
+
     .event-tag{
       position:absolute; bottom:10px; left:10px;
       font-size:10px; text-transform:uppercase; letter-spacing:0.18em;
@@ -365,6 +345,7 @@
       background: rgba(0,0,0,0.65);
       border: 1px solid rgba(255,255,255,0.24);
     }
+
     .event-body{ display:flex; flex-direction:column; gap:6px; }
     .event-title{ font-size:15px; font-weight:600; }
     .event-meta{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); gap:10px; }
@@ -477,15 +458,6 @@
       overflow:hidden;
       background: linear-gradient(135deg, #171717, #2a2a2a);
       margin-bottom:10px;
-      background-size:cover;
-      background-position:center;
-    }
-    .sighting-media::before{
-      content:""; position:absolute; inset:-30%;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255,217,59,0.3), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(24,201,100,0.45), transparent 60%);
-      mix-blend-mode:screen; opacity:0.9;
     }
     .sighting-badge{
       position:absolute; left:10px; bottom:10px;
@@ -493,6 +465,7 @@
       background: rgba(0,0,0,0.75);
       border: 1px solid rgba(255,255,255,0.22);
       text-transform:uppercase; letter-spacing:0.18em;
+      z-index: 5;
     }
     .sighting-meta-top{
       display:flex; justify-content:space-between; align-items:center;
@@ -655,6 +628,82 @@
       line-height:1.3;
     }
     .hint strong{ color:#fff; }
+
+    /* =========================
+       ✅ PREMIUM MEDIA (DROP-IN)
+       - fallback image
+       - blur-up
+       - video hover autoplay
+       ========================= */
+    .media-wrap{
+      position:relative;
+      border-radius:16px;
+      overflow:hidden;
+      background: linear-gradient(135deg, #171717, #262626);
+      isolation:isolate;
+    }
+    .media-wrap img,
+    .media-wrap video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .media-overlay{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255,217,59,0.22), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(24,201,100,0.32), transparent 60%);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+      z-index: 2;
+    }
+    .play-badge{
+      position:absolute;
+      right:10px;
+      bottom:10px;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      padding:4px 10px;
+      border-radius:999px;
+      background: rgba(0,0,0,0.72);
+      border: 1px solid rgba(255,255,255,0.22);
+      z-index: 4;
+    }
+
+    /* Blur-up: starts blurred, snaps crisp on load */
+    .blur-up{
+      filter: blur(18px);
+      transform: scale(1.06);
+      opacity: 0.92;
+      transition: filter 520ms ease, transform 520ms ease, opacity 520ms ease;
+      will-change: filter, transform, opacity;
+    }
+    .blur-up.is-loaded{
+      filter: blur(0);
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* Hover affordance for video cards */
+    .hover-play{
+      cursor:pointer;
+    }
+    .hover-play::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,0.00);
+      transition: background 180ms ease;
+      z-index: 3;
+      pointer-events:none;
+    }
+    .hover-play:hover::after{
+      background: rgba(0,0,0,0.06);
+    }
   </style>
 </head>
 
@@ -675,7 +724,6 @@
         </a>
 
         <nav class="nav-links">
-          <!-- ✅ Navbar should go to pages, not anchors -->
           <a href="/events.html">Events</a>
           <a href="/garage.html">Garage</a>
           <a href="/teams.html">Community</a>
@@ -699,7 +747,6 @@
                 <div class="dd-email" id="ddEmail">—</div>
               </div>
 
-              <!-- ✅ Profile hub you requested -->
               <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
               <div class="dd-sep"></div>
 
@@ -709,7 +756,6 @@
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
 
-              <!-- Promoter only (toggled by JS) -->
               <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
 
               <div class="dd-sep"></div>
@@ -800,7 +846,6 @@
             </p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/events.html'">View All Events</button>
-
         </div>
 
         <div id="eventsStrip" class="events-strip" aria-live="polite">
@@ -824,11 +869,11 @@
               The island’s most-liked builds — street, track, and show specials. Drop your own and see where it lands.
             </p>
           </div>
-            <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/garage.html'">View all builds</button>
-          </div>
+          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/garage.html'">View all builds</button>
+        </div>
 
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">          <!-- ✅ Fix: should go to build-new.html (and require login) -->
-            <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/build-new.html'">Start My First Build</button>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/build-new.html'">Start My First Build</button>
         </div>
 
         <div id="top-builds-grid" class="cards-grid" aria-live="polite">
@@ -851,14 +896,13 @@
               Gas station link-ups, toll runs, late-night pulls — see what’s been spotted in real time.
             </p>
           </div>
-
-          <!-- ✅ Fix: should go to sightings-new.html -->
           <button class="btn btn-ghost btn-pill-sm" type="button" id="uploadSightingBtn" onclick="location.href='/sightings-new.html'"> Upload a Sighting </button>
         </div>
 
         <div class="sightings-grid">
           <article id="sightingMain" class="sighting-main">
-            <div class="sighting-media">
+            <!-- ✅ now supports image/video + blur-up -->
+            <div class="sighting-media" id="sightingMainMedia">
               <div class="sighting-badge">Loading…</div>
             </div>
             <div class="sighting-meta-top">
@@ -968,7 +1012,6 @@
           <button class="tab" id="tabSignup" type="button">Sign up</button>
         </div>
 
-        <!-- ✅ Role selection shown only during Sign up, required -->
         <div class="field" id="roleField" style="display:none;">
           <label>Choose your role</label>
           <select id="authRole">
@@ -999,9 +1042,6 @@
         <div class="divider">or</div>
 
         <button class="btn btn-ghost btn-wide" id="googleBtn" type="button">Continue with Google</button>
-
-        <div class="auth-msg" style="margin-top:6px">
-        </div>
       </div>
     </div>
   </div>
@@ -1056,6 +1096,129 @@
     }
     window.subscribe = subscribe;
 
+    // =========================
+    // ✅ PREMIUM MEDIA HELPERS
+    // =========================
+    const FALLBACK_MEDIA_IMG = "/Assets/logo.png";
+
+    function esc(s){
+      return String(s || '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
+    // blur-up: when image loads, remove blur
+    function markLoaded(img){
+      if (!img) return;
+      img.classList.add('is-loaded');
+    }
+
+    function renderMedia({ imageUrl, videoUrl, alt = "media", height = 140, badge = "", forceFallbackImage = true }){
+      const h = Number(height) || 140;
+
+      // Video wins if present
+      if (videoUrl){
+        return `
+          <div class="media-wrap hover-play" style="height:${h}px">
+            <video
+              class="hover-video"
+              src="${esc(videoUrl)}"
+              muted
+              playsinline
+              preload="metadata"
+              poster="${esc(FALLBACK_MEDIA_IMG)}"
+            ></video>
+            <div class="media-overlay"></div>
+            ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
+            <div class="play-badge">Video</div>
+          </div>
+        `;
+      }
+
+      // Image (or fallback)
+      const finalImg = (imageUrl && String(imageUrl).trim()) ? imageUrl : (forceFallbackImage ? FALLBACK_MEDIA_IMG : "");
+      if (finalImg){
+        return `
+          <div class="media-wrap" style="height:${h}px">
+            <img
+              class="blur-up"
+              src="${esc(finalImg)}"
+              alt="${esc(alt)}"
+              loading="lazy"
+              decoding="async"
+              onload="this.classList.add('is-loaded')"
+            >
+            <div class="media-overlay"></div>
+            ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
+          </div>
+        `;
+      }
+
+      // last resort placeholder
+      return `
+        <div class="media-wrap" style="height:${h}px">
+          <div class="media-overlay"></div>
+          ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
+        </div>
+      `;
+    }
+
+    // ✅ Video autoplay silently on hover (and pause on leave)
+    function bindHoverAutoplay(root = document){
+      // Desktop hover
+      root.addEventListener('mouseenter', async (e)=>{
+        const wrap = e.target.closest?.('.hover-play');
+        if (!wrap) return;
+        const v = wrap.querySelector('video.hover-video');
+        if (!v) return;
+
+        try{
+          v.loop = true;
+          v.muted = true;
+          // make sure it’s ready
+          if (v.readyState < 2) { v.load(); }
+          await v.play();
+        } catch {}
+      }, true);
+
+      root.addEventListener('mouseleave', (e)=>{
+        const wrap = e.target.closest?.('.hover-play');
+        if (!wrap) return;
+        const v = wrap.querySelector('video.hover-video');
+        if (!v) return;
+
+        try{
+          v.pause();
+          // rewind slightly so it feels snappy next hover
+          v.currentTime = 0;
+        } catch {}
+      }, true);
+
+      // Mobile: tap to play/pause
+      root.addEventListener('click', async (e)=>{
+        const wrap = e.target.closest?.('.hover-play');
+        if (!wrap) return;
+        const v = wrap.querySelector('video.hover-video');
+        if (!v) return;
+
+        // prevent parent card click from navigating when tapping video
+        e.preventDefault();
+        e.stopPropagation();
+
+        try{
+          if (v.paused){
+            v.loop = true;
+            v.muted = true;
+            if (v.readyState < 2) { v.load(); }
+            await v.play();
+          } else {
+            v.pause();
+            v.currentTime = 0;
+          }
+        } catch {}
+      }, true);
+    }
+
     // ===== AUTH UI + MODAL =====
     const loginBtn    = document.getElementById("loginBtn");
     const joinBtn     = document.getElementById("joinBtn");
@@ -1080,7 +1243,7 @@
     const roleField = document.getElementById('roleField');
     const authRole = document.getElementById('authRole');
 
-    let authMode = 'login'; // 'login' | 'signup'
+    let authMode = 'login';
 
     function setAuthMsg(text, kind){
       authMsg.textContent = text || '';
@@ -1093,7 +1256,6 @@
       tabSignup.classList.toggle('active', authMode === 'signup');
       authSubmit.textContent = authMode === 'signup' ? 'Sign up' : 'Log in';
 
-      // ✅ Role required on signup
       roleField.style.display = (authMode === 'signup') ? 'block' : 'none';
       if(authMode !== 'signup') authRole.value = '';
 
@@ -1132,13 +1294,9 @@
     });
 
     async function upsertProfileRole(userId, role){
-      // Assumes you have `profiles (id uuid primary key, role text, updated_at timestamptz)`
-      // If your schema differs, adjust here.
       const { error } = await supabase
         .from('profiles')
         .upsert({ id: userId, role, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-
-      // If you don't have profiles yet, this will error—safe to ignore for now, but role gating won't work.
       if (error) console.warn('Profile role upsert failed (check profiles table):', error.message);
     }
 
@@ -1162,11 +1320,8 @@
         if(authMode === 'signup'){
           const { data, error } = await supabase.auth.signUp({ email, password });
           if(error) throw error;
-
-          // Try to write role immediately if we have user id
           const uid = data?.user?.id;
           if (uid) await upsertProfileRole(uid, chosenRole);
-
           setAuthMsg('Signed up. Check your email if confirmation is enabled.', 'ok');
         } else {
           const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -1193,7 +1348,6 @@
       }
     });
 
-    // ✅ Stable dropdown open/close
     function setDropdownOpen(open){
       if(!dropdown || !profileChip) return;
       dropdown.classList.toggle('open', !!open);
@@ -1205,19 +1359,9 @@
       setDropdownOpen(!dropdown.classList.contains('open'));
     });
 
-    document.addEventListener("click", ()=>{
-      setDropdownOpen(false);
-    });
-
-    dropdown?.addEventListener('click', (e)=>{
-      // allow clicking links/buttons inside without closing before navigation
-      e.stopPropagation();
-    });
-
-    signoutBtn?.addEventListener("click", async ()=>{
-      await supabase.auth.signOut();
-      setDropdownOpen(false);
-    });
+    document.addEventListener("click", ()=> setDropdownOpen(false));
+    dropdown?.addEventListener('click', (e)=> e.stopPropagation());
+    signoutBtn?.addEventListener("click", async ()=>{ await supabase.auth.signOut(); setDropdownOpen(false); });
 
     function initialsFromEmail(email){
       const raw = (email || "").split("@")[0] || "u";
@@ -1252,7 +1396,6 @@
         initialsEl.textContent = initialsFromEmail(user.email);
         if (ddEmail) ddEmail.textContent = user.email || '—';
 
-        // Promoter menu item (optional)
         const role = await getCurrentRole(user.id);
         if (myEventsLink){
           myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
@@ -1265,10 +1408,8 @@
       }
     }
 
-    // ✅ Critical: fix auth UI across pages
     supabase.auth.onAuthStateChange(() => updateAuthUI());
 
-    // Auth helper used by buttons
     window.authUI = window.authUI || {};
     window.authUI.requireLogin = async function(callback){
       const { data: { user }} = await supabase.auth.getUser();
@@ -1279,16 +1420,6 @@
       if (callback) callback();
       return true;
     };
-
-    // ✅ Fix button routes
-    document.getElementById('startBuildBtn')?.addEventListener('click', ()=>{
-      authUI.requireLogin(()=> location.href = '/build-new.html');
-      message: "Please log in / sign up to start your first build."
-    });
-    document.getElementById('uploadSightingBtn')?.addEventListener('click', ()=>{
-      authUI.requireLogin(()=> location.href = '/sightings-new.html');
-      message: "Please log in / sign up to start your first build."
-    });
 
     // ===== Top 5 builds =====
     async function loadTopBuilds(){
@@ -1346,8 +1477,12 @@
         const isLiked = likedSet.has(b.id);
         const heart = isLiked ? '♥' : '♡';
         const img = b.thumb_url
-          ? `<img src="${b.thumb_url}" alt="${b.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`
-          : '';
+          ? `<img class="blur-up" src="${b.thumb_url}" alt="${esc(b.title)}" loading="lazy" decoding="async"
+                onload="this.classList.add('is-loaded')"
+                style="width:100%;height:100%;object-fit:cover;">`
+          : `<img class="blur-up" src="${FALLBACK_MEDIA_IMG}" alt="Build" loading="lazy" decoding="async"
+                onload="this.classList.add('is-loaded')"
+                style="width:100%;height:100%;object-fit:cover;opacity:.92;">`;
         const owner = b.owner_handle ? '@' + b.owner_handle : 'Build owner';
         const type = b.build_type || 'Build';
 
@@ -1428,14 +1563,14 @@
       };
     }
 
-    // ===== Events (last created, limit 5) =====
+    // ===== Events (limit 5) =====
     async function loadFrontEvents(){
       const strip = document.getElementById('eventsStrip');
       if (!strip) return;
 
       const { data: events, error } = await supabase
         .from('events')
-        .select('id,title,starts_at,ends_at,location,promoter_handle,team_id,created_at,cover_url')
+        .select('id,title,starts_at,ends_at,location,promoter_handle,team_id,created_at,cover_url,parish')
         .order('created_at', { ascending:false })
         .limit(5);
 
@@ -1481,12 +1616,17 @@
         const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
         const counts = countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 };
 
+        // ✅ Cover fallback to /Assets/logo.png
+        const cover = e.cover_url || FALLBACK_MEDIA_IMG;
+
         return `
           <article class="event-card" data-id="${e.id}">
-            <div class="event-image">
-              <div class="event-image-inner"></div>
-              <div class="event-tag">Event</div>
-            </div>
+            ${renderMedia({
+              imageUrl: cover,
+              alt: e.title || "Event cover",
+              height: 140,
+              badge: "Event"
+            })}
 
             <div class="event-body">
               <div class="event-title">${e.title || 'Event'}</div>
@@ -1517,18 +1657,20 @@
       strip.innerHTML = events.map(render).join('');
 
       strip.onclick = function(ev){
-        const card = ev.target.closest('.event-card');
-        if (!card) return;
-        const id = card.dataset.id;
-
-        const actionBtn = ev.target.closest('[data-action]');
+        const actionBtn = ev.target.closest?.('[data-action]');
         if (actionBtn){
+          const card = ev.target.closest('.event-card');
+          if (!card) return;
+          const id = card.dataset.id;
           const action = actionBtn.dataset.action;
           if (action === 'view') location.href = `/event.html?id=${id}`;
           if (action === 'rsvp') authUI.requireLogin(()=> location.href = `/event.html?id=${id}#rsvp`);
           return;
         }
 
+        const card = ev.target.closest('.event-card');
+        if (!card) return;
+        const id = card.dataset.id;
         location.href = `/event.html?id=${id}`;
       };
     }
@@ -1537,31 +1679,31 @@
     async function loadFrontSightings(){
       const main = document.getElementById('sightingMain');
       const sideList = document.getElementById('sightingSideList');
-      if (!main || !sideList) return;
+      const mainMedia = document.getElementById('sightingMainMedia');
+      if (!main || !sideList || !mainMedia) return;
 
       const { data, error } = await supabase
         .from('sightings_with_like_count')
-        .select('id,title,caption,location,parish,image_url,created_at,like_count,comment_count,author_handle,category')
+        .select('id,title,caption,location,parish,image_url,video_url,created_at,like_count,comment_count,author_handle,category')
         .order('created_at', { ascending:false })
         .limit(4);
 
       const mainCaptionEl = main.querySelector('.sighting-caption');
       const mainTitleEl   = main.querySelector('.sighting-title');
-      const mainBadgeEl   = main.querySelector('.sighting-badge');
       const mainMetaTop   = main.querySelector('.sighting-meta-top');
       const mainFooter    = main.querySelector('.sighting-footer');
-      const mainMedia     = main.querySelector('.sighting-media');
 
       if (error){
         console.error(error);
         mainTitleEl.textContent = "Couldn’t load sightings right now.";
         mainCaptionEl.textContent = "Refresh in a bit or check back later.";
         sideList.innerHTML = `<div class="sighting-side-item"><span class="label">No additional sightings</span><span>—</span></div>`;
+        // fallback media
+        mainMedia.innerHTML = renderMedia({ imageUrl: FALLBACK_MEDIA_IMG, alt:"Sighting", height:160 });
         return;
       }
 
       if (!data?.length){
-        mainBadgeEl.textContent = "No sightings yet";
         const labelSpan = mainMetaTop.querySelector('span');
         if (labelSpan) labelSpan.textContent = "Island feed";
         const pill = mainMetaTop.querySelector('.pill-soft');
@@ -1571,6 +1713,12 @@
         const countSpan = mainFooter.querySelector('span');
         if (countSpan) countSpan.textContent = "❤ 0 · 💬 0";
         sideList.innerHTML = `<div class="sighting-side-item"><span class="label">Feed is quiet</span><span>Waiting for first drop</span></div>`;
+
+        mainMedia.innerHTML = renderMedia({
+          imageUrl: FALLBACK_MEDIA_IMG,
+          alt: "Sighting",
+          height: 160
+        }) + `<div class="sighting-badge">Jamaica</div>`;
         return;
       }
 
@@ -1581,11 +1729,13 @@
       const timeAgo = created ? created.toLocaleDateString() : "";
       const locLine = [first.parish, first.location].filter(Boolean).join(" · ");
 
-      if (first.image_url && mainMedia){
-        mainMedia.style.backgroundImage = `url(${first.image_url})`;
-      }
-
-      mainBadgeEl.textContent = locLine || 'Jamaica';
+      // ✅ media render (video wins, else image, else fallback logo)
+      mainMedia.innerHTML = renderMedia({
+        imageUrl: first.image_url || FALLBACK_MEDIA_IMG,
+        videoUrl: first.video_url,
+        alt: first.title || "Sighting",
+        height: 160
+      }) + `<div class="sighting-badge">${esc(locLine || 'Jamaica')}</div>`;
 
       const labelSpan = mainMetaTop.querySelector('span');
       if (labelSpan) labelSpan.textContent =
@@ -1612,8 +1762,8 @@
         const handle = s.author_handle ? '@'+s.author_handle : '';
         return `
           <div class="sighting-side-item" onclick="location.href='/sighting.html?id=${s.id}'">
-            <span class="label">${loc || 'Jamaica'}</span>
-            <span>${handle} · ${when}</span>
+            <span class="label">${esc(loc || 'Jamaica')}</span>
+            <span>${esc(handle)} · ${esc(when)}</span>
           </div>`;
       }).join('');
     }
@@ -1625,7 +1775,7 @@
 
       const { data, error } = await supabase
         .from('highlights_with_like_count')
-        .select('id,title,category,image_url,body,created_at,like_count')
+        .select('id,title,category,image_url,video_url,body,created_at,like_count')
         .order('created_at', { ascending:false })
         .limit(3);
 
@@ -1644,17 +1794,22 @@
         const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : "";
         const teaser = (h.body || '').slice(0,140);
         const more = (h.body && h.body.length > 140) ? '…' : '';
-        const img = h.image_url
-          ? `<div style="border-radius:12px;overflow:hidden;margin-bottom:8px;">
-               <img src="${h.image_url}" alt="${h.title}" loading="lazy" style="width:100%;height:auto;object-fit:cover;">
-             </div>`
-          : '';
+
+        // ✅ media render (video wins, else image, else fallback logo)
+        const media = renderMedia({
+          imageUrl: h.image_url || FALLBACK_MEDIA_IMG,
+          videoUrl: h.video_url,
+          alt: h.title || "Highlight",
+          height: 160,
+          badge: ""
+        });
+
         return `
           <article class="sighting-main" onclick="location.href='/highlight.html?id=${h.id}'" style="cursor:pointer">
-            ${img}
-            <div class="section-title" style="font-size:14px; letter-spacing:.14em; margin-bottom:6px;">${h.title}</div>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">${h.category || ''} · ${dateStr}</p>
-            <p class="section-sub" style="max-width:none;">${teaser}${more}</p>
+            ${media}
+            <div class="section-title" style="font-size:14px; letter-spacing:.14em; margin:10px 0 6px;">${esc(h.title || 'Highlight')}</div>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">${esc(h.category || '')} · ${esc(dateStr)}</p>
+            <p class="section-sub" style="max-width:none;">${esc(teaser)}${more}</p>
             <p style="margin-top:8px; font-size:11px; color:var(--text-muted);">♥ ${h.like_count || 0}</p>
           </article>`;
       }).join('');
@@ -1662,6 +1817,9 @@
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async ()=>{
+      // ✅ enable hover video autoplay
+      bindHoverAutoplay(document);
+
       await updateAuthUI();
       await loadFrontEvents();
       await loadTopBuilds();

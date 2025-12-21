@@ -9,297 +9,580 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }); 
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
   </script>
 
-  <!-- Shared auth (nav + requireLogin) -->
+  <!-- Shared auth (optional, if present) -->
   <script src="/auth-ui.js"></script>
 
   <style>
     :root{
-      --bg:#050508;
-      --bg1:#141414;
-      --bg2:#1b1b1b;
-      --fg:#fff;
-      --muted:#bdbdbd;
-      --accent:#e50914;
-      --accent-yellow:#FFD93B;
-      --line:rgba(255,255,255,.08);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
-      color:var(--fg);
-      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif
-    }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:900px;margin:0 auto;padding:0 24px}
+      --bg-main:#050508;
+      --bg-card:#141414;
+      --bg-alt:#111111;
 
+      --accent-main:#128b02;
+      --accent-secondary:#FFD93B;
+      --accent-cyan:#FFD93B;
+
+      --text-main:#ffffff;
+      --text-muted:#bdbdbd;
+      --border-subtle: rgba(255,255,255,0.06);
+
+      --radius-lg:24px;
+      --radius-md:18px;
+      --shadow-soft: 0 18px 40px rgba(0,0,0,0.7);
+
+      --transition-fast: 0.18s ease-out;
+      --transition-med: 0.25s ease-out;
+
+      --nav-height:76px;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{
+      height:100%;
+      background: radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--text-main);
+      font-family:"Rajdhani", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      scroll-behavior:smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
+
+    .container{ width: min(1100px, 100% - 32px); margin:0 auto; }
+    @media (min-width:1280px){ .container{ width:min(1200px, 100% - 64px); } }
+
+    /* ===== Nav (matched to index vibe) ===== */
+    .nav-wrapper{
+      position: sticky; top:0; z-index: 50;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+    .nav-wrapper.nav-solid{
+      background: rgba(5,5,8,0.98);
+      border-bottom-color: rgba(255,255,255,0.10);
+      box-shadow: var(--shadow-soft);
+    }
     .nav{
-      position:sticky;top:0;z-index:20;
-      background:rgba(5,5,8,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(12px);
+      height: var(--nav-height);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:18px;
     }
-    .nav-inner{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 0;
-      gap:16px;
-    }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:40px;height:40px;border-radius:10px;object-fit:cover}
-    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .sub{color:var(--muted);font-size:12px}
 
-    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .logo{
+      display:flex; align-items:center; gap:10px;
+      letter-spacing:0.04em;
+    }
+    .logo-mark{
+      width:36px; height:36px; border-radius:999px;
+      border:1px solid rgba(24,201,100,0.7);
+      box-shadow: 0 0 18px rgba(24,201,100,0.35);
+      overflow:hidden; background:#000;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .logo-mark img{ width:100%; height:100%; object-fit:cover; }
+    .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; }
+    .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; }
+
+    .nav-links{
+      display:flex; gap:18px; align-items:center;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      color: var(--text-muted);
+    }
+    .nav-links a{ position:relative; padding-bottom:4px; }
+    .nav-links a::after{
+      content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
+      background:linear-gradient(to right, var(--accent-main), var(--accent-cyan));
+      transition: width var(--transition-fast);
+      border-radius:999px;
+    }
+    .nav-links a:hover{ color:var(--text-main); }
+    .nav-links a:hover::after{ width:100%; }
+
+    .nav-cta{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill-viewing{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.25);
+      font-size:11px;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color: var(--text-muted);
+      white-space:nowrap;
+    }
 
     .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:8px 14px;border-radius:999px;
-      border:1px solid var(--line);
-      cursor:pointer;background:transparent;color:var(--fg);
-      font-family:inherit;font-size:13px;
-      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      border-radius:999px; padding:8px 16px;
+      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      border:1px solid transparent; background:transparent;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast), transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+      color:#fff;
     }
-    .btn.primary{
-      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-      color:#fff;border-color:rgba(229,9,20,.9);
-      box-shadow:0 0 18px rgba(229,9,20,.5);
+    .btn-primary{
+      background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
+      box-shadow: 0 0 24px rgba(24,201,100,0.55);
+      border-color: rgba(24,201,100,0.85);
     }
-    .btn.primary:hover{
-      box-shadow:0 0 26px rgba(229,9,20,.7);
-      transform:translateY(-1px);
+    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
+    .btn-ghost{
+      border-color: rgba(255,255,255,0.12);
+      color: var(--text-muted);
     }
-    .btn.yellow{
-      background:radial-gradient(circle at top left, #ffe58a, var(--accent-yellow));
-      color:#111;
-      border-color:rgba(255,217,59,.7);
-      box-shadow:0 0 18px rgba(255,217,59,.25);
-      font-weight:700;
+    .btn-ghost:hover{
+      color: var(--text-main);
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.02);
     }
-    .btn.yellow:hover{
-      transform:translateY(-1px);
-      box-shadow:0 0 26px rgba(255,217,59,.32);
-    }
+    .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
 
-    .section{padding:40px 0 52px}
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      overflow:hidden;
-      box-shadow:0 40px 120px -30px rgba(0,0,0,.7);
-    }
-    .pad{padding:18px}
-    .meta{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 0}
-    .chip{
-      background:var(--bg2);
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:7px 11px;
-      font-size:13px;
-    }
-    .row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-    .input{
-      width:100%;background:var(--bg2);border:1px solid var(--line);
-      color:#fff;padding:12px;border-radius:12px;outline:none;
-      font-family:inherit;font-size:14px;
-    }
-    textarea.input{resize:vertical}
-    .comment{border-top:1px solid var(--line);padding:14px 0}
-    .comment .actions{display:flex;gap:8px;margin-top:8px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .grid{display:grid;gap:12px}
-    .cols-2{grid-template-columns:1fr 1fr}
-    @media(max-width:760px){.cols-2{grid-template-columns:1fr}}
-
-    .presence{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
-
-    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .profile-menu{position:relative;display:flex;align-items:center;}
+    .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
-      width:32px;height:32px;border-radius:50%;
-      background:var(--bg2);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      width:32px; height:32px; border-radius:50%;
+      background:var(--bg-card);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:600; cursor:pointer;
+      border:1px solid rgba(255,255,255,0.18);
+      transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
       font-size:13px;
+      user-select:none;
     }
     .profile-chip:hover{
-      border-color:rgba(255,255,255,.32);
-      box-shadow:0 0 16px rgba(255,217,59,.6);
+      border-color:rgba(255,255,255,0.32);
+      box-shadow:0 0 16px rgba(255,217,59,0.6);
       transform:translateY(-1px);
     }
     .dropdown{
-      position:absolute;right:0;top:40px;
-      background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.6);
-      border-radius:16px;display:flex;flex-direction:column;
-      min-width:190px;z-index:999;
-    }
-    .dropdown a,.dropdown button{
-      padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:13px;
-      width:100%;cursor:pointer;font-family:inherit;
-    }
-    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
-
-    @media(max-width:640px){
-      .nav-inner{flex-wrap:wrap}
-      .menu{order:3;width:100%;justify-content:flex-start}
-      .nav-auth{order:2;width:100%;justify-content:flex-end}
-    }
-
-    /* ===== Team badge ===== */
-    .team-badge{
-      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.25);
-      padding:10px 12px;border-radius:999px;margin-top:12px;
-    }
-    .team-badge img{
-      width:28px;height:28px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.12);
-    }
-    .team-badge .pill{
-      display:inline-flex;align-items:center;
-      padding:5px 10px;border-radius:999px;
-      background:var(--accent-yellow);color:#111;font-size:12px;border:1px solid rgba(255,217,59,.65);
-      font-weight:700;
-    }
-
-    /* ===== Payment / RSVP code blocks ===== */
-    .info-block{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.22);
+      position:absolute; right:0; top:44px;
+      background:rgba(10,10,14,0.96);
+      border:1px solid var(--border-subtle);
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
       border-radius:16px;
-      padding:12px;
+      display:none;
+      flex-direction:column;
+      min-width:240px;
+      z-index:999;
+      backdrop-filter: blur(16px);
+      overflow:hidden;
+    }
+    .dropdown.open{ display:flex; }
+    .dd-head{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
+    .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dropdown a, .dropdown button{
+      padding:10px 14px; text-align:left;
+      border:none; background:transparent; color:var(--text-main);
+      font-size:13px; width:100%; cursor:pointer;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
+    .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
+    .dd-badge{
+      font-size:10px; text-transform:uppercase; letter-spacing:.14em;
+      padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--text-muted);
+      background:rgba(0,0,0,0.25);
+      white-space:nowrap;
+    }
+
+    @media (max-width: 860px){
+      .nav-links{ display:none; }
+      .logo-text-sub{ display:none; }
+    }
+
+    /* ===== Page layout ===== */
+    .page{
+      min-height: 100vh;
+      position:relative;
+    }
+    .page::after{
+      content:""; position:fixed; inset-inline:0; bottom:-120px; height:220px;
+      background: radial-gradient(circle at bottom, rgba(24, 201, 100, 0.22), transparent 60%);
+      pointer-events:none; z-index:0;
+    }
+
+    .section{ position:relative; padding: 34px 0 52px; z-index:1; }
+    .card{
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
+      box-shadow: var(--shadow-soft);
+      overflow:hidden;
+      position:relative;
+    }
+    .pad{ padding:16px; }
+    .muted{ color: var(--text-muted); }
+    h1,h2{ font-family:"Bebas Neue"; letter-spacing:2px; text-transform:uppercase; }
+    h2{ font-size:36px; margin-bottom:12px; }
+
+    /* ===== Premium event header (unique cool feature) ===== */
+    .event-header{
+      display:grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap:14px;
+      align-items:stretch;
+      padding:14px;
+    }
+    @media (max-width:900px){
+      .event-header{ grid-template-columns:1fr; }
+    }
+
+    .poster{
+      border-radius: 18px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.08);
+      position:relative;
+      height: 320px; /* controlled cover size */
+      background: #0b0b10;
+    }
+    @media (max-width:600px){
+      .poster{ height:240px; }
+    }
+    .poster::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255,217,59,0.22), transparent 55%),
+        radial-gradient(circle at 85% 85%, rgba(24,201,100,0.25), transparent 55%),
+        linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.55));
+      pointer-events:none;
+    }
+    .poster img{
+      width:100%; height:100%;
+      object-fit:cover;
+      transform: scale(1.02);
+    }
+    .poster-badge{
+      position:absolute;
+      left:12px; bottom:12px;
+      z-index:2;
+      display:inline-flex; align-items:center; gap:8px;
+      border-radius:999px;
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.55);
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.18em;
+      color:#fff;
+      backdrop-filter: blur(10px);
+    }
+    .poster-badge .dot{
+      width:7px; height:7px; border-radius:999px;
+      background: var(--accent-secondary);
+      box-shadow: 0 0 10px rgba(255,217,59,1);
+    }
+
+    .event-panel{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.25);
+      padding:14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .event-panel::before{
+      content:"";
+      position:absolute; inset:-30%;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255,217,59,0.12), transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(24,201,100,0.18), transparent 50%);
+      opacity:0.9;
+      pointer-events:none;
+    }
+    .event-panel > *{ position:relative; z-index:1; }
+
+    .event-title{
+      font-size:46px;
+      line-height:0.95;
+      margin-bottom:10px;
+    }
+    @media (max-width:600px){
+      .event-title{ font-size:38px; }
+    }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      border-radius:999px;
+      padding:7px 11px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.02);
+      font-size:12px;
+      color: var(--text-muted);
+      letter-spacing:0.10em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .chip strong{ color:#fff; font-weight:700; letter-spacing:0.06em; text-transform:none; }
+
+    .desc{
+      margin-top:12px;
+      color: var(--text-muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    /* RSVP rail */
+    .rsvp-rail{
       margin-top:14px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      padding:12px;
+      backdrop-filter: blur(12px);
+    }
+    .rsvp-top{
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .rsvp-title{
+      font-size:12px;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+      color: var(--text-muted);
+    }
+    .rsvp-status{ font-size:12px; color: var(--text-muted); }
+    .rsvp-actions{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .btn-xs{ padding:6px 12px; font-size:10px; letter-spacing:0.16em; }
+    .btn-outline-light{
+      border-color: rgba(255,255,255,0.24);
+      color: var(--text-main);
+      background: rgba(0,0,0,0.25);
+    }
+    .btn-outline-light:hover{ background: rgba(255,255,255,0.05); }
+
+    .input{
+      width:100%;
+      background: rgba(5,5,10,0.9);
+      border:1px solid rgba(255,255,255,0.10);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:12px;
+      outline:none;
+      font-family:inherit;
+      font-size:14px;
+    }
+
+    /* Tickets */
+    .info-block{
+      margin-top:12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      padding:12px;
     }
     .info-title{
       font-size:12px;
       letter-spacing:.18em;
       text-transform:uppercase;
-      color:var(--muted);
+      color:var(--text-muted);
       margin-bottom:8px;
     }
+    .pay-row{
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:center; justify-content:space-between;
+    }
+    .btn-yellow{
+      background: radial-gradient(circle at top left, #ffe58a, var(--accent-secondary));
+      color:#111;
+      border-color: rgba(255,217,59,0.7);
+      box-shadow: 0 0 18px rgba(255,217,59,0.25);
+      font-weight:800;
+    }
+    .btn-yellow:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 0 26px rgba(255,217,59,0.32);
+    }
+
     .code-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
+      display:inline-flex; align-items:center; gap:8px;
       border-radius:999px;
       padding:8px 12px;
       border:1px solid rgba(255,217,59,.25);
-      background:rgba(255,217,59,.08);
-      font-weight:800;
+      background: rgba(255,217,59,.08);
+      font-weight:900;
       letter-spacing:.12em;
       text-transform:uppercase;
     }
+
+    /* Team badge */
+    .team-badge{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.22);
+      padding:10px 12px; border-radius:999px;
+      margin-top:12px;
+    }
+    .team-badge img{
+      width:28px; height:28px; border-radius:8px;
+      object-fit:cover;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .team-badge .pill{
+      display:inline-flex; align-items:center;
+      padding:5px 10px; border-radius:999px;
+      background: var(--accent-secondary);
+      color:#111;
+      font-size:12px;
+      border:1px solid rgba(255,217,59,.65);
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+
+    /* Comments */
+    .comment-form{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin:10px 0 16px;
+    }
+    .comment-form .input{ flex:1; min-width: 220px; }
+    .comment{
+      border-top:1px solid rgba(255,255,255,0.06);
+      padding:14px 16px;
+    }
+    .comment .meta{
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      font-size:12px; color:var(--text-muted);
+      margin-bottom:8px;
+    }
+    .comment .actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+
+    /* Blur-up */
+    .blur-up{
+      filter: blur(18px);
+      transform: scale(1.03);
+      transition: filter 350ms ease, transform 350ms ease;
+    }
+    .blur-up.is-loaded{
+      filter: blur(0);
+      transform: scale(1.02);
+    }
   </style>
 </head>
+
 <body>
-  <nav class="nav">
-    <div class="container nav-inner">
-      <a href="/events.html" class="brand" aria-label="Back to events">
-        <img src="/Assets/logo.png" class="logo" alt="">
-        <div>
-          <h1>ROK RACERS JA</h1>
-          <small class="sub">Event</small>
-        </div>
-      </a>
+  <div class="page">
+    <!-- NAV -->
+    <div class="nav-wrapper" id="navWrapper">
+      <div class="container nav">
+        <a href="/index.html" class="logo">
+          <div class="logo-mark">
+            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+          </div>
+          <div>
+            <div class="logo-text-main">ROK RACERS JA</div>
+            <div class="logo-text-sub">Event</div>
+          </div>
+        </a>
 
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
-        <span class="presence">👀 <span id="viewerCount">0</span> viewing</span>
+        <nav class="nav-links">
+          <a href="/events.html">Events</a>
+          <a href="/garage.html">Garage</a>
+          <a href="/teams.html">Community</a>
+          <a href="/about.html">About</a>
+          <a href="/marketplace.html">Marketplace</a>
+          <a href="/store.html">Store</a>
+        </nav>
 
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/about.html">About</a>
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/teams.html">Community</a>
-          <a href="/marketplace.html" class="btn" role="menuitem">Marketplace</a>
-          <a href="/store.html" class="btn" role="menuitem">Store</a>
-        </div>
+        <div class="nav-cta">
+          <span class="pill-viewing">👀 <span id="viewerCount">0</span> viewing</span>
 
-        <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Log in</button>
-          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+              <span id="profileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
+
+            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+              <div class="dd-head">
+                <div class="dd-title">Signed in as</div>
+                <div class="dd-email" id="ddEmail">—</div>
+              </div>
+
+              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+              <div class="dd-sep"></div>
+
               <a href="/garage.html">My Garage</a>
               <a href="/tickets.html">My Tickets</a>
               <a href="/likes-builds.html">Liked Builds</a>
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
-              <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" type="button">Sign out</button>
+
+              <div class="dd-sep"></div>
+              <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </nav>
 
-  <main class="container">
-    <section class="section">
-      <div id="eventCard" class="card">
-        <div class="pad sub">Loading…</div>
-      </div>
-    </section>
+    <!-- CONTENT -->
+    <main class="container">
+      <section class="section">
+        <div id="eventCard" class="card">
+          <div class="pad muted">Loading…</div>
+        </div>
+      </section>
 
-    <section class="section">
-      <h2 style="font-size:36px;letter-spacing:2px;text-transform:uppercase;">Comments</h2>
-      <div id="commentForm" class="row" style="margin:10px 0 16px; display:none">
-        <input id="commentText" class="input" placeholder="Share your thoughts…"/>
-        <button id="commentPost" class="btn primary">Post</button>
-      </div>
-      <div id="comments" class="card">
-        <div class="pad sub">Loading comments…</div>
-      </div>
-    </section>
-  </main>
+      <section class="section">
+        <h2>Comments</h2>
+
+        <div id="commentForm" class="comment-form" style="display:none">
+          <input id="commentText" class="input" placeholder="Share your thoughts…"/>
+          <button id="commentPost" class="btn btn-primary" type="button">Post</button>
+        </div>
+
+        <div id="comments" class="card">
+          <div class="pad muted">Loading comments…</div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script>
     const eventId = new URLSearchParams(location.search).get('id');
     const el = (id)=>document.getElementById(id);
+
     const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[m]));
 
     function fmt(d){
-      if(!d) return "";
+      if(!d) return "TBA";
       const dt = new Date(d);
       return dt.toLocaleString(undefined,{
         weekday:'short',month:'short',day:'2-digit',
-        hour:'2-digit',minute:'2-digit'
+        hour:'numeric',minute:'2-digit'
       });
-    }
-
-    // RSVP code generator: RR-8F3K2
-    function generateRsvpCode(){
-      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
-      let out = "RR-";
-      for (let i=0;i<5;i++){
-        out += alphabet[Math.floor(Math.random()*alphabet.length)];
-      }
-      return out;
     }
 
     function isMissingColumnError(err){
@@ -307,114 +590,183 @@
       return msg.includes("column") && msg.includes("does not exist");
     }
 
-    let currentUserId = null;
+    // RSVP code generator: RR-8F3K2
+    function generateRsvpCode(){
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let out = "RR-";
+      for (let i=0;i<5;i++) out += alphabet[Math.floor(Math.random()*alphabet.length)];
+      return out;
+    }
 
-    async function requireLogin(callback){
-      if (window.authUI && typeof authUI.requireLogin === 'function'){
-        return authUI.requireLogin(callback);
+    // ---------- Premium helpers ----------
+    function applyBlurUp(img){
+      if(!img) return;
+      img.classList.add('blur-up');
+      const done = ()=> img.classList.add('is-loaded');
+      if (img.complete) done();
+      else img.addEventListener('load', done, { once:true });
+      img.addEventListener('error', done, { once:true });
+    }
+
+    // ---------- AUTH + NAV ----------
+    const navWrapper = el('navWrapper');
+    function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
+    updateNavSolid();
+    window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+    const loginBtn = el('loginBtn');
+    const joinBtn = el('joinBtn');
+    const profileMenu = el('profileMenu');
+    const profileChip = el('profileChip');
+    const dropdown = el('dropdown');
+    const initialsEl = el('profileInitials');
+    const ddEmail = el('ddEmail');
+    const signoutBtn = el('signoutBtn');
+
+    function setDropdownOpen(open){
+      if(!dropdown || !profileChip) return;
+      dropdown.classList.toggle('open', !!open);
+      profileChip.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    profileChip?.addEventListener('click', (e)=>{ e.stopPropagation(); setDropdownOpen(!dropdown.classList.contains('open')); });
+    dropdown?.addEventListener('click', (e)=> e.stopPropagation());
+    document.addEventListener('click', ()=> setDropdownOpen(false));
+
+    signoutBtn?.addEventListener('click', async ()=>{
+      await supabase.auth.signOut();
+      setDropdownOpen(false);
+    });
+
+    function initialsFromEmail(email){
+      const raw = (email || "").split("@")[0] || "u";
+      const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
+      const parts = cleaned.split(" ").filter(Boolean);
+      let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
+      return (initials || 'U').toUpperCase();
+    }
+
+    function openAuth(mode){
+      // If you have a shared modal system in auth-ui.js, it can hook here.
+      // For now: fallback to simple prompt-based login to avoid blocking.
+      // BUT: if your auth-ui.js exposes authUI.openAuth, use it.
+      if (window.authUI?.openAuth) return window.authUI.openAuth(mode);
+
+      alert("Use the homepage Log In / Join to sign in (auth modal). Then come back here.");
+    }
+
+    loginBtn?.addEventListener('click', ()=> openAuth('login'));
+    joinBtn?.addEventListener('click', ()=> openAuth('signup'));
+
+    async function updateAuthUI(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user){
+        loginBtn.style.display = "none";
+        joinBtn.style.display = "none";
+        profileMenu.style.display = "flex";
+        initialsEl.textContent = initialsFromEmail(user.email);
+        if (ddEmail) ddEmail.textContent = user.email || '—';
+      } else {
+        loginBtn.style.display = "inline-flex";
+        joinBtn.style.display = "inline-flex";
+        profileMenu.style.display = "none";
+        setDropdownOpen(false);
       }
-      const { data: { user } = {} } = await supabase.auth.getUser();
+    }
+
+    // Unified requireLogin
+    async function requireLogin(callback){
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user){
-        alert("Please sign in first.");
+        openAuth('login');
         return false;
       }
       if (callback) callback(user);
       return true;
     }
 
+    // ---------- FK FIX: Ensure referenced user row exists ----------
+    async function ensureUserRow(user){
+      if(!user?.id) return;
+
+      // Try profiles first (most common pattern)
+      try{
+        const { error } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email || null,
+            updated_at: new Date().toISOString()
+          }, { onConflict:'id' });
+
+        if (!error) return;
+      } catch {}
+
+      // Fallback: some schemas use a custom users table with FK target
+      try{
+        await supabase
+          .from('users')
+          .upsert({
+            id: user.id,
+            email: user.email || null,
+            updated_at: new Date().toISOString()
+          }, { onConflict:'id' });
+      } catch {}
+    }
+
+    // ---------- Page state ----------
+    let currentUserId = null;
+
     async function syncPageAuth(){
       const { data: { user } } = await supabase.auth.getUser();
       currentUserId = user?.id || null;
-      const form = el('commentForm');
-      if(form) form.style.display = user ? 'flex' : 'none';
+
+      // Ensure FK target row exists once logged in
+      if (user) await ensureUserRow(user);
+
+      el('commentForm').style.display = user ? 'flex' : 'none';
     }
 
-    supabase.auth.onAuthStateChange(async () => {
+    supabase.auth.onAuthStateChange(async ()=>{
       await syncPageAuth();
+      await updateAuthUI();
       await loadMyRsvp();
       await loadMyBuilds();
     });
 
-    async function refreshRsvpCounts(){
-      const countsEl = el('rsvpCounts');
-      if(!countsEl || !eventId) return;
-
-      const { data, error } = await supabase
-        .from('event_rsvp_counts')
-        .select('yes_count,maybe_count,no_count')
-        .eq('event_id', eventId)
-        .maybeSingle();
-
-      if(error || !data){
-        countsEl.textContent = '';
-        return;
-      }
-
-      countsEl.textContent = `✅ ${data.yes_count} going • 🤔 ${data.maybe_count} maybe • ❌ ${data.no_count} not going`;
-    }
-
+    // ---------- Team badge ----------
     async function renderTeamForEvent(eventRow){
       const host = el('eventTeamBadge');
       if(!host) return;
-
-      if(!eventRow?.team_id){
-        host.style.display = 'none';
-        return;
-      }
+      if(!eventRow?.team_id){ host.style.display='none'; return; }
 
       const { data: team, error: tErr } = await supabase
         .from('teams')
         .select('id,name,logo_url,is_promoter')
         .eq('id', eventRow.team_id)
-        .single();
+        .maybeSingle();
 
-      if(tErr || !team){
-        console.error(tErr);
-        host.style.display = 'none';
-        return;
-      }
+      if(tErr || !team){ host.style.display='none'; return; }
 
-      const { data:{ user } } = await supabase.auth.getUser();
-      let role = null;
-
-      if(user){
-        const { data: mem } = await supabase
-          .from('team_members')
-          .select('role,status')
-          .eq('team_id', team.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        role = (mem && mem.status === 'active') ? mem.role : null;
-      }
-
-      const canManage = role && ['owner','manager'].includes(role);
-
-      host.style.display = 'flex';
+      host.style.display = 'block';
       host.innerHTML = `
         <div class="team-badge">
-          ${team.logo_url ? `<img src="${escapeHTML(team.logo_url)}" alt="">` : ``}
-          <div style="font-weight:700">${escapeHTML(team.name)}</div>
-          ${team.is_promoter ? `<span class="pill">PROMOTER</span>` : ``}
-          <a class="btn" href="/team.html?id=${team.id}" style="margin-left:auto">View team</a>
-          ${canManage ? `<a class="btn primary" href="/admin-team.html?team=${team.id}">Manage</a>` : ``}
+          ${team.logo_url ? `<img src="${escapeHTML(team.logo_url)}" alt="" class="team-logo">` : ``}
+          <div style="font-weight:900; letter-spacing:.04em">${escapeHTML(team.name)}</div>
+          ${team.is_promoter ? `<span class="pill">Promoter</span>` : ``}
+          <a class="btn btn-ghost btn-pill-sm" href="/team.html?id=${team.id}" style="margin-left:auto">View</a>
         </div>
       `;
+
+      // blur-up team logo if present
+      const tImg = host.querySelector('.team-logo');
+      if(tImg) applyBlurUp(tImg);
     }
 
-    function openExternalPayment(url){
-      if(!url) return;
-      try{
-        window.open(url, "_blank", "noopener,noreferrer");
-      }catch(e){
-        location.href = url;
-      }
-    }
-
+    // ---------- Event render ----------
     async function loadEvent(){
       const card = el('eventCard');
       if(!eventId){
-        card.innerHTML = `<div class="pad sub">Missing event ID.</div>`;
+        card.innerHTML = `<div class="pad muted">Missing event ID.</div>`;
         return;
       }
 
@@ -429,380 +781,139 @@
         .maybeSingle();
 
       if(error || !data){
-        card.innerHTML = `<div class="pad sub">Event not found.</div>`;
+        card.innerHTML = `<div class="pad muted">Event not found.</div>`;
         return;
       }
 
-      document.title = `${data.title} — ROK Racers JA`;
+      document.title = `${data.title || 'Event'} — ROK Racers JA`;
 
-      const time = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
-      const canEdit = !!(currentUserId && data.created_by && data.created_by === currentUserId);
-
-      const hostTeamPill = data.teams?.id
-        ? `<a class="chip" href="/team.html?id=${data.teams.id}" style="text-decoration:none">
-            🏁 Host: ${escapeHTML(data.teams.name || 'Team')}
-          </a>`
-        : '';
-
+      const timeLine = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
+      const cover = data.cover_url ? data.cover_url : "/Assets/logo.png";
       const hasPay = !!data.payment_url;
 
       card.innerHTML = `
-        ${data.cover_url ? `<img src="${escapeHTML(data.cover_url)}" alt="${escapeHTML(data.title)}" style="width:100%;display:block">` : ""}
-
-        <div class="pad">
-          <h2 style="font-size:42px;letter-spacing:2px;text-transform:uppercase;">${escapeHTML(data.title)}</h2>
-          <div class="meta">
-            <span class="chip">🕒 ${escapeHTML(time)}</span>
-            ${data.location ? `<span class="chip">📍 ${escapeHTML(data.location)}</span>` : ""}
-            ${hostTeamPill}
+        <div class="event-header">
+          <div class="poster">
+            <img id="coverImg" src="${escapeHTML(cover)}" alt="${escapeHTML(data.title || 'Event')}" loading="eager" />
+            <div class="poster-badge"><span class="dot"></span> Event Poster</div>
           </div>
 
-          <div id="eventTeamBadge" style="display:none"></div>
+          <div class="event-panel">
+            <h1 class="event-title">${escapeHTML(data.title || 'Event')}</h1>
 
-          <p style="margin-top:14px">
-            ${escapeHTML(data.description||"").replace(/\n/g,'<br>')}
-          </p>
-
-          <!-- Payment block (external link) -->
-          <div id="paymentBlock" class="info-block" style="${hasPay ? '' : 'display:none'}">
-            <div class="info-title">Tickets</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-              <div class="sub" style="font-size:13px;max-width:520px">
-                ${escapeHTML(data.payment_instructions || "Pay using the promoter's external link. If you're paying by transfer, use your RSVP code as reference where possible.")}
-              </div>
-              <button id="payNowBtn" class="btn yellow" type="button">
-                ${escapeHTML(data.payment_label || "Pay now (external)")} ↗
-              </button>
+            <div class="chips">
+              <span class="chip">🕒 <strong>${escapeHTML(timeLine)}</strong></span>
+              ${data.location ? `<span class="chip">📍 <strong>${escapeHTML(data.location)}</strong></span>` : ``}
+              ${data.teams?.id ? `<a class="chip" href="/team.html?id=${data.teams.id}">🏁 <strong>Host: ${escapeHTML(data.teams.name || 'Team')}</strong></a>` : ``}
             </div>
-          </div>
 
-          <!-- RSVP code block -->
-          <div id="rsvpCodeBlock" class="info-block" style="display:none">
-            <div class="info-title">Your RSVP code</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-              <span class="code-pill">🎟 <span id="rsvpCodeText">RR-XXXXX</span></span>
-              <div style="display:flex;gap:10px;flex-wrap:wrap">
-                <button id="copyRsvpCode" class="btn" type="button">Copy</button>
-                <button id="shareRsvpCode" class="btn" type="button">Share</button>
+            <div id="eventTeamBadge" style="display:none"></div>
+
+            ${data.description ? `<div class="desc">${escapeHTML(data.description).replace(/\n/g,'<br>')}</div>` : `<div class="desc">No description yet.</div>`}
+
+            <!-- Tickets -->
+            <div id="paymentBlock" class="info-block" style="${hasPay ? '' : 'display:none'}">
+              <div class="info-title">Tickets</div>
+              <div class="pay-row">
+                <div class="muted" style="font-size:13px; max-width:520px">
+                  ${escapeHTML(data.payment_instructions || "Pay using the promoter's external link. If you're paying by transfer, use your RSVP code as reference where possible.")}
+                </div>
+                <button id="payNowBtn" class="btn btn-yellow btn-pill-sm" type="button">
+                  ${escapeHTML(data.payment_label || "Pay now (external)")} ↗
+                </button>
               </div>
             </div>
-            <div class="sub" style="margin-top:8px;font-size:13px">
-              Use this at the gate, or as your transfer reference if the promoter requests it.
-            </div>
-          </div>
 
-          <div class="toolbar" id="ownerToolbar" style="${canEdit?'':'display:none'}">
-            <button class="btn" id="editBtn">Edit</button>
-            <button class="btn" id="deleteBtn">Delete</button>
-          </div>
-
-          <div class="grid cols-2" style="margin-top:12px" id="rsvp">
-            <div>
-              <label class="sub" for="attachBuild">Attach build (optional):</label>
-              <select id="attachBuild" class="input" style="max-width:320px">
-                <option value="">— None —</option>
-              </select>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-                <button class="btn" data-rsvp="yes">RSVP: Yes</button>
-                <button class="btn" data-rsvp="maybe">Maybe</button>
-                <button class="btn" data-rsvp="no">No</button>
-                <span id="rsvpStatus" class="sub" style="margin-left:8px"></span>
+            <!-- RSVP code -->
+            <div id="rsvpCodeBlock" class="info-block" style="display:none">
+              <div class="info-title">Your RSVP code</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+                <span class="code-pill">🎟 <span id="rsvpCodeText">RR-XXXXX</span></span>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button id="copyRsvpCode" class="btn btn-ghost btn-pill-sm" type="button">Copy</button>
+                  <button id="shareRsvpCode" class="btn btn-ghost btn-pill-sm" type="button">Share</button>
+                </div>
               </div>
-              <span id="rsvpCounts" class="sub" style="font-size:13px"></span>
+              <div class="muted" style="margin-top:8px;font-size:13px">
+                Use this at the gate, or as your transfer reference if the promoter requests it.
+              </div>
             </div>
-          </div>
 
-          <div id="editForm" style="display:none;margin-top:14px" class="grid cols-2">
-            <input id="e_title" class="input" placeholder="Title" value="${escapeHTML(data.title)}">
-            <input id="e_location" class="input" placeholder="Location" value="${escapeHTML(data.location||'')}">
-            <input id="e_starts" class="input" placeholder="Starts (YYYY-MM-DD HH:MM)" value="${data.starts_at? new Date(data.starts_at).toISOString().slice(0,16).replace('T',' '):''}">
-            <input id="e_ends" class="input" placeholder="Ends (YYYY-MM-DD HH:MM)" value="${data.ends_at? new Date(data.ends_at).toISOString().slice(0,16).replace('T',' '):''}">
-            <input id="e_cover" class="input" placeholder="Cover URL" value="${escapeHTML(data.cover_url||'')}">
-            <textarea id="e_desc" class="input" rows="4" placeholder="Description">${escapeHTML(data.description||'')}</textarea>
+            <!-- RSVP rail -->
+            <div class="rsvp-rail" id="rsvp">
+              <div class="rsvp-top">
+                <div class="rsvp-title">RSVP + Attach Build</div>
+                <div class="rsvp-status" id="rsvpStatus"></div>
+              </div>
 
-            <!-- Optional: allow editing payment fields if you want (kept hidden unless you add UI later) -->
-            <input id="e_pay_url" class="input" placeholder="Payment URL (external)" value="${escapeHTML(data.payment_url||'')}">
-            <input id="e_pay_label" class="input" placeholder="Payment button label" value="${escapeHTML(data.payment_label||'')}">
-            <textarea id="e_pay_ins" class="input" rows="3" placeholder="Payment instructions">${escapeHTML(data.payment_instructions||'')}</textarea>
+              <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+                <div>
+                  <div class="muted" style="font-size:12px; margin-bottom:6px; letter-spacing:.10em; text-transform:uppercase;">Attach your build (public owned)</div>
+                  <select id="attachBuild" class="input">
+                    <option value="">— None —</option>
+                  </select>
+                </div>
 
-            <div style="display:flex;gap:10px">
-              <button id="saveEdit" class="btn primary">Save</button>
-              <button id="cancelEdit" class="btn">Cancel</button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                  <button class="btn btn-outline-light btn-xs" type="button" data-rsvp="yes">RSVP: Yes</button>
+                  <button class="btn btn-outline-light btn-xs" type="button" data-rsvp="maybe">Maybe</button>
+                  <button class="btn btn-outline-light btn-xs" type="button" data-rsvp="no">No</button>
+                  <span class="muted" id="rsvpCounts" style="font-size:12px; margin-left:auto;"></span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>`;
 
-      await renderTeamForEvent(data);
+          </div>
+        </div>
+      `;
+
+      // Blur-up cover
+      const coverImg = el('coverImg');
+      if (coverImg) applyBlurUp(coverImg);
 
       // Wire payment button
       const payBtn = el('payNowBtn');
       if (payBtn && data.payment_url){
-        payBtn.onclick = ()=> openExternalPayment(data.payment_url);
+        payBtn.onclick = ()=> {
+          try{ window.open(data.payment_url, "_blank", "noopener,noreferrer"); }
+          catch{ location.href = data.payment_url; }
+        };
       }
 
-      // RSVP button handlers
+      // Wire RSVP buttons
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
-        btn.addEventListener('click', ()=> requireLogin(() => upsertRsvp(btn.dataset.rsvp)));
+        btn.addEventListener('click', ()=> requireLogin(async (user)=> {
+          await ensureUserRow(user);
+          await upsertRsvp(btn.dataset.rsvp);
+        }));
       });
 
-      // Owner edit/delete
-      if(canEdit){
-        el('editBtn').onclick = ()=> el('editForm').style.display = 'block';
-        el('cancelEdit').onclick = ()=> el('editForm').style.display = 'none';
-        el('saveEdit').onclick = async ()=>{
-          const title = el('e_title').value.trim();
-          const locationTxt = el('e_location').value.trim() || null;
-          const startsAt = el('e_starts').value.trim();
-          const endsAt = el('e_ends').value.trim();
-          const cover = el('e_cover').value.trim() || null;
-          const desc = el('e_desc').value.trim() || null;
-
-          // payment fields
-          const payUrl = (el('e_pay_url')?.value || '').trim() || null;
-          const payLabel = (el('e_pay_label')?.value || '').trim() || null;
-          const payIns = (el('e_pay_ins')?.value || '').trim() || null;
-
-          const payload = {
-            title,
-            location: locationTxt,
-            cover_url: cover,
-            description: desc,
-            payment_url: payUrl,
-            payment_label: payLabel,
-            payment_instructions: payIns
-          };
-
-          payload.starts_at = startsAt ? new Date(startsAt.replace(' ','T')).toISOString() : null;
-          payload.ends_at = endsAt ? new Date(endsAt.replace(' ','T')).toISOString() : null;
-
-          const { error } = await supabase.from('events').update(payload).eq('id', eventId);
-
-          // If payment columns don't exist yet, don't block saving core fields
-          if (error && isMissingColumnError(error)){
-            delete payload.payment_url;
-            delete payload.payment_label;
-            delete payload.payment_instructions;
-            const { error: e2 } = await supabase.from('events').update(payload).eq('id', eventId);
-            if (e2) return alert('Update failed: ' + e2.message);
-          } else if (error){
-            return alert('Update failed: ' + error.message);
-          }
-
-          await loadEvent();
-          alert('Saved.');
-        };
-        el('deleteBtn').onclick = async ()=>{
-          if(!confirm('Delete this event? This cannot be undone.')) return;
-          const { error } = await supabase.from('events').delete().eq('id', eventId);
-          if(error) return alert('Delete failed: ' + error.message);
-          location.href = '/events.html';
-        };
-      }
-
+      await renderTeamForEvent(data);
       await loadMyBuilds();
       await loadMyRsvp();
       await refreshRsvpCounts();
 
-      // If you land on #rsvp (from homepage button), scroll nicely
       if (location.hash === '#rsvp'){
-        setTimeout(()=> document.getElementById('rsvp')?.scrollIntoView({ behavior:'smooth', block:'start' }), 250);
+        setTimeout(()=> document.getElementById('rsvp')?.scrollIntoView({ behavior:'smooth', block:'start' }), 200);
       }
     }
 
-    function renderComment(c){
-      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
-      const isOwner = currentUserId && (c.user_id === currentUserId);
-      return `
-        <div class="comment" data-id="${c.id}">
-          <div class="sub" style="margin-bottom:6px">${escapeHTML(dt)}</div>
-          <div class="body" data-mode="view">${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
-          ${isOwner ? `
-            <div class="actions">
-              <button class="btn" data-action="edit">Edit</button>
-              <button class="btn" data-action="delete">Delete</button>
-            </div>` : ``}
-        </div>`;
-    }
-
-    async function loadComments(){
-      const wrap = el('comments');
-      const { data, error } = await supabase
-        .from('comments')
-        .select('id, body, created_at, user_id, target_type, target_id')
-        .eq('target_type', 'event')
-        .eq('target_id', eventId)
-        .order('created_at', { ascending: true });
-
-      if(error){
-        wrap.innerHTML = `<div class="pad sub">Couldn’t load comments.</div>`;
-        return;
-      }
-      if(!data || !data.length){
-        wrap.innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
-        return;
-      }
-      wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-      el('commentsInner').innerHTML = data.map(renderComment).join('');
-    }
-
-    async function postComment(){
-      const input = el('commentText');
-      const text = input.value.trim();
-      if(!text) return;
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){
-        alert("Please sign in first.");
-        return;
-      }
-
-      const { error } = await supabase.from('comments').insert({
-        user_id: user.id,
-        target_type: 'event',
-        target_id: eventId,
-        body: text
-      });
-
-      if(error){
-        alert("Couldn’t post: " + error.message);
-        return;
-      }
-      input.value = "";
-    }
-
-    el('commentPost').onclick = ()=> requireLogin(postComment);
-
-    el('comments').addEventListener('click', async (e)=>{
-      const btn = e.target.closest('button[data-action]');
-      if(!btn) return;
-      const commentEl = e.target.closest('.comment');
-      const id = commentEl?.dataset.id;
-      const action = btn.dataset.action;
-
-      if(action === 'delete'){
-        if(!confirm('Delete this comment?')) return;
-        const { error } = await supabase.from('comments').delete().eq('id', id);
-        if(error) return alert('Delete failed: ' + error.message);
-      }
-
-      if(action === 'edit'){
-        const bodyDiv = commentEl.querySelector('.body');
-        if(bodyDiv.dataset.mode !== 'view') return;
-        const text = bodyDiv.innerText;
-        bodyDiv.dataset.mode = 'edit';
-        bodyDiv.innerHTML = `
-          <textarea class="input" rows="3">${escapeHTML(text)}</textarea>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn primary" data-action="save">Save</button>
-            <button class="btn" data-action="cancel">Cancel</button>
-          </div>`;
-      }
-
-      if(action === 'cancel'){
-        const { data, error } = await supabase.from('comments').select('*').eq('id', id).maybeSingle();
-        if(!error && data){
-          const node = e.target.closest('.comment');
-          node.outerHTML = renderComment(data);
-        }
-      }
-
-      if(action === 'save'){
-        const node = e.target.closest('.comment');
-        const ta = node.querySelector('textarea');
-        const newText = ta.value.trim();
-        if(!newText) return alert('Comment cannot be empty.');
-        const { error } = await supabase.from('comments').update({ body: newText }).eq('id', id);
-        if(error) return alert('Update failed: ' + error.message);
-      }
-    });
-
-    let commentsChannel;
-    function setupLiveComments(){
-      if(!eventId) return;
-      commentsChannel?.unsubscribe();
-
-      commentsChannel = supabase.channel(`comments-${eventId}`)
-        .on('postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
-          (payload) => {
-            const c = payload.new;
-            if (c.target_type !== 'event') return;
-
-            const wrap = el('comments');
-            if (wrap.textContent.includes('No comments yet')) {
-              wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`;
-            }
-            const inner = el('commentsInner') || (()=>{ wrap.innerHTML = `<div class="pad" id="commentsInner"></div>`; return el('commentsInner'); })();
-            inner.insertAdjacentHTML('beforeend', renderComment(c));
-          })
-        .on('postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
-          (payload) => {
-            const c = payload.new;
-            if (c.target_type !== 'event') return;
-            const node = document.querySelector(`.comment[data-id="${c.id}"]`);
-            if(node){ node.outerHTML = renderComment(c); }
-          })
-        .on('postgres_changes',
-          { event: 'DELETE', schema: 'public', table: 'comments', filter: `target_id=eq.${eventId}` },
-          (payload) => {
-            const id = payload.old.id;
-            const node = document.querySelector(`.comment[data-id="${id}"]`);
-            node?.remove();
-            const inner = el('commentsInner');
-            if(inner && !inner.children.length){
-              el('comments').innerHTML = `<div class="pad sub">No comments yet — be the first.</div>`;
-            }
-          })
-        .subscribe();
-    }
-
-    let presenceChannel;
-    async function setupPresence(){
-      if(!eventId) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      const key = user?.id || `anon-${crypto.getRandomValues(new Uint32Array(1))[0]}`;
-
-      presenceChannel?.unsubscribe();
-      presenceChannel = supabase.channel(`presence-event-${eventId}`, {
-        config: { presence: { key } }
-      });
-
-      presenceChannel
-        .on('presence', { event: 'sync' }, () => {
-          const state = presenceChannel.presenceState();
-          let count = 0;
-          for (const _k in state) count++;
-          el('viewerCount').textContent = count;
-        })
-        .subscribe(async (status) => {
-          if (status === 'SUBSCRIBED') {
-            await presenceChannel.track({ eventId });
-          }
-        });
-    }
-
-    async function loadMyBuilds(){
-      const { data: { user } } = await supabase.auth.getUser();
-      const sel = el('attachBuild');
-      if(!user || !sel) return;
+    // ---------- RSVP ----------
+    async function refreshRsvpCounts(){
+      const countsEl = el('rsvpCounts');
+      if(!countsEl || !eventId) return;
 
       const { data, error } = await supabase
-        .from('builds')
-        .select('id,title,is_public')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from('event_rsvp_counts')
+        .select('yes_count,maybe_count,no_count')
+        .eq('event_id', eventId)
+        .maybeSingle();
 
-      if(error){
-        console.error(error);
+      if(error || !data){
+        countsEl.textContent = '';
         return;
       }
-
-      sel.innerHTML = `<option value="">— None —</option>` + (data||[]).map(b =>
-        `<option value="${b.id}">${escapeHTML(b.title)}${b.is_public? '':' (private)'}</option>`
-      ).join("");
+      countsEl.textContent = `✅ ${data.yes_count} going • 🤔 ${data.maybe_count} maybe • ❌ ${data.no_count} not going`;
     }
 
     function showRsvpCodeUI(code){
@@ -818,32 +929,30 @@
       block.style.display = 'block';
       text.textContent = code;
 
-      const copyBtn = el('copyRsvpCode');
-      const shareBtn = el('shareRsvpCode');
-
-      copyBtn?.addEventListener('click', async ()=>{
+      el('copyRsvpCode')?.addEventListener('click', async ()=>{
         try{
           await navigator.clipboard.writeText(code);
           alert('RSVP code copied.');
-        }catch(e){
+        }catch{
           prompt('Copy your RSVP code:', code);
         }
-      });
+      }, { once:true });
 
-      shareBtn?.addEventListener('click', async ()=>{
+      el('shareRsvpCode')?.addEventListener('click', async ()=>{
         const msg = `ROK Racers RSVP Code: ${code}`;
         if (navigator.share){
-          try{ await navigator.share({ text: msg }); }catch(e){}
+          try{ await navigator.share({ text: msg }); }catch{}
         } else {
           prompt('Share this RSVP code:', msg);
         }
-      });
+      }, { once:true });
     }
 
     async function loadMyRsvp(){
       const { data: { user } } = await supabase.auth.getUser();
       const badge = el('rsvpStatus');
       const sel = el('attachBuild');
+
       if(!user){
         if(badge) badge.textContent = '';
         if(sel) sel.value = '';
@@ -851,7 +960,8 @@
         return;
       }
 
-      // Try to include rsvp_code. If column doesn't exist, retry without it.
+      await ensureUserRow(user);
+
       let rsvpRow = null;
 
       const res = await supabase
@@ -868,14 +978,9 @@
           .eq('event_id', eventId)
           .eq('user_id', user.id)
           .maybeSingle();
-
-        if(res2.error){
-          console.error(res2.error);
-          return;
-        }
+        if(res2.error) return;
         rsvpRow = res2.data;
-      } else if (res.error){
-        console.error(res.error);
+      } else if(res.error){
         return;
       } else {
         rsvpRow = res.data;
@@ -893,7 +998,6 @@
     }
 
     async function ensureRsvpCodeIfNew(userId){
-      // Check if user already has RSVP for this event
       const existingRes = await supabase
         .from('event_rsvps')
         .select('status, build_id, rsvp_code')
@@ -901,54 +1005,36 @@
         .eq('user_id', userId)
         .maybeSingle();
 
-      // If rsvp_code column doesn't exist, just return null and let RSVP proceed normally
       if(existingRes.error && isMissingColumnError(existingRes.error)){
         return { existing: existingRes.data || null, code: null, columnMissing: true };
       }
       if(existingRes.error){
-        // if some other error, still let RSVP proceed but no code
-        console.error(existingRes.error);
         return { existing: null, code: null, columnMissing: false };
       }
 
       if(existingRes.data?.rsvp_code){
-        return { existing: existingRes.data, code: existingRes.data.rsvp_code, columnMissing: false };
+        return { existing: existingRes.data, code: existingRes.data.rsvp_code, columnMissing:false };
       }
 
-      // If no RSVP exists yet, we generate a code for first insert.
-      // If RSVP exists but no code, we can still generate and patch it.
-      const needsCode = true;
-      if(!needsCode) return { existing: existingRes.data || null, code: null, columnMissing: false };
-
-      // Try a few times in case of unique collision
       for (let attempt=0; attempt<6; attempt++){
         const code = generateRsvpCode();
-
         if(existingRes.data){
-          // Patch existing row
           const upd = await supabase
             .from('event_rsvps')
             .update({ rsvp_code: code })
             .eq('event_id', eventId)
             .eq('user_id', userId);
 
-          if(!upd.error){
-            return { existing: existingRes.data, code, columnMissing: false };
-          }
-          // If unique violation, try again
+          if(!upd.error) return { existing: existingRes.data, code, columnMissing:false };
+
           const msg = (upd.error?.message || "").toLowerCase();
-          if(msg.includes('duplicate') || msg.includes('unique')){
-            continue;
-          }
-          console.error(upd.error);
-          return { existing: existingRes.data, code: null, columnMissing: false };
+          if(msg.includes('duplicate') || msg.includes('unique')) continue;
+          return { existing: existingRes.data, code:null, columnMissing:false };
         } else {
-          // We'll insert RSVP later with the code (handled in upsertRsvp)
-          return { existing: null, code, columnMissing: false };
+          return { existing: null, code, columnMissing:false };
         }
       }
-
-      return { existing: existingRes.data || null, code: null, columnMissing: false };
+      return { existing: existingRes.data || null, code:null, columnMissing:false };
     }
 
     async function upsertRsvp(newStatus){
@@ -957,12 +1043,12 @@
         alert('Sign in first.');
         return;
       }
-      const buildId = el('attachBuild')?.value || null;
 
-      // Try to create/ensure RSVP code (if your column exists)
+      await ensureUserRow(user);
+
+      const buildId = el('attachBuild')?.value || null;
       const codeInfo = await ensureRsvpCodeIfNew(user.id);
 
-      // If RSVP existed already, use normal upsert (don’t overwrite their code)
       if (codeInfo.existing){
         const { error } = await supabase
           .from('event_rsvps')
@@ -978,7 +1064,6 @@
           return;
         }
       } else {
-        // First RSVP insert: include code if available and column exists
         const payload = {
           event_id: eventId,
           user_id: user.id,
@@ -986,25 +1071,19 @@
           build_id: buildId || null
         };
 
-        if (!codeInfo.columnMissing && codeInfo.code){
-          payload.rsvp_code = codeInfo.code;
-        }
+        if (!codeInfo.columnMissing && codeInfo.code) payload.rsvp_code = codeInfo.code;
 
         const { error } = await supabase
           .from('event_rsvps')
           .upsert(payload, { onConflict: 'event_id,user_id' });
 
         if(error){
-          // If we tried to write rsvp_code but column isn't there, retry without it
           if (isMissingColumnError(error)){
             delete payload.rsvp_code;
             const { error: e2 } = await supabase
               .from('event_rsvps')
               .upsert(payload, { onConflict: 'event_id,user_id' });
-            if (e2){
-              alert('RSVP failed: ' + e2.message);
-              return;
-            }
+            if (e2){ alert('RSVP failed: ' + e2.message); return; }
           } else {
             alert('RSVP failed: ' + error.message);
             return;
@@ -1014,18 +1093,240 @@
 
       await loadMyRsvp();
       await refreshRsvpCounts();
-      alert('RSVP saved.');
     }
 
+    // ---------- BUILDS (public OWNED only) ----------
+    async function loadMyBuilds(){
+      const { data: { user } } = await supabase.auth.getUser();
+      const sel = el('attachBuild');
+      if(!user || !sel) return;
 
-    window.addEventListener('DOMContentLoaded', async ()=>{
+      await ensureUserRow(user);
+
+      // Try: builds has build_type
+      const attempt1 = await supabase
+        .from('builds')
+        .select('id,title,is_public,build_type,created_at')
+        .eq('user_id', user.id)
+        .eq('is_public', true)
+        .or('build_type.eq.Owned,build_type.eq.owned')
+        .order('created_at', { ascending:false });
+
+      let rows = null;
+
+      if (!attempt1.error){
+        rows = attempt1.data || [];
+      } else if (isMissingColumnError(attempt1.error)){
+        // Fallback if build_type doesn't exist
+        const attempt2 = await supabase
+          .from('builds')
+          .select('id,title,is_public,created_at')
+          .eq('user_id', user.id)
+          .eq('is_public', true)
+          .order('created_at', { ascending:false });
+
+        if (!attempt2.error) rows = attempt2.data || [];
+      } else {
+        // If the or() fails due to enum mismatch, fallback to public builds without type filter
+        const attempt3 = await supabase
+          .from('builds')
+          .select('id,title,is_public,build_type,created_at')
+          .eq('user_id', user.id)
+          .eq('is_public', true)
+          .order('created_at', { ascending:false });
+
+        if (!attempt3.error) rows = attempt3.data || [];
+      }
+
+      if(!rows || !rows.length){
+        sel.innerHTML = `<option value="">— No public owned builds yet —</option>`;
+        return;
+      }
+
+      sel.innerHTML = `<option value="">— None —</option>` + rows.map(b =>
+        `<option value="${b.id}">${escapeHTML(b.title || 'Untitled build')}</option>`
+      ).join('');
+    }
+
+    // ---------- COMMENTS ----------
+    function renderComment(c){
+      const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
+      const isOwner = currentUserId && (c.user_id === currentUserId);
+      return `
+        <div class="comment" data-id="${c.id}">
+          <div class="meta">
+            <span>${escapeHTML(dt)}</span>
+            ${isOwner ? `<span class="muted">You</span>` : `<span class="muted">Driver</span>`}
+          </div>
+          <div class="body" data-mode="view">${escapeHTML(c.body).replace(/\n/g,'<br>')}</div>
+          ${isOwner ? `
+            <div class="actions">
+              <button class="btn btn-ghost btn-pill-sm" data-action="edit" type="button">Edit</button>
+              <button class="btn btn-ghost btn-pill-sm" data-action="delete" type="button">Delete</button>
+            </div>` : ``}
+        </div>`;
+    }
+
+    async function loadComments(){
+      const wrap = el('comments');
+      const { data, error } = await supabase
+        .from('comments')
+        .select('id, body, created_at, user_id, target_type, target_id')
+        .eq('target_type', 'event')
+        .eq('target_id', eventId)
+        .order('created_at', { ascending:true });
+
+      if(error){
+        wrap.innerHTML = `<div class="pad muted">Couldn’t load comments.</div>`;
+        return;
+      }
+      if(!data || !data.length){
+        wrap.innerHTML = `<div class="pad muted">No comments yet — be the first.</div>`;
+        return;
+      }
+      wrap.innerHTML = `<div id="commentsInner"></div>`;
+      el('commentsInner').innerHTML = data.map(renderComment).join('');
+    }
+
+    async function postComment(){
+      const input = el('commentText');
+      const text = (input.value || '').trim();
+      if(!text) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        openAuth('login');
+        return;
+      }
+
+      await ensureUserRow(user);
+
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          user_id: user.id,
+          target_type: 'event',
+          target_id: eventId,
+          body: text
+        });
+
+      if(error){
+        alert("Couldn’t post: " + error.message);
+        return;
+      }
+
+      input.value = "";
+      // live will also insert, but we refresh quickly to keep consistent state
+      await loadComments();
+    }
+
+    el('commentPost')?.addEventListener('click', ()=> requireLogin(async (user)=>{
+      await ensureUserRow(user);
+      await postComment();
+    }));
+
+    el('comments')?.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-action]');
+      if(!btn) return;
+
+      const commentEl = e.target.closest('.comment');
+      const id = commentEl?.dataset.id;
+      const action = btn.dataset.action;
+
+      if(action === 'delete'){
+        if(!confirm('Delete this comment?')) return;
+        const { error } = await supabase.from('comments').delete().eq('id', id);
+        if(error) return alert('Delete failed: ' + error.message);
+        await loadComments();
+        return;
+      }
+
+      if(action === 'edit'){
+        const bodyDiv = commentEl.querySelector('.body');
+        if(bodyDiv.dataset.mode !== 'view') return;
+        const text = bodyDiv.innerText;
+        bodyDiv.dataset.mode = 'edit';
+        bodyDiv.innerHTML = `
+          <textarea class="input" rows="3">${escapeHTML(text)}</textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-pill-sm" data-action="save" type="button">Save</button>
+            <button class="btn btn-ghost btn-pill-sm" data-action="cancel" type="button">Cancel</button>
+          </div>`;
+        return;
+      }
+
+      if(action === 'cancel'){
+        await loadComments();
+        return;
+      }
+
+      if(action === 'save'){
+        const node = e.target.closest('.comment');
+        const ta = node.querySelector('textarea');
+        const newText = (ta.value || '').trim();
+        if(!newText) return alert('Comment cannot be empty.');
+
+        const { error } = await supabase.from('comments').update({ body: newText }).eq('id', id);
+        if(error) return alert('Update failed: ' + error.message);
+
+        await loadComments();
+      }
+    });
+
+    // Live comments (optional)
+    let commentsChannel;
+    function setupLiveComments(){
+      if(!eventId) return;
+      commentsChannel?.unsubscribe();
+
+      commentsChannel = supabase.channel(`comments-${eventId}`)
+        .on('postgres_changes',
+          { event:'*', schema:'public', table:'comments', filter:`target_id=eq.${eventId}` },
+          (payload)=>{
+            const c = payload.new || payload.old;
+            if (c?.target_type !== 'event') return;
+            loadComments();
+          })
+        .subscribe();
+    }
+
+    // ---------- Presence (viewer count) ----------
+    let presenceChannel;
+    async function setupPresence(){
+      if(!eventId) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const key = user?.id || `anon-${crypto.getRandomValues(new Uint32Array(1))[0]}`;
+
+      presenceChannel?.unsubscribe();
+      presenceChannel = supabase.channel(`presence-event-${eventId}`, {
+        config: { presence: { key } }
+      });
+
+      presenceChannel
+        .on('presence', { event:'sync' }, ()=>{
+          const state = presenceChannel.presenceState();
+          let total = 0;
+          Object.values(state).forEach(arr => total += (arr?.length || 0));
+          el('viewerCount').textContent = total;
+        })
+        .subscribe(async (status)=>{
+          if(status === 'SUBSCRIBED'){
+            await presenceChannel.track({ eventId, t: Date.now() });
+          }
+        });
+    }
+
+    // ---------- Boot ----------
+    document.addEventListener('DOMContentLoaded', async ()=>{
       await syncPageAuth();
+      await updateAuthUI();
+
       await loadEvent();
       await loadComments();
       setupLiveComments();
       setupPresence();
     });
   </script>
-
 </body>
 </html>

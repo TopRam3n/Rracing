@@ -269,6 +269,11 @@
         $('adminStatus').textContent = 'Not signed in';
         return;
       }
+      
+      supabase.from("promoter_requests")
+        .select("*")
+        .eq("status","pending")
+        .order("created_at",{ascending:false});
 
       const { data: { user } } = await supabase.auth.getUser();
       currentUser = user;
