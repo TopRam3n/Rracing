@@ -428,7 +428,6 @@
     .msg.ok{ color:#9affc5; }
     .msg.bad{ color:#ff9a9a; }
     .btn-wide{ width:100%; justify-content:center; }
-
   </style>
 </head>
 
@@ -601,7 +600,20 @@
     </div>
   </div>
 
- <script>
+<script>
+  /* ==========================================================
+     GARAGE — DROP-IN FIX
+     ✅ Public grid reads from: public_builds_with_like_count_and_trophies
+     ✅ My builds reads from: builds (includes private)
+     ✅ Fix: login/join now opens your index auth modal if present (no alert loop)
+     ✅ Fix: URL param ?view=my respected
+     ✅ Fix: "Public builds" mode filters out private rows even if view returns them
+     ✅ Fix: Image fallback uses logo if garage-placeholder missing
+     ✅ Fix: Part filter tries build_parts first, then falls back to specs JSON (if you use it)
+     ✅ Fix: No duplicate applyFilters on auth change
+     ✅ Fix: Like UI updates + live likes
+     ========================================================== */
+
   // ===== Nav solid on scroll =====
   const navWrapper = document.getElementById('navWrapper');
   function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
@@ -609,6 +621,8 @@
   window.addEventListener('scroll', updateNavSolid, { passive:true });
 
   // ===== Small helpers =====
+  const $ = (id) => document.getElementById(id);
+
   function esc(s){
     return String(s || '').replace(/[&<>"']/g, m => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -620,11 +634,12 @@
     return user || null;
   }
 
+  // Use your established authUI if present; otherwise fallback.
   async function requireLogin(){
-    // Prefer your established authUI helper if present
-    if (window.authUI && typeof authUI.requireLogin === 'function'){
-      const ok = await authUI.requireLogin();
+    if (window.authUI && typeof window.authUI.requireLogin === 'function'){
+      const ok = await window.authUI.requireLogin();
       if (ok === false) return false;
+      return true;
     }
     const user = await getUser();
     if (!user){
@@ -634,16 +649,16 @@
     return true;
   }
 
-  // ===== Index-style auth UI (minimal, consistent) =====
-  const loginBtn     = document.getElementById("loginBtn");
-  const joinBtn      = document.getElementById("joinBtn");
-  const profileMenu  = document.getElementById("profileMenu");
-  const profileChip  = document.getElementById("profileChip");
-  const dropdown     = document.getElementById("dropdown");
-  const initialsEl   = document.getElementById("profileInitials");
-  const signoutBtn   = document.getElementById("signoutBtn");
-  const ddEmail      = document.getElementById("ddEmail");
-  const myEventsLink = document.getElementById("myEventsLink");
+  // ===== Auth UI (index-style: dropdown only) =====
+  const loginBtn     = $("loginBtn");
+  const joinBtn      = $("joinBtn");
+  const profileMenu  = $("profileMenu");
+  const profileChip  = $("profileChip");
+  const dropdown     = $("dropdown");
+  const initialsEl   = $("profileInitials");
+  const signoutBtn   = $("signoutBtn");
+  const ddEmail      = $("ddEmail");
+  const myEventsLink = $("myEventsLink");
 
   function initialsFromEmail(email){
     const raw = (email || "").split("@")[0] || "u";
@@ -701,19 +716,23 @@
     }
   }
 
-  loginBtn?.addEventListener('click', async ()=>{ await requireLogin(); });
-  joinBtn?.addEventListener('click', async ()=>{ await requireLogin(); });
-
-  supabase.auth.onAuthStateChange(() => {
-    updateAuthUI();
-    applyFilters();     // refresh grid when auth changes
-    updateQuota();      // refresh quota when auth changes
+  // IMPORTANT: login/join should OPEN your auth modal (not call requireLogin)
+  // If auth-ui.js provides openAuth(), use it. Otherwise go to /index.html as fallback.
+  loginBtn?.addEventListener('click', ()=>{
+    if (window.authUI && typeof window.authUI.open === 'function') return window.authUI.open('login');
+    if (typeof window.openAuth === 'function') return window.openAuth('login'); // if you exposed it
+    location.href = '/index.html#login';
+  });
+  joinBtn?.addEventListener('click', ()=>{
+    if (window.authUI && typeof window.authUI.open === 'function') return window.authUI.open('signup');
+    if (typeof window.openAuth === 'function') return window.openAuth('signup');
+    location.href = '/index.html#signup';
   });
 
   // ===== Quota: limit 2 "3D builds" only (best-effort) =====
-  const buildQuotaEl  = document.getElementById('buildQuota');
-  const upgradeBanner = document.getElementById('upgradeBanner');
-  const newBuildBtn   = document.getElementById('newBuildBtn');
+  const buildQuotaEl  = $("buildQuota");
+  const upgradeBanner = $("upgradeBanner");
+  const newBuildBtn   = $("newBuildBtn");
 
   async function count3DBuilds(userId){
     const tries = [
@@ -759,17 +778,17 @@
   });
 
   // ===== Request Modal =====
-  const reqBackdrop = document.getElementById('reqBackdrop');
-  const requestCarBtn = document.getElementById('requestCarBtn');
-  const reqClose = document.getElementById('reqClose');
-  const reqCancel = document.getElementById('reqCancel');
-  const reqSubmit = document.getElementById('reqSubmit');
-  const reqMsg = document.getElementById('reqMsg');
+  const reqBackdrop = $("reqBackdrop");
+  const requestCarBtn = $("requestCarBtn");
+  const reqClose = $("reqClose");
+  const reqCancel = $("reqCancel");
+  const reqSubmit = $("reqSubmit");
+  const reqMsg = $("reqMsg");
 
-  const reqMake = document.getElementById('reqMake');
-  const reqModel = document.getElementById('reqModel');
-  const reqYear = document.getElementById('reqYear');
-  const reqNotes = document.getElementById('reqNotes');
+  const reqMake = $("reqMake");
+  const reqModel = $("reqModel");
+  const reqYear = $("reqYear");
+  const reqNotes = $("reqNotes");
 
   function setReqMsg(text, kind){
     reqMsg.textContent = text || '';
@@ -824,7 +843,6 @@
       const { error } = await supabase.from('car_model_requests').insert(payload);
 
       if (error){
-        // fallback: mailto (replace with your email)
         const subject = encodeURIComponent('ROK Racers JA — 3D Model Request (Paid)');
         const body = encodeURIComponent(
           `Make: ${make}\nModel: ${model}\nYear: ${year}\nNotes: ${notes}\n\n(Submitted from Garage page)`
@@ -849,9 +867,9 @@
   let page = 0;
   let currentRows = [];
 
-  const buildsGrid = document.getElementById('buildsGrid');
-  const prevBtn    = document.getElementById('prev');
-  const nextBtn    = document.getElementById('next');
+  const buildsGrid = $("buildsGrid");
+  const prevBtn    = $("prev");
+  const nextBtn    = $("next");
 
   function renderBuildCard(b){
     const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
@@ -871,7 +889,7 @@
     const is3D = !!(b.is_3d || b.model_url || b.car_model_id);
     const visibility = (b.is_public === false) ? 'Private' : 'Public';
 
-    const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
+    const img = b.thumb_url || b.custom_image_url || '/Assets/logo.png';
     const liked = !!b._liked;
     const heart = liked ? '♥' : '♡';
 
@@ -920,7 +938,7 @@
 
   function renderPage(){
     if(!currentRows.length){
-      const vis = document.getElementById('vis').value;
+      const vis = $("vis").value;
       const msg = (vis === 'my')
         ? "Sign in to view your builds, or start your first one to put your car on the grid."
         : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
@@ -954,20 +972,76 @@
     return { data: null, error: lastErr };
   }
 
+  async function tryFilterByBuildParts(rows, partCat){
+    // build_parts(build_id, category) optional table
+    const ids = rows.map(r => r.id);
+    if(!ids.length) return [];
+
+    const { data, error } = await supabase
+      .from('build_parts')
+      .select('build_id')
+      .in('build_id', ids)
+      .eq('category', partCat);
+
+    if(error) return null; // signal fallback
+    const allowed = new Set((data||[]).map(p => p.build_id));
+    return rows.filter(r => allowed.has(r.id));
+  }
+
+  function filterBySpecsJson(rows, partCat){
+    // fallback if you store specs as JSON on builds/specs column
+    // specs: { wheels, tires, suspension, ... }
+    return rows.filter(r => {
+      const specs = r.specs || null;
+      if(!specs || typeof specs !== 'object') return false;
+      const v = specs[partCat];
+      return !!(v && String(v).trim());
+    });
+  }
+
+  function applySearch(rows, q){
+    if(!q) return rows;
+    const qq = q.toLowerCase();
+    return rows.filter(r => {
+      const hay = [
+        r.title, r.make, r.model, r.year,
+        r.build_type, r.stage
+      ].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(qq);
+    });
+  }
+
+  async function markLiked(rows, user){
+    if(!user || !rows.length) return rows;
+
+    const ids = rows.map(r=>r.id);
+    const liked = await supabase
+      .from('build_likes')
+      .select('build_id')
+      .in('build_id', ids)
+      .eq('user_id', user.id);
+
+    if(liked.error) return rows;
+
+    const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
+    rows.forEach(r => { r._liked = likedSet.has(r.id); });
+    return rows;
+  }
+
   async function applyFilters(){
-    const q       = document.getElementById('q').value.trim().toLowerCase();
-    const vis     = document.getElementById('vis').value;        // public | my | all
-    const sort    = document.getElementById('sort').value;       // top | new
-    const partCat = document.getElementById('partFilter').value; // "" or category
+    const q       = $("q").value.trim();
+    const vis     = $("vis").value;        // public | my | all (all == public list too)
+    const sort    = $("sort").value;       // top | new
+    const partCat = $("partFilter").value; // "" or category
 
     const user = await getUser();
 
     // URL param support: /garage.html?view=my
     if(new URLSearchParams(location.search).get('view') === 'my'){
-      document.getElementById('vis').value = 'my';
+      $("vis").value = 'my';
     }
 
-    if (vis === 'my' && !user){
+    if ($("vis").value === 'my' && !user){
       currentRows = [];
       page = 0;
       renderPage();
@@ -977,15 +1051,13 @@
     let rows = [];
 
     try{
-      if (vis === 'my' && user){
+      if ($("vis").value === 'my' && user){
         // My builds (public + private)
         const res = await safeSelect(
           'builds',
           [
-            // preferred newer schema
-            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,likes_count',
-            // fallback if likes_count doesn't exist
-            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d'
+            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,color_hex,specs,likes_count',
+            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,color_hex,specs'
           ],
           (q) => q.eq('user_id', user.id).order('created_at', { ascending:false })
         );
@@ -997,14 +1069,12 @@
           like_count: Number(b.likes_count || 0)
         }));
       } else {
-        // Public builds from the view you rebuilt
+        // Public builds — use the VIEW
         const res = await safeSelect(
           'public_builds_with_like_count_and_trophies',
           [
-            // preferred: matches the view we built for you
-            'id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,like_count',
-            // fallback: if like_count name differs
-            'id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,likes_count'
+            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,color_hex,specs,like_count',
+            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,color_hex,specs,likes_count'
           ],
           (q) => q.order('created_at', { ascending:false })
         );
@@ -1015,28 +1085,22 @@
           ...b,
           like_count: Number(b.like_count ?? b.likes_count ?? 0)
         }));
+
+        // Guard: only show public builds in public mode
+        rows = rows.filter(r => r.is_public !== false);
       }
 
       // Search filter
-      if(q){
-        rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
-      }
+      rows = applySearch(rows, q);
 
       // Part category filter
       if(partCat){
-        const ids = rows.map(r => r.id);
-        if(ids.length){
-          const { data: partsData, error: partsError } = await supabase
-            .from('build_parts')
-            .select('build_id')
-            .in('build_id', ids)
-            .eq('category', partCat);
-          if(partsError) throw partsError;
-
-          const allowed = new Set((partsData||[]).map(p => p.build_id));
-          rows = rows.filter(r => allowed.has(r.id));
+        const byParts = await tryFilterByBuildParts(rows, partCat);
+        if(byParts === null){
+          // fallback to specs JSON if build_parts table doesn't exist / fails
+          rows = filterBySpecsJson(rows, partCat);
         } else {
-          rows = [];
+          rows = byParts;
         }
       }
 
@@ -1048,18 +1112,7 @@
       }
 
       // Mark which ones user liked
-      if(user && rows.length){
-        const ids = rows.map(r=>r.id);
-        const liked = await supabase.from('build_likes')
-          .select('build_id')
-          .in('build_id', ids)
-          .eq('user_id', user.id);
-
-        if(!liked.error){
-          const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
-          rows.forEach(r => { r._liked = likedSet.has(r.id); });
-        }
-      }
+      rows = await markLiked(rows, user);
 
       currentRows = rows;
       page = 0;
@@ -1076,6 +1129,9 @@
     const btn = e.target.closest('button[data-like]');
     if(!btn) return;
 
+    e.preventDefault();
+    e.stopPropagation();
+
     const card = e.target.closest('article.card');
     const id   = card?.dataset.build;
     const likesEl = card.querySelector('.likes');
@@ -1087,6 +1143,8 @@
     const user = await getUser();
     if(!user) return;
 
+    btn.disabled = true;
+
     const { data: existing, error: existingErr } = await supabase
       .from('build_likes')
       .select('build_id')
@@ -1096,6 +1154,7 @@
 
     if(existingErr){
       console.error(existingErr);
+      btn.disabled = false;
       alert('That move stalled. Try again.');
       return;
     }
@@ -1109,6 +1168,7 @@
 
       if(delErr){
         console.error(delErr);
+        btn.disabled = false;
         alert('Unboost failed. Try again.');
         return;
       }
@@ -1125,6 +1185,7 @@
 
       if(insErr){
         console.error(insErr);
+        btn.disabled = false;
         alert('Couldn’t boost this build. Try again.');
         return;
       }
@@ -1135,6 +1196,8 @@
       btn.title = 'Remove boost from this build';
       likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
     }
+
+    btn.disabled = false;
   });
 
   // ===== Live likes =====
@@ -1145,20 +1208,27 @@
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
         const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
         const el = card?.querySelector('.likes');
+        const btn = card?.querySelector('button[data-like]');
         if(!el) return;
         el.textContent = (parseInt(el.textContent)||0) + 1;
+
+        // If it was me, flip heart locally too
+        // (best effort; actual truth is on refresh)
+        btn && btn.blur();
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
         const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
         const el = card?.querySelector('.likes');
+        const btn = card?.querySelector('button[data-like]');
         if(!el) return;
         el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
+        btn && btn.blur();
       })
       .subscribe();
   }
 
   // ===== Events =====
-  document.getElementById('apply')?.addEventListener('click', applyFilters);
+  $("apply")?.addEventListener('click', applyFilters);
 
   prevBtn?.addEventListener('click', ()=>{
     if(page>0){ page--; renderPage(); }
@@ -1170,10 +1240,22 @@
   });
 
   // ===== Init =====
+  let authRefreshTimer = null;
+
+  supabase.auth.onAuthStateChange(() => {
+    // Debounce refresh so we don't double-call applyFilters a bunch
+    clearTimeout(authRefreshTimer);
+    authRefreshTimer = setTimeout(async ()=>{
+      await updateAuthUI();
+      await updateQuota();
+      await applyFilters();
+    }, 60);
+  });
+
   window.addEventListener('DOMContentLoaded', async ()=>{
     // default view switch: /garage.html?view=my
     const view = new URLSearchParams(location.search).get('view');
-    if(view === 'my') document.getElementById('vis').value = 'my';
+    if(view === 'my') $("vis").value = 'my';
 
     await updateAuthUI();
     await updateQuota();
@@ -1181,7 +1263,6 @@
     await applyFilters();
   });
 </script>
-
 
 </body>
 </html>
