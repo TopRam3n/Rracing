@@ -743,15 +743,14 @@
 
 <script>
   /* =========================
-     BUG-FIX AUDIT APPLIED
-     ✅ Nav matches index
-     ✅ Removed OTP prompt fallback (no more random re-login prompts)
-     ✅ Single requireLogin that opens modal
-     ✅ Safer color handling (no style injection)
+     BUILD PAGE SCRIPT (CLEAN)
+     ✅ Nav solid on scroll
+     ✅ Auth modal login/signup (no OTP fallback)
+     ✅ Single requireLogin() opens modal
      ✅ Likes count fallback if view missing
-     ✅ Faster load: parallel fetches after build load
-     ✅ Thumbs ordering uses sort_order if present
-     ✅ Prevent double event handlers
+     ✅ Fetch build by ID (public view + owner private)
+     ✅ Gallery thumbnails ordered by sort_order then created_at
+     ✅ Prevent duplicate handlers
      ========================= */
 
   const buildId = new URLSearchParams(location.search).get('id');
@@ -776,13 +775,13 @@
     $('buildError').textContent = msg || '';
   }
 
-  /* ===== Nav solid on scroll (index behavior) ===== */
-  const navWrapper = document.getElementById('navWrapper');
-  function updateNavSolid(){ navWrapper.classList.toggle('nav-solid', window.scrollY > 40); }
+  /* ===== Nav solid on scroll ===== */
+  const navWrapper = $('navWrapper');
+  function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
   updateNavSolid();
   window.addEventListener('scroll', updateNavSolid, { passive:true });
 
-  /* ===== Auth UI (copied behavior from index) ===== */
+  /* ===== Auth UI (same behavior as index) ===== */
   const loginBtn    = $('loginBtn');
   const joinBtn     = $('joinBtn');
   const profileMenu = $('profileMenu');
@@ -980,11 +979,12 @@
     return true;
   };
 
+  // Only ONE listener for auth state change
   supabase.auth.onAuthStateChange(() => updateAuthUI());
 
   /* ===== Page buttons ===== */
-  $('backBtn').addEventListener('click', ()=> location.href = '/garage.html');
-  $('shareBtn').addEventListener('click', async ()=>{
+  $('backBtn')?.addEventListener('click', ()=> location.href = '/garage.html');
+  $('shareBtn')?.addEventListener('click', async ()=>{
     try{
       await navigator.clipboard.writeText(location.href);
       $('shareBtn').textContent = 'Copied';
@@ -1122,9 +1122,8 @@
     }catch(_){}
   }
 
-  /* ===== Likes (with fallback if build_like_counts view doesn't exist) ===== */
+  /* ===== Likes (fallback if view doesn't exist) ===== */
   async function getLikeCount(){
-    // Prefer aggregate view
     const { data: likeAgg, error: aggErr } = await supabase
       .from('build_like_counts')
       .select('like_count')
@@ -1133,7 +1132,6 @@
 
     if(!aggErr) return Number(likeAgg?.like_count || 0);
 
-    // Fallback: count rows
     const { count, error } = await supabase
       .from('build_likes')
       .select('build_id', { count:'exact', head:true })
@@ -1257,7 +1255,8 @@
     $('commentHint').className = user ? 'badge strong' : 'badge';
   }
 
-  $('commentPostBtn').addEventListener('click', async () => {
+  // Prevent double-binding
+  $('commentPostBtn').onclick = async () => {
     const ok = await window.authUI.requireLogin();
     if(!ok) return;
 
@@ -1287,41 +1286,61 @@
     }
     input.value = '';
     await loadComments();
-  });
+  };
 
-  /* ===== 3D/Render block ===== */
+  /* ===== 3D block (model_url only; hide if none) ===== */
   function setupRenderBlock(build){
-    const renderUrl = (build.render_url || '').trim();
-    const modelUrl = (build.model_url || '').trim(); // if you add this later via Option A
-    const hasAny = !!(renderUrl || modelUrl);
-
-    if(!hasAny){
+    const modelUrl = (build.model_url || '').trim();
+    if(!modelUrl){
       $('renderBlock').style.display = 'none';
       return;
     }
-
     $('renderBlock').style.display = 'block';
 
-    // Prefer model_url in model-viewer (if you store glb URLs)
     const mv = $('buildModelViewer');
     const link = $('renderLink');
 
-    if(modelUrl){
-      mv.src = modelUrl;
-      link.href = modelUrl;
-      link.textContent = 'Open Model';
-    } else {
-      // fallback to render_url as an external viewer
-      mv.style.display = 'none';
-      link.href = renderUrl;
-      link.textContent = 'Open Viewer';
-    }
+    mv.style.display = 'block';
+    mv.src = modelUrl;
 
-    // Always keep link usable
-    link.href = (modelUrl || renderUrl);
+    link.href = modelUrl;
+    link.textContent = 'Open Model';
   }
 
-  /* ===== Build load (fast + safe) ===== */
+  /* ===== Build load (by ID; public + owner private) ===== */
+  async function loadBuildById(id){
+    const pub = await supabase
+      .from("public_builds_with_like_count_and_trophies")
+      .select(`
+        id,user_id,title,description,thumb_url,custom_image_url,
+        make,model,year,build_type,stage,power_goal,is_public,
+        created_at,model_url,is_3d,color_hex,specs,like_count
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (pub.data && !pub.error) return pub.data;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const own = await supabase
+      .from("builds")
+      .select(`
+        id,user_id,title,description,thumb_url,custom_image_url,
+        make,model,year,build_type,stage,power_goal,is_public,
+        created_at,model_url,is_3d,color_hex,specs,likes_count
+      `)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (own.data && !own.error){
+      return { ...own.data, like_count: Number(own.data.likes_count || 0) };
+    }
+    return null;
+  }
+
   async function loadBuild(){
     if(!buildId){
       $('buildTitle').textContent = 'No build selected';
@@ -1335,13 +1354,9 @@
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user || null;
 
-    const { data: build, error } = await supabase
-      .from('builds')
-      .select('*')
-      .eq('id', buildId)
-      .maybeSingle();
+    const build = await loadBuildById(buildId);
 
-    if(error || !build){
+    if(!build){
       $('buildTitle').textContent = 'Build not found';
       showError('We couldn’t find this build. It may have been deleted or moved.');
       renderMainMedia(null);
@@ -1350,8 +1365,7 @@
       return false;
     }
 
-    // Privacy gate
-    if(!build.is_public && (!user || user.id !== build.user_id)){
+    if(build.is_public === false && (!user || user.id !== build.user_id)){
       $('buildTitle').textContent = 'Private build';
       showError('This build is private. Ask the owner to share a public build or check their garage.');
       renderMainMedia(null);
@@ -1361,10 +1375,11 @@
     }
 
     currentBuild = build;
+
     document.title = `${build.title || 'Build'} — ROK Racers JA`;
     $('buildTitle').textContent = build.title || 'Untitled build';
 
-    // Meta chips
+    // meta chips
     const metaRow = $('buildMeta');
     metaRow.innerHTML = '';
 
@@ -1390,10 +1405,10 @@
     $('privacyBadge').textContent = build.is_public ? 'Public' : 'Private';
     $('privacyBadge').className = build.is_public ? 'badge strong' : 'badge';
 
-    // Description
+    // description
     if(build.description){
       $('buildDescription').innerHTML = esc(build.description).replace(/\n/g,'<br>');
-    }else{
+    } else {
       $('buildDescription').innerHTML = `<span class="sub">No description yet — owner hasn’t told this build’s story.</span>`;
     }
 
@@ -1401,9 +1416,12 @@
       ? 'Visible in the public garage and eligible for Top 5.'
       : 'Only visible to you (private build).';
 
-    // Parallel loads after build is accepted
+    renderBadges(build);
+    renderSpecs(build.specs || null);
+    setupRenderBlock(build);
+
+    // parallel loads
     const imagesPromise = (async ()=>{
-      // Prefer sort_order if you have it; otherwise created_at
       const { data: images, error: imgErr } = await supabase
         .from('build_images')
         .select('id,image_url,sort_order,created_at')
@@ -1431,10 +1449,6 @@
     const likesPromise = refreshLikesUI();
     const commentsPromise = (async ()=>{ await updateCommentFormVisibility(); await loadComments(); })();
 
-    renderBadges(build);
-    renderSpecs(build.specs || null);
-    setupRenderBlock(build);
-
     await Promise.all([imagesPromise, ownerPromise, likesPromise, commentsPromise]);
 
     return true;
@@ -1449,7 +1463,7 @@
 
     bindLikeClick();
 
-    // Keep comments form reactive
+    // keep UI reactive
     supabase.auth.onAuthStateChange(async ()=>{
       await updateAuthUI();
       await updateCommentFormVisibility();

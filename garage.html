@@ -601,600 +601,587 @@
     </div>
   </div>
 
-  <script>
-    // ===== Nav solid on scroll =====
-    const navWrapper = document.getElementById('navWrapper');
-    function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
-    updateNavSolid();
-    window.addEventListener('scroll', updateNavSolid, { passive:true });
+ <script>
+  // ===== Nav solid on scroll =====
+  const navWrapper = document.getElementById('navWrapper');
+  function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
+  updateNavSolid();
+  window.addEventListener('scroll', updateNavSolid, { passive:true });
 
-    // ===== Small helpers =====
-    function esc(s){
-      return String(s || '').replace(/[&<>"']/g, m => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-      }[m]));
+  // ===== Small helpers =====
+  function esc(s){
+    return String(s || '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  async function getUser(){
+    const { data: { user } } = await supabase.auth.getUser();
+    return user || null;
+  }
+
+  async function requireLogin(){
+    // Prefer your established authUI helper if present
+    if (window.authUI && typeof authUI.requireLogin === 'function'){
+      const ok = await authUI.requireLogin();
+      if (ok === false) return false;
     }
+    const user = await getUser();
+    if (!user){
+      alert("Please sign in first.");
+      return false;
+    }
+    return true;
+  }
 
-    async function requireLogin(callback){
-      // Prefer your established authUI helper (index has it)
-      if (window.authUI && typeof authUI.requireLogin === 'function'){
-        return authUI.requireLogin(callback);
+  // ===== Index-style auth UI (minimal, consistent) =====
+  const loginBtn     = document.getElementById("loginBtn");
+  const joinBtn      = document.getElementById("joinBtn");
+  const profileMenu  = document.getElementById("profileMenu");
+  const profileChip  = document.getElementById("profileChip");
+  const dropdown     = document.getElementById("dropdown");
+  const initialsEl   = document.getElementById("profileInitials");
+  const signoutBtn   = document.getElementById("signoutBtn");
+  const ddEmail      = document.getElementById("ddEmail");
+  const myEventsLink = document.getElementById("myEventsLink");
+
+  function initialsFromEmail(email){
+    const raw = (email || "").split("@")[0] || "u";
+    const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
+    const parts = cleaned.split(" ").filter(Boolean);
+    let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
+    return (initials || 'U').toUpperCase();
+  }
+
+  function setDropdownOpen(open){
+    if(!dropdown || !profileChip) return;
+    dropdown.classList.toggle('open', !!open);
+    profileChip.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  profileChip?.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    setDropdownOpen(!dropdown.classList.contains('open'));
+  });
+  document.addEventListener("click", ()=> setDropdownOpen(false));
+  dropdown?.addEventListener('click', (e)=> e.stopPropagation());
+
+  signoutBtn?.addEventListener("click", async ()=>{
+    await supabase.auth.signOut();
+    setDropdownOpen(false);
+  });
+
+  async function getCurrentRole(userId){
+    try{
+      const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+      return data?.role || null;
+    } catch { return null; }
+  }
+
+  async function updateAuthUI(){
+    const user = await getUser();
+
+    if (user){
+      loginBtn.style.display = "none";
+      joinBtn.style.display = "none";
+      profileMenu.style.display = "flex";
+
+      initialsEl.textContent = initialsFromEmail(user.email);
+      if (ddEmail) ddEmail.textContent = user.email || '—';
+
+      const role = await getCurrentRole(user.id);
+      if (myEventsLink){
+        myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
       }
-      const { data: { user } = {} } = await supabase.auth.getUser();
-      if (!user){
-        alert("Please sign in first.");
-        return false;
-      }
-      if (callback) callback(user);
-      return true;
-    }
-
-    // ===== Index-style auth UI (minimal, consistent) =====
-    const loginBtn    = document.getElementById("loginBtn");
-    const joinBtn     = document.getElementById("joinBtn");
-    const profileMenu = document.getElementById("profileMenu");
-    const profileChip = document.getElementById("profileChip");
-    const dropdown    = document.getElementById("dropdown");
-    const initialsEl  = document.getElementById("profileInitials");
-    const signoutBtn  = document.getElementById("signoutBtn");
-    const ddEmail     = document.getElementById("ddEmail");
-    const myEventsLink = document.getElementById("myEventsLink");
-
-    function initialsFromEmail(email){
-      const raw = (email || "").split("@")[0] || "u";
-      const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
-      const parts = cleaned.split(" ").filter(Boolean);
-      let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
-      return (initials || 'U').toUpperCase();
-    }
-
-    function setDropdownOpen(open){
-      if(!dropdown || !profileChip) return;
-      dropdown.classList.toggle('open', !!open);
-      profileChip.setAttribute("aria-expanded", open ? "true" : "false");
-    }
-
-    profileChip?.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      setDropdownOpen(!dropdown.classList.contains('open'));
-    });
-    document.addEventListener("click", ()=> setDropdownOpen(false));
-    dropdown?.addEventListener('click', (e)=> e.stopPropagation());
-
-    signoutBtn?.addEventListener("click", async ()=>{
-      await supabase.auth.signOut();
+    } else {
+      loginBtn.style.display = "inline-flex";
+      joinBtn.style.display = "inline-flex";
+      profileMenu.style.display = "none";
       setDropdownOpen(false);
-    });
+    }
+  }
 
-    async function getCurrentRole(userId){
-      try{
-        const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
-        return data?.role || null;
-      } catch { return null; }
+  loginBtn?.addEventListener('click', async ()=>{ await requireLogin(); });
+  joinBtn?.addEventListener('click', async ()=>{ await requireLogin(); });
+
+  supabase.auth.onAuthStateChange(() => {
+    updateAuthUI();
+    applyFilters();     // refresh grid when auth changes
+    updateQuota();      // refresh quota when auth changes
+  });
+
+  // ===== Quota: limit 2 "3D builds" only (best-effort) =====
+  const buildQuotaEl  = document.getElementById('buildQuota');
+  const upgradeBanner = document.getElementById('upgradeBanner');
+  const newBuildBtn   = document.getElementById('newBuildBtn');
+
+  async function count3DBuilds(userId){
+    const tries = [
+      () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
+      () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id','is',null),
+      () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('model_url','is',null),
+    ];
+
+    for (const fn of tries){
+      const res = await fn();
+      if(!res.error) return (res.count ?? 0);
+      const msg = (res.error.message || '').toLowerCase();
+      if(!msg.includes('column') && !msg.includes('does not exist')) break;
+    }
+    return 0;
+  }
+
+  async function updateQuota(){
+    const user = await getUser();
+    if(!user){
+      buildQuotaEl.textContent = '0/2 3D builds used';
+      upgradeBanner.style.display = 'none';
+      newBuildBtn.disabled = false;
+      return;
     }
 
-    async function updateAuthUI(){
-      const { data: { user } } = await supabase.auth.getUser();
+    const used = await count3DBuilds(user.id);
+    buildQuotaEl.textContent = `${used}/2 3D builds used`;
 
-      if (user){
-        loginBtn.style.display = "none";
-        joinBtn.style.display = "none";
-        profileMenu.style.display = "flex";
+    const atLimit = used >= 2;
+    upgradeBanner.style.display = atLimit ? 'block' : 'none';
 
-        initialsEl.textContent = initialsFromEmail(user.email);
-        if (ddEmail) ddEmail.textContent = user.email || '—';
+    // still allow creating builds (photo builds unlimited)
+    newBuildBtn.disabled = false;
+    newBuildBtn.title = atLimit ? '3D slots are full, but you can still create a photo build.' : '';
+  }
 
-        const role = await getCurrentRole(user.id);
-        if (myEventsLink){
-          myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
-        }
-      } else {
-        loginBtn.style.display = "inline-flex";
-        joinBtn.style.display = "inline-flex";
-        profileMenu.style.display = "none";
-        setDropdownOpen(false);
-      }
+  // ===== New Build button =====
+  newBuildBtn?.addEventListener('click', async () => {
+    const ok = await requireLogin();
+    if(!ok) return;
+    location.href = `/build-new.html`;
+  });
+
+  // ===== Request Modal =====
+  const reqBackdrop = document.getElementById('reqBackdrop');
+  const requestCarBtn = document.getElementById('requestCarBtn');
+  const reqClose = document.getElementById('reqClose');
+  const reqCancel = document.getElementById('reqCancel');
+  const reqSubmit = document.getElementById('reqSubmit');
+  const reqMsg = document.getElementById('reqMsg');
+
+  const reqMake = document.getElementById('reqMake');
+  const reqModel = document.getElementById('reqModel');
+  const reqYear = document.getElementById('reqYear');
+  const reqNotes = document.getElementById('reqNotes');
+
+  function setReqMsg(text, kind){
+    reqMsg.textContent = text || '';
+    reqMsg.className = 'msg' + (kind ? (' ' + kind) : '');
+  }
+
+  function openReq(){
+    setReqMsg('', '');
+    reqMake.value = '';
+    reqModel.value = '';
+    reqYear.value = '';
+    reqNotes.value = '';
+    reqBackdrop.style.display = 'flex';
+    setTimeout(()=>reqMake.focus(), 50);
+  }
+  function closeReq(){
+    reqBackdrop.style.display = 'none';
+    setReqMsg('', '');
+  }
+
+  requestCarBtn?.addEventListener('click', openReq);
+  reqClose?.addEventListener('click', closeReq);
+  reqCancel?.addEventListener('click', closeReq);
+  reqBackdrop?.addEventListener('click', (e)=>{ if(e.target === reqBackdrop) closeReq(); });
+
+  reqSubmit?.addEventListener('click', async ()=>{
+    const make = (reqMake.value || '').trim();
+    const model = (reqModel.value || '').trim();
+    const year = (reqYear.value || '').trim();
+    const notes = (reqNotes.value || '').trim();
+
+    if (!make || !model){
+      setReqMsg('Add at least Make + Model.', 'bad');
+      return;
     }
 
-    // If your auth-ui.js already provides auth modal, use it; otherwise just redirect
-    loginBtn?.addEventListener('click', ()=> {
-      if (window.authUI && typeof authUI.requireLogin === 'function') {
-        authUI.requireLogin();
-      } else {
-        alert("Auth UI not found on this page. (auth-ui.js)"); 
-      }
-    });
-    joinBtn?.addEventListener('click', ()=> {
-      if (window.authUI && typeof authUI.requireLogin === 'function') {
-        authUI.requireLogin();
-      } else {
-        alert("Auth UI not found on this page. (auth-ui.js)");
-      }
-    });
+    reqSubmit.disabled = true;
+    setReqMsg('Sending…', '');
 
-    supabase.auth.onAuthStateChange(() => updateAuthUI());
+    try{
+      const user = await getUser();
 
-    // Provide a stable helper for other buttons on this page
-    window.authUI = window.authUI || {};
-    window.authUI.requireLogin = window.authUI.requireLogin || (async function(cb){
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user){
-        alert("Please log in.");
-        return false;
-      }
-      if (cb) cb(user);
-      return true;
-    });
+      const payload = {
+        make, model,
+        year: year || null,
+        notes: notes || null,
+        user_id: user?.id || null,
+        email: user?.email || null,
+        status: 'new'
+      };
 
-    // ===== Quota: limit 2 "3D builds" only =====
-    const buildQuotaEl  = document.getElementById('buildQuota');
-    const upgradeBanner = document.getElementById('upgradeBanner');
-    const newBuildBtn   = document.getElementById('newBuildBtn');
+      const { error } = await supabase.from('car_model_requests').insert(payload);
 
-    async function count3DBuilds(userId){
-      // We try common column names. If missing, fallback gracefully.
-      // Supported patterns:
-      // - builds.model_url (string)
-      // - builds.glb_url (string)
-      // - builds.car_model_id (uuid/int)
-      // - builds.is_3d (bool)
-      const tryQueries = [
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('model_url','is',null),
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('glb_url','is',null),
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id','is',null),
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
-      ];
-
-      for (const q of tryQueries){
-        const res = await q();
-        if (!res.error) return (res.count ?? 0);
-        // if error is "column does not exist", try next
-        const msg = (res.error.message || '').toLowerCase();
-        if (!msg.includes('column') && !msg.includes('does not exist')) break;
-      }
-
-      // Ultimate fallback: count total builds
-      const fallback = await supabase
-        .from('builds')
-        .select('id', { count:'exact', head:true })
-        .eq('user_id', userId);
-      return fallback.error ? 0 : (fallback.count ?? 0);
-    }
-
-    async function updateQuota(){
-      const { data: { user } = {} } = await supabase.auth.getUser();
-
-      if(!user){
-        buildQuotaEl.textContent = '0/2 3D builds used';
-        upgradeBanner.style.display = 'none';
-        newBuildBtn.disabled = false;
-        newBuildBtn.title = 'Log in to add a build';
+      if (error){
+        // fallback: mailto (replace with your email)
+        const subject = encodeURIComponent('ROK Racers JA — 3D Model Request (Paid)');
+        const body = encodeURIComponent(
+          `Make: ${make}\nModel: ${model}\nYear: ${year}\nNotes: ${notes}\n\n(Submitted from Garage page)`
+        );
+        window.location.href = `mailto:rok@rokracersja.com?subject=${subject}&body=${body}`;
+        setReqMsg('Opening email draft…', 'ok');
         return;
       }
 
-      const used3D = await count3DBuilds(user.id);
-      buildQuotaEl.textContent = `${used3D}/2 3D builds used`;
-
-      const atLimit = used3D >= 2;
-      upgradeBanner.style.display = atLimit ? 'block' : 'none';
-      newBuildBtn.disabled = false; // still allow (build-new can choose photo build)
-      newBuildBtn.title = atLimit ? 'You can still create a photo build. 3D slots are full.' : '';
+      setReqMsg('Request sent. We’ll contact you with price + turnaround.', 'ok');
+      setTimeout(closeReq, 900);
+    } catch (e){
+      console.error(e);
+      setReqMsg('Couldn’t send request. Try again.', 'bad');
+    } finally {
+      reqSubmit.disabled = false;
     }
+  });
 
-    // ===== New Build button now goes to build-new.html =====
-    newBuildBtn?.addEventListener('click', () =>
-      requireLogin(async ()=> {
-        // Build creation happens in build-new.html (workshop page)
-        location.href = `/build-new.html`;
-      })
-    );
+  // ===== Builds listing + filters + pagination =====
+  const pageSize = 12;
+  let page = 0;
+  let currentRows = [];
 
-    // ===== Request Modal (paid service) =====
-    const reqBackdrop = document.getElementById('reqBackdrop');
-    const requestCarBtn = document.getElementById('requestCarBtn');
-    const reqClose = document.getElementById('reqClose');
-    const reqCancel = document.getElementById('reqCancel');
-    const reqSubmit = document.getElementById('reqSubmit');
-    const reqMsg = document.getElementById('reqMsg');
+  const buildsGrid = document.getElementById('buildsGrid');
+  const prevBtn    = document.getElementById('prev');
+  const nextBtn    = document.getElementById('next');
 
-    const reqMake = document.getElementById('reqMake');
-    const reqModel = document.getElementById('reqModel');
-    const reqYear = document.getElementById('reqYear');
-    const reqNotes = document.getElementById('reqNotes');
+  function renderBuildCard(b){
+    const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
+    const type = b.build_type || 'owned';
+    const typeLabel = { owned:'Owned', dream:'Dream', for_sale:'For sale' }[type] || 'Build';
 
-    function setReqMsg(text, kind){
-      reqMsg.textContent = text || '';
-      reqMsg.className = 'msg' + (kind ? (' ' + kind) : '');
-    }
+    const stageLabel = b.stage ? ({
+      stock: 'Stock/OEM+',
+      stage_1: 'Stage 1',
+      stage_2: 'Stage 2',
+      track: 'Track/Drift',
+      other: 'Custom'
+    }[b.stage] || b.stage) : null;
 
-    function openReq(){
-      setReqMsg('', '');
-      reqMake.value = '';
-      reqModel.value = '';
-      reqYear.value = '';
-      reqNotes.value = '';
-      reqBackdrop.style.display = 'flex';
-      setTimeout(()=>reqMake.focus(), 50);
-    }
-    function closeReq(){
-      reqBackdrop.style.display = 'none';
-      setReqMsg('', '');
-    }
+    const power = b.power_goal ? `${b.power_goal} hp` : null;
 
-    requestCarBtn?.addEventListener('click', ()=> openReq());
-    reqClose?.addEventListener('click', closeReq);
-    reqCancel?.addEventListener('click', closeReq);
-    reqBackdrop?.addEventListener('click', (e)=>{ if(e.target === reqBackdrop) closeReq(); });
+    const is3D = !!(b.is_3d || b.model_url || b.car_model_id);
+    const visibility = (b.is_public === false) ? 'Private' : 'Public';
 
-    reqSubmit?.addEventListener('click', async ()=>{
-      const make = (reqMake.value || '').trim();
-      const model = (reqModel.value || '').trim();
-      const year = (reqYear.value || '').trim();
-      const notes = (reqNotes.value || '').trim();
+    const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
+    const liked = !!b._liked;
+    const heart = liked ? '♥' : '♡';
 
-      if (!make || !model){
-        setReqMsg('Add at least Make + Model.', 'bad');
-        return;
-      }
-
-      reqSubmit.disabled = true;
-      setReqMsg('Sending…', '');
-
-      try{
-        const { data: { user } } = await supabase.auth.getUser();
-
-        // Preferred: store request in a table
-        // Table suggestion: car_model_requests(id, user_id, email, make, model, year, notes, status, created_at)
-        const payload = {
-          make, model,
-          year: year || null,
-          notes: notes || null,
-          user_id: user?.id || null,
-          email: user?.email || null,
-          status: 'new',
-          created_at: new Date().toISOString()
-        };
-
-        const { error } = await supabase.from('car_model_requests').insert(payload);
-
-        if (error){
-          // If table doesn't exist yet: fallback to email
-          console.warn('car_model_requests insert failed:', error.message);
-          const subject = encodeURIComponent('ROK Racers JA — 3D Model Request (Paid)');
-          const body = encodeURIComponent(
-            `Make: ${make}\nModel: ${model}\nYear: ${year}\nNotes: ${notes}\n\n(Submitted from Garage page)`
-          );
-          window.location.href = `mailto:youremail@domain.com?subject=${subject}&body=${body}`;
-          setReqMsg('Opening email draft…', 'ok');
-          return;
-        }
-
-        setReqMsg('Request sent. We’ll contact you with price + turnaround.', 'ok');
-        setTimeout(closeReq, 900);
-      } catch (e){
-        console.error(e);
-        setReqMsg('Couldn’t send request. Try again.', 'bad');
-      } finally {
-        reqSubmit.disabled = false;
-      }
-    });
-
-    // ===== Builds listing + filters + pagination =====
-    const pageSize = 12;
-    let page = 0;
-    let currentRows = [];
-
-    const buildsGrid = document.getElementById('buildsGrid');
-    const prevBtn    = document.getElementById('prev');
-    const nextBtn    = document.getElementById('next');
-
-    function renderBuildCard(b){
-      const carLabel = [b.year, b.make, b.model].filter(Boolean).join(' ');
-      const type = b.build_type || 'owned';
-      const typeLabel = { owned:'Owned', dream:'Dream', for_sale:'For sale' }[type] || 'Build';
-
-      const stageLabel = b.stage ? ({
-        stock: 'Stock/OEM+',
-        stage_1: 'Stage 1',
-        stage_2: 'Stage 2',
-        track: 'Track/Drift',
-        other: 'Custom'
-      }[b.stage] || b.stage) : null;
-
-      const power = b.power_goal ? `${b.power_goal} hp` : null;
-
-      // 3D detection (best-effort)
-      const is3D = !!(b.model_url || b.glb_url || b.car_model_id || b.is_3d);
-
-      const visibility = b.is_public ? 'Public' : 'Private';
-      const img = b.thumb_url || b.custom_image_url || '/Assets/garage-placeholder.jpg';
-
-      const liked = !!b._liked;
-      const heart = liked ? '♥' : '♡';
-
-      return `
-        <article class="card" role="listitem" data-build="${esc(b.id)}">
-          <a href="/build.html?id=${esc(b.id)}" style="display:block">
-            <div class="card-media">
-              <img src="${esc(img)}" alt="${esc(b.title || 'Build')}" loading="lazy">
-              <div class="chip ${is3D ? 'yellow' : ''}">${is3D ? '3D Build' : 'Photo Build'}</div>
-            </div>
-          </a>
-
-          <div class="pad">
-            <div class="title-strong">${esc(b.title || 'Untitled build')}</div>
-            ${carLabel ? `<div class="subline">${esc(carLabel)}</div>` : ''}
-
-            <div class="meta-row">
-              <span class="meta-pill">${esc(typeLabel)}</span>
-              ${stageLabel ? `<span class="meta-pill">${esc(stageLabel)}</span>` : ''}
-              ${power ? `<span class="meta-pill">${esc(power)}</span>` : ''}
-              <span class="meta-pill" style="border-color:${b.is_public ? 'rgba(24,201,100,0.55)' : 'rgba(255,255,255,0.12)'};color:${b.is_public ? '#fff' : 'var(--text-muted)'}">
-                ${esc(visibility)}
-              </span>
-            </div>
-
-            <div class="like-row">
-              <span class="like-count">❤ <span class="likes">${Number(b.like_count || 0)}</span></span>
-              <button class="btn btn-ghost btn-pill-sm" data-like
-                aria-pressed="${liked ? 'true':'false'}"
-                aria-label="${liked ? 'Remove boost from this build' : 'Boost this build'}"
-                title="${liked ? 'Remove boost from this build' : 'Boost this build'}"
-                type="button">
-                ${heart}
-              </button>
-            </div>
+    return `
+      <article class="card" role="listitem" data-build="${esc(b.id)}">
+        <a href="/build.html?id=${esc(b.id)}" style="display:block">
+          <div class="card-media">
+            <img src="${esc(img)}" alt="${esc(b.title || 'Build')}" loading="lazy">
+            <div class="chip ${is3D ? 'yellow' : ''}">${is3D ? '3D Build' : 'Photo Build'}</div>
           </div>
-        </article>`;
+        </a>
+
+        <div class="pad">
+          <div class="title-strong">${esc(b.title || 'Untitled build')}</div>
+          ${carLabel ? `<div class="subline">${esc(carLabel)}</div>` : ''}
+
+          <div class="meta-row">
+            <span class="meta-pill">${esc(typeLabel)}</span>
+            ${stageLabel ? `<span class="meta-pill">${esc(stageLabel)}</span>` : ''}
+            ${power ? `<span class="meta-pill">${esc(power)}</span>` : ''}
+            <span class="meta-pill">${esc(visibility)}</span>
+          </div>
+
+          <div class="like-row">
+            <span class="like-count">❤ <span class="likes">${Number(b.like_count || 0)}</span></span>
+            <button class="btn btn-ghost btn-pill-sm" data-like
+              aria-pressed="${liked ? 'true':'false'}"
+              aria-label="${liked ? 'Remove boost from this build' : 'Boost this build'}"
+              title="${liked ? 'Remove boost from this build' : 'Boost this build'}"
+              type="button">
+              ${heart}
+            </button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderEmptyState(message){
+    buildsGrid.innerHTML = `
+      <article class="card">
+        <div class="pad sub">${esc(message)}</div>
+      </article>`;
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+  }
+
+  function renderPage(){
+    if(!currentRows.length){
+      const vis = document.getElementById('vis').value;
+      const msg = (vis === 'my')
+        ? "Sign in to view your builds, or start your first one to put your car on the grid."
+        : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
+      renderEmptyState(msg);
+      return;
     }
 
-    function renderEmptyState(message){
-      buildsGrid.innerHTML = `
-        <article class="card">
-          <div class="pad sub">${esc(message)}</div>
-        </article>`;
-      prevBtn.disabled = true;
-      nextBtn.disabled = true;
+    const start = page * pageSize;
+    const slice = currentRows.slice(start, start + pageSize);
+
+    buildsGrid.innerHTML = slice.map(renderBuildCard).join('');
+
+    prevBtn.disabled = page === 0;
+    nextBtn.disabled = (start + pageSize) >= currentRows.length;
+  }
+
+  // safe select: retry when columns don't exist
+  async function safeSelect(fromTable, columns, queryFn){
+    const attempts = Array.isArray(columns) ? columns : [columns];
+    let lastErr = null;
+
+    for(const cols of attempts){
+      const q = queryFn(supabase.from(fromTable).select(cols));
+      const res = await q;
+      if(!res.error) return res;
+      lastErr = res.error;
+      const msg = (res.error.message || '').toLowerCase();
+      if(!msg.includes('column') && !msg.includes('does not exist')) break;
     }
 
-    function renderPage(){
-      if(!currentRows.length){
-        const vis = document.getElementById('vis').value;
-        const msg = vis === 'my'
-          ? "Sign in to view your builds, or start your first one to put your car on the grid."
-          : "No builds match these filters yet. Clear a filter or check back as the community drops more builds.";
-        renderEmptyState(msg);
-        return;
+    return { data: null, error: lastErr };
+  }
+
+  async function applyFilters(){
+    const q       = document.getElementById('q').value.trim().toLowerCase();
+    const vis     = document.getElementById('vis').value;        // public | my | all
+    const sort    = document.getElementById('sort').value;       // top | new
+    const partCat = document.getElementById('partFilter').value; // "" or category
+
+    const user = await getUser();
+
+    // URL param support: /garage.html?view=my
+    if(new URLSearchParams(location.search).get('view') === 'my'){
+      document.getElementById('vis').value = 'my';
+    }
+
+    if (vis === 'my' && !user){
+      currentRows = [];
+      page = 0;
+      renderPage();
+      return;
+    }
+
+    let rows = [];
+
+    try{
+      if (vis === 'my' && user){
+        // My builds (public + private)
+        const res = await safeSelect(
+          'builds',
+          [
+            // preferred newer schema
+            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,likes_count',
+            // fallback if likes_count doesn't exist
+            'id,user_id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d'
+          ],
+          (q) => q.eq('user_id', user.id).order('created_at', { ascending:false })
+        );
+
+        if(res.error) throw res.error;
+
+        rows = (res.data || []).map(b => ({
+          ...b,
+          like_count: Number(b.likes_count || 0)
+        }));
+      } else {
+        // Public builds from the view you rebuilt
+        const res = await safeSelect(
+          'public_builds_with_like_count_and_trophies',
+          [
+            // preferred: matches the view we built for you
+            'id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,like_count',
+            // fallback: if like_count name differs
+            'id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,car_model_id,is_3d,likes_count'
+          ],
+          (q) => q.order('created_at', { ascending:false })
+        );
+
+        if(res.error) throw res.error;
+
+        rows = (res.data || []).map(b => ({
+          ...b,
+          like_count: Number(b.like_count ?? b.likes_count ?? 0)
+        }));
       }
 
-      const start = page * pageSize;
-      const slice = currentRows.slice(start, start + pageSize);
-
-      buildsGrid.innerHTML = slice.map(renderBuildCard).join('');
-
-      prevBtn.disabled = page === 0;
-      nextBtn.disabled = (start + pageSize) >= currentRows.length;
-    }
-
-    async function applyFilters(){
-      const q       = document.getElementById('q').value.trim().toLowerCase();
-      const vis     = document.getElementById('vis').value;        // public | my | all
-      const sort    = document.getElementById('sort').value;       // top | new
-      const partCat = document.getElementById('partFilter').value; // "" or category
-
-      const { data: { user } = {} } = await supabase.auth.getUser();
-
-      if (vis === 'my' && !user){
-        currentRows = [];
-        page = 0;
-        renderPage();
-        return;
+      // Search filter
+      if(q){
+        rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
       }
 
-      let rows = [];
-
-      try{
-        if (vis === 'my' && user){
-          // Fetch your builds (best-effort columns)
-          const my = await supabase.from('builds')
-            .select('id,title,is_public,created_at,year,make,model,build_type,stage,power_goal,thumb_url,custom_image_url,model_url,glb_url,car_model_id,is_3d')
-            .eq('user_id', user.id)
-            .order('created_at',{ascending:false});
-
-          if(my.error) throw my.error;
-
-          // Like counts
-          const ids = (my.data||[]).map(r => r.id);
-          let counts = [];
-          if(ids.length){
-            const c = await supabase
-              .from('build_like_counts')
-              .select('build_id, like_count')
-              .in('build_id', ids);
-            if(c.error) throw c.error;
-            counts = c.data || [];
-          }
-          const countMap = new Map(counts.map(r => [r.build_id, Number(r.like_count||0)]));
-
-          rows = (my.data||[]).map(b => ({
-            ...b,
-            like_count: countMap.get(b.id)||0
-          }));
-        } else {
-          const pub = await supabase
-            .from('public_builds_with_like_count_and_trophies')
-            .select('id,title,thumb_url,custom_image_url,build_type,stage,power_goal,parish,owner_handle,like_count,created_at,year,make,model,model_url,glb_url,car_model_id,is_3d,is_public')
-            .order('id', { ascending: true });
-
-          if(pub.error) throw pub.error;
-          rows = pub.data || [];
-        }
-
-        if(q){
-          rows = rows.filter(r => (r.title||'').toLowerCase().includes(q));
-        }
-
-        if(partCat){
-          const ids = rows.map(r => r.id);
-          if(ids.length){
-            const { data: partsData, error: partsError } = await supabase
-              .from('build_parts')
-              .select('build_id')
-              .in('build_id', ids)
-              .eq('category', partCat);
-            if(partsError) throw partsError;
-
-            const allowed = new Set((partsData||[]).map(p => p.build_id));
-            rows = rows.filter(r => allowed.has(r.id));
-          }else{
-            rows = [];
-          }
-        }
-
-        if(sort === 'new'){
-          rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
-        } else {
-          rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
-        }
-
-        const uid = user?.id || null;
-        if(uid && rows.length){
-          const ids = rows.map(r=>r.id);
-          const liked = await supabase.from('build_likes')
+      // Part category filter
+      if(partCat){
+        const ids = rows.map(r => r.id);
+        if(ids.length){
+          const { data: partsData, error: partsError } = await supabase
+            .from('build_parts')
             .select('build_id')
             .in('build_id', ids)
-            .eq('user_id', uid);
-          if(liked.error) throw liked.error;
+            .eq('category', partCat);
+          if(partsError) throw partsError;
+
+          const allowed = new Set((partsData||[]).map(p => p.build_id));
+          rows = rows.filter(r => allowed.has(r.id));
+        } else {
+          rows = [];
+        }
+      }
+
+      // Sorting
+      if(sort === 'new'){
+        rows.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+      } else {
+        rows.sort((a,b) => Number(b.like_count||0) - Number(a.like_count||0));
+      }
+
+      // Mark which ones user liked
+      if(user && rows.length){
+        const ids = rows.map(r=>r.id);
+        const liked = await supabase.from('build_likes')
+          .select('build_id')
+          .in('build_id', ids)
+          .eq('user_id', user.id);
+
+        if(!liked.error){
           const likedSet = new Set((liked.data||[]).map(r=>r.build_id));
           rows.forEach(r => { r._liked = likedSet.has(r.id); });
         }
-
-        currentRows = rows;
-        page = 0;
-        renderPage();
-      } catch(err){
-        console.error(err);
-        renderEmptyState("We couldn’t load builds just now. Refresh the page or try again in a few seconds.");
       }
+
+      currentRows = rows;
+      page = 0;
+      renderPage();
+
+    } catch(err){
+      console.error(err);
+      renderEmptyState("We couldn’t load builds just now. Refresh the page or try again.");
+    }
+  }
+
+  // ===== Like / Unlike =====
+  buildsGrid.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('button[data-like]');
+    if(!btn) return;
+
+    const card = e.target.closest('article.card');
+    const id   = card?.dataset.build;
+    const likesEl = card.querySelector('.likes');
+    if(!id || !likesEl) return;
+
+    const ok = await requireLogin();
+    if (!ok) return;
+
+    const user = await getUser();
+    if(!user) return;
+
+    const { data: existing, error: existingErr } = await supabase
+      .from('build_likes')
+      .select('build_id')
+      .eq('build_id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if(existingErr){
+      console.error(existingErr);
+      alert('That move stalled. Try again.');
+      return;
     }
 
-    // ===== Like / Unlike =====
-    buildsGrid.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('button[data-like]');
-      if(!btn) return;
-
-      const card = e.target.closest('article.card');
-      const id   = card?.dataset.build;
-      const likesEl = card.querySelector('.likes');
-      if(!id || !likesEl) return;
-
-      const ok = await requireLogin();
-      if (!ok) return;
-
-      const { data: { user } = {} } = await supabase.auth.getUser();
-      if(!user){
-        alert('Sign in to boost builds and save your favourites.');
-        return;
-      }
-
-      const { data: existing, error: existingErr } = await supabase
+    if(existing){
+      const { error: delErr } = await supabase
         .from('build_likes')
-        .select('build_id')
+        .delete()
         .eq('build_id', id)
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .eq('user_id', user.id);
 
-      if(existingErr){
-        console.error(existingErr);
-        alert('That move stalled. Try again in a few seconds.');
+      if(delErr){
+        console.error(delErr);
+        alert('Unboost failed. Try again.');
         return;
       }
 
-      if(existing){
-        const { error: delErr } = await supabase
-          .from('build_likes')
-          .delete()
-          .eq('build_id', id)
-          .eq('user_id', user.id);
-        if(delErr){
-          console.error(delErr);
-          alert('Unboost failed. Try again in a few seconds.');
-          return;
-        }
-        btn.textContent = '♡';
-        btn.setAttribute('aria-pressed','false');
-        btn.setAttribute('aria-label','Boost this build');
-        btn.title = 'Boost this build';
-        likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
-      } else {
-        const { error: insErr } = await supabase
-          .from('build_likes')
-          .insert({ build_id: id, user_id: user.id });
+      btn.textContent = '♡';
+      btn.setAttribute('aria-pressed','false');
+      btn.setAttribute('aria-label','Boost this build');
+      btn.title = 'Boost this build';
+      likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+    } else {
+      const { error: insErr } = await supabase
+        .from('build_likes')
+        .insert({ build_id: id, user_id: user.id });
 
-        if(insErr){
-          console.error(insErr);
-          alert('Couldn’t boost this build. Try again in a few seconds.');
-          return;
-        }
-        btn.textContent = '♥';
-        btn.setAttribute('aria-pressed','true');
-        btn.setAttribute('aria-label','Remove boost from this build');
-        btn.title = 'Remove boost from this build';
-        likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+      if(insErr){
+        console.error(insErr);
+        alert('Couldn’t boost this build. Try again.');
+        return;
       }
-    });
 
-    // ===== Live likes =====
-    let likesChannel;
-    function setupLiveLikes(){
-      likesChannel?.unsubscribe?.();
-      likesChannel = supabase.channel('build-likes-live-garage')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
-          const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
-          if(!card) return;
-          const el = card.querySelector('.likes');
-          if(!el) return;
-          el.textContent = (parseInt(el.textContent)||0) + 1;
-        })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
-          const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
-          if(!card) return;
-          const el = card.querySelector('.likes');
-          if(!el) return;
-          el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
-        })
-        .subscribe();
+      btn.textContent = '♥';
+      btn.setAttribute('aria-pressed','true');
+      btn.setAttribute('aria-label','Remove boost from this build');
+      btn.title = 'Remove boost from this build';
+      likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
     }
+  });
 
-    // ===== Init =====
-    function initDefaultViewFromQuery(){
-      const params = new URLSearchParams(location.search);
-      const view = params.get('view');
-      if(view === 'my'){
-        const visSel = document.getElementById('vis');
-        if(visSel) visSel.value = 'my';
-      }
-    }
+  // ===== Live likes =====
+  let likesChannel;
+  function setupLiveLikes(){
+    likesChannel?.unsubscribe?.();
+    likesChannel = supabase.channel('build-likes-live-garage')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'build_likes' }, (p)=>{
+        const card = document.querySelector(`article.card[data-build="${p.new.build_id}"]`);
+        const el = card?.querySelector('.likes');
+        if(!el) return;
+        el.textContent = (parseInt(el.textContent)||0) + 1;
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'build_likes' }, (p)=>{
+        const card = document.querySelector(`article.card[data-build="${p.old.build_id}"]`);
+        const el = card?.querySelector('.likes');
+        if(!el) return;
+        el.textContent = Math.max(0, (parseInt(el.textContent)||0) - 1);
+      })
+      .subscribe();
+  }
 
-    document.getElementById('apply').addEventListener('click', applyFilters);
+  // ===== Events =====
+  document.getElementById('apply')?.addEventListener('click', applyFilters);
 
-    prevBtn.addEventListener('click', ()=>{
-      if(page>0){ page--; renderPage(); }
-    });
+  prevBtn?.addEventListener('click', ()=>{
+    if(page>0){ page--; renderPage(); }
+  });
 
-    nextBtn.addEventListener('click', ()=>{
-      const maxPage = Math.floor((currentRows.length - 1) / pageSize);
-      if(page < maxPage){ page++; renderPage(); }
-    });
+  nextBtn?.addEventListener('click', ()=>{
+    const maxPage = Math.floor((currentRows.length - 1) / pageSize);
+    if(page < maxPage){ page++; renderPage(); }
+  });
 
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      initDefaultViewFromQuery();
-      await updateAuthUI();
-      await updateQuota();
-      setupLiveLikes();
-      await applyFilters();
-    });
-  </script>
+  // ===== Init =====
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    // default view switch: /garage.html?view=my
+    const view = new URLSearchParams(location.search).get('view');
+    if(view === 'my') document.getElementById('vis').value = 'my';
+
+    await updateAuthUI();
+    await updateQuota();
+    setupLiveLikes();
+    await applyFilters();
+  });
+</script>
+
 
 </body>
 </html>

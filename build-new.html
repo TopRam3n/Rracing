@@ -704,216 +704,246 @@
   </main>
 
   <script>
-    /* =========================
-       CONFIG
-    ========================== */
-    const buildId = new URLSearchParams(location.search).get('id');
+  /* =========================
+     CONFIG
+  ========================== */
+  const buildId = new URLSearchParams(location.search).get('id');
 
-    const BUCKET_PHOTOS = "picture-builds";
-    const BUCKET_MODELS = "builds";
+  const BUCKET_PHOTOS = "picture-builds";
+  const BUCKET_MODELS = "builds";
 
-    const MAX_3D_BUILDS_FREE = 2;
+  const MAX_3D_BUILDS_FREE = 2;
 
-    /* =========================
-       DOM HELPERS
-    ========================== */
-    const $ = (id)=>document.getElementById(id);
+  /* =========================
+     DOM HELPERS
+  ========================== */
+  const $ = (id)=>document.getElementById(id);
 
-    function setStatus(msg, kind){
-      const el = $('statusBadge');
-      el.style.display = 'block';
-      el.className = 'status' + (kind ? (' ' + kind) : '');
-      el.textContent = msg || '';
+  function setStatus(msg, kind){
+    const el = $('statusBadge');
+    el.style.display = 'block';
+    el.className = 'status' + (kind ? (' ' + kind) : '');
+    el.textContent = msg || '';
+  }
+  function clearStatus(){
+    const el = $('statusBadge');
+    el.style.display = 'none';
+    el.textContent = '';
+    el.className = 'status';
+  }
+  function esc(s){
+    return String(s||'').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+  function safeTrim(s){ return (s || '').toString().trim(); }
+
+  async function getUser(){
+    const { data: { user } } = await supabase.auth.getUser();
+    return user || null;
+  }
+
+  // IMPORTANT: DO NOT force login on page load
+  async function requireLogin(){
+    if (window.authUI && typeof authUI.requireLogin === 'function'){
+      const ok = await authUI.requireLogin();
+      if (ok === false) return false;
     }
-    function clearStatus(){
-      const el = $('statusBadge');
-      el.style.display = 'none';
-      el.textContent = '';
-      el.className = 'status';
+    const user = await getUser();
+    if(!user){
+      alert("Please log in first.");
+      return false;
     }
-    function esc(s){
-      return String(s||'').replace(/[&<>"']/g, m => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-      }[m]));
+    return true;
+  }
+
+  /* =========================
+     NAV solid on scroll
+  ========================== */
+  const navWrapper = document.getElementById('navWrapper');
+  function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
+  updateNavSolid();
+  window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+  /* =========================
+     3D QUOTA
+  ========================== */
+  async function count3DBuilds(userId){
+    const tries = [
+      () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
+      () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id', 'is', null),
+      () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('model_url', 'is', null),
+    ];
+
+    for(const fn of tries){
+      const res = await fn();
+      if(!res.error) return (res.count ?? 0);
+      const msg = (res.error.message||'').toLowerCase();
+      if (!msg.includes('column')) break;
     }
-    function safeTrim(s){ return (s || '').toString().trim(); }
+    return 0;
+  }
 
-    async function getUser(){
-      const { data: { user } } = await supabase.auth.getUser();
-      return user || null;
-    }
+  async function refreshQuotaUI(){
+    const quotaBadge = $('quotaBadge');
+    const limitBanner = $('limitBanner');
+    const modeBadge = $('modeBadge');
 
-    // IMPORTANT: DO NOT force login on page load
-    async function requireLogin(){
-      if (window.authUI && typeof authUI.requireLogin === 'function'){
-        const ok = await authUI.requireLogin();
-        if (ok === false) return false;
-      }
-      const user = await getUser();
-      if(!user){
-        alert("Please log in first.");
-        return false;
-      }
-      return true;
-    }
+    const user = await getUser();
 
-    /* =========================
-       NAV solid on scroll (index behavior)
-    ========================== */
-    const navWrapper = document.getElementById('navWrapper');
-    function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
-    updateNavSolid();
-    window.addEventListener('scroll', updateNavSolid, { passive:true });
-
-    /* =========================
-       3D QUOTA (TRUE ENFORCEMENT)
-    ========================== */
-    async function count3DBuilds(userId){
-      const tries = [
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).eq('is_3d', true),
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('car_model_id', 'is', null),
-        () => supabase.from('builds').select('id', { count:'exact', head:true }).eq('user_id', userId).not('model_url', 'is', null),
-      ];
-
-      for(const fn of tries){
-        const res = await fn();
-        if(!res.error) return (res.count ?? 0);
-        const msg = (res.error.message||'').toLowerCase();
-        if (!msg.includes('column')) break;
-      }
-      return 0;
-    }
-
-    async function refreshQuotaUI(){
-      const quotaBadge = $('quotaBadge');
-      const limitBanner = $('limitBanner');
-      const modeBadge = $('modeBadge');
-
-      const user = await getUser();
-
-      if(!user){
-        quotaBadge.textContent = `Log in to save builds`;
-        limitBanner.style.display = 'none';
-        modeBadge.style.display = 'inline-flex';
-        modeBadge.textContent = buildId ? 'Edit mode' : 'Create mode';
-        return { user:null, used3D:0, at3DLimit:false };
-      }
-
-      const used3D = await count3DBuilds(user.id);
-      const at3DLimit = used3D >= MAX_3D_BUILDS_FREE;
-
-      quotaBadge.textContent = `${used3D}/${MAX_3D_BUILDS_FREE} 3D builds used`;
-      limitBanner.style.display = at3DLimit ? 'block' : 'none';
-
+    if(!user){
+      quotaBadge.textContent = `Log in to save builds`;
+      limitBanner.style.display = 'none';
       modeBadge.style.display = 'inline-flex';
       modeBadge.textContent = buildId ? 'Edit mode' : 'Create mode';
-
-      return { user, used3D, at3DLimit };
+      return { user:null, used3D:0, at3DLimit:false };
     }
 
-    /* =========================
-       PARTS (local state)
-    ========================== */
-    const partsState = []; // { category, name }
+    const used3D = await count3DBuilds(user.id);
+    const at3DLimit = used3D >= MAX_3D_BUILDS_FREE;
 
-    function renderParts(){
-      const wrap = $('partsList');
-      if(!partsState.length){
-        wrap.innerHTML = `<div class="tiny">No parts added yet. Add your key mods (people will filter by these).</div>`;
-        return;
-      }
-      wrap.innerHTML = partsState.map((p, idx)=>`
-        <div class="part-item">
-          <div>
-            <strong>${esc(p.name)}</strong>
-            <div class="meta">${esc(p.category)}</div>
-          </div>
-          <button class="icon-btn danger" type="button" data-del="${idx}">Remove</button>
+    quotaBadge.textContent = `${used3D}/${MAX_3D_BUILDS_FREE} 3D builds used`;
+    limitBanner.style.display = at3DLimit ? 'block' : 'none';
+
+    modeBadge.style.display = 'inline-flex';
+    modeBadge.textContent = buildId ? 'Edit mode' : 'Create mode';
+
+    return { user, used3D, at3DLimit };
+  }
+
+  /* =========================
+     PARTS (local state)
+  ========================== */
+  const partsState = []; // { category, name }
+
+  function renderParts(){
+    const wrap = $('partsList');
+    if(!partsState.length){
+      wrap.innerHTML = `<div class="tiny">No parts added yet. Add your key mods (people will filter by these).</div>`;
+      return;
+    }
+    wrap.innerHTML = partsState.map((p, idx)=>`
+      <div class="part-item">
+        <div>
+          <strong>${esc(p.name)}</strong>
+          <div class="meta">${esc(p.category)}</div>
         </div>
-      `).join('');
+        <button class="icon-btn danger" type="button" data-del="${idx}">Remove</button>
+      </div>
+    `).join('');
 
-      wrap.querySelectorAll('[data-del]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const i = parseInt(btn.getAttribute('data-del'), 10);
-          partsState.splice(i,1);
-          renderParts();
-        });
+    wrap.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const i = parseInt(btn.getAttribute('data-del'), 10);
+        partsState.splice(i,1);
+        renderParts();
       });
-    }
-
-    $('addPartBtn').addEventListener('click', ()=>{
-      const cat = $('partCategory').value || 'other';
-      const name = safeTrim($('partName').value);
-      if(!name) return;
-
-      partsState.push({ category:cat, name });
-      $('partName').value = '';
-      renderParts();
     });
+  }
 
+  $('addPartBtn').addEventListener('click', ()=>{
+    const cat = $('partCategory').value || 'other';
+    const name = safeTrim($('partName').value);
+    if(!name) return;
+
+    partsState.push({ category:cat, name });
+    $('partName').value = '';
     renderParts();
+  });
 
-    /* =========================
-       PHOTO UPLOAD PREVIEW
-    ========================== */
-    function hydrateImagePreview(files){
-      const wrap = $('imagePreview');
-      wrap.innerHTML = '';
-      if(!files || !files.length) return;
-      Array.from(files).forEach((file, idx)=>{
-        const url = URL.createObjectURL(file);
-        const div = document.createElement('div');
-        div.className = 'preview-card';
-        div.innerHTML = `<img src="${url}" alt="">
-                         <span>${idx===0 ? 'Thumbnail' : 'Image ' + (idx+1)}</span>`;
-        wrap.appendChild(div);
-      });
-    }
-    $('images').addEventListener('change', (e)=> hydrateImagePreview(e.target.files));
+  renderParts();
 
-    /* =========================
-       BUILD MODE: PHOTO vs 3D
-    ========================== */
-    const mode = {
-      type: 'photo', // 'photo' | '3d'
-      selectedCarModel: null,
-      modelUrl: null
-    };
-
-    function setMode(next){
-      mode.type = next;
-      $('photoPanel').style.display = (next === 'photo') ? 'block' : 'none';
-      $('modelPanel').style.display = (next === '3d') ? 'block' : 'none';
-      clearStatus();
-    }
-
-    $('modePhotoBtn').addEventListener('click', ()=> setMode('photo'));
-    $('mode3DBtn').addEventListener('click', async ()=>{
-      const { at3DLimit } = await refreshQuotaUI();
-      setMode('3d');
-      if(at3DLimit){
-        setStatus("3D slots are full (2/2). You can still save as Photo build.", "bad");
-      }
+  /* =========================
+     PHOTO UPLOAD PREVIEW
+  ========================== */
+  function hydrateImagePreview(files){
+    const wrap = $('imagePreview');
+    wrap.innerHTML = '';
+    if(!files || !files.length) return;
+    Array.from(files).forEach((file, idx)=>{
+      const url = URL.createObjectURL(file);
+      const div = document.createElement('div');
+      div.className = 'preview-card';
+      div.innerHTML = `<img src="${url}" alt="">
+                       <span>${idx===0 ? 'Thumbnail' : 'Image ' + (idx+1)}</span>`;
+      wrap.appendChild(div);
     });
+  }
+  $('images').addEventListener('change', (e)=> hydrateImagePreview(e.target.files));
 
-    /* =========================
-       3D SEARCH
-       - Fixes: car_model vs car_models mismatch
-       - Case-insensitive
-       - Requires storage_path (preferred) or glb_url
-    ========================== */
-    function inYearRange(year, from, to){
-      if(!year) return true;
-      const y = Number(year);
-      if(Number.isFinite(from) && y < from) return false;
-      if(Number.isFinite(to) && y > to) return false;
-      return true;
+  /* =========================
+     BUILD MODE
+  ========================== */
+  const mode = {
+    type: 'photo', // 'photo' | '3d'
+    selectedCarModel: null,
+    modelUrl: null
+  };
+
+  function setMode(next){
+    mode.type = next;
+    $('photoPanel').style.display = (next === 'photo') ? 'block' : 'none';
+    $('modelPanel').style.display = (next === '3d') ? 'block' : 'none';
+    clearStatus();
+  }
+
+  $('modePhotoBtn').addEventListener('click', ()=> setMode('photo'));
+  $('mode3DBtn').addEventListener('click', async ()=>{
+    const { at3DLimit } = await refreshQuotaUI();
+    setMode('3d');
+    if(at3DLimit){
+      setStatus("3D slots are full (2/2). You can still save as Photo build.", "bad");
+    }
+  });
+
+  /* =========================
+     3D SEARCH (car_models)
+     - uses storage_path if present, else glb_url
+  ========================== */
+  function inYearRange(year, from, to){
+    if(!year) return true;
+    const y = Number(year);
+    if(Number.isFinite(from) && y < from) return false;
+    if(Number.isFinite(to) && y > to) return false;
+    return true;
+  }
+
+  async function resolveModelUrl(row){
+    const sp = safeTrim(row?.storage_path);
+    if(sp){
+      // public url
+      const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(sp);
+      if(urlData?.publicUrl) return urlData.publicUrl;
+
+      // signed fallback (if bucket is private)
+      const signed = await supabase.storage.from(BUCKET_MODELS).createSignedUrl(sp, 60 * 60);
+      if(!signed.error && signed.data?.signedUrl) return signed.data.signedUrl;
     }
 
-    async function trySearch(tableName, make, modelText){
+    const direct = safeTrim(row?.glb_url);
+    return direct || null;
+  }
+
+  async function searchCarModels(){
+    clearStatus();
+
+    const make = safeTrim($('cmMake').value);
+    const modelText = safeTrim($('cmModel').value);
+    const year = safeTrim($('cmYear').value);
+
+    if(!make && !modelText){
+      setStatus("Type at least a make or model to search.", "bad");
+      return;
+    }
+
+    $('searchModelsBtn').disabled = true;
+    $('searchModelsBtn').textContent = 'Searching…';
+
+    try{
       let q = supabase
-        .from(tableName)
+        .from('car_models')
         .select('id,make,model,year_from,year_to,year,storage_path,glb_url,thumb_url,is_active,name')
+        .eq('is_active', true)
         .order('make', { ascending:true })
         .order('model', { ascending:true });
 
@@ -922,423 +952,368 @@
 
       const res = await q;
       if(res.error) throw res.error;
-      return res.data || [];
-    }
 
-    function getModelUrlFromRow(row){
-      const direct = (row?.glb_url || '').trim();
-      if (direct) return direct;
+      let rows = res.data || [];
 
-      const sp = (row?.storage_path || '').trim();
-      if (!sp) return null;
-
-      const { data } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(sp);
-      return data?.publicUrl || null;
-    }
-
-
-    async function searchCarModels(){
-      clearStatus();
-
-      const make = safeTrim($('cmMake').value);
-      const modelText = safeTrim($('cmModel').value);
-      const year = safeTrim($('cmYear').value);
-
-      if(!make && !modelText){
-        setStatus("Type at least a make or model to search.", "bad");
-        return;
+      if(year){
+        rows = rows.filter(r => inYearRange(year, r.year_from, r.year_to));
       }
 
-      $('searchModelsBtn').disabled = true;
-      $('searchModelsBtn').textContent = 'Searching…';
-
-      try{
-        // ✅ Try singular then plural (your current bug)
-        let rows = [];
-        let usedTable = 'car_model';
-
-        try {
-          rows = await trySearch('car_model', make, modelText);
-        } catch (e1) {
-          rows = [];
-        }
-
-        if(!rows.length){
-          usedTable = 'car_models';
-          rows = await trySearch('car_models', make, modelText);
-        }
-
-
-        if(year){
-          rows = rows.filter(r => inYearRange(year, r.year_from, r.year_to));
-        }
-
-        const sel = $('modelResults');
-        if(!rows.length){
-          sel.innerHTML = `<option value="">No matches found</option>`;
-          mode.selectedCarModel = null;
-          mode.modelUrl = null;
-          $('viewer').style.display = 'none';
-          $('viewerEmpty').style.display = 'block';
-          setStatus("No models found. Use Photo build or request your car.", "bad");
-          return;
-        }
-
-        sel.innerHTML = `<option value="">Select a model…</option>` + rows.map(r=>{
-          const yr = (r.year_from || r.year_to) ? ` (${r.year_from || ''}${(r.year_from && r.year_to) ? '–' : ''}${r.year_to || ''})` : '';
-          const label = `${r.make} ${r.model}${yr}`;
-          return `<option value="${esc(r.id)}">${esc(label)}</option>`;
-        }).join('');
-
-        sel._rows = rows;
-        sel._table = usedTable;
-
-        setStatus(`Found ${rows.length} model(s) in ${usedTable}. Select one to preview.`, "ok");
-      } catch(e){
-        console.error('Model search error:', e);
-        setStatus(`Model search failed: ${e.message || 'unknown error'}`, "bad");
-      } finally {
-        $('searchModelsBtn').disabled = false;
-        $('searchModelsBtn').textContent = 'Search models';
+      // only show rows that can actually resolve to a model URL
+      const filtered = [];
+      for(const r of rows){
+        const url = await resolveModelUrl(r);
+        if(url) filtered.push(r);
       }
-    }
+      rows = filtered;
 
-    $('searchModelsBtn').addEventListener('click', searchCarModels);
-
-    async function getModelUrlFromRow(row){
-      // preferred: storage_path in builds bucket
-      if(row?.storage_path && row.storage_path.trim() !== ''){
-        // public url
-        const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(row.storage_path);
-        if(urlData?.publicUrl) return urlData.publicUrl;
-
-        // fallback: signed url (if bucket is private)
-        const signed = await supabase.storage.from(BUCKET_MODELS).createSignedUrl(row.storage_path, 60 * 60);
-        if(!signed.error && signed.data?.signedUrl) return signed.data.signedUrl;
-      }
-
-      // fallback: explicit glb_url column if you store it
-      if(row?.glb_url) return row.glb_url;
-
-      return null;
-    }
-
-    $('modelResults').addEventListener('change', async ()=>{
-      clearStatus();
-
-      const id = $('modelResults').value;
-      const rows = $('modelResults')._rows || [];
-      const picked = rows.find(r => String(r.id) === String(id));
-
-      if(!picked){
+      const sel = $('modelResults');
+      if(!rows.length){
+        sel.innerHTML = `<option value="">No matches found</option>`;
         mode.selectedCarModel = null;
         mode.modelUrl = null;
         $('viewer').style.display = 'none';
         $('viewerEmpty').style.display = 'block';
+        setStatus("No models found. Use Photo build or request your car.", "bad");
         return;
       }
 
-      const url = await getModelUrlFromRow(picked);
-      if(!url){
-          setStatus("This model has no glb_url and no storage_path. Add one in car_models.", "bad");
-          return;
-        }
+      sel.innerHTML = `<option value="">Select a model…</option>` + rows.map(r=>{
+        const yr = (r.year_from || r.year_to) ? ` (${r.year_from || ''}${(r.year_from && r.year_to) ? '–' : ''}${r.year_to || ''})` : '';
+        const label = `${r.make} ${r.model}${yr}`;
+        return `<option value="${esc(r.id)}">${esc(label)}</option>`;
+      }).join('');
 
-        mode.selectedCarModel = picked;
-        mode.modelUrl = url;
+      sel._rows = rows;
 
+      setStatus(`Found ${rows.length} model(s). Select one to preview.`, "ok");
+    } catch(e){
+      console.error('Model search error:', e);
+      setStatus(`Model search failed: ${e.message || 'unknown error'}`, "bad");
+    } finally {
+      $('searchModelsBtn').disabled = false;
+      $('searchModelsBtn').textContent = 'Search models';
+    }
+  }
+
+  $('searchModelsBtn').addEventListener('click', searchCarModels);
+
+  $('modelResults').addEventListener('change', async ()=>{
+    clearStatus();
+
+    const id = $('modelResults').value;
+    const rows = $('modelResults')._rows || [];
+    const picked = rows.find(r => String(r.id) === String(id));
+
+    if(!picked){
+      mode.selectedCarModel = null;
+      mode.modelUrl = null;
+      $('viewer').style.display = 'none';
+      $('viewerEmpty').style.display = 'block';
+      return;
+    }
+
+    const url = await resolveModelUrl(picked);
+    if(!url){
+      setStatus("This model has no glb_url and no storage_path. Fix the row in car_models.", "bad");
+      return;
+    }
+
+    mode.selectedCarModel = picked;
+    mode.modelUrl = url;
+
+    $('viewerEmpty').style.display = 'none';
+    const viewer = $('viewer');
+    viewer.style.display = 'block';
+    viewer.src = url;
+
+    setStatus("3D model loaded. You can save as a 3D build.", "ok");
+  });
+
+  $('requestModelBtn').addEventListener('click', ()=>{
+    alert("Request flow: wire this to your request table + checkout when ready.");
+  });
+
+  /* =========================
+     LOAD BUILD FOR EDIT
+  ========================== */
+  async function loadBuild(){
+    if(!buildId) return;
+
+    $('pageTitle').textContent = "Edit Build Workshop";
+    $('pageSubtitle').textContent = "Tune the specs, switch between photo/3D, and update your parts.";
+
+    const user = await getUser();
+    if(!user) return;
+
+    const { data, error } = await supabase
+      .from('builds')
+      .select('id,user_id,title,build_type,stage,is_public,description,make,model,year,power_goal,tags,is_3d,car_model_id,model_url,custom_image_url,thumb_url')
+      .eq('id', buildId)
+      .maybeSingle();
+
+    if(error || !data){
+      console.error(error);
+      setStatus(`Could not load build: ${error?.message || 'unknown error'}`, "bad");
+      return;
+    }
+
+    if(data.user_id !== user.id){
+      setStatus("You can't edit this build (wrong account).", "bad");
+      $('saveBtn').disabled = true;
+      return;
+    }
+
+    $('title').value = data.title || '';
+    $('buildType').value = data.build_type || 'owned';
+    $('stage').value = data.stage || '';
+    $('isPublic').checked = !!data.is_public;
+    $('description').value = data.description || '';
+    $('make').value = data.make || '';
+    $('model').value = data.model || '';
+    $('year').value = data.year || '';
+    $('powerGoal').value = data.power_goal || '';
+
+    // tags is an ARRAY in DB; show as comma list
+    $('tags').value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
+
+    if (data.is_3d || data.car_model_id || data.model_url){
+      setMode('3d');
+      if (data.model_url){
+        mode.modelUrl = data.model_url;
         $('viewerEmpty').style.display = 'none';
-        const viewer = $('viewer');
-        viewer.style.display = 'block';
-        viewer.src = url;
+        $('viewer').style.display = 'block';
+        $('viewer').src = data.model_url;
+      }
+    } else {
+      setMode('photo');
+    }
 
-        setStatus("3D model loaded. You can save as a 3D build.", "ok");
+    try{
+      const p = await supabase
+        .from('build_parts')
+        .select('category,name')
+        .eq('build_id', buildId)
+        .order('created_at', { ascending:true });
+      if(!p.error && p.data){
+        partsState.splice(0, partsState.length, ...p.data.map(x=>({ category:x.category, name:x.name })));
+        renderParts();
+      }
+    } catch {}
+  }
+
+  /* =========================
+     UPLOAD PHOTO FILES
+  ========================== */
+  async function uploadPhotos(buildId, files){
+    if(!files || !files.length) return null;
+
+    const user = await getUser();
+    if(!user) return null;
+
+    let firstUrl = null;
+
+    for(let i=0; i<files.length; i++){
+      const file = files[i];
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${user.id}/${buildId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const up = await supabase.storage.from(BUCKET_PHOTOS).upload(path, file, {
+        upsert:false,
+        contentType: file.type || 'image/jpeg'
       });
 
-    $('requestModelBtn').addEventListener('click', ()=>{
-      alert("Request flow: wire this to your request table + checkout when ready.");
-    });
-
-    /* =========================
-       LOAD BUILD FOR EDIT
-    ========================== */
-    async function loadBuild(){
-      if(!buildId) return;
-
-      $('pageTitle').textContent = "Edit Build Workshop";
-      $('pageSubtitle').textContent = "Tune the specs, switch between photo/3D, and update your parts.";
-
-      const user = await getUser();
-      if(!user) return;
-
-      const { data, error } = await supabase
-        .from('builds')
-        .select('id,user_id,title,build_type,stage,is_public,description,make,model,year,power_goal,tags,is_3d,car_model_id,model_url,custom_image_url,thumb_url')
-        .eq('id', buildId)
-        .maybeSingle();
-
-      if(error || !data){
-        console.error(error);
-        setStatus(`Could not load build: ${error?.message || 'unknown error'}`, "bad");
-        return;
+      if(up.error){
+        console.error('Upload error:', up.error);
+        throw up.error;
       }
 
-      if(data.user_id !== user.id){
-        setStatus("You can't edit this build (wrong account).", "bad");
-        $('saveBtn').disabled = true;
-        return;
+      const { data: urlData } = supabase.storage.from(BUCKET_PHOTOS).getPublicUrl(path);
+      let url = urlData?.publicUrl || null;
+
+      if(!url){
+        const signed = await supabase.storage.from(BUCKET_PHOTOS).createSignedUrl(path, 60 * 60);
+        if(!signed.error && signed.data?.signedUrl) url = signed.data.signedUrl;
       }
 
-      $('title').value = data.title || '';
-      $('buildType').value = data.build_type || 'owned';
-      $('stage').value = data.stage || '';
-      $('isPublic').checked = !!data.is_public;
-      $('description').value = data.description || '';
-      $('make').value = data.make || '';
-      $('model').value = data.model || '';
-      $('year').value = data.year || '';
-      $('powerGoal').value = data.power_goal || '';
-      $('tags').value = data.tags || '';
-
-      if (data.is_3d || data.car_model_id || data.model_url){
-        setMode('3d');
-        if (data.model_url){
-          mode.modelUrl = data.model_url;
-          $('viewerEmpty').style.display = 'none';
-          $('viewer').style.display = 'block';
-          $('viewer').src = data.model_url;
-        }
-      } else {
-        setMode('photo');
+      if(!url){
+        throw new Error("Upload succeeded but no URL could be generated. Make bucket public or use signed URLs.");
       }
 
+      if(!firstUrl) firstUrl = url;
+
+      // optional build_images table
       try{
-        const p = await supabase.from('build_parts').select('category,name').eq('build_id', buildId).order('created_at', { ascending:true });
-        if(!p.error && p.data){
-          partsState.splice(0, partsState.length, ...p.data.map(x=>({ category:x.category, name:x.name })));
-          renderParts();
-        }
+        await supabase.from('build_images').insert({ build_id: buildId, image_url: url, sort_order: i });
       } catch {}
     }
 
-    /* =========================
-       UPLOAD PHOTO FILES
-       - Fix: surface real errors (policy/path)
-    ========================== */
-    async function uploadPhotos(buildId, files){
-      if(!files || !files.length) return null;
+    return firstUrl;
+  }
 
-      const user = await getUser();
-      if(!user) return null;
+  /* =========================
+     SAVE
+  ========================== */
+  async function saveBuild(){
+    clearStatus();
 
-      let firstUrl = null;
+    const loggedIn = await requireLogin();
+    if(!loggedIn) return;
 
-      for(let i=0; i<files.length; i++){
-        const file = files[i];
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = `${user.id}/${buildId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const up = await supabase.storage.from(BUCKET_PHOTOS).upload(path, file, {
-          upsert:false,
-          contentType: file.type || 'image/jpeg'
-        });
-
-        if(up.error){
-          console.error('Upload error:', up.error);
-          throw up.error; // ✅ stop immediately, show real message
-        }
-
-        // public url
-        const { data: urlData } = supabase.storage.from(BUCKET_PHOTOS).getPublicUrl(path);
-        let url = urlData?.publicUrl || null;
-
-        // if bucket private, fallback signed URL
-        if(!url){
-          const signed = await supabase.storage.from(BUCKET_PHOTOS).createSignedUrl(path, 60 * 60);
-          if(!signed.error && signed.data?.signedUrl) url = signed.data.signedUrl;
-        }
-
-        if(!url){
-          throw new Error("Upload succeeded but no URL could be generated. Make bucket public or use signed URLs everywhere.");
-        }
-
-        if(!firstUrl) firstUrl = url;
-
-        // optional table
-        try{
-          await supabase.from('build_images').insert({ build_id: buildId, image_url: url, sort_order: i });
-        } catch {}
-      }
-
-      return firstUrl;
+    const user = await getUser();
+    if(!user){
+      setStatus("You're not logged in.", "bad");
+      return;
     }
 
-    /* =========================
-       SAVE
-       - Fix: show real insert error message
-    ========================== */
-    async function saveBuild(){
-      clearStatus();
+    $('saveBtn').disabled = true;
+    $('saveBtn').textContent = "Saving…";
 
-      const loggedIn = await requireLogin();
-      if(!loggedIn) return;
-
-      const user = await getUser();
-      if(!user){
-        setStatus("You're not logged in.", "bad");
+    try{
+      const title = safeTrim($('title').value);
+      if(!title){
+        setStatus("Add a build name.", "bad");
         return;
       }
 
-      $('saveBtn').disabled = true;
-      $('saveBtn').textContent = "Saving…";
+      // ✅ tags must be an ARRAY
+      const tagsArr = safeTrim($('tags').value)
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
 
-      try{
-        const title = safeTrim($('title').value);
-        if(!title){
-          setStatus("Add a build name.", "bad");
+      const payload = {
+        title,
+        build_type: $('buildType').value || 'owned',
+        stage: $('stage').value || null,
+        is_public: !!$('isPublic').checked,
+        description: safeTrim($('description').value) || null,
+        make: safeTrim($('make').value) || null,
+        model: safeTrim($('model').value) || null,
+        year: $('year').value ? parseInt($('year').value,10) : null,
+        power_goal: $('powerGoal').value ? parseInt($('powerGoal').value,10) : null,
+        tags: tagsArr.length ? tagsArr : null,
+      };
+
+      const { at3DLimit } = await refreshQuotaUI();
+
+      if(mode.type === '3d'){
+        if(at3DLimit && !buildId){
+          setStatus("3D limit reached (2/2). Switch to Photo build to save.", "bad");
+          return;
+        }
+        if(!mode.modelUrl || !mode.selectedCarModel){
+          setStatus("Pick a 3D model first (or switch to Photo build).", "bad");
           return;
         }
 
-        const payload = {
-          title,
-          build_type: $('buildType').value || 'owned',
-          stage: $('stage').value || null,
-          is_public: !!$('isPublic').checked,
-          description: safeTrim($('description').value) || null,
-          make: safeTrim($('make').value) || null,
-          model: safeTrim($('model').value) || null,
-          year: $('year').value ? parseInt($('year').value,10) : null,
-          power_goal: $('powerGoal').value ? parseInt($('powerGoal').value,10) : null,
-          tags: safeTrim($('tags').value) || null,
-        };
+        payload.is_3d = true;
+        payload.car_model_id = mode.selectedCarModel.id;
+        payload.model_url = mode.modelUrl;
 
-        const { at3DLimit } = await refreshQuotaUI();
-
-        if(mode.type === '3d'){
-          if(at3DLimit && !buildId){
-            setStatus("3D limit reached (2/2). Switch to Photo build to save.", "bad");
-            return;
-          }
-          if(!mode.modelUrl || !mode.selectedCarModel){
-            setStatus("Pick a 3D model first (or switch to Photo build).", "bad");
-            return;
-          }
-
-          payload.is_3d = true;
-          payload.car_model_id = mode.selectedCarModel.id;
-          payload.model_url = mode.modelUrl;
-
-          if(mode.selectedCarModel.thumb_url){
-            payload.thumb_url = mode.selectedCarModel.thumb_url;
-          }
-        } else {
-          payload.is_3d = false;
-          payload.car_model_id = null;
-          payload.model_url = null;
+        if(mode.selectedCarModel.thumb_url){
+          payload.thumb_url = mode.selectedCarModel.thumb_url;
         }
+      } else {
+        payload.is_3d = false;
+        payload.car_model_id = null;
+        payload.model_url = null;
+      }
 
-        let buildRow = null;
+      let buildRow = null;
 
-        if(buildId){
-          const res = await supabase
-            .from('builds')
-            .update(payload)
-            .eq('id', buildId)
-            .eq('user_id', user.id)
-            .select()
-            .maybeSingle();
+      if(buildId){
+        const res = await supabase
+          .from('builds')
+          .update(payload)
+          .eq('id', buildId)
+          .eq('user_id', user.id)
+          .select()
+          .maybeSingle();
 
-          if(res.error || !res.data){
-            console.error('Update error:', res.error);
-            setStatus(`Could not save changes: ${res.error?.message || 'unknown error'}`, "bad");
-            return;
-          }
-          buildRow = res.data;
-
-          if(mode.type === '3d' && at3DLimit){
-            const was3D = !!(buildRow.is_3d);
-            if(!was3D){
-              setStatus("3D slots are full. This build can’t be converted to 3D right now.", "bad");
-              return;
-            }
-          }
-        } else {
-          const res = await supabase
-            .from('builds')
-            .insert({ ...payload, user_id: user.id })
-            .select()
-            .single();
-
-          if(res.error || !res.data){
-            console.error('Insert error:', res.error);
-            setStatus(`Could not create build: ${res.error?.message || 'unknown error'}`, "bad");
-            return;
-          }
-          buildRow = res.data;
+        if(res.error || !res.data){
+          console.error('Update error:', res.error);
+          setStatus(`Could not save changes: ${res.error?.message || 'unknown error'}`, "bad");
+          return;
         }
+        buildRow = res.data;
+      } else {
+        const res = await supabase
+          .from('builds')
+          .insert({ ...payload, user_id: user.id })
+          .select()
+          .single();
 
-        // Photo uploads only when photo mode
-        if(mode.type === 'photo'){
-          const files = $('images').files;
-          if(files && files.length){
-            const firstUrl = await uploadPhotos(buildRow.id, files);
-            if(firstUrl){
-              const upd = await supabase.from('builds')
-                .update({ thumb_url: firstUrl, custom_image_url: firstUrl })
-                .eq('id', buildRow.id)
-                .eq('user_id', user.id);
+        if(res.error || !res.data){
+          console.error('Insert error:', res.error);
+          setStatus(`Could not create build: ${res.error?.message || 'unknown error'}`, "bad");
+          return;
+        }
+        buildRow = res.data;
+      }
 
-              if(upd.error){
-                console.warn('Thumb update warning:', upd.error);
-              }
+      // Photo uploads only when photo mode
+      if(mode.type === 'photo'){
+        const files = $('images').files;
+        if(files && files.length){
+          const firstUrl = await uploadPhotos(buildRow.id, files);
+          if(firstUrl){
+            const upd = await supabase.from('builds')
+              .update({ thumb_url: firstUrl, custom_image_url: firstUrl })
+              .eq('id', buildRow.id)
+              .eq('user_id', user.id);
+
+            if(upd.error){
+              console.warn('Thumb update warning:', upd.error);
             }
           }
         }
+      }
 
-        // Save parts
-        try{
-          await supabase.from('build_parts').delete().eq('build_id', buildRow.id);
-          if(partsState.length){
-            const rows = partsState.map(p => ({
-              build_id: buildRow.id,
-              category: p.category,
-              name: p.name
-            }));
-            const ins = await supabase.from('build_parts').insert(rows);
-            if(ins.error) console.warn('Parts insert warning:', ins.error);
-          }
-        } catch(e){
-          console.warn("Parts save warning:", e);
+      // Save parts
+      try{
+        await supabase.from('build_parts').delete().eq('build_id', buildRow.id);
+        if(partsState.length){
+          const rows = partsState.map(p => ({
+            build_id: buildRow.id,
+            category: p.category,
+            name: p.name
+          }));
+          const ins = await supabase.from('build_parts').insert(rows);
+          if(ins.error) console.warn('Parts insert warning:', ins.error);
         }
-
-        setStatus("Saved. Sending you to the build page…", "ok");
-        setTimeout(()=> location.href = `/build.html?id=${buildRow.id}`, 650);
-
       } catch(e){
-        console.error('Save failed:', e);
-        setStatus(`Save failed: ${e?.message || 'unknown error'}`, "bad");
-      } finally {
-        $('saveBtn').disabled = false;
-        $('saveBtn').textContent = "Save build";
+        console.warn("Parts save warning:", e);
       }
+
+      setStatus("Saved. Sending you to the build page…", "ok");
+      setTimeout(()=> location.href = `/build.html?id=${buildRow.id}`, 650);
+
+    } catch(e){
+      console.error('Save failed:', e);
+      setStatus(`Save failed: ${e?.message || 'unknown error'}`, "bad");
+    } finally {
+      $('saveBtn').disabled = false;
+      $('saveBtn').textContent = "Save build";
     }
+  }
 
-    $('saveBtn').addEventListener('click', saveBuild);
-    $('cancelBtn').addEventListener('click', ()=> location.href = '/garage.html');
-    $('resetBtn').addEventListener('click', ()=>{
-      if(confirm("Reset the workshop form? Unsaved changes will be lost.")){
-        location.href = buildId ? `/build-new.html?id=${buildId}` : `/build-new.html`;
-      }
-    });
+  $('saveBtn').addEventListener('click', saveBuild);
+  $('cancelBtn').addEventListener('click', ()=> location.href = '/garage.html');
+  $('resetBtn').addEventListener('click', ()=>{
+    if(confirm("Reset the workshop form? Unsaved changes will be lost.")){
+      location.href = buildId ? `/build-new.html?id=${buildId}` : `/build-new.html`;
+    }
+  });
 
-    /* =========================
-       INIT
-    ========================== */
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      await refreshQuotaUI();
-      await loadBuild();
-      renderParts();
-    });
-  </script>
+  /* =========================
+     INIT
+  ========================== */
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    await refreshQuotaUI();
+    await loadBuild();
+    renderParts();
+  });
+</script>
 </body>
 </html>
