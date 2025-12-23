@@ -913,7 +913,7 @@
     async function trySearch(tableName, make, modelText){
       let q = supabase
         .from(tableName)
-        .select('id,make,model,year_from,year_to,storage_path,thumb_url,glb_url')
+        .select('id,make,model,year_from,year_to,year,storage_path,glb_url,thumb_url,is_active,name')
         .order('make', { ascending:true })
         .order('model', { ascending:true });
 
@@ -924,6 +924,18 @@
       if(res.error) throw res.error;
       return res.data || [];
     }
+
+    function getModelUrlFromRow(row){
+      const direct = (row?.glb_url || '').trim();
+      if (direct) return direct;
+
+      const sp = (row?.storage_path || '').trim();
+      if (!sp) return null;
+
+      const { data } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(sp);
+      return data?.publicUrl || null;
+    }
+
 
     async function searchCarModels(){
       clearStatus();
@@ -943,15 +955,19 @@
       try{
         // ✅ Try singular then plural (your current bug)
         let rows = [];
-        let usedTable = 'car_models';
+        let usedTable = 'car_model';
 
-        try{
-          rows = await trySearch('car_models', make, modelText);
-        } catch (e1){
-          // fallback
+        try {
+          rows = await trySearch('car_model', make, modelText);
+        } catch (e1) {
+          rows = [];
+        }
+
+        if(!rows.length){
           usedTable = 'car_models';
           rows = await trySearch('car_models', make, modelText);
         }
+
 
         if(year){
           rows = rows.filter(r => inYearRange(year, r.year_from, r.year_to));
@@ -991,7 +1007,7 @@
 
     async function getModelUrlFromRow(row){
       // preferred: storage_path in builds bucket
-      if(row?.storage_path){
+      if(row?.storage_path && row.storage_path.trim() !== ''){
         // public url
         const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(row.storage_path);
         if(urlData?.publicUrl) return urlData.publicUrl;
@@ -1024,20 +1040,20 @@
 
       const url = await getModelUrlFromRow(picked);
       if(!url){
-        setStatus("This model has no usable URL. Add storage_path (preferred) or glb_url in the car model row.", "bad");
-        return;
-      }
+          setStatus("This model has no glb_url and no storage_path. Add one in car_models.", "bad");
+          return;
+        }
 
-      mode.selectedCarModel = picked;
-      mode.modelUrl = url;
+        mode.selectedCarModel = picked;
+        mode.modelUrl = url;
 
-      $('viewerEmpty').style.display = 'none';
-      const viewer = $('viewer');
-      viewer.style.display = 'block';
-      viewer.src = url;
+        $('viewerEmpty').style.display = 'none';
+        const viewer = $('viewer');
+        viewer.style.display = 'block';
+        viewer.src = url;
 
-      setStatus("3D model loaded. You can save as a 3D build.", "ok");
-    });
+        setStatus("3D model loaded. You can save as a 3D build.", "ok");
+      });
 
     $('requestModelBtn').addEventListener('click', ()=>{
       alert("Request flow: wire this to your request table + checkout when ready.");
