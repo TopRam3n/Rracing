@@ -6,1470 +6,742 @@
   <title>Build — ROK Racers JA</title>
   <meta name="description" content="Build details in the ROK Racers JA garage." />
   <link rel="icon" href="/Assets/og.png" />
-
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    });
-  </script>
-
-  <!-- Keep for shared helpers if you have them. (We do NOT use the old OTP prompt fallback anymore.) -->
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
     :root {
-      --bg-main: #050508;
-      --bg-alt: #111111;
-      --bg-card: #141414;
-
-      --accent-main: #128b02;         /* primary green */
-      --accent-secondary: #FFD93B;    /* yellow stays */
-      --accent-cyan: #FFD93B;
-
-      --text-main: #ffffff;
-      --text-muted: #bdbdbd;
-      --border-subtle: rgba(255, 255, 255, 0.06);
-      --radius-lg: 24px;
-      --radius-md: 18px;
-      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.7);
-      --transition-fast: 0.18s ease-out;
-      --transition-med: 0.25s ease-out;
-      --nav-height: 76px;
+      --bg-main: #050508; --bg-card: #141414;
+      --accent-main: #128b02; --accent-secondary: #FFD93B; --accent-cyan: #FFD93B;
+      --text-main: #fff; --text-muted: #bdbdbd;
+      --border-subtle: rgba(255,255,255,0.06);
+      --radius-md: 18px; --shadow-soft: 0 18px 40px rgba(0,0,0,0.7);
+      --transition-fast: 0.18s ease-out; --nav-height: 76px;
     }
-    * { box-sizing: border-box; margin:0; padding:0; }
-    html, body {
-      height: 100%;
-      background: radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
-      color: var(--text-main);
-      font-family: "Rajdhani", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      scroll-behavior: smooth;
-      -webkit-font-smoothing: antialiased;
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{
+      min-height:100%;
+      background:radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);
+      color:var(--text-main);
+      font-family:"Rajdhani",system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased;
     }
-    body { display:flex; flex-direction:column; }
-    a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
-    .sr-only{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
-    .page { min-height: 100vh; display:flex; flex-direction:column; }
-    .container { width: min(1200px, 100% - 32px); margin: 0 auto; }
-    @media (min-width: 1280px){ .container{ width: min(1280px, 100% - 64px);} }
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
 
-    .page::after {
+    .container{ width:min(1200px,100% - 32px); margin:0 auto; }
+    @media(min-width:1280px){ .container{ width:min(1280px,100% - 64px); } }
+
+    body::after{
       content:""; position:fixed; inset-inline:0; bottom:-120px; height:220px;
-      background: radial-gradient(circle at bottom, rgba(24, 201, 100, 0.22), transparent 60%);
+      background:radial-gradient(circle at bottom,rgba(18,139,2,0.18),transparent 60%);
       pointer-events:none; z-index:0;
     }
 
-    /* NAV (MATCH INDEX) */
-    .nav-wrapper {
-      position: sticky; top: 0; z-index: 40;
-      backdrop-filter: blur(16px);
-      background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    /* ── NAV ──────────────────────────────────────────────── */
+    .nav-wrapper{
+      position:sticky; top:0; z-index:40;
+      backdrop-filter:blur(16px);
+      background:linear-gradient(to bottom,rgba(5,5,8,.9),rgba(5,5,8,.6));
+      border-bottom:1px solid rgba(255,255,255,.04);
+      transition:background .35s,border-color .35s,box-shadow .35s;
     }
     .nav-wrapper.nav-solid{
-      background: rgba(5,5,8,0.98);
-      border-bottom-color: rgba(255,255,255,0.10);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+      background:rgba(5,5,8,.98);
+      border-bottom-color:rgba(255,255,255,.10);
+      box-shadow:0 18px 40px rgba(0,0,0,.7);
     }
-    .nav {
-      height: var(--nav-height);
-      display:flex; align-items:center; justify-content:space-between;
-      gap: 20px;
-    }
-    .logo { display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
+    .nav{ height:var(--nav-height); display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .logo{ display:flex; align-items:center; gap:8px; letter-spacing:.04em; }
     .logo-mark{
-      width:36px;height:36px;border-radius:999px;
-      border:1px solid rgba(24, 201, 100, 0.7);
-      box-shadow:0 0 18px rgba(24, 201, 100, 0.35);
+      width:36px; height:36px; border-radius:999px;
+      border:1px solid rgba(18,139,2,.7); box-shadow:0 0 18px rgba(18,139,2,.35);
       overflow:hidden; background:#000;
-      display:flex;align-items:center;justify-content:center;
     }
     .logo-mark img{ width:100%; height:100%; object-fit:cover; }
     .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; }
     .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; }
-
     .nav-links{
       display:flex; gap:18px; align-items:center;
-      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
-      color: var(--text-muted);
+      font-size:13px; text-transform:uppercase; letter-spacing:.15em; color:var(--text-muted);
     }
-    .nav-links a{ position:relative; padding-bottom:4px; cursor:pointer; }
+    .nav-links a{ position:relative; padding-bottom:4px; }
     .nav-links a::after{
       content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
-      background:linear-gradient(to right, var(--accent-main), var(--accent-cyan));
-      transition: width var(--transition-fast);
-      border-radius:999px;
+      background:linear-gradient(to right,var(--accent-main),var(--accent-cyan));
+      transition:width var(--transition-fast); border-radius:999px;
     }
     .nav-links a:hover{ color:var(--text-main); }
     .nav-links a:hover::after{ width:100%; }
-
     .nav-cta{ display:flex; gap:8px; align-items:center; }
+
     .btn{
       border-radius:999px; padding:8px 16px;
-      font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
+      font-size:13px; text-transform:uppercase; letter-spacing:.15em;
       border:1px solid transparent; background:transparent;
       cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-      transition: background var(--transition-fast), color var(--transition-fast),
-        border-color var(--transition-fast), transform var(--transition-fast),
-        box-shadow var(--transition-fast);
-      color:#fff;
+      transition:background var(--transition-fast),color var(--transition-fast),
+        border-color var(--transition-fast),transform var(--transition-fast),box-shadow var(--transition-fast);
+      color:#fff; font-family:"Rajdhani",system-ui,sans-serif;
     }
     .btn-primary{
-      background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
-      box-shadow: 0 0 24px rgba(24, 201, 100, 0.55);
-      border-color: rgba(24, 201, 100, 0.85);
+      background:radial-gradient(circle at top left,#39ff96,var(--accent-main));
+      box-shadow:0 0 24px rgba(18,139,2,.55); border-color:rgba(18,139,2,.85);
     }
-    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
-    .btn-ghost{
-      border-color: rgba(255,255,255,0.12);
-      color: var(--text-muted);
-    }
-    .btn-ghost:hover{
-      color: var(--text-main);
-      border-color: rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.02);
-    }
-    .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
+    .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(18,139,2,.75); }
+    .btn-ghost{ border-color:rgba(255,255,255,.12); color:var(--text-muted); }
+    .btn-ghost:hover{ color:var(--text-main); border-color:rgba(255,255,255,.25); background:rgba(255,255,255,.02); }
+    .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:.16em; }
+    .btn[disabled]{ opacity:.5; pointer-events:none; }
 
     .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
       width:32px; height:32px; border-radius:50%;
-      background:var(--bg-card);
-      display:flex; align-items:center; justify-content:center;
-      font-weight:600; cursor:pointer;
-      border:1px solid rgba(255,255,255,0.18);
-      transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-      font-size:13px;
-      user-select:none;
+      background:var(--bg-card); display:flex; align-items:center; justify-content:center;
+      font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,.18);
+      transition:box-shadow var(--transition-fast),border-color var(--transition-fast),transform var(--transition-fast);
+      font-size:13px; user-select:none;
     }
-    .profile-chip:hover{
-      border-color:rgba(255,255,255,0.32);
-      box-shadow:0 0 16px rgba(255,217,59,0.6);
-      transform:translateY(-1px);
-    }
+    .profile-chip:hover{ border-color:rgba(255,255,255,.32); box-shadow:0 0 16px rgba(255,217,59,.6); transform:translateY(-1px); }
     .dropdown{
       position:absolute; right:0; top:44px;
-      background:rgba(10,10,14,0.96);
-      border:1px solid var(--border-subtle);
-      box-shadow:0 20px 40px rgba(0,0,0,.65);
-      border-radius:16px;
-      display:none;
-      flex-direction:column;
-      min-width:240px;
-      z-index:999;
-      backdrop-filter: blur(16px);
-      overflow:hidden;
+      background:rgba(10,10,14,.96); border:1px solid var(--border-subtle);
+      box-shadow:0 20px 40px rgba(0,0,0,.65); border-radius:16px;
+      display:none; flex-direction:column; min-width:240px; z-index:999;
+      backdrop-filter:blur(16px); overflow:hidden;
     }
     .dropdown.open{ display:flex; }
-
-    .dd-head{
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,0.08);
-      display:flex; flex-direction:column; gap:2px;
-    }
-    .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
-    .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-    .dropdown a, .dropdown button{
-      padding:10px 14px; text-align:left;
-      border:none; background:transparent; color:var(--text-main);
-      font-size:13px; width:100%; cursor:pointer;
+    .dd-head{ padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; flex-direction:column; gap:2px; }
+    .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:.16em; color:var(--text-muted); }
+    .dd-email{ font-size:13px; color:#fff; opacity:.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dropdown a,.dropdown button{
+      padding:10px 14px; text-align:left; border:none; background:transparent;
+      color:var(--text-main); font-size:13px; width:100%; cursor:pointer;
       display:flex; justify-content:space-between; align-items:center;
+      font-family:"Rajdhani",system-ui,sans-serif;
     }
-    .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
-    .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
-    .dd-badge{
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      padding:3px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.16);
-      color:var(--text-muted);
-      background:rgba(0,0,0,0.25);
-      white-space:nowrap;
-    }
+    .dropdown a:hover,.dropdown button:hover{ background:rgba(255,255,255,.06); }
+    .dd-sep{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }
+    .dd-badge{ font-size:10px; text-transform:uppercase; letter-spacing:.14em; padding:3px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.16); color:var(--text-muted); background:rgba(0,0,0,.25); }
+    @media(max-width:768px){ .nav-links{ display:none; } .logo-text-sub{ display:none; } }
 
-    @media (max-width: 768px){
-      .nav-links{ display:none; }
-      .nav-cta{ gap:6px; }
-      .logo-text-sub{ display:none; }
-    }
-
-    /* PAGE */
-    .section { position:relative; padding:34px 0; z-index:1; }
-    .page-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:14px;
-      margin-top: 8px;
-      margin-bottom: 16px;
-      flex-wrap:wrap;
-    }
-    .kicker{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      margin-bottom:8px;
-    }
-    .kicker-line{
-      width:26px;height:1px;
-      background:linear-gradient(to right,var(--accent-main),var(--accent-cyan));
-    }
-    .kicker span{
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.18em;
-      color:var(--accent-cyan);
-    }
-    .h1{
-      font-family:"Bebas Neue";
-      font-size: clamp(40px, 5.2vw, 58px);
-      line-height: 0.92;
-      text-transform:uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 6px;
-    }
-    .sub{
-      font-size:13px;
-      color:var(--text-muted);
-      line-height:1.35;
-      max-width: 680px;
-    }
+    /* ── PAGE ─────────────────────────────────────────────── */
+    .section{ position:relative; padding:34px 0 56px; z-index:1; }
+    .kicker{ display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+    .kicker-line{ width:26px; height:1px; background:linear-gradient(to right,var(--accent-main),var(--accent-cyan)); }
+    .kicker span{ font-size:11px; text-transform:uppercase; letter-spacing:.18em; color:var(--accent-cyan); }
+    .page-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
+    .h1{ font-family:"Bebas Neue"; font-size:clamp(38px,5vw,56px); line-height:.92; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+    .sub{ font-size:13px; color:var(--text-muted); line-height:1.35; }
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .error{ color:#ff9a9a; font-size:13px; margin-top:6px; line-height:1.35; }
 
-    .grid{
-      display:grid;
-      grid-template-columns: minmax(0,1.35fr) minmax(0,1fr);
-      gap:16px;
-      align-items:start;
+    .layout-grid{
+      display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:16px; align-items:start;
     }
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
+    @media(max-width:980px){ .layout-grid{ grid-template-columns:1fr; } }
 
     .card{
-      border-radius: var(--radius-md);
-      border:1px solid var(--border-subtle);
-      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
-      padding:12px;
-      box-shadow: var(--shadow-soft);
-      overflow:hidden;
-      position:relative;
+      border-radius:var(--radius-md); border:1px solid var(--border-subtle);
+      background:radial-gradient(circle at top,rgba(255,255,255,.06),rgba(10,10,10,.98));
+      padding:14px; box-shadow:var(--shadow-soft); overflow:hidden;
     }
 
-    /* Gallery (premium-style) */
-    .media-wrap{
-      position:relative;
-      border-radius:16px;
-      overflow:hidden;
-      background: linear-gradient(135deg, #171717, #262626);
-      isolation:isolate;
-      border:1px solid rgba(255,255,255,0.06);
-    }
-    .media-wrap img,
-    .media-wrap video{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .media-overlay{
-      position:absolute; inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 10% 10%, rgba(255,217,59,0.22), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(24,201,100,0.32), transparent 60%);
-      mix-blend-mode: screen;
-      opacity: 0.9;
-      z-index: 2;
-    }
-    .blur-up{
-      filter: blur(18px);
-      transform: scale(1.06);
-      opacity: 0.92;
-      transition: filter 520ms ease, transform 520ms ease, opacity 520ms ease;
-      will-change: filter, transform, opacity;
-    }
-    .blur-up.is-loaded{
-      filter: blur(0);
-      transform: scale(1);
-      opacity: 1;
-    }
-
+    /* Gallery */
     .gallery-main{
-      height: 420px;
-      border-radius: 16px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.06);
-      background: linear-gradient(135deg, #171717, #262626);
+      height:420px; border-radius:16px; overflow:hidden;
+      border:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(135deg,#171717,#262626); position:relative;
     }
-    @media (max-width: 560px){
-      .gallery-main{ height: 280px; }
+    @media(max-width:560px){ .gallery-main{ height:260px; } }
+    .gallery-main img{
+      width:100%; height:100%; object-fit:cover; display:block;
+      filter:blur(20px); transform:scale(1.06); opacity:.9;
+      transition:filter .5s ease,transform .5s ease,opacity .5s ease;
+    }
+    .gallery-main img.loaded{ filter:blur(0); transform:scale(1); opacity:1; }
+    .gallery-overlay{
+      position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(circle at 10% 10%,rgba(255,217,59,.18),transparent 55%),
+        radial-gradient(circle at 80% 80%,rgba(18,139,2,.25),transparent 55%);
+      mix-blend-mode:screen; z-index:2;
     }
     .thumb-row{
-      display:flex;
-      gap:10px;
-      margin-top:10px;
-      overflow-x:auto;
-      padding-bottom:6px;
-      scrollbar-width: thin;
+      display:flex; gap:10px; margin-top:10px;
+      overflow-x:auto; padding-bottom:6px; scrollbar-width:thin;
     }
     .thumb-row::-webkit-scrollbar{ height:4px; }
-    .thumb-row::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.16); border-radius:999px; }
-
+    .thumb-row::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.16); border-radius:999px; }
     .thumb{
-      flex:0 0 auto;
-      width:96px;
-      height:64px;
-      border-radius: 14px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.10);
-      opacity:0.72;
-      cursor:pointer;
-      transition: opacity var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+      flex:0 0 auto; width:90px; height:60px; border-radius:12px; overflow:hidden;
+      border:1px solid rgba(255,255,255,.10); opacity:.65; cursor:pointer;
+      transition:opacity var(--transition-fast),transform var(--transition-fast),border-color var(--transition-fast);
       background:#111;
     }
-    .thumb.active{
-      opacity:1;
-      transform: translateY(-2px);
-      border-color: rgba(255,217,59,0.65);
-      box-shadow: 0 0 18px rgba(255,217,59,0.18);
-    }
+    .thumb.active{ opacity:1; transform:translateY(-2px); border-color:rgba(255,217,59,.65); box-shadow:0 0 16px rgba(255,217,59,.18); }
     .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 
     .badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      padding:5px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.14em;
-      color: var(--text-muted);
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.35);
+      font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--text-muted);
     }
-    .badge.strong{
-      color:#fff;
-      border-color: rgba(24,201,100,0.45);
-      box-shadow: 0 0 18px rgba(24,201,100,0.14);
-    }
-    .badge.yellow{
-      color: var(--accent-secondary);
-      border-color: rgba(255,217,59,0.35);
-      box-shadow: 0 0 18px rgba(255,217,59,0.12);
-    }
+    .badge.green{ color:#9affc5; border-color:rgba(18,139,2,.45); box-shadow:0 0 18px rgba(18,139,2,.14); }
+    .badge.yellow{ color:var(--accent-secondary); border-color:rgba(255,217,59,.35); }
+    .badge.red{ color:#ff9a9a; border-color:rgba(255,100,100,.35); }
 
-    .spec-grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top: 10px; }
-    @media(max-width: 760px){ .spec-grid{ grid-template-columns:1fr; } }
+    .spec-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
+    @media(max-width:760px){ .spec-grid{ grid-template-columns:1fr; } }
     .spec-item{
-      padding:10px 12px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.35);
-      font-size: 13px;
-      color: #fff;
+      padding:10px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.08); background:rgba(0,0,0,.35); font-size:13px;
     }
-    .spec-label{
-      display:block;
-      font-size: 11px;
-      text-transform:uppercase;
-      letter-spacing:0.14em;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
+    .spec-label{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--text-muted); margin-bottom:4px; }
 
-    .divider{ height:1px; background: rgba(255,255,255,0.06); margin: 12px 0; }
-
-    .error{
-      margin-top: 10px;
-      color:#ff9a9a;
-      font-size: 13px;
-      line-height:1.35;
-    }
+    .divider{ height:1px; background:rgba(255,255,255,.06); margin:14px 0; }
 
     textarea.input{
-      width:100%;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
-      color:#fff;
-      padding:12px 12px;
-      font:inherit;
-      min-height: 70px;
-      outline:none;
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-      resize: vertical;
+      width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.35); color:#fff; padding:12px;
+      font:inherit; min-height:70px; outline:none; resize:vertical;
+      transition:border-color var(--transition-fast);
     }
-    textarea.input:focus-visible{
-      border-color: rgba(255,217,59,0.45);
-      box-shadow: 0 0 0 1px rgba(255,217,59,0.25);
-    }
+    textarea.input:focus-visible{ border-color:rgba(255,217,59,.45); box-shadow:0 0 0 1px rgba(255,217,59,.2); }
 
-    .comment-card{
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 12px 0;
-    }
-    .comment-meta{
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform:uppercase;
-      letter-spacing:0.12em;
-      margin-bottom: 6px;
-    }
+    .comment-card{ border-top:1px solid rgba(255,255,255,.06); padding:12px 0; }
+    .comment-meta{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.12em; margin-bottom:6px; }
 
     model-viewer{
-      width:100%;
-      height:340px;
-      border-radius:16px;
-      background: radial-gradient(circle at top, #222, #050508);
-      --poster-color: transparent;
-      --progress-bar-color: transparent;
-      --progress-mask: none;
-      backface-visibility:hidden;
-      transform:translateZ(0);
-      contain: layout paint size;
-      will-change: transform;
-      border:1px solid rgba(255,255,255,0.06);
-      overflow:hidden;
+      width:100%; height:340px; border-radius:16px;
+      background:radial-gradient(circle at top,#222,#050508);
+      --poster-color:transparent;
+      border:1px solid rgba(255,255,255,.06); overflow:hidden;
     }
 
-    /* AUTH MODAL (MATCH INDEX) */
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.72);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:9999;
-    }
-    .modal{
-      width:min(560px, 96vw);
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(12,12,16,.96);
-      box-shadow: 0 40px 120px -30px rgba(0,0,0,.8);
-      overflow:hidden;
-      backdrop-filter: blur(16px);
-    }
-    .modal-head{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
-    .modal-title{
-      font-family:"Bebas Neue";
-      letter-spacing:2px;
-      text-transform:uppercase;
-      font-size:28px;
-      margin:0;
-    }
-    .modal-close{
-      border:1px solid rgba(255,255,255,.14);
-      background:transparent;
-      color:#fff;
-      border-radius:999px;
-      padding:6px 10px;
-      cursor:pointer;
-    }
-    .modal-body{ padding:16px; display:grid; gap:10px; }
-    .tabs{ display:flex; gap:8px; }
-    .tab{
-      flex:1;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      padding:8px 10px;
-      cursor:pointer;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      font-size:11px;
-      color:var(--text-muted);
-    }
-    .tab.active{
-      color:#fff;
-      border-color: rgba(255,217,59,.35);
-      box-shadow: 0 0 18px rgba(255,217,59,.18);
-    }
-    .field label{ font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px; }
-    .field input, .field select{
-      width:100%;
-      padding:11px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(20,20,24,.9);
-      color:#fff;
-      outline:none;
-      font-size:14px;
-      font-family:inherit;
-    }
-    .auth-msg{ font-size:12px; color:var(--text-muted); min-height:16px; }
-    .auth-msg.ok{ color:#9affc5; }
-    .auth-msg.bad{ color:#ff9a9a; }
-    .btn-wide{ width:100%; justify-content:center; }
-    .dividerText{
-      display:flex; align-items:center; gap:10px;
-      color: var(--text-muted);
-      font-size:11px; text-transform:uppercase; letter-spacing:.14em;
-      margin:8px 0;
-    }
-    .dividerText::before,.dividerText::after{
-      content:""; flex:1; height:1px; background: rgba(255,255,255,.10);
-    }
+    /* skeleton for loading state */
+    .skel{ height:420px; border-radius:16px; background:linear-gradient(90deg,#141414 25%,#1e1e1e 50%,#141414 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
+    @keyframes shimmer{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   </style>
 </head>
 
 <body>
-  <div class="page">
 
-    <!-- NAV (MATCH INDEX) -->
-    <div class="nav-wrapper" id="navWrapper">
-      <div class="container nav">
-        <a href="/index.html" class="logo">
-          <div class="logo-mark">
-            <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+  <!-- NAV -->
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="/index.html" class="logo">
+        <div class="logo-mark"><img src="/Assets/logo.png" alt="ROK Racers JA"></div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Motorsport Community</div>
+        </div>
+      </a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="/events.html">Events</a>
+        <a href="/garage.html">Garage</a>
+        <a href="/highlights.html">Highlights</a>
+        <a href="/teams.html">Community</a>
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/store.html">Store</a>
+      </nav>
+      <div class="nav-cta">
+        <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
+        <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="profileInitials">U</span>
           </div>
-          <div>
-            <div class="logo-text-main">ROK RACERS JA</div>
-            <div class="logo-text-sub">Motorsport Community</div>
-          </div>
-        </a>
-
-        <nav class="nav-links">
-          <a href="/events.html">Events</a>
-          <a href="/garage.html">Garage</a>
-          <a href="/teams.html">Community</a>
-          <a href="/about.html">About</a>
-          <a href="/marketplace.html">Marketplace</a>
-          <a href="/store.html">Store</a>
-        </nav>
-
-        <div class="nav-cta">
-          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
-          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
-
-          <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
-              <span id="profileInitials">U</span>
+          <div id="dropdown" class="dropdown" role="menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
             </div>
-
-            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-              <div class="dd-head">
-                <div class="dd-title">Signed in as</div>
-                <div class="dd-email" id="ddEmail">—</div>
-              </div>
-
-              <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
-              <div class="dd-sep"></div>
-
-              <a href="/garage.html">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
-
-              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
-
-              <div class="dd-sep"></div>
-              <button id="signoutBtn" type="button">Sign out</button>
-            </div>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+            <a href="/garage.html?view=my">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-build.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <div class="dd-sep"></div>
+            <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- MAIN -->
-    <main class="container section">
-      <div class="page-head">
-        <div>
-          <div class="kicker">
-            <div class="kicker-line"></div>
-            <span>Garage · Build Page</span>
-          </div>
+  <!-- MAIN -->
+  <main class="container section">
 
-          <h1 id="buildTitle" class="h1">Loading build…</h1>
-          <div id="buildOwner" class="sub" style="margin-top:4px;"></div>
-
-          <div id="buildMeta" class="row" style="margin-top:10px;"></div>
-          <div id="buildError" class="error"></div>
+    <div class="page-head">
+      <div>
+        <div class="kicker">
+          <div class="kicker-line"></div>
+          <span id="breadcrumb">Garage · Build</span>
         </div>
-
-        <div class="row" style="justify-content:flex-end">
-          <button id="likeBtn" class="btn btn-ghost btn-pill-sm" type="button" disabled>♡ 0</button>
-          <button id="shareBtn" class="btn btn-ghost btn-pill-sm" type="button">Share</button>
-          <button id="backBtn" class="btn btn-primary btn-pill-sm" type="button">Back to Garage</button>
-        </div>
+        <h1 id="buildTitle" class="h1">Loading…</h1>
+        <div id="buildOwner" class="sub" style="margin-top:4px;"></div>
+        <div id="buildMeta" class="row" style="margin-top:10px;"></div>
+        <div id="buildError" class="error"></div>
       </div>
 
-      <div class="grid">
-        <!-- LEFT: Gallery + description + optional 3D -->
+      <div class="row" style="justify-content:flex-end;flex-wrap:wrap;">
+        <button id="likeBtn"  class="btn btn-ghost btn-pill-sm" type="button" disabled>♡ 0</button>
+        <button id="shareBtn" class="btn btn-ghost btn-pill-sm" type="button">Share</button>
+        <button id="editBtn"  class="btn btn-ghost btn-pill-sm" type="button" style="display:none">Edit Build</button>
+        <button id="backBtn"  class="btn btn-primary btn-pill-sm" type="button">← Garage</button>
+      </div>
+    </div>
+
+    <div id="loadingState">
+      <div class="layout-grid">
+        <div class="skel"></div>
+        <div class="skel" style="height:300px"></div>
+      </div>
+    </div>
+
+    <div id="buildContent" style="display:none">
+      <div class="layout-grid">
+        <!-- LEFT: Gallery + desc + optional 3D -->
         <section class="card">
           <div id="galleryMain" class="gallery-main">
-            <div class="media-wrap" style="height:100%">
-              <img class="blur-up" src="/Assets/logo.png" alt="Build media" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="height:100%">
-              <div class="media-overlay"></div>
-            </div>
+            <img id="galleryImg" src="/Assets/logo.png" alt="Build image" loading="lazy"
+                 onload="this.classList.add('loaded')">
+            <div class="gallery-overlay"></div>
           </div>
           <div id="galleryThumbs" class="thumb-row" aria-label="Build thumbnails"></div>
 
           <div class="divider"></div>
+          <div id="buildDescription" class="sub" style="line-height:1.5;"></div>
 
-          <div id="buildDescription" class="sub" style="white-space:normal; line-height:1.45;"></div>
-
-          <div id="renderBlock" style="display:none; margin-top:14px;">
+          <div id="renderBlock" style="display:none;margin-top:14px;">
             <div class="divider"></div>
-            <div class="row" style="justify-content:space-between">
-              <div class="badge yellow">3D / Visual</div>
-              <a id="renderLink" class="badge" target="_blank" rel="noopener" style="text-decoration:none">Open Viewer</a>
+            <div class="row" style="justify-content:space-between;">
+              <div class="badge yellow">3D Build</div>
+              <a id="renderLink" class="badge" target="_blank" rel="noopener">Open Viewer ↗</a>
             </div>
-            <div style="margin-top:10px">
+            <div style="margin-top:10px;">
               <model-viewer
-                id="buildModelViewer"
-                src=""
-                poster="/Assets/logo.png"
-                alt="Build 3D model"
-                camera-controls
-                exposure="1.05"
-                shadow-intensity="0.9"
-                shadow-softness="1"
-                environment-image="neutral"
-                interaction-prompt="none"
-              ></model-viewer>
-              <p class="sub" style="margin-top:8px">
-                If the model doesn’t load, use the “Open Viewer” button.
-              </p>
+                id="buildModelViewer" src="" poster="/Assets/logo.png"
+                alt="Build 3D model" camera-controls exposure="1.05"
+                shadow-intensity="0.9" environment-image="neutral"
+                interaction-prompt="none">
+              </model-viewer>
             </div>
           </div>
         </section>
 
-        <!-- RIGHT: info + specs -->
+        <!-- RIGHT: Specs + info -->
         <aside class="card">
-          <div class="row" style="justify-content:space-between; align-items:center;">
-            <div class="badge strong">Build Info</div>
+          <div class="row" style="justify-content:space-between;align-items:center;">
+            <div class="badge green">Build Info</div>
             <div id="privacyBadge" class="badge">—</div>
           </div>
-
           <div id="buildBadges" class="row" style="margin-top:10px;"></div>
-
           <div class="divider"></div>
-
-          <div>
-            <div class="badge">Specs</div>
-            <div id="specGrid" class="spec-grid"></div>
-          </div>
-
+          <div class="badge">Specs</div>
+          <div id="specGrid" class="spec-grid"></div>
           <div class="divider"></div>
-
           <div id="buildFooterMeta" class="sub"></div>
         </aside>
       </div>
 
-      <!-- COMMENTS -->
+      <!-- Comments -->
       <section class="card" style="margin-top:16px;">
-        <div class="row" style="justify-content:space-between; align-items:center;">
-          <div class="badge strong">Comments</div>
+        <div class="row" style="justify-content:space-between;align-items:center;">
+          <div class="badge green">Comments</div>
           <div id="commentHint" class="badge">Sign in to comment</div>
         </div>
 
-        <div id="commentFormRow" class="row" style="margin-top:10px; display:none;">
-          <textarea id="commentInput" class="input" placeholder="Drop your thoughts on this build…"></textarea>
-          <button id="commentPostBtn" class="btn btn-primary btn-pill-sm" type="button">Post</button>
+        <div id="commentForm" class="row" style="margin-top:10px;display:none;gap:10px;align-items:flex-start;">
+          <textarea id="commentInput" class="input" placeholder="Drop your thoughts on this build…" style="flex:1"></textarea>
+          <button id="commentPost" class="btn btn-primary btn-pill-sm" type="button">Post</button>
         </div>
 
         <div class="divider"></div>
-
         <div id="commentsInner" class="sub">Loading comments…</div>
       </section>
-    </main>
-
-    <!-- AUTH MODAL (MATCH INDEX) -->
-    <div id="authBackdrop" class="modal-backdrop">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-        <div class="modal-head">
-          <h2 class="modal-title" id="authTitle">Driver Access</h2>
-          <button class="modal-close" id="authClose" type="button">✕</button>
-        </div>
-
-        <div class="modal-body">
-          <div class="tabs">
-            <button class="tab active" id="tabLogin" type="button">Log in</button>
-            <button class="tab" id="tabSignup" type="button">Sign up</button>
-          </div>
-
-          <div class="field" id="roleField" style="display:none;">
-            <label>Choose your role</label>
-            <select id="authRole">
-              <option value="">Select one…</option>
-              <option value="racer">Racer</option>
-              <option value="promoter">Team Promoter</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Email</label>
-            <input id="authEmail" type="email" autocomplete="email" placeholder="you@email.com"/>
-          </div>
-
-          <div class="field">
-            <label>Password</label>
-            <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••"/>
-          </div>
-
-          <div class="auth-msg" id="authMsg"></div>
-
-          <button class="btn btn-primary btn-wide" id="authSubmit" type="button">Log in</button>
-
-          <div class="dividerText">or</div>
-
-          <button class="btn btn-ghost btn-wide" id="googleBtn" type="button">Continue with Google</button>
-        </div>
-      </div>
     </div>
 
-  </div>
+  </main>
 
 <script>
-  /* =========================
-     BUILD PAGE SCRIPT (CLEAN)
-     ✅ Nav solid on scroll
-     ✅ Auth modal login/signup (no OTP fallback)
-     ✅ Single requireLogin() opens modal
-     ✅ Likes count fallback if view missing
-     ✅ Fetch build by ID (public view + owner private)
-     ✅ Gallery thumbnails ordered by sort_order then created_at
-     ✅ Prevent duplicate handlers
-     ========================= */
+/* ================================================================
+   BUILD PAGE SCRIPT
+   ✅ Auth fully delegated to auth-ui.js
+   ✅ Fetches from view, falls back to builds table
+   ✅ Signed-in owner sees Edit button
+   ✅ Gallery with blur-up effect
+   ✅ Comments load + post
+   ✅ Like / unlike with count
+   ✅ 3D model viewer
+   ================================================================ */
 
-  const buildId = new URLSearchParams(location.search).get('id');
-  const FALLBACK_MEDIA_IMG = "/Assets/logo.png";
-  const $ = (id) => document.getElementById(id);
+const buildId = new URLSearchParams(location.search).get('id');
+const FALLBACK_IMG = '/Assets/logo.png';
+const $ = (id) => document.getElementById(id);
 
-  let currentUser = null;
-  let currentBuild = null;
-  let liked = false;
-  let likeCount = 0;
+// ── Nav scroll ────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  $('navWrapper')?.classList.toggle('nav-solid', window.scrollY > 40);
+}, { passive: true });
 
-  function esc(s){
-    return String(s || '').replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
-  }
-  function safeHexColor(hex){
-    const v = String(hex || '').trim();
-    return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v) ? v : null;
-  }
-  function showError(msg){
-    $('buildError').textContent = msg || '';
-  }
+// ── Buttons ───────────────────────────────────────────────────
+$('backBtn').addEventListener('click', () => location.href = '/garage.html');
+$('shareBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(location.href);
+    $('shareBtn').textContent = 'Copied!';
+    setTimeout(() => $('shareBtn').textContent = 'Share', 1000);
+  } catch { rokToast('Copy failed — share the URL manually.', 'bad'); }
+});
 
-  /* ===== Nav solid on scroll ===== */
-  const navWrapper = $('navWrapper');
-  function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
-  updateNavSolid();
-  window.addEventListener('scroll', updateNavSolid, { passive:true });
+// ── Gallery ───────────────────────────────────────────────────
+let galleryUrls = [];
+let galleryIdx  = 0;
 
-  /* ===== Auth UI (same behavior as index) ===== */
-  const loginBtn    = $('loginBtn');
-  const joinBtn     = $('joinBtn');
-  const profileMenu = $('profileMenu');
-  const profileChip = $('profileChip');
-  const dropdown    = $('dropdown');
-  const initialsEl  = $('profileInitials');
-  const signoutBtn  = $('signoutBtn');
-  const ddEmail     = $('ddEmail');
-  const myEventsLink = $('myEventsLink');
+function setMainImage(url) {
+  const img = $('galleryImg');
+  img.classList.remove('loaded');
+  img.src = url && url.trim() ? url : FALLBACK_IMG;
+}
 
-  const authBackdrop = $('authBackdrop');
-  const authClose = $('authClose');
-  const tabLogin = $('tabLogin');
-  const tabSignup = $('tabSignup');
-  const authEmail = $('authEmail');
-  const authPassword = $('authPassword');
-  const authSubmit = $('authSubmit');
-  const authMsg = $('authMsg');
-  const googleBtn = $('googleBtn');
-  const roleField = $('roleField');
-  const authRole = $('authRole');
+function buildGallery(urls) {
+  galleryUrls = urls.filter(Boolean);
+  const thumbs = $('galleryThumbs');
 
-  let authMode = 'login';
-
-  function setAuthMsg(text, kind){
-    authMsg.textContent = text || '';
-    authMsg.className = 'auth-msg' + (kind ? (' ' + kind) : '');
-  }
-
-  function openAuth(mode){
-    authMode = mode || 'login';
-    tabLogin.classList.toggle('active', authMode === 'login');
-    tabSignup.classList.toggle('active', authMode === 'signup');
-    authSubmit.textContent = authMode === 'signup' ? 'Sign up' : 'Log in';
-
-    roleField.style.display = (authMode === 'signup') ? 'block' : 'none';
-    if(authMode !== 'signup') authRole.value = '';
-
-    setAuthMsg('', '');
-    authEmail.value = '';
-    authPassword.value = '';
-    authBackdrop.style.display = 'flex';
-    setTimeout(()=>authEmail.focus(), 50);
-  }
-
-  function closeAuth(){
-    authBackdrop.style.display = 'none';
-    setAuthMsg('', '');
-  }
-
-  loginBtn?.addEventListener('click', ()=> openAuth('login'));
-  joinBtn?.addEventListener('click', ()=> openAuth('signup'));
-  authClose?.addEventListener('click', closeAuth);
-  authBackdrop?.addEventListener('click', (e)=>{ if(e.target === authBackdrop) closeAuth(); });
-
-  tabLogin?.addEventListener('click', ()=>{
-    authMode = 'login';
-    tabLogin.classList.add('active'); tabSignup.classList.remove('active');
-    authSubmit.textContent = 'Log in';
-    roleField.style.display = 'none';
-    authRole.value = '';
-    setAuthMsg('', '');
-  });
-
-  tabSignup?.addEventListener('click', ()=>{
-    authMode = 'signup';
-    tabSignup.classList.add('active'); tabLogin.classList.remove('active');
-    authSubmit.textContent = 'Sign up';
-    roleField.style.display = 'block';
-    setAuthMsg('', '');
-  });
-
-  async function upsertProfileRole(userId, role){
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id: userId, role, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    if (error) console.warn('Profile role upsert failed:', error.message);
-  }
-
-  authSubmit?.addEventListener('click', async ()=>{
-    const email = (authEmail.value || '').trim();
-    const password = (authPassword.value || '').trim();
-    const chosenRole = (authRole?.value || '').trim();
-
-    if(!email || !email.includes('@')) { setAuthMsg('Enter a valid email.', 'bad'); return; }
-    if(!password || password.length < 6) { setAuthMsg('Password must be at least 6 characters.', 'bad'); return; }
-    if(authMode === 'signup' && !chosenRole){ setAuthMsg('Select a role to continue.', 'bad'); return; }
-
-    authSubmit.disabled = true;
-    setAuthMsg('Working…', '');
-
-    try{
-      if(authMode === 'signup'){
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if(error) throw error;
-        const uid = data?.user?.id;
-        if (uid) await upsertProfileRole(uid, chosenRole);
-        setAuthMsg('Signed up. Check your email if confirmation is enabled.', 'ok');
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if(error) throw error;
-        setAuthMsg('Logged in.', 'ok');
-      }
-    } catch(err){
-      console.error(err);
-      setAuthMsg(err.message || 'Auth failed.', 'bad');
-    } finally {
-      authSubmit.disabled = false;
-    }
-  });
-
-  googleBtn?.addEventListener('click', async ()=>{
-    setAuthMsg('Redirecting to Google…', 'ok');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin + location.pathname + location.search }
-    });
-    if(error){
-      console.error(error);
-      setAuthMsg(error.message || 'Google sign-in failed.', 'bad');
-    }
-  });
-
-  function setDropdownOpen(open){
-    if(!dropdown || !profileChip) return;
-    dropdown.classList.toggle('open', !!open);
-    profileChip.setAttribute("aria-expanded", open ? "true" : "false");
-  }
-
-  profileChip?.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    setDropdownOpen(!dropdown.classList.contains('open'));
-  });
-
-  document.addEventListener("click", ()=> setDropdownOpen(false));
-  dropdown?.addEventListener('click', (e)=> e.stopPropagation());
-  signoutBtn?.addEventListener("click", async ()=>{
-    await supabase.auth.signOut();
-    setDropdownOpen(false);
-  });
-
-  function initialsFromEmail(email){
-    const raw = (email || "").split("@")[0] || "u";
-    const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
-    const parts = cleaned.split(" ").filter(Boolean);
-    let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
-    return (initials || 'U').toUpperCase();
-  }
-
-  async function getCurrentRole(userId){
-    try{
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-      return data?.role || null;
-    }catch{ return null; }
-  }
-
-  async function updateAuthUI(){
-    const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user || null;
-
-    if (user){
-      loginBtn.style.display = "none";
-      joinBtn.style.display = "none";
-      profileMenu.style.display = "flex";
-      closeAuth();
-
-      initialsEl.textContent = initialsFromEmail(user.email);
-      if (ddEmail) ddEmail.textContent = user.email || '—';
-
-      const role = await getCurrentRole(user.id);
-      if (myEventsLink){
-        myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
-      }
-    } else {
-      loginBtn.style.display = "inline-flex";
-      joinBtn.style.display = "inline-flex";
-      profileMenu.style.display = "none";
-      setDropdownOpen(false);
-    }
-  }
-
-  // Single, consistent requireLogin
-  window.authUI = window.authUI || {};
-  window.authUI.requireLogin = async function(callback){
-    const { data: { user }} = await supabase.auth.getUser();
-    if (!user){
-      openAuth('login');
-      return false;
-    }
-    if (callback) callback(user);
-    return true;
-  };
-
-  // Only ONE listener for auth state change
-  supabase.auth.onAuthStateChange(() => updateAuthUI());
-
-  /* ===== Page buttons ===== */
-  $('backBtn')?.addEventListener('click', ()=> location.href = '/garage.html');
-  $('shareBtn')?.addEventListener('click', async ()=>{
-    try{
-      await navigator.clipboard.writeText(location.href);
-      $('shareBtn').textContent = 'Copied';
-      setTimeout(()=> $('shareBtn').textContent = 'Share', 900);
-    }catch{
-      alert('Copy failed. You can manually share the URL.');
-    }
-  });
-
-  /* ===== Gallery render ===== */
-  function renderMainMedia(url){
-    const safe = url && String(url).trim() ? url : FALLBACK_MEDIA_IMG;
-    $('galleryMain').innerHTML = `
-      <div class="media-wrap" style="height:100%">
-        <img class="blur-up" src="${esc(safe)}" alt="Build image" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="height:100%">
-        <div class="media-overlay"></div>
-      </div>
-    `;
-  }
-
-  function setGallery(urls){
-    const thumbs = $('galleryThumbs');
-    const list = (urls || []).filter(Boolean);
-
-    if(!list.length){
-      renderMainMedia(null);
-      thumbs.innerHTML = '';
-      return;
-    }
-
-    renderMainMedia(list[0]);
-
-    if(list.length === 1){
-      thumbs.innerHTML = '';
-      return;
-    }
-
+  if (!galleryUrls.length) {
+    setMainImage(null);
     thumbs.innerHTML = '';
-    list.forEach((url, idx) => {
-      const div = document.createElement('div');
-      div.className = 'thumb' + (idx === 0 ? ' active' : '');
-      div.innerHTML = `<img src="${esc(url)}" alt="Thumbnail ${idx+1}" loading="lazy" decoding="async">`;
-      div.addEventListener('click', () => {
-        renderMainMedia(url);
-        thumbs.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-        div.classList.add('active');
-      });
-      thumbs.appendChild(div);
+    return;
+  }
+
+  setMainImage(galleryUrls[0]);
+  galleryIdx = 0;
+
+  if (galleryUrls.length <= 1) { thumbs.innerHTML = ''; return; }
+
+  thumbs.innerHTML = '';
+  galleryUrls.forEach((url, i) => {
+    const div = document.createElement('div');
+    div.className = 'thumb' + (i === 0 ? ' active' : '');
+    div.innerHTML = `<img src="${rokEsc(url)}" alt="Thumb ${i+1}" loading="lazy" onerror="this.src='${FALLBACK_IMG}'">`;
+    div.addEventListener('click', () => {
+      galleryIdx = i;
+      setMainImage(url);
+      thumbs.querySelectorAll('.thumb').forEach((t, ti) => t.classList.toggle('active', ti === i));
     });
+    thumbs.appendChild(div);
+  });
+}
+
+// ── Specs ─────────────────────────────────────────────────────
+const SPEC_KEYS = [
+  ['wheels','Wheels'],['tires','Tires'],['suspension','Suspension'],
+  ['brakes','Brakes'],['engine','Engine'],['exhaust','Exhaust'],
+  ['drivetrain','Drivetrain'],['interior','Interior'],['exterior','Exterior'],
+];
+
+function renderSpecs(specs) {
+  const grid = $('specGrid');
+  if (!specs || typeof specs !== 'object') {
+    grid.innerHTML = '<div class="sub" style="grid-column:1/-1">No specs added yet.</div>';
+    return;
   }
+  const rows = SPEC_KEYS
+    .filter(([k]) => specs[k])
+    .map(([k, label]) => `
+      <div class="spec-item">
+        <span class="spec-label">${label}</span>
+        <span>${rokEsc(specs[k])}</span>
+      </div>`);
+  grid.innerHTML = rows.length
+    ? rows.join('')
+    : '<div class="sub" style="grid-column:1/-1">No specs added yet.</div>';
+}
 
-  /* ===== Badges + Specs ===== */
-  function renderBadges(build){
-    const wrap = $('buildBadges');
-    const badges = [];
+// ── Build load ────────────────────────────────────────────────
+const PUBLIC_VIEW = 'public_builds_with_like_count_and_trophies';
+const VIEW_COLS = `id,user_id,title,description,is_public,created_at,year,make,model,
+  build_type,stage,power_goal,thumb_url,custom_image_url,model_url,is_3d,color_hex,specs,like_count`;
+const TABLE_COLS = `id,user_id,title,description,is_public,created_at,year,make,model,
+  build_type,stage,power_goal,thumb_url,custom_image_url,model_url,is_3d,color_hex,specs,likes_count`;
 
-    const type = build.build_type || 'owned';
-    const typeMap = { owned:'Owned', dream:'Dream', for_sale:'For sale' };
-    badges.push(`<span class="badge strong">${esc(typeMap[type] || 'Build')}</span>`);
+async function fetchBuild() {
+  if (!buildId) return null;
 
-    if(build.stage){
-      const stageLabel = {
-        stock: 'Stock / OEM+',
-        stage_1: 'Stage 1 (bolt-ons)',
-        stage_2: 'Stage 2 (boost)',
-        track: 'Track / Drift',
-        other: 'Custom stage'
-      }[build.stage] || build.stage;
-      badges.push(`<span class="badge">${esc(stageLabel)}</span>`);
+  // Try public view first
+  const { data: pub, error: pubErr } = await supabase
+    .from(PUBLIC_VIEW).select(VIEW_COLS).eq('id', buildId).maybeSingle();
+
+  if (pub && !pubErr) return { ...pub, like_count: Number(pub.like_count ?? 0) };
+
+  // If view missing, try raw table (public builds only)
+  if (pubErr) {
+    const msg = (pubErr.message || '').toLowerCase();
+    if (msg.includes('relation') || msg.includes('does not exist')) {
+      const { data: raw } = await supabase
+        .from('builds').select(TABLE_COLS).eq('id', buildId).eq('is_public', true).maybeSingle();
+      if (raw) return { ...raw, like_count: Number(raw.likes_count ?? 0) };
     }
-
-    if(build.power_goal){
-      badges.push(`<span class="badge">Goal: ${Number(build.power_goal)} HP</span>`);
-    }
-
-    wrap.innerHTML = badges.join('');
   }
 
-  function renderSpecs(specs){
-    const grid = $('specGrid');
-    if(!specs){
-      grid.innerHTML = `<div class="sub">No specs added yet — owner hasn’t logged the parts list.</div>`;
-      return;
-    }
+  // Check if it's an owner's private build
+  const user = authUI.getUser();
+  if (!user) return null;
 
-    const pairs = [
-      ['wheels','Wheels'],
-      ['tires','Tires'],
-      ['suspension','Suspension'],
-      ['brakes','Brakes'],
-      ['engine','Engine'],
-      ['exhaust','Exhaust'],
-      ['drivetrain','Drivetrain'],
-      ['interior','Interior'],
-      ['exterior','Exterior'],
-    ];
+  const { data: own } = await supabase
+    .from('builds').select(TABLE_COLS).eq('id', buildId).eq('user_id', user.id).maybeSingle();
+  if (own) return { ...own, like_count: Number(own.likes_count ?? 0) };
 
-    const rows = pairs.map(([key,label]) => {
-      const v = specs[key];
-      if(!v) return '';
-      return `
-        <div class="spec-item">
-          <span class="spec-label">${esc(label)}</span>
-          <span>${esc(v)}</span>
-        </div>`;
-    }).filter(Boolean);
+  return null;
+}
 
-    grid.innerHTML = rows.length
-      ? rows.join('')
-      : `<div class="sub">No specs added yet — owner hasn’t logged the parts list.</div>`;
+async function loadOwner(userId) {
+  const { data } = await supabase
+    .from('profiles').select('id,handle,display_name').eq('id', userId).maybeSingle();
+  if (!data) return;
+  const el = $('buildOwner');
+  if (data.handle) {
+    el.innerHTML = `Built by <a href="/profile.html?handle=${encodeURIComponent(data.handle)}" style="text-decoration:underline">@${rokEsc(data.handle)}</a>`;
+  } else if (data.display_name) {
+    el.textContent = `Built by ${data.display_name}`;
+  }
+}
+
+// ── Likes ─────────────────────────────────────────────────────
+let likeCount = 0;
+let liked = false;
+
+async function refreshLikes() {
+  const user = authUI.getUser();
+
+  // Get count — try view, then direct count
+  const { data: agg } = await supabase
+    .from('build_like_counts').select('like_count').eq('build_id', buildId).maybeSingle();
+
+  if (agg) {
+    likeCount = Number(agg.like_count || 0);
+  } else {
+    const { count } = await supabase
+      .from('build_likes').select('*', { count: 'exact', head: true }).eq('build_id', buildId);
+    likeCount = Number(count || 0);
   }
 
-  /* ===== Owner meta ===== */
-  async function loadOwnerMeta(userId){
-    const ownerEl = $('buildOwner');
-    ownerEl.textContent = '';
-
-    try{
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, handle, display_name')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if(error || !data) return;
-
-      const handle = (data.handle || '').trim();
-      const name   = (data.display_name || '').trim();
-
-      if(handle){
-        ownerEl.innerHTML = `Built by <a href="/u/${encodeURIComponent(handle)}" style="text-decoration:underline">@${esc(handle)}</a>`;
-      } else if(name){
-        ownerEl.innerHTML = `Built by ${esc(name)}`;
-      }
-    }catch(_){}
+  if (user) {
+    const { data: existing } = await supabase
+      .from('build_likes').select('build_id').eq('build_id', buildId).eq('user_id', user.id).maybeSingle();
+    liked = !!existing;
+  } else {
+    liked = false;
   }
 
-  /* ===== Likes (fallback if view doesn't exist) ===== */
-  async function getLikeCount(){
-    const { data: likeAgg, error: aggErr } = await supabase
-      .from('build_like_counts')
-      .select('like_count')
-      .eq('build_id', buildId)
-      .maybeSingle();
+  const btn = $('likeBtn');
+  btn.disabled = false;
+  btn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+  btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+}
 
-    if(!aggErr) return Number(likeAgg?.like_count || 0);
+$('likeBtn').addEventListener('click', async () => {
+  const ok = await authUI.requireLogin({ message: 'Sign in to boost this build.' });
+  if (!ok) return;
 
-    const { count, error } = await supabase
-      .from('build_likes')
-      .select('build_id', { count:'exact', head:true })
-      .eq('build_id', buildId);
+  const user = authUI.getUser();
+  if (!user) return;
 
-    if(error) return 0;
-    return Number(count || 0);
+  $('likeBtn').disabled = true;
+
+  const { data: existing } = await supabase
+    .from('build_likes').select('build_id').eq('build_id', buildId).eq('user_id', user.id).maybeSingle();
+
+  if (existing) {
+    await supabase.from('build_likes').delete().eq('build_id', buildId).eq('user_id', user.id);
+    liked = false; likeCount = Math.max(0, likeCount - 1);
+  } else {
+    await supabase.from('build_likes').insert({ build_id: buildId, user_id: user.id });
+    liked = true; likeCount++;
   }
 
-  async function refreshLikesUI(){
-    const likeBtn = $('likeBtn');
-    const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user || null;
+  $('likeBtn').disabled = false;
+  $('likeBtn').textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
+  $('likeBtn').setAttribute('aria-pressed', liked ? 'true' : 'false');
+});
 
-    likeCount = await getLikeCount();
+// ── Comments ──────────────────────────────────────────────────
+async function loadComments() {
+  const wrap = $('commentsInner');
+  const { data, error } = await supabase
+    .from('comments').select('id,body,created_at,user_id')
+    .eq('target_type', 'build').eq('target_id', buildId)
+    .order('created_at', { ascending: true });
 
-    if(user){
-      const { data: existing } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .eq('build_id', buildId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      liked = !!existing;
-    } else {
-      liked = false;
-    }
+  if (error) { wrap.textContent = 'Couldn\'t load comments. Refresh to try again.'; return; }
+  if (!data?.length) { wrap.textContent = 'No comments yet — be the first.'; return; }
 
-    likeBtn.disabled = false;
-    likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
-    likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+  wrap.innerHTML = data.map(c => `
+    <div class="comment-card">
+      <div class="comment-meta">${rokDate(c.created_at)}</div>
+      <div>${rokEsc(c.body).replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+
+function updateCommentUI() {
+  const user = authUI.getUser();
+  $('commentForm').style.display = user ? 'flex' : 'none';
+  $('commentHint').textContent = user ? 'Commenting as ' + (user.email || 'you') : 'Sign in to comment';
+  $('commentHint').className = user ? 'badge green' : 'badge';
+}
+
+$('commentPost').addEventListener('click', async () => {
+  const ok = await authUI.requireLogin({ message: 'Sign in to comment.' });
+  if (!ok) return;
+  const user = authUI.getUser();
+  if (!user) return;
+
+  const text = $('commentInput').value.trim();
+  if (!text) return;
+
+  $('commentPost').disabled = true;
+  const { error } = await supabase.from('comments').insert({
+    user_id: user.id, target_type: 'build', target_id: buildId, body: text,
+  });
+  $('commentPost').disabled = false;
+
+  if (error) { rokToast('Couldn\'t post comment. Try again.', 'bad'); return; }
+  $('commentInput').value = '';
+  await loadComments();
+});
+
+// ── Main load ─────────────────────────────────────────────────
+async function init() {
+  if (!buildId) {
+    $('buildTitle').textContent = 'No build selected';
+    $('buildError').textContent = 'No build ID in the URL. Head back to the garage and pick one.';
+    $('loadingState').style.display = 'none';
+    $('buildContent').style.display = 'block';
+    return;
   }
 
-  function bindLikeClick(){
-    const likeBtn = $('likeBtn');
-    likeBtn.onclick = async () => {
-      const ok = await window.authUI.requireLogin();
-      if(!ok) return;
+  const build = await fetchBuild();
+  $('loadingState').style.display = 'none';
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user) return;
-
-      likeBtn.disabled = true;
-
-      const { data: existing, error: existingErr } = await supabase
-        .from('build_likes')
-        .select('build_id')
-        .eq('build_id', buildId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if(existingErr){
-        likeBtn.disabled = false;
-        alert('That move stalled. Try again in a few seconds.');
-        return;
-      }
-
-      if(existing){
-        const { error: delErr } = await supabase
-          .from('build_likes')
-          .delete()
-          .eq('build_id', buildId)
-          .eq('user_id', user.id);
-        if(!delErr){
-          liked = false;
-          likeCount = Math.max(0, likeCount - 1);
-        }
-      } else {
-        const { error: insErr } = await supabase
-          .from('build_likes')
-          .insert({ build_id: buildId, user_id: user.id });
-        if(!insErr){
-          liked = true;
-          likeCount += 1;
-        }
-      }
-
-      likeBtn.disabled = false;
-      likeBtn.textContent = `${liked ? '♥' : '♡'} ${likeCount}`;
-      likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
-    };
+  if (!build) {
+    $('buildTitle').textContent = 'Build not found';
+    $('buildError').textContent = 'We couldn\'t find this build. It may be private or deleted.';
+    $('buildContent').style.display = 'block';
+    return;
   }
 
-  /* ===== Comments ===== */
-  function renderComment(c){
-    const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
-    return `
-      <div class="comment-card">
-        <div class="comment-meta">${esc(dt)}</div>
-        <div>${esc(c.body).replace(/\n/g,'<br>')}</div>
-      </div>`;
+  // Private guard
+  const user = authUI.getUser();
+  if (build.is_public === false && (!user || user.id !== build.user_id)) {
+    $('buildTitle').textContent = 'Private build';
+    $('buildError').textContent = 'This build is private. Only the owner can view it.';
+    $('buildContent').style.display = 'block';
+    return;
   }
 
-  async function loadComments(){
-    const wrap = $('commentsInner');
+  // ── Populate ──
+  document.title = `${build.title || 'Build'} — ROK Racers JA`;
+  $('buildTitle').textContent = build.title || 'Untitled build';
 
-    const { data, error } = await supabase
-      .from('comments')
-      .select('id,body,created_at,user_id,target_type,target_id')
-      .eq('target_type', 'build')
-      .eq('target_id', buildId)
-      .order('created_at', { ascending: true });
+  // Meta chips
+  const meta = $('buildMeta');
+  const car = [build.year, build.make, build.model].filter(Boolean).join(' ');
+  if (car) meta.insertAdjacentHTML('beforeend', `<span class="badge">${rokEsc(car)}</span>`);
+  if (build.created_at) meta.insertAdjacentHTML('beforeend', `<span class="badge">Added ${rokDate(build.created_at)}</span>`);
 
-    if(error){
-      wrap.textContent = 'We couldn’t load comments just now. Refresh to try again.';
-      return;
-    }
-    if(!data || !data.length){
-      wrap.textContent = 'No comments yet — be the first to drop your thoughts on this build.';
-      return;
-    }
-    wrap.innerHTML = data.map(renderComment).join('');
+  // Privacy badge
+  const pb = $('privacyBadge');
+  pb.textContent = build.is_public ? 'Public' : 'Private';
+  pb.className = build.is_public ? 'badge green' : 'badge red';
+
+  // Build type + stage badges
+  const typeMap = { owned:'Owned', dream:'Dream', for_sale:'For Sale' };
+  const stageMap = { stock:'Stock/OEM+', stage_1:'Stage 1', stage_2:'Stage 2', track:'Track/Drift', other:'Custom' };
+  const badges = $('buildBadges');
+  if (build.build_type) badges.insertAdjacentHTML('beforeend', `<span class="badge green">${rokEsc(typeMap[build.build_type] || build.build_type)}</span>`);
+  if (build.stage)      badges.insertAdjacentHTML('beforeend', `<span class="badge">${rokEsc(stageMap[build.stage] || build.stage)}</span>`);
+  if (build.power_goal) badges.insertAdjacentHTML('beforeend', `<span class="badge">Goal: ${Number(build.power_goal)} HP</span>`);
+
+  // Description
+  $('buildDescription').innerHTML = build.description
+    ? rokEsc(build.description).replace(/\n/g,'<br>')
+    : '<em>No description yet.</em>';
+
+  $('buildFooterMeta').textContent = build.is_public
+    ? 'Visible in the public garage.'
+    : 'Only visible to you (private build).';
+
+  // Edit button — only for owner
+  if (user && user.id === build.user_id) {
+    const editBtn = $('editBtn');
+    editBtn.style.display = 'inline-flex';
+    editBtn.addEventListener('click', () => location.href = `/build-edit.html?id=${buildId}`);
   }
 
-  async function updateCommentFormVisibility(){
-    const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user || null;
-
-    $('commentFormRow').style.display = user ? 'flex' : 'none';
-    $('commentHint').textContent = user ? 'Signed in' : 'Sign in to comment';
-    $('commentHint').className = user ? 'badge strong' : 'badge';
-  }
-
-  // Prevent double-binding
-  $('commentPostBtn').onclick = async () => {
-    const ok = await window.authUI.requireLogin();
-    if(!ok) return;
-
-    const input = $('commentInput');
-    const text = input.value.trim();
-    if(!text) return;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if(!user) return;
-
-    $('commentPostBtn').disabled = true;
-
-    const { error } = await supabase
-      .from('comments')
-      .insert({
-        user_id: user.id,
-        target_type: 'build',
-        target_id: buildId,
-        body: text
-      });
-
-    $('commentPostBtn').disabled = false;
-
-    if(error){
-      alert('Could not post comment. Try again in a few seconds.');
-      return;
-    }
-    input.value = '';
-    await loadComments();
-  };
-
-  /* ===== 3D block (model_url only; hide if none) ===== */
-  function setupRenderBlock(build){
-    const modelUrl = (build.model_url || '').trim();
-    if(!modelUrl){
-      $('renderBlock').style.display = 'none';
-      return;
-    }
+  // 3D block
+  const modelUrl = (build.model_url || '').trim();
+  if (modelUrl) {
     $('renderBlock').style.display = 'block';
-
-    const mv = $('buildModelViewer');
-    const link = $('renderLink');
-
-    mv.style.display = 'block';
-    mv.src = modelUrl;
-
-    link.href = modelUrl;
-    link.textContent = 'Open Model';
+    $('buildModelViewer').src = modelUrl;
+    $('renderLink').href = modelUrl;
   }
 
-  /* ===== Build load (by ID; public + owner private) ===== */
-  async function loadBuildById(id){
-    const pub = await supabase
-      .from("public_builds_with_like_count_and_trophies")
-      .select(`
-        id,user_id,title,description,thumb_url,custom_image_url,
-        make,model,year,build_type,stage,power_goal,is_public,
-        created_at,model_url,is_3d,color_hex,specs,like_count
-      `)
-      .eq("id", id)
-      .maybeSingle();
+  renderSpecs(build.specs || null);
+  $('buildContent').style.display = 'block';
 
-    if (pub.data && !pub.error) return pub.data;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const own = await supabase
-      .from("builds")
-      .select(`
-        id,user_id,title,description,thumb_url,custom_image_url,
-        make,model,year,build_type,stage,power_goal,is_public,
-        created_at,model_url,is_3d,color_hex,specs,likes_count
-      `)
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (own.data && !own.error){
-      return { ...own.data, like_count: Number(own.data.likes_count || 0) };
-    }
-    return null;
-  }
-
-  async function loadBuild(){
-    if(!buildId){
-      $('buildTitle').textContent = 'No build selected';
-      showError('No build selected. Head back to the garage and pick one.');
-      renderMainMedia(null);
-      $('specGrid').innerHTML = `<div class="sub">No specs available.</div>`;
-      $('likeBtn').disabled = true;
-      return false;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user || null;
-
-    const build = await loadBuildById(buildId);
-
-    if(!build){
-      $('buildTitle').textContent = 'Build not found';
-      showError('We couldn’t find this build. It may have been deleted or moved.');
-      renderMainMedia(null);
-      $('specGrid').innerHTML = `<div class="sub">No specs available.</div>`;
-      $('likeBtn').disabled = true;
-      return false;
-    }
-
-    if(build.is_public === false && (!user || user.id !== build.user_id)){
-      $('buildTitle').textContent = 'Private build';
-      showError('This build is private. Ask the owner to share a public build or check their garage.');
-      renderMainMedia(null);
-      $('specGrid').innerHTML = `<div class="sub">No specs available.</div>`;
-      $('likeBtn').disabled = true;
-      return false;
-    }
-
-    currentBuild = build;
-
-    document.title = `${build.title || 'Build'} — ROK Racers JA`;
-    $('buildTitle').textContent = build.title || 'Untitled build';
-
-    // meta chips
-    const metaRow = $('buildMeta');
-    metaRow.innerHTML = '';
-
-    const carLabel = [build.year, build.make, build.model].filter(Boolean).join(' ');
-    if(carLabel) metaRow.insertAdjacentHTML('beforeend', `<span class="badge">${esc(carLabel)}</span>`);
-
-    const c = safeHexColor(build.color_hex);
-    if(c){
-      metaRow.insertAdjacentHTML('beforeend', `
-        <span class="badge">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:${c};box-shadow:0 0 10px rgba(255,255,255,0.14)"></span>
-          Paint
-        </span>
-      `);
-    }
-
-    if(build.created_at){
-      const created = new Date(build.created_at);
-      const when = created.toLocaleString('en-US',{ month:'short', day:'2-digit', year:'numeric' });
-      metaRow.insertAdjacentHTML('beforeend', `<span class="badge">Added ${esc(when)}</span>`);
-    }
-
-    $('privacyBadge').textContent = build.is_public ? 'Public' : 'Private';
-    $('privacyBadge').className = build.is_public ? 'badge strong' : 'badge';
-
-    // description
-    if(build.description){
-      $('buildDescription').innerHTML = esc(build.description).replace(/\n/g,'<br>');
-    } else {
-      $('buildDescription').innerHTML = `<span class="sub">No description yet — owner hasn’t told this build’s story.</span>`;
-    }
-
-    $('buildFooterMeta').textContent = build.is_public
-      ? 'Visible in the public garage and eligible for Top 5.'
-      : 'Only visible to you (private build).';
-
-    renderBadges(build);
-    renderSpecs(build.specs || null);
-    setupRenderBlock(build);
-
-    // parallel loads
-    const imagesPromise = (async ()=>{
-      const { data: images, error: imgErr } = await supabase
-        .from('build_images')
-        .select('id,image_url,sort_order,created_at')
+  // Parallel: images, owner, likes, comments
+  await Promise.all([
+    // Images
+    (async () => {
+      const { data: imgs } = await supabase
+        .from('build_images').select('id,image_url,sort_order,created_at')
         .eq('build_id', buildId);
 
-      if(imgErr || !images?.length){
-        const fallback = build.custom_image_url || build.thumb_url || null;
-        setGallery(fallback ? [fallback] : []);
-        return;
+      if (imgs?.length) {
+        imgs.sort((a, b) => {
+          const sa = a.sort_order ?? 9999, sb = b.sort_order ?? 9999;
+          if (sa !== sb) return sa - sb;
+          return new Date(a.created_at||0) - new Date(b.created_at||0);
+        });
+        const urls = imgs.map(i => {
+          if (!i.image_url) return null;
+          if (i.image_url.startsWith('http')) return i.image_url;
+          return rokStorageUrl('build-photos', i.image_url);
+        }).filter(Boolean);
+        buildGallery(urls.length ? urls : [build.custom_image_url || build.thumb_url].filter(Boolean));
+      } else {
+        buildGallery([build.custom_image_url || build.thumb_url].filter(Boolean));
       }
+    })(),
+    loadOwner(build.user_id),
+    refreshLikes(),
+    (async () => { updateCommentUI(); await loadComments(); })(),
+  ]);
+}
 
-      images.sort((a,b)=>{
-        const sa = (a.sort_order ?? 9999);
-        const sb = (b.sort_order ?? 9999);
-        if(sa !== sb) return sa - sb;
-        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
-      });
-
-      const list = images.map(i => i.image_url).filter(Boolean);
-      const fallback = build.custom_image_url || build.thumb_url || null;
-      setGallery(list.length ? list : (fallback ? [fallback] : []));
-    })();
-
-    const ownerPromise = loadOwnerMeta(build.user_id);
-    const likesPromise = refreshLikesUI();
-    const commentsPromise = (async ()=>{ await updateCommentFormVisibility(); await loadComments(); })();
-
-    await Promise.all([imagesPromise, ownerPromise, likesPromise, commentsPromise]);
-
-    return true;
+// React to auth changes (e.g. user logs in while on this page)
+authUI.onChange(() => {
+  updateCommentUI();
+  refreshLikes();
+  // Show/hide edit button reactively
+  const user = authUI.getUser();
+  const build = window.__currentBuild;
+  if (build && $('editBtn')) {
+    $('editBtn').style.display = (user && user.id === build.user_id) ? 'inline-flex' : 'none';
   }
+});
 
-  /* ===== Boot ===== */
-  document.addEventListener('DOMContentLoaded', async ()=>{
-    await updateAuthUI();
-
-    const ok = await loadBuild();
-    if(!ok) return;
-
-    bindLikeClick();
-
-    // keep UI reactive
-    supabase.auth.onAuthStateChange(async ()=>{
-      await updateAuthUI();
-      await updateCommentFormVisibility();
-      await refreshLikesUI();
-    });
-  });
+document.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
