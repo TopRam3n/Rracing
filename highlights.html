@@ -4,989 +4,670 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Highlights — ROK Racers JA</title>
-  <meta name="description" content="News, updates, and stories from the ROK Racers JA community."/>
+  <meta name="description" content="Race nights, feature builds, announcements, and moments the community shouldn't miss."/>
   <link rel="icon" href="/Assets/og.png"/>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
-
-  <!-- Shared auth/nav logic -->
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
     :root{
-      --bg:#050508;
-      --bg1:#141414;
-      --bg2:#1b1b1b;
-      --fg:#fff;
-      --muted:#bdbdbd;
-      --accent:#e50914;
-      --accent-yellow:#FFD93B;
-      --line:rgba(255,255,255,.08);
-      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
-      --shadow2:0 24px 60px rgba(0,0,0,.55);
+      --bg:#050508; --bg-card:#141414; --bg-card2:#1a1a1f;
+      --accent:#128b02; --yellow:#FFD93B; --red:#e50914;
+      --fg:#fff; --muted:#bdbdbd;
+      --line:rgba(255,255,255,0.06);
+      --shadow:0 18px 40px rgba(0,0,0,0.7);
+      --shadow-card:0 8px 32px rgba(0,0,0,0.55);
+      --tf:0.18s ease-out; --tm:0.25s ease-out;
+      --r-lg:24px; --r-md:18px;
+      --nav:76px;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      min-height:100%;
       background:
-        radial-gradient(circle at 15% 0%, rgba(255,217,59,.10) 0, transparent 35%),
-        radial-gradient(circle at 85% 0%, rgba(229,9,20,.10) 0, transparent 35%),
-        radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+        radial-gradient(ellipse at 15% 0%,rgba(18,139,2,.13) 0,transparent 38%),
+        radial-gradient(ellipse at 85% 0%,rgba(255,217,59,.09) 0,transparent 38%),
+        radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);
       color:var(--fg);
-      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      font-family:"Rajdhani",system-ui,-apple-system,sans-serif;
+      -webkit-font-smoothing:antialiased;
     }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:1200px;margin:0 auto;padding:0 24px}
-    h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
-    .sub{color:var(--muted)}
-    .muted{color:var(--muted)}
-    .section{padding:56px 0}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{width:min(1200px,100% - 32px);margin:0 auto}
+    @media(min-width:1280px){.container{width:min(1280px,100% - 64px)}}
 
-    /* NAV (match Garage / index style) */
-    .nav{
-      position:sticky;top:0;z-index:50;
-      background:rgba(5,5,8,.9);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(140%) blur(12px);
-    }
-    .nav-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 0;gap:16px;flex-wrap:wrap;
-    }
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
-    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:8px 14px;border-radius:999px;
-      border:1px solid var(--line);
-      cursor:pointer;background:transparent;color:var(--fg);
-      font-family:inherit;font-size:13px;
-      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
-      user-select:none;
-    }
-    .btn:hover{background:rgba(255,255,255,0.03)}
-    .btn.primary{
-      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-      color:#fff;border-color:rgba(229,9,20,.9);
-      box-shadow:0 0 18px rgba(229,9,20,.5);
-    }
-    .btn.primary:hover{
-      box-shadow:0 0 26px rgba(229,9,20,.7);
-      transform:translateY(-1px);
-    }
-    .btn[disabled]{opacity:.55;pointer-events:none}
-
-    /* nav auth (shared pattern) */
-    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    /* ─ NAV ─ */
+    .nav-wrapper{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);background:linear-gradient(to bottom,rgba(5,5,8,.9),rgba(5,5,8,.6));border-bottom:1px solid rgba(255,255,255,.04);transition:background .35s,border-color .35s,box-shadow .35s}
+    .nav-wrapper.solid{background:rgba(5,5,8,.98);border-bottom-color:rgba(255,255,255,.10);box-shadow:0 18px 40px rgba(0,0,0,.7)}
+    .nav{height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .logo{display:flex;align-items:center;gap:8px;letter-spacing:.04em}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(24,201,100,.7);box-shadow:0 0 18px rgba(24,201,100,.35);overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+    .logo-mark img{width:100%;height:100%;object-fit:cover}
+    .logo-text-main{font-family:"Bebas Neue";font-size:22px;text-transform:uppercase}
+    .logo-text-sub{font-size:11px;color:var(--yellow);text-transform:uppercase}
+    .nav-links{display:flex;gap:18px;align-items:center;font-size:13px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+    .nav-links a{position:relative;padding-bottom:4px}
+    .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:linear-gradient(to right,var(--accent),var(--yellow));transition:width var(--tf);border-radius:999px}
+    .nav-links a:hover,.nav-links a.active{color:var(--fg)}
+    .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+    .nav-cta{display:flex;gap:8px;align-items:center}
+    .btn{border-radius:999px;padding:8px 16px;font-size:13px;text-transform:uppercase;letter-spacing:.15em;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:#fff;transition:background var(--tf),color var(--tf),border-color var(--tf),transform var(--tf),box-shadow var(--tf)}
+    .btn-primary{background:radial-gradient(circle at top left,#39ff96,var(--accent));box-shadow:0 0 24px rgba(24,201,100,.55);border-color:rgba(24,201,100,.85)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(24,201,100,.75)}
+    .btn-ghost{border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.02)}
+    .btn-sm{padding:6px 14px;font-size:11px;letter-spacing:.16em}
+    .btn[disabled]{opacity:.45;pointer-events:none}
     .profile-menu{position:relative;display:flex;align-items:center}
-    .profile-chip{
-      width:32px;height:32px;border-radius:50%;
-      background:var(--bg2);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:600;cursor:pointer;border:1px solid var(--line);
-      font-size:13px;
-      transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
-    }
-    .profile-chip:hover{
-      border-color:rgba(255,255,255,.32);
-      box-shadow:0 0 16px rgba(255,217,59,.6);
-      transform:translateY(-1px);
-    }
-    .dropdown{
-      position:absolute;right:0;top:40px;
-      background:var(--bg1);border:1px solid var(--line);
-      box-shadow:0 20px 40px rgba(0,0,0,.6);
-      border-radius:16px;display:flex;flex-direction:column;
-      min-width:190px;z-index:999;
-    }
-    .dropdown a,.dropdown button{
-      padding:10px 16px;text-align:left;border:none;
-      background:transparent;color:var(--fg);font-size:13px;
-      width:100%;cursor:pointer;font-family:inherit;
-    }
-    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+    .profile-chip{width:32px;height:32px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.18);transition:box-shadow var(--tf),border-color var(--tf),transform var(--tf);font-size:13px;user-select:none}
+    .profile-chip:hover{border-color:rgba(255,255,255,.32);box-shadow:0 0 16px rgba(255,217,59,.6);transform:translateY(-1px)}
+    .dropdown{position:absolute;right:0;top:44px;background:rgba(10,10,14,.96);border:1px solid var(--line);box-shadow:0 20px 40px rgba(0,0,0,.65);border-radius:16px;display:none;flex-direction:column;min-width:240px;z-index:999;backdrop-filter:blur(16px);overflow:hidden}
+    .dropdown.open{display:flex}
+    .dd-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
+    .dd-title{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+    .dd-email{font-size:13px;color:#fff;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dropdown a,.dropdown button{padding:10px 14px;text-align:left;border:none;background:transparent;color:var(--fg);font-size:13px;width:100%;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit}
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06)}
+    .dd-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0}
+    .dd-badge{font-size:10px;text-transform:uppercase;letter-spacing:.14em;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:rgba(0,0,0,.25);white-space:nowrap}
+    @media(max-width:768px){.nav-links{display:none}.nav-cta{gap:6px}.logo-text-sub{display:none}}
 
-    @media(max-width:640px){
-      .nav-inner{flex-wrap:wrap}
-      .menu{order:3;width:100%;justify-content:flex-start}
-      .nav-auth{order:2;width:100%;justify-content:flex-end}
-    }
-
-    /* HERO / HEADER */
+    /* ─ HERO ─ */
     .hero{
-      position:relative;
-      border:1px solid var(--line);
-      border-radius:24px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      background:
-        radial-gradient(circle at 20% 0%, rgba(229,9,20,.18) 0, transparent 45%),
-        radial-gradient(circle at 80% 0%, rgba(255,217,59,.18) 0, transparent 45%),
-        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
-      padding:22px;
-      margin-bottom:18px;
-    }
-    .hero-grid{
+      padding:60px 0 40px;
       display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:18px;
-      align-items:stretch;
-    }
-    @media(max-width:960px){.hero-grid{grid-template-columns:1fr}}
-    .headline{
-      font-size:54px;
-      letter-spacing:2px;
-      text-transform:uppercase;
-      line-height:0.95;
-      margin-bottom:8px;
-    }
-    .hero-sub{
-      max-width:62ch;
-      font-size:16px;
-      line-height:1.5;
-      color:var(--muted);
-      margin:0;
-    }
-    .hero-stat{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .badge{
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-    }
-    .tape{
-      height:10px;
-      border-radius:999px;
-      background:linear-gradient(90deg, rgba(229,9,20,.7), rgba(255,217,59,.7));
-      opacity:.35;
-      margin-top:14px;
-    }
-
-    /* FILTERS */
-    .filters{
-      display:flex;gap:10px;flex-wrap:wrap;
-      margin:14px 0 18px;
+      grid-template-columns:1fr auto;
+      gap:40px;
       align-items:center;
     }
-    input,select,textarea{
-      background:var(--bg2);
-      border:1px solid var(--line);
-      color:#fff;
-      padding:12px;
-      border-radius:12px;
-      outline:none;
-      min-width:160px;
-      font-family:inherit;
-      font-size:14px;
-    }
-    input:focus-visible,select:focus-visible,textarea:focus-visible{
-      border-color:var(--accent-yellow);
-      box-shadow:0 0 0 1px rgba(255,217,59,.5);
-    }
-
-    /* FEED LAYOUT */
-    .feed{
-      display:grid;
-      grid-template-columns:1.35fr .65fr;
-      gap:22px;
-      align-items:start;
-    }
-    @media(max-width:980px){.feed{grid-template-columns:1fr}}
-    .grid{
-      display:grid;gap:18px;
-      grid-template-columns:repeat(2, 1fr);
-    }
-    @media(max-width:960px){.grid{grid-template-columns:1fr}}
-
-    .card{
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      overflow:hidden;
-      box-shadow:var(--shadow2);
-      transform:translateZ(0);
-      transition:transform .25s cubic-bezier(.2,.8,.2,1), border-color .25s ease, box-shadow .25s ease;
-    }
-    .card:hover{
-      transform:translateY(-6px) scale(1.01);
-      border-color:rgba(255,217,59,.45);
-      box-shadow:0 28px 70px rgba(0,0,0,.75);
-    }
-    .card-media{
-      position:relative;
-      width:100%;
-      aspect-ratio:16/9;
-      background:#0c0c0f;
-      overflow:hidden;
-    }
-    .card-media img{
-      width:100%;height:100%;
-      object-fit:cover;
-      display:block;
-      transform:scale(1.02);
-      transition:transform .35s ease, filter .35s ease;
-      filter:saturate(1.05) contrast(1.02);
-    }
-    .card:hover .card-media img{transform:scale(1.07)}
-    .media-overlay{
-      position:absolute;inset:0;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,.05) 0, rgba(0,0,0,.55) 100%);
-      pointer-events:none;
-    }
-    .media-chip{
-      position:absolute;left:12px;top:12px;
-      display:inline-flex;gap:6px;align-items:center;
-      padding:6px 10px;border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.45);
-      font-size:12px;color:#fff;
-      backdrop-filter: blur(10px);
-    }
-    .pad{padding:16px}
-    .title-row{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
-    }
-    .card-title{
-      font-weight:700;
-      font-size:17px;
-      line-height:1.15;
-    }
-    .date{
-      color:var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-      padding-top:2px;
-    }
-    .snippet{
-      color:var(--muted);
-      margin:8px 0 10px;
-      line-height:1.45;
-      max-height:4.4em;
-      overflow:hidden;
-    }
-    .meta-row{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
-      border-top:1px solid var(--line);
-      padding-top:10px;
-    }
-    .like-pill{
-      display:inline-flex;gap:6px;align-items:center;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
-      padding:6px 10px;border-radius:999px;
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    /* FEATURED story */
-    .featured{
-      border-radius:24px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-      box-shadow:var(--shadow);
-      margin-bottom:18px;
-    }
-    .featured-grid{
-      display:grid;
-      grid-template-columns:1.25fr .75fr;
-      gap:0;
-    }
-    @media(max-width:960px){.featured-grid{grid-template-columns:1fr}}
-    .featured-media{
-      position:relative;
-      min-height:280px;
-      background:#0c0c0f;
-      overflow:hidden;
-    }
-    .featured-media img{
-      width:100%;height:100%;
-      object-fit:cover;display:block;
-      transform:scale(1.02);
-    }
-    .featured-media:after{
-      content:"";
-      position:absolute;inset:0;
-      background:
-        radial-gradient(circle at 25% 0%, rgba(255,217,59,.22), transparent 45%),
-        linear-gradient(180deg, rgba(0,0,0,.15) 0, rgba(0,0,0,.75) 100%);
-    }
-    .featured-copy{
-      padding:18px 18px 18px 18px;
-      display:flex;flex-direction:column;justify-content:space-between;
-      gap:12px;
-    }
-    .featured-title{
+    @media(max-width:680px){.hero{grid-template-columns:1fr;padding:40px 0 28px}}
+    .hero-kicker{display:flex;align-items:center;gap:12px;font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--muted);margin-bottom:14px}
+    .hero-kicker-line{width:32px;height:2px;background:linear-gradient(to right,var(--accent),var(--yellow));border-radius:999px}
+    .hero-title{
       font-family:"Bebas Neue";
-      font-size:38px;
-      letter-spacing:2px;
-      line-height:1.02;
-      margin:0;
+      font-size:clamp(56px,8vw,96px);
+      letter-spacing:4px;
       text-transform:uppercase;
+      line-height:.9;
+      background:linear-gradient(160deg,#fff 30%,rgba(255,255,255,.4));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
     }
-    .featured-desc{
-      color:var(--muted);
-      margin:0;
-      line-height:1.5;
-    }
+    .hero-title .hl{background:linear-gradient(135deg,#3dff9f,#18C964,#ffdf40);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-sub{margin-top:12px;font-size:16px;color:var(--muted);max-width:50ch;line-height:1.55}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .hero-right{display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+    @media(max-width:680px){.hero-right{display:none}}
+    .stat-block{text-align:right}
+    .stat-n{font-family:"Bebas Neue";font-size:48px;letter-spacing:2px;line-height:1;color:#fff}
+    .stat-l{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-top:1px}
 
-    /* SIDEBAR */
-    .side{
-      position:sticky;
-      top:92px;
-      display:grid;
-      gap:14px;
-    }
-    @media(max-width:980px){.side{position:static}}
+    /* ─ TAPE ─ */
+    .tape{height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(18,139,2,.9),rgba(255,217,59,.9),rgba(229,9,20,.6));opacity:.45;margin-bottom:36px}
 
-    .panel{
+    /* ─ FILTER BAR ─ */
+    .filter-bar{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      margin-bottom:28px;
+      padding:14px 16px;
       background:rgba(255,255,255,.02);
       border:1px solid var(--line);
-      border-radius:20px;
-      box-shadow:var(--shadow2);
-      overflow:hidden;
-    }
-    .panel .pad{padding:16px}
-    .panel h3{font-size:22px;margin-bottom:6px}
-    .panel p{margin:0;color:var(--muted);line-height:1.45}
-    .admin-only{display:none}
-
-    .kpi{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:10px;
-    }
-    .kpi .badge{
-      background:rgba(0,0,0,.22);
-      border-color:rgba(255,255,255,.10);
-      color:var(--muted);
-    }
-
-    .mini-divider{
-      height:1px;background:var(--line);margin:14px 0;
-    }
-
-    .toast{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.25);
       border-radius:16px;
-      padding:10px 12px;
-      color:var(--muted);
-      font-size:13px;
     }
+    .filter-bar input,.filter-bar select{
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:#fff;
+      padding:9px 12px;border-radius:12px;font-family:inherit;font-size:13px;outline:none;
+      transition:border-color var(--tf);flex:1;min-width:130px;
+    }
+    .filter-bar input:focus,.filter-bar select:focus{border-color:rgba(18,139,2,.7)}
+    .filter-bar select option{background:#1a1a1a}
 
-    .actions{
-      display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;
-    }
+    /* ─ LAYOUT ─ */
+    .feed-layout{display:grid;grid-template-columns:1.4fr .6fr;gap:28px;align-items:start}
+    @media(max-width:980px){.feed-layout{grid-template-columns:1fr}}
 
-    .danger{
-      border-color:rgba(255,75,75,.45);
-      color:#ffb3b3;
+    /* ─ FEATURED ─ */
+    .featured{
+      display:block;
+      border-radius:var(--r-lg);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.09);
+      box-shadow:var(--shadow);
+      margin-bottom:22px;
+      transition:border-color var(--tm),box-shadow var(--tm),transform var(--tm);
     }
+    .featured:hover{border-color:rgba(255,217,59,.35);box-shadow:0 28px 80px rgba(0,0,0,.8);transform:translateY(-2px)}
+    .featured-inner{display:grid;grid-template-columns:1.4fr .6fr}
+    @media(max-width:820px){.featured-inner{grid-template-columns:1fr}}
+    .featured-media{
+      position:relative;min-height:260px;
+      background:#0c0c0f;overflow:hidden;
+    }
+    .featured-media img,.featured-media video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .5s ease}
+    .featured:hover .featured-media img,.featured:hover .featured-media video{transform:scale(1.07)}
+    .featured-media-overlay{
+      position:absolute;inset:0;
+      background:linear-gradient(180deg,rgba(0,0,0,.05) 0,rgba(0,0,0,.6) 100%);
+      pointer-events:none;
+    }
+    .featured-copy{
+      padding:22px;
+      display:flex;flex-direction:column;justify-content:space-between;gap:16px;
+      background:rgba(15,15,18,.97);
+    }
+    .feat-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+    .chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.3);font-size:11px;color:var(--muted);backdrop-filter:blur(8px)}
+    .chip.yellow{border-color:rgba(255,217,59,.4);color:var(--yellow)}
+    .chip.green{border-color:rgba(18,139,2,.5);color:#9affc5}
+    .featured-title{font-family:"Bebas Neue";font-size:clamp(22px,3vw,32px);letter-spacing:1.5px;line-height:1.05;text-transform:uppercase}
+    .featured-desc{color:var(--muted);font-size:13px;line-height:1.5}
+    .featured-cta{display:flex;justify-content:space-between;align-items:center}
+
+    /* ─ GRID ─ */
+    .cards-grid{
+      display:grid;gap:16px;
+      grid-template-columns:repeat(2,1fr);
+    }
+    @media(max-width:560px){.cards-grid{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg-card);
+      border:1px solid var(--line);
+      border-radius:var(--r-md);
+      overflow:hidden;
+      box-shadow:var(--shadow-card);
+      transition:transform var(--tm),border-color var(--tm),box-shadow var(--tm);
+    }
+    .card:hover{transform:translateY(-5px) scale(1.005);border-color:rgba(255,217,59,.32);box-shadow:0 22px 56px rgba(0,0,0,.72)}
+    .card-media{position:relative;aspect-ratio:16/9;background:#0c0c0f;overflow:hidden}
+    .card-media img,.card-media video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .35s ease;filter:saturate(1.04)}
+    .card:hover .card-media img,.card:hover .card-media video{transform:scale(1.08)}
+    .card-media-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04) 0,rgba(0,0,0,.52) 100%);pointer-events:none}
+    .card-cat{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.55);font-size:11px;color:#fff;backdrop-filter:blur(10px)}
+    .card-body{padding:14px}
+    .card-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+    .card-title{font-weight:700;font-size:15px;line-height:1.2}
+    .card-date{font-size:11px;color:var(--muted);white-space:nowrap;margin-top:2px;flex-shrink:0}
+    .card-snippet{color:var(--muted);font-size:12px;margin:7px 0 9px;line-height:1.45;max-height:3.5em;overflow:hidden}
+    .card-meta{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:8px}
+    .like-pill{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);background:rgba(0,0,0,.18);padding:4px 9px;border-radius:999px;font-size:11px;color:var(--muted)}
+    .card-cta{font-size:11px;color:var(--muted);letter-spacing:.08em}
+
+    /* ─ LOAD MORE ─ */
+    .load-more-wrap{display:flex;justify-content:center;margin-top:22px}
+
+    /* ─ SIDEBAR ─ */
+    .sidebar{position:sticky;top:calc(var(--nav) + 18px);display:flex;flex-direction:column;gap:14px}
+    @media(max-width:980px){.sidebar{position:static}}
+
+    .panel{background:rgba(20,20,22,.85);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+    .panel-body{padding:18px}
+    .panel-title{font-family:"Bebas Neue";font-size:22px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+    .panel-text{font-size:13px;color:var(--muted);line-height:1.5}
+    .kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .kpi-pill{padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.22);font-size:12px;color:var(--muted);text-align:center}
+    .pdiv{height:1px;background:var(--line);margin:14px 0}
+    .panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+    /* ─ NUDGE ─ */
+    .nudge{display:none;padding:10px 12px;background:rgba(255,217,59,.05);border:1px solid rgba(255,217,59,.18);border-radius:12px;font-size:13px;color:var(--yellow)}
+    .nudge.show{display:block}
+
+    /* ─ ADMIN PANEL ─ */
+    .admin-panel{display:none}
+    .afield{margin-top:10px}
+    .afield label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:4px}
+    .afield input,.afield select,.afield textarea{background:rgba(255,255,255,.04);border:1px solid var(--line);color:#fff;padding:9px 12px;border-radius:10px;font-family:inherit;font-size:13px;outline:none;width:100%;transition:border-color var(--tf)}
+    .afield input:focus,.afield select:focus,.afield textarea:focus{border-color:var(--accent)}
+    .afield textarea{min-height:100px;resize:vertical;line-height:1.5}
+    .afield select option{background:#141414}
+    .admin-msg{font-size:12px;color:var(--muted);min-height:16px;margin-top:8px}
+    .admin-msg.ok{color:#9affc5}
+    .admin-msg.err{color:#ff9a9a}
+
+    /* ─ SKELETON ─ */
+    .skeleton{background:rgba(255,255,255,.04);border-radius:var(--r-md);animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.45}50%{opacity:.85}}
+
+    /* ─ EMPTY ─ */
+    .empty-state{grid-column:1/-1;padding:48px 24px;text-align:center;background:rgba(255,255,255,.015);border:1px solid var(--line);border-radius:var(--r-md);color:var(--muted)}
+    .empty-state strong{display:block;font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;color:rgba(255,255,255,.25);margin-bottom:6px}
   </style>
 </head>
 <body>
-  <nav class="nav" role="navigation" aria-label="Primary">
-    <div class="container nav-inner">
-      <a href="/" class="brand" aria-label="ROK Racers JA home">
-        <img src="/Assets/logo.png" alt="" class="logo">
+
+  <!-- NAV — exact match index.html -->
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="/index.html" class="logo">
+        <div class="logo-mark"><img src="/Assets/logo.png" alt="ROK Racers JA"></div>
         <div>
-          <h1>ROK RACERS JA</h1>
-          <small class="sub">Highlights</small>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Highlights</div>
         </div>
       </a>
 
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
-        <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/about.html">About</a>
-          <a class="btn" role="menuitem" href="/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/teams.html">Community</a>
-          <a class="btn" role="menuitem" href="/marketplace.html">Marketplace</a>
-          <a class="btn" role="menuitem" href="/store.html">Store</a>
-        </div>
+      <nav class="nav-links">
+        <a href="/events.html">Events</a>
+        <a href="/garage.html">Garage</a>
+        <a href="/teams.html">Community</a>
+        <a href="/highlights.html" class="active">Highlights</a>
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/store.html">Store</a>
+      </nav>
 
-        <div class="nav-auth">
-          <button id="navSignInBtn" class="btn">Log in</button>
-          <button id="navJoinBtn" class="btn primary">Join the grid</button>
+      <div class="nav-cta">
+        <button id="navSignInBtn" class="btn btn-ghost btn-sm" type="button">Log In</button>
+        <button id="navJoinBtn" class="btn btn-primary btn-sm" type="button">Join the Grid</button>
 
-          <div id="navProfileWrap" class="profile-menu" style="display:none">
-            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-              <span id="navProfileInitials">U</span>
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="navProfileInitials">U</span>
+          </div>
+          <div id="navProfileDropdown" class="dropdown" role="menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html?view=my">My Garage</a>
-              <a href="/tickets.html">My Tickets</a>
-              <a href="/likes-builds.html">Liked Builds</a>
-              <a href="/likes-sightings.html">Liked Sightings</a>
-              <a href="/teams.html">My Teams</a>
-              <a href="/activity.html">Activity</a>
-              <button id="navSignOutBtn" type="button">Sign out</button>
-            </div>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <div class="dd-sep"></div>
+            <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
+  <div class="container">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div>
+        <div class="hero-kicker">
+          <div class="hero-kicker-line"></div>
+          <span>ROK Racers JA · Community Timeline</span>
+        </div>
+        <h1 class="hero-title">The<br><span class="hl">Grid's</span><br>Timeline</h1>
+        <p class="hero-sub">Race nights, feature builds, announcements, drops, and moments the community shouldn't miss.</p>
+        <div class="hero-actions">
+          <a href="/highlights-new.html" class="btn btn-primary">+ Post a Highlight</a>
+          <a href="/sightings.html" class="btn btn-ghost">View Sightings</a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="stat-block">
+          <div class="stat-n" id="statTotal">—</div>
+          <div class="stat-l">Highlights</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-n" id="statWeek">—</div>
+          <div class="stat-l">This Week</div>
+        </div>
       </div>
     </div>
-  </nav>
 
-  <main class="container">
-    <section class="section">
+    <div class="tape" aria-hidden="true"></div>
 
-      <div class="hero">
-        <div class="hero-grid">
-          <div>
-            <h2 class="headline">Highlights</h2>
-            <p class="hero-sub">
-              The grid’s timeline. Race nights, feature builds, announcements, drops, and moments the community shouldn’t miss.
-            </p>
-            <div class="tape" aria-hidden="true"></div>
-          </div>
-          <div class="hero-stat">
-            <span id="countBadge" class="badge">0 highlights</span>
-            <span id="topBadge" class="badge">Top this week: —</span>
-            <a class="btn" href="/garage.html">Browse builds</a>
-            <a class="btn primary" href="/events.html">See events</a>
-          </div>
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <input id="q" placeholder="Search title or story…" aria-label="Search highlights" style="flex:2;min-width:160px">
+      <select id="catFilter" aria-label="Category">
+        <option value="">All categories</option>
+        <option value="News">News</option>
+        <option value="Events">Events</option>
+        <option value="Builds">Builds</option>
+        <option value="Community">Community</option>
+        <option value="Merch">Merch</option>
+        <option value="Race Night">Race Night</option>
+        <option value="Drop">Drop</option>
+      </select>
+      <select id="sortFilter" aria-label="Sort">
+        <option value="new">Newest first</option>
+        <option value="top">Most liked</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" id="applyBtn">Apply</button>
+      <button class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
+    </div>
+
+    <!-- FEED -->
+    <div class="feed-layout">
+
+      <!-- LEFT -->
+      <div>
+        <div id="featuredWrap"></div>
+
+        <div id="highlightsGrid" class="cards-grid" role="list" aria-live="polite">
+          <div class="skeleton" style="height:200px"></div>
+          <div class="skeleton" style="height:200px"></div>
+          <div class="skeleton" style="height:200px"></div>
+          <div class="skeleton" style="height:200px"></div>
+        </div>
+
+        <div class="load-more-wrap">
+          <button id="loadMoreBtn" class="btn btn-ghost" style="display:none">Load more</button>
         </div>
       </div>
 
-      <div class="filters" role="region" aria-label="Highlight filters">
-        <input id="q" placeholder="Search title/body…" aria-label="Search highlights"/>
-        <select id="category" aria-label="Category">
-          <option value="">All categories</option>
-          <option value="News">News</option>
-          <option value="Events">Events</option>
-          <option value="Merch">Merch</option>
-          <option value="Builds">Builds</option>
-          <option value="Community">Community</option>
-        </select>
-        <select id="sort" aria-label="Sort">
-          <option value="new">Newest</option>
-          <option value="top">Most liked</option>
-        </select>
-        <button id="apply" class="btn">Apply</button>
-        <button id="clear" class="btn">Clear</button>
-      </div>
+      <!-- RIGHT: sidebar -->
+      <aside class="sidebar">
 
-      <div class="feed">
-        <!-- LEFT: featured + grid -->
-        <div>
-          <div id="featuredWrap"></div>
-          <div id="highlightsGrid" class="grid" role="list" aria-live="polite">
-            <article class="card" role="listitem"><div class="pad sub">Loading…</div></article>
-          </div>
-
-          <div class="row" style="justify-content:center;margin-top:18px">
-            <button id="loadMore" class="btn">Load more</button>
-          </div>
-        </div>
-
-        <!-- RIGHT: sticky sidebar -->
-        <aside class="side" aria-label="Highlights side panels">
-          <div class="panel">
-            <div class="pad">
-              <h3>What’s new</h3>
-              <p id="sideCopy" class="sub">Loading the latest drops…</p>
-
-              <div class="kpi">
-                <span id="kpiNew" class="badge">New today: 0</span>
-                <span id="kpiWeek" class="badge">This week: 0</span>
-              </div>
-
-              <div class="mini-divider"></div>
-
-              <div class="toast" id="signinNudge" style="display:none">
-                Log in to like highlights and jump back to your favourites.
-              </div>
-
-              <div class="actions">
-                <a class="btn" href="/highlights.html">Refresh</a>
-                <a class="btn" href="/garage.html?view=my">My Garage</a>
-              </div>
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">What's new</div>
+            <p class="panel-text" id="sideCopy">Loading latest drops…</p>
+            <div class="kpi-row">
+              <div class="kpi-pill" id="kpiNew">Today: 0</div>
+              <div class="kpi-pill" id="kpiWeek">This week: 0</div>
+            </div>
+            <div class="pdiv"></div>
+            <div class="nudge" id="signinNudge">Log in to like highlights and track your favourites.</div>
+            <div class="panel-actions">
+              <a class="btn btn-ghost btn-sm" href="/highlights.html">Refresh</a>
+              <a class="btn btn-primary btn-sm" href="/highlights-new.html">+ Post</a>
             </div>
           </div>
+        </div>
 
-          <!-- ADMIN UPLOAD (hidden unless admin) -->
-          <div id="adminPanel" class="panel admin-only">
-            <div class="pad">
-              <h3>Admin upload</h3>
-              <p class="sub" style="margin:0 0 10px">
-                Publish a new highlight to the timeline. Only admins can see this panel.
-              </p>
-
-              <div id="adminStatus" class="toast" style="display:none"></div>
-
-              <label class="sub" style="display:block;margin-top:10px">Title</label>
-              <input id="aTitle" placeholder="e.g. Sunday Night Street Meet recap" />
-
-              <label class="sub" style="display:block;margin-top:10px">Category</label>
+        <!-- Admin quick-publish (visible to admins only) -->
+        <div class="panel admin-panel" id="adminPanel">
+          <div class="panel-body">
+            <div class="panel-title">Quick Publish</div>
+            <p class="panel-text" style="margin-bottom:4px">Admin panel — publishes straight to the feed.</p>
+            <div class="afield">
+              <label>Title</label>
+              <input id="aTitle" type="text" placeholder="e.g. Sunday Night Street Meet recap">
+            </div>
+            <div class="afield">
+              <label>Category</label>
               <select id="aCategory">
                 <option value="News">News</option>
                 <option value="Events">Events</option>
                 <option value="Builds">Builds</option>
                 <option value="Community">Community</option>
                 <option value="Merch">Merch</option>
+                <option value="Race Night">Race Night</option>
+                <option value="Drop">Drop</option>
               </select>
-
-              <label class="sub" style="display:block;margin-top:10px">Cover image (upload)</label>
-              <input id="aImageFile" type="file" accept="image/*" />
-
-              <label class="sub" style="display:block;margin-top:10px">Or cover image URL</label>
-              <input id="aImageUrl" placeholder="https://..." />
-
-              <label class="sub" style="display:block;margin-top:10px">Body</label>
-              <textarea id="aBody" rows="7" placeholder="Write the story. Use line breaks for paragraphs."></textarea>
-
-              <label class="sub" style="display:block;margin-top:10px">Optional link URL</label>
-              <input id="aLinkUrl" placeholder="https://..." />
-
-              <div class="actions" style="margin-top:12px">
-                <button id="aPublish" class="btn primary">Publish</button>
-                <button id="aReset" class="btn">Reset</button>
-              </div>
-
-              <div class="mini-divider"></div>
-              <p class="sub" style="margin:0">
-                Tip: keep the first paragraph punchy. That’s what shows in the feed preview.
-              </p>
             </div>
-          </div>
-
-          <div class="panel">
-            <div class="pad">
-              <h3>Scroll rhythm</h3>
-              <p class="sub">
-                Featured story on top, then the grid. Click any card to read full and join the comment thread.
-              </p>
+            <div class="afield">
+              <label>Cover image / video (upload)</label>
+              <input id="aImageFile" type="file" accept="image/*,video/*">
             </div>
+            <div class="afield">
+              <label>Or cover URL</label>
+              <input id="aImageUrl" type="url" placeholder="https://…">
+            </div>
+            <div class="afield">
+              <label>Story body</label>
+              <textarea id="aBody" placeholder="Write the story. Line breaks become paragraphs."></textarea>
+            </div>
+            <div class="afield">
+              <label>Optional link</label>
+              <input id="aLinkUrl" type="url" placeholder="https://…">
+            </div>
+            <div class="panel-actions" style="margin-top:14px">
+              <button id="aPublish" class="btn btn-primary btn-sm">Publish</button>
+              <button id="aReset" class="btn btn-ghost btn-sm">Reset</button>
+            </div>
+            <div class="admin-msg" id="adminStatus"></div>
           </div>
-        </aside>
-      </div>
+        </div>
 
-    </section>
-  </main>
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">How it works</div>
+            <p class="panel-text">Featured story at the top, then the grid below. Tap any card to read the full story and join the comment thread.</p>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+  </div><!-- /container -->
 
   <script>
-    const BUCKET = 'highlight-images'; // create this bucket in Supabase Storage for uploads
-
-    const $ = (id)=>document.getElementById(id);
-    const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => (
-      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-    ));
-
-    // ✅ Admin allow-list: add your admin emails here.
-    // You can also optionally create a table "admin_users" with a column "email" and it will be checked too.
-    const ADMIN_EMAILS = [
-      // "you@example.com",
-      // "admin@rokracersja.com"
-    ];
-
-    let allRows = [];
-    let filtered = [];
-    let page = 0;
+    const BUCKET = 'highlight-images';
     const PAGE_SIZE = 8;
 
-    function setAdminStatus(msg, type='info'){
-      const el = $('adminStatus');
-      if(!el) return;
-      el.style.display = 'block';
-      el.textContent = msg;
-      el.classList.toggle('danger', type === 'error');
-    }
-    function clearAdminStatus(){
-      const el = $('adminStatus');
-      if(!el) return;
-      el.style.display = 'none';
-      el.textContent = '';
-      el.classList.remove('danger');
-    }
-
-    function formatDate(d){
-      try{return new Date(d).toLocaleDateString();}catch{return ''}
-    }
-
-    function snippetOf(body){
-      const s = (body || '').trim();
-      if(!s) return '';
-      const clean = s.replace(/\s+/g,' ');
-      return clean.length > 170 ? clean.slice(0,170) + '…' : clean;
-    }
-
-    function pickCategoryIcon(cat){
-      const c = (cat||'').toLowerCase();
-      if(c.includes('event')) return '🏁';
-      if(c.includes('merch')) return '🛒';
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const fmtDate = (d) => { try{ return new Date(d).toLocaleDateString('en-JM',{month:'short',day:'numeric',year:'numeric'}); }catch{return '';} };
+    const snippet = (s,n=160) => { const c=(s||'').trim().replace(/\s+/g,' '); return c.length>n?c.slice(0,n)+'…':c; };
+    const catIcon = (c) => {
+      c=(c||'').toLowerCase();
+      if(c.includes('race')||c.includes('event')) return '🏁';
+      if(c.includes('merch')||c.includes('drop')) return '🛒';
       if(c.includes('build')) return '🛠️';
       if(c.includes('community')) return '🧩';
       return '📰';
+    };
+
+    window.addEventListener('scroll',()=>$('navWrapper').classList.toggle('solid',window.scrollY>40),{passive:true});
+
+    let allRows=[], filtered=[], page=0;
+
+    // ── FETCH ─────────────────────────────────────────────────────────
+    async function fetchHighlights(){
+      $('highlightsGrid').innerHTML='<div class="skeleton" style="height:200px"></div><div class="skeleton" style="height:200px"></div><div class="skeleton" style="height:200px"></div><div class="skeleton" style="height:200px"></div>';
+
+      let data, error;
+      ({data,error} = await supabase.from('highlights_with_like_count').select('id,title,category,image_url,video_url,body,created_at,like_count'));
+      if(error){
+        console.warn('[highlights] view fallback:', error.message);
+        ({data,error} = await supabase.from('highlights').select('id,title,category,image_url,video_url,body,created_at'));
+        data=(data||[]).map(h=>({...h,like_count:0}));
+      }
+      if(error){
+        $('highlightsGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1"><strong>Couldn\'t load highlights</strong>Try refreshing in a moment.</div>';
+        return;
+      }
+
+      allRows=(data||[]).slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+      applyFilters();
     }
 
-    function renderFeatured(h){
-      if(!h) { $('featuredWrap').innerHTML = ''; return; }
-      const img = h.image_url || '/Assets/og.png';
-      const cat = h.category || 'News';
-      const icon = pickCategoryIcon(cat);
-      const date = h.created_at ? formatDate(h.created_at) : '';
-      const desc = snippetOf(h.body);
+    // ── FILTERS ───────────────────────────────────────────────────────
+    function applyFilters(){
+      const q=($('q').value||'').trim().toLowerCase();
+      const cat=$('catFilter').value;
+      const sort=$('sortFilter').value;
 
-      $('featuredWrap').innerHTML = `
-        <a class="featured" href="/highlight.html?id=${h.id}" aria-label="Open featured highlight: ${escapeHTML(h.title)}">
-          <div class="featured-grid">
+      filtered=allRows.filter(h=>
+        (!q||(h.title||'').toLowerCase().includes(q)||(h.body||'').toLowerCase().includes(q))&&
+        (!cat||h.category===cat)
+      );
+      if(sort==='top') filtered.sort((a,b)=>(b.like_count||0)-(a.like_count||0));
+      else filtered.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+
+      // Stats
+      const now=Date.now(), weekAgo=now-7*24*60*60*1000;
+      const todayStart=new Date(...[new Date()].map(d=>[d.getFullYear(),d.getMonth(),d.getDate()])[0]).getTime();
+      const weekItems=filtered.filter(h=>new Date(h.created_at||0).getTime()>=weekAgo);
+      const todayItems=filtered.filter(h=>new Date(h.created_at||0).getTime()>=todayStart);
+      const top=weekItems.slice().sort((a,b)=>(b.like_count||0)-(a.like_count||0))[0];
+
+      $('statTotal').textContent=allRows.length||'—';
+      $('statWeek').textContent=weekItems.length||'—';
+      $('kpiNew').textContent=`Today: ${todayItems.length}`;
+      $('kpiWeek').textContent=`Week: ${weekItems.length}`;
+      $('sideCopy').textContent=filtered.length
+        ?`Latest: "${(filtered[0].title||'').slice(0,40)}" — tap any card.`
+        :'No highlights match those filters.';
+
+      page=0;
+      renderFeatured(filtered[0]);
+      renderCards(filtered.slice(1,1+PAGE_SIZE),false);
+      $('loadMoreBtn').style.display=(1+PAGE_SIZE)<filtered.length?'inline-flex':'none';
+    }
+
+    // ── FEATURED ──────────────────────────────────────────────────────
+    function renderFeatured(h){
+      const fw=$('featuredWrap');
+      if(!h){fw.innerHTML='';return;}
+      const cat=h.category||'News',icon=catIcon(cat);
+      const date=h.created_at?fmtDate(h.created_at):'';
+      const media=h.video_url
+        ?`<video src="${esc(h.video_url)}" autoplay muted loop playsinline></video>`
+        :`<img src="${esc(h.image_url||'/Assets/og.png')}" alt="${esc(h.title)}" loading="lazy">`;
+      fw.innerHTML=`
+        <a class="featured" href="/highlight.html?id=${h.id}" aria-label="Open: ${esc(h.title)}">
+          <div class="featured-inner">
             <div class="featured-media">
-              <img src="${img}" alt="${escapeHTML(h.title)}" loading="lazy">
+              ${media}
+              <div class="featured-media-overlay"></div>
             </div>
             <div class="featured-copy">
               <div>
-                <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:6px">
-                  <span class="badge">${icon} ${escapeHTML(cat)}</span>
-                  ${date ? `<span class="badge">${escapeHTML(date)}</span>` : ''}
-                  <span class="badge">♥ ${Number(h.like_count||0)}</span>
+                <div class="feat-chips">
+                  <span class="chip yellow">${icon} ${esc(cat)}</span>
+                  ${date?`<span class="chip">${esc(date)}</span>`:''}
+                  <span class="chip">♥ ${Number(h.like_count||0)}</span>
                 </div>
-                <h3 class="featured-title">${escapeHTML(h.title)}</h3>
-                <p class="featured-desc">${escapeHTML(desc || 'Open to read the full story.')}</p>
+                <h2 class="featured-title">${esc(h.title||'')}</h2>
+                <p class="featured-desc" style="margin-top:8px">${esc(snippet(h.body,200)||'Tap to read the full story.')}</p>
               </div>
-              <div class="row" style="justify-content:space-between;align-items:center">
-                <span class="sub">Tap to open</span>
-                <span class="btn primary" style="pointer-events:none">Read</span>
+              <div class="featured-cta">
+                <span style="font-size:12px;color:var(--muted)">Featured</span>
+                <span class="btn btn-primary btn-sm" style="pointer-events:none">Read →</span>
               </div>
             </div>
           </div>
-        </a>
-      `;
+        </a>`;
     }
 
-    function renderCards(items, append=false){
-      const grid = $('highlightsGrid');
-      if(!append){
-        grid.innerHTML = '';
-      }
-
-      if(!items.length && !append){
-        grid.innerHTML = `
-          <article class="card">
-            <div class="pad sub">No highlights found. Clear a filter or check back soon.</div>
-          </article>`;
+    // ── GRID CARDS ────────────────────────────────────────────────────
+    function renderCards(items,append=false){
+      const grid=$('highlightsGrid');
+      if(!append) grid.innerHTML='';
+      if(!items.length&&!append){
+        grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><strong>No Highlights Found</strong>Try clearing the filters above.</div>';
         return;
       }
-
-      const html = items.map(h => {
-        const img = h.image_url || '/Assets/og.png';
-        const date = h.created_at ? formatDate(h.created_at) : '';
-        const cat = h.category || 'News';
-        const icon = pickCategoryIcon(cat);
-        const body = snippetOf(h.body);
-
+      const html=items.map(h=>{
+        const cat=h.category||'News',icon=catIcon(cat);
+        const date=h.created_at?fmtDate(h.created_at):'';
+        const media=h.video_url
+          ?`<video src="${esc(h.video_url)}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>`
+          :`<img src="${esc(h.image_url||'/Assets/og.png')}" alt="${esc(h.title)}" loading="lazy">`;
         return `
           <article class="card" role="listitem">
-            <a href="/highlight.html?id=${h.id}" aria-label="Open highlight: ${escapeHTML(h.title)}">
+            <a href="/highlight.html?id=${h.id}">
               <div class="card-media">
-                <img src="${img}" alt="${escapeHTML(h.title)}" loading="lazy">
-                <div class="media-overlay"></div>
-                <div class="media-chip">${icon} ${escapeHTML(cat)}</div>
+                ${media}
+                <div class="card-media-overlay"></div>
+                <div class="card-cat">${icon} ${esc(cat)}</div>
               </div>
-              <div class="pad">
-                <div class="title-row">
-                  <div class="card-title">${escapeHTML(h.title)}</div>
-                  <div class="date">${escapeHTML(date)}</div>
+              <div class="card-body">
+                <div class="card-title-row">
+                  <div class="card-title">${esc(h.title||'')}</div>
+                  <div class="card-date">${esc(date)}</div>
                 </div>
-                <div class="snippet">${escapeHTML(body || 'Open to read more.')}</div>
-                <div class="meta-row">
-                  <span class="like-pill">♥ <span class="likes">${Number(h.like_count||0)}</span></span>
-                  <span class="sub">Open →</span>
+                <div class="card-snippet">${esc(snippet(h.body,130)||'Open to read more.')}</div>
+                <div class="card-meta">
+                  <span class="like-pill">♥ ${Number(h.like_count||0)}</span>
+                  <span class="card-cta">Read →</span>
                 </div>
               </div>
             </a>
-          </article>
-        `;
+          </article>`;
       }).join('');
-
-      if(append) grid.insertAdjacentHTML('beforeend', html);
-      else grid.innerHTML = html;
-    }
-
-    function computeKpis(list){
-      const now = new Date();
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      const weekAgo = now.getTime() - 7*24*60*60*1000;
-
-      let today = 0, week = 0;
-      list.forEach(h=>{
-        const t = new Date(h.created_at || 0).getTime();
-        if(t >= startOfToday) today++;
-        if(t >= weekAgo) week++;
-      });
-
-      $('kpiNew').textContent = `New today: ${today}`;
-      $('kpiWeek').textContent = `This week: ${week}`;
-    }
-
-    function topThisWeek(list){
-      const now = Date.now();
-      const weekAgo = now - 7*24*60*60*1000;
-      const week = list.filter(h => new Date(h.created_at||0).getTime() >= weekAgo);
-      if(!week.length) return null;
-      week.sort((a,b)=> (b.like_count||0) - (a.like_count||0));
-      return week[0];
-    }
-
-    function applyClientFilters(){
-      const q = $('q').value.trim().toLowerCase();
-      const category = $('category').value;
-      const sort = $('sort').value;
-
-      filtered = [...allRows];
-
-      if(q){
-        filtered = filtered.filter(h =>
-          (h.title || '').toLowerCase().includes(q) ||
-          (h.body || '').toLowerCase().includes(q)
-        );
-      }
-      if(category){
-        filtered = filtered.filter(h => (h.category || '') === category);
-      }
-
-      if(sort === 'top'){
-        filtered.sort((a,b)=> (b.like_count||0) - (a.like_count||0));
-      } else {
-        filtered.sort((a,b)=> new Date(b.created_at||0) - new Date(a.created_at||0)); // newest first
-      }
-
-      $('countBadge').textContent = `${filtered.length} highlight${filtered.length===1 ? '' : 's'}`;
-
-      const top = topThisWeek(filtered);
-      $('topBadge').textContent = top ? `Top this week: ${top.title}` : 'Top this week: —';
-
-      computeKpis(filtered);
-
-      const sideCopy = $('sideCopy');
-      if(!filtered.length){
-        sideCopy.textContent = 'No highlights match those filters right now.';
-      } else {
-        sideCopy.textContent = `Latest: “${filtered[0].title}” — tap any card to open the full story.`;
-      }
-
-      // Featured = first item in filtered
-      renderFeatured(filtered[0]);
-
-      // Reset paging
-      page = 0;
-      const firstSlice = filtered.slice(1, 1 + PAGE_SIZE); // exclude featured
-      renderCards(firstSlice, false);
-
-      $('loadMore').style.display = (1 + PAGE_SIZE) < filtered.length ? 'inline-flex' : 'none';
-    }
-
-    async function fetchHighlights(){
-      const grid = $('highlightsGrid');
-      grid.innerHTML = `<article class="card"><div class="pad sub">Loading highlights…</div></article>`;
-
-      const { data, error } = await supabase
-        .from('highlights_with_like_count')
-        .select('id,title,category,image_url,body,created_at,like_count');
-
-      if(error){
-        console.error(error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load highlights right now. Try again in a few.</div></article>`;
-        return;
-      }
-
-      allRows = (data || []).map(x => ({...x}));
-      // Default: newest first
-      allRows.sort((a,b)=> new Date(b.created_at||0) - new Date(a.created_at||0));
-
-      applyClientFilters();
+      if(append) grid.insertAdjacentHTML('beforeend',html);
+      else grid.innerHTML=html;
     }
 
     function loadMore(){
-      // featured uses index 0
-      const start = 1 + PAGE_SIZE + (page * PAGE_SIZE);
+      const start=1+PAGE_SIZE+(page*PAGE_SIZE);
       page++;
-      const slice = filtered.slice(start, start + PAGE_SIZE);
-      renderCards(slice, true);
-
-      const nextStart = 1 + PAGE_SIZE + (page * PAGE_SIZE);
-      $('loadMore').style.display = nextStart < filtered.length ? 'inline-flex' : 'none';
+      renderCards(filtered.slice(start,start+PAGE_SIZE),true);
+      $('loadMoreBtn').style.display=(1+PAGE_SIZE+(page*PAGE_SIZE))<filtered.length?'inline-flex':'none';
     }
 
-    // ===== ADMIN LOGIC =====
-    async function isAdminUser(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user?.email) return false;
-
-      if(ADMIN_EMAILS.map(e=>e.toLowerCase()).includes(user.email.toLowerCase())){
-        return true;
-      }
-
-      // Optional: admin_users table (email)
-      try{
-        const { data, error } = await supabase
-          .from('admin_users')
-          .select('email')
-          .eq('email', user.email)
-          .maybeSingle();
-        if(error) return false;
-        return !!data;
-      }catch{
-        return false;
-      }
+    // ── ADMIN ─────────────────────────────────────────────────────────
+    function setAdminMsg(msg,type=''){
+      const el=$('adminStatus');
+      el.textContent=msg;
+      el.className='admin-msg'+(type?' '+type:'');
     }
 
-    async function uploadAdminImageIfAny(user){
-      const file = $('aImageFile').files?.[0];
+    async function uploadAdminMedia(user){
+      const file=$('aImageFile').files?.[0];
       if(!file) return null;
-
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `highlights/${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
-      const { error: upErr } = await supabase
-        .storage
-        .from(BUCKET)
-        .upload(path, file, { upsert:false, contentType: file.type || 'image/jpeg' });
-
-      if(upErr){
-        console.error(upErr);
-        throw new Error('Image upload failed. Check bucket + policy.');
-      }
-
-      const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-      return urlData?.publicUrl || null;
+      const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+      const path=`highlights/${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const {error}=await supabase.storage.from(BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});
+      if(error) throw new Error('Upload failed: '+error.message);
+      const {data}=supabase.storage.from(BUCKET).getPublicUrl(path);
+      return data?.publicUrl||null;
     }
 
     async function publishHighlight(){
-      clearAdminStatus();
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user) { setAdminStatus('Sign in first.', 'error'); return; }
-
-      const ok = !!window.authUI?.isAdmin?.();
-      if(!ok){ setAdminStatus('Not authorized.', 'error'); return; }
-
-
-      const title = $('aTitle').value.trim();
-      const category = $('aCategory').value || 'News';
-      const body = $('aBody').value.trim();
-      const link_url = $('aLinkUrl').value.trim() || null;
-
-      if(!title || !body){
-        setAdminStatus('Title and body are required.', 'error');
-        return;
-      }
-
-      const publishBtn = $('aPublish');
-      publishBtn.disabled = true;
-      publishBtn.textContent = 'Publishing…';
-
+      setAdminMsg('');
+      const user=authUI.getUser();
+      if(!user){setAdminMsg('Sign in first.','err');return;}
+      if(!authUI.isAdmin()){setAdminMsg('Not authorized.','err');return;}
+      const title=($('aTitle').value||'').trim();
+      const body=($('aBody').value||'').trim();
+      if(!title||!body){setAdminMsg('Title and body are required.','err');return;}
+      const btn=$('aPublish');
+      btn.disabled=true;btn.textContent='Publishing…';
       try{
-        // Priority: uploaded image > pasted URL > none
-        const uploadedUrl = await uploadAdminImageIfAny(user);
-        const pastedUrl = $('aImageUrl').value.trim() || null;
-        const image_url = uploadedUrl || pastedUrl || null;
-
-        const payload = {
-          title,
-          category,
-          body,
-          image_url,
-          link_url
-        };
-
-        const { error } = await supabase
-          .from('highlights')
-          .insert(payload);
-
-        if(error){
-          console.error(error);
-          setAdminStatus('Publish failed: ' + error.message, 'error');
-          return;
-        }
-
-        setAdminStatus('Published! Refreshing feed…');
+        const uploadedUrl=await uploadAdminMedia(user);
+        const pastedUrl=($('aImageUrl').value||'').trim()||null;
+        const rawUrl=uploadedUrl||pastedUrl||null;
+        const isVideo=rawUrl&&(rawUrl.includes('.mp4')||rawUrl.includes('.mov')||rawUrl.includes('video'));
+        const {error}=await supabase.from('highlights').insert({
+          title,body,category:$('aCategory').value||'News',
+          image_url:isVideo?null:rawUrl,
+          video_url:isVideo?rawUrl:null,
+          link_url:($('aLinkUrl').value||'').trim()||null,
+          created_by:user.id,
+        });
+        if(error) throw new Error(error.message);
+        setAdminMsg('✓ Published!','ok');
         $('aReset').click();
         await fetchHighlights();
-      } catch(err){
-        console.error(err);
-        setAdminStatus(err?.message || 'Publish failed.', 'error');
-      } finally {
-        publishBtn.disabled = false;
-        publishBtn.textContent = 'Publish';
+      }catch(err){
+        setAdminMsg(err?.message||'Publish failed.','err');
+      }finally{
+        btn.disabled=false;btn.textContent='Publish';
       }
     }
 
-    function resetAdminForm(){
-      clearAdminStatus();
-      $('aTitle').value = '';
-      $('aCategory').value = 'News';
-      $('aImageFile').value = '';
-      $('aImageUrl').value = '';
-      $('aBody').value = '';
-      $('aLinkUrl').value = '';
+    function resetAdmin(){
+      setAdminMsg('');
+      ['aTitle','aImageFile','aImageUrl','aBody','aLinkUrl'].forEach(id=>{const el=$(id);if(el)el.value='';});
+      const c=$('aCategory');if(c)c.value='News';
     }
 
-    async function syncAdminPanel(){
-  const panel = document.getElementById('adminPanel');
-  const nudge = document.getElementById('signinNudge');
+    function syncSidebar(){
+      const user=authUI.getUser();
+      $('signinNudge').classList.toggle('show',!user);
+      $('adminPanel').style.display=authUI.isAdmin()?'block':'none';
+    }
 
-  const user = window.authUI?.getUser?.();
-  if(!user){
-    if(nudge) nudge.style.display = 'block';
-    if(panel) panel.style.display = 'none';
-    return;
-  }
+    // ── WIRE ─────────────────────────────────────────────────────────
+    $('applyBtn').onclick=applyFilters;
+    $('clearBtn').onclick=()=>{$('q').value='';$('catFilter').value='';$('sortFilter').value='new';applyFilters();};
+    $('loadMoreBtn').onclick=loadMore;
+    $('aPublish')?.addEventListener('click',publishHighlight);
+    $('aReset')?.addEventListener('click',resetAdmin);
 
-  if(nudge) nudge.style.display = 'none';
-  const ok = !!window.authUI?.isAdmin?.();
-  if(panel) panel.style.display = ok ? 'block' : 'none';
-}
+    authUI.onChange(syncSidebar);
 
-// keep panel live as auth changes
-window.authUI?.onChange?.(() => syncAdminPanel());
-
-
-    // ===== UI WIRING =====
-    $('apply').addEventListener('click', applyClientFilters);
-    $('clear').addEventListener('click', ()=>{
-      $('q').value = '';
-      $('category').value = '';
-      $('sort').value = 'new';
-      applyClientFilters();
-    });
-    $('loadMore').addEventListener('click', loadMore);
-
-    $('aPublish')?.addEventListener('click', publishHighlight);
-    $('aReset')?.addEventListener('click', resetAdminForm);
-
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      await syncAdminPanel();
+    window.addEventListener('DOMContentLoaded',async()=>{
+      syncSidebar();
       await fetchHighlights();
     });
   </script>
