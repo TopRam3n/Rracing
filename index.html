@@ -632,18 +632,18 @@
 
         <!-- ✅ auth-ui.js wires all these by ID automatically -->
         <div class="nav-cta">
-          <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
-          <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+          <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+          <button id="navJoinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
 
-          <div id="profileMenu" class="profile-menu" style="display:none">
-            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
-              <span id="profileInitials">U</span>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+              <span id="navProfileInitials">U</span>
             </div>
 
-            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div id="navProfileDropdown" class="dropdown" role="menu" aria-label="Account menu">
               <div class="dd-head">
                 <div class="dd-title">Signed in as</div>
-                <div class="dd-email" id="ddEmail">—</div>
+                <div class="dd-email" id="navProfileEmail">—</div>
               </div>
 
               <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
@@ -655,10 +655,10 @@
               <a href="/likes-sightings.html">Liked Sightings</a>
               <a href="/teams.html">My Teams</a>
 
-              <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+              <a id="navMyEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
 
               <div class="dd-sep"></div>
-              <button id="signoutBtn" type="button">Sign out</button>
+              <button id="navSignOutBtn" type="button">Sign out</button>
             </div>
           </div>
         </div>
@@ -1020,93 +1020,95 @@
     async function loadTopBuilds(){
       const grid = document.getElementById('top-builds-grid');
       if (!grid) return;
-
       grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Warming up the dyno…</div></div></article>`;
 
-      const { data, error } = await supabase
+      // Try enriched view; fall back to raw builds table if view not deployed yet
+      let data, error;
+      ({ data, error } = await supabase
         .from('public_builds_with_like_count_and_trophies')
         .select('id,title,like_count,thumb_url,parish,owner_handle,build_type,trophy_labels')
-        .order('like_count', { ascending:false })
-        .order('id', { ascending:true })
-        .limit(5);
+        .order('like_count', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(5));
 
       if (error){
-        console.error(error);
+        console.warn('builds view unavailable, falling back to raw table:', error.message);
+        ({ data, error } = await supabase
+          .from('builds')
+          .select('id,title,thumb_url,parish,build_type,created_at')
+          .eq('is_public', true)
+          .order('created_at', { ascending: false })
+          .limit(5));
+        if (!error && data) data = data.map(b => ({ ...b, like_count: 0, owner_handle: null, trophy_labels: [] }));
+      }
+
+      if (error){
+        console.error('builds load failed:', error);
         grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Couldn't load builds right now.</div></div></article>`;
         return;
       }
-
       if (!data?.length){
         grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">No public builds on the grid yet.</div></div></article>`;
         return;
       }
 
-      const { data: auth } = await supabase.auth.getUser();
+      // ✅ Use authUI.getUser() — never call supabase.auth.getUser() directly
+      const currentUser = authUI.getUser();
       let likedSet = new Set();
-      if (auth?.user?.id){
+      if (currentUser?.id){
         const { data: liked } = await supabase
           .from('build_likes')
           .select('build_id')
           .in('build_id', data.map(b => b.id))
-          .eq('user_id', auth.user.id);
-        likedSet = new Set((liked||[]).map(r => r.build_id));
+          .eq('user_id', currentUser.id);
+        likedSet = new Set((liked || []).map(r => r.build_id));
       }
 
       grid.innerHTML = data.map(b => {
         const isLiked = likedSet.has(b.id);
         const heart = isLiked ? '♥' : '♡';
         const img = b.thumb_url
-          ? `<img class="blur-up" src="${b.thumb_url}" alt="${esc(b.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;">`
+          ? `<img class="blur-up" src="${esc(b.thumb_url)}" alt="${esc(b.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;">`
           : `<img class="blur-up" src="${FALLBACK_MEDIA_IMG}" alt="Build" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;opacity:.92;">`;
         const owner = b.owner_handle ? '@' + b.owner_handle : 'Build owner';
-        const type = b.build_type || 'Build';
+        const type  = b.build_type || 'Build';
         return `
           <article class="build-card" data-build="${b.id}">
             <div class="build-image">
               ${img}
-              <div class="build-owner">${owner}</div>
-              <div class="build-chip">${type}</div>
+              <div class="build-owner">${esc(owner)}</div>
+              <div class="build-chip">${esc(type)}</div>
             </div>
-            <div class="build-body"><div class="build-title">${b.title || 'Untitled build'}</div></div>
+            <div class="build-body"><div class="build-title">${esc(b.title || 'Untitled build')}</div></div>
             <div class="build-footer">
               <div class="build-stats"><div class="build-likes">❤ <span class="likes">${b.like_count || 0}</span></div></div>
-              <div class="build-parish">${b.parish || ''}</div>
+              <div class="build-parish">${esc(b.parish || '')}</div>
             </div>
-            <button class="build-like-btn" data-like aria-pressed="${isLiked ? 'true':'false'}"
-              title="${auth?.user ? (isLiked ? 'Remove boost' : 'Boost') : 'Sign in to boost'}" type="button">${heart}</button>
+            <button class="build-like-btn" data-like aria-pressed="${isLiked ? 'true' : 'false'}"
+              title="${currentUser ? (isLiked ? 'Remove boost' : 'Boost') : 'Sign in to boost'}" type="button">${heart}</button>
           </article>`;
       }).join('');
 
       grid.onclick = async (e) => {
-        const btn = e.target.closest('[data-like]');
+        const btn  = e.target.closest('[data-like]');
         const card = e.target.closest('.build-card');
         if (!card) return;
         const buildId = card.dataset.build;
-
         if (btn){
           const likesEl = card.querySelector('.likes');
-          // ✅ Use authUI.requireLogin instead of inline openAuth
           const loggedIn = await authUI.requireLogin();
           if (!loggedIn) return;
-
-          const { data: auth2 } = await supabase.auth.getUser();
+          const user = authUI.getUser();
           const { data: existing } = await supabase
             .from('build_likes').select('build_id')
-            .eq('build_id', buildId).eq('user_id', auth2.user.id).maybeSingle();
-
+            .eq('build_id', buildId).eq('user_id', user.id).maybeSingle();
           if (existing){
-            const { error } = await supabase.from('build_likes').delete()
-              .eq('build_id', buildId).eq('user_id', auth2.user.id);
-            if (error){ console.error(error); return; }
-            btn.textContent = '♡';
-            btn.setAttribute('aria-pressed','false');
+            await supabase.from('build_likes').delete().eq('build_id', buildId).eq('user_id', user.id);
+            btn.textContent = '♡'; btn.setAttribute('aria-pressed','false');
             likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
           } else {
-            const { error } = await supabase.from('build_likes')
-              .insert({ build_id: buildId, user_id: auth2.user.id });
-            if (error){ console.error(error); return; }
-            btn.textContent = '♥';
-            btn.setAttribute('aria-pressed','true');
+            await supabase.from('build_likes').insert({ build_id: buildId, user_id: user.id });
+            btn.textContent = '♥'; btn.setAttribute('aria-pressed','true');
             likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
           }
           return;
@@ -1115,50 +1117,50 @@
       };
     }
 
-    // ===== Events (limit 5) =====
+    // ===== Events (5 most recent) =====
     async function loadFrontEvents(){
       const strip = document.getElementById('eventsStrip');
       if (!strip) return;
 
       const { data: events, error } = await supabase
         .from('events')
-        .select('id,title,starts_at,ends_at,location,promoter_handle,team_id,created_at,cover_url,parish')
-        .order('created_at', { ascending:false })
+        .select('id,title,starts_at,ends_at,location,promoter_handle,created_at,cover_url,parish')
+        .order('created_at', { ascending: false })
         .limit(5);
 
       if (error){
-        console.error(error);
+        console.error('events load failed:', error);
         strip.innerHTML = `<article class="event-card"><div class="event-body"><div class="event-title">Couldn't load events right now.</div></div></article>`;
         return;
       }
-
       if (!events?.length){
         strip.innerHTML = `<article class="event-card"><div class="event-body"><div class="event-title">No events posted yet.</div><div class="event-meta"><span>Be the first promoter to post.</span></div></div></article>`;
         return;
       }
 
+      // RSVP counts — gracefully skip if view not deployed yet
       let countsMap = new Map();
-      try{
-        const ids = events.map(e => e.id);
-        const { data: counts } = await supabase
+      try {
+        const ids = events.map(ev => ev.id);
+        const { data: counts, error: cErr } = await supabase
           .from('event_rsvp_counts').select('event_id,yes_count,maybe_count,no_count').in('event_id', ids);
-        countsMap = new Map((counts || []).map(c => [c.event_id, c]));
-      } catch {}
+        if (!cErr && counts) countsMap = new Map(counts.map(c => [c.event_id, c]));
+      } catch { /* view not yet deployed */ }
 
-      function render(e){
+      function renderEvent(e){
         const d = e.starts_at ? new Date(e.starts_at) : null;
-        const whenLabel = d ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" }) : "TBA";
-        const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
-        const counts = countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 };
-        const cover = e.cover_url || FALLBACK_MEDIA_IMG;
+        const whenLabel = d ? d.toLocaleString('en-US',{ weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : 'TBA';
+        const promoter  = e.promoter_handle ? '@' + e.promoter_handle : '';
+        const counts    = countsMap.get(e.id) || { yes_count:0, maybe_count:0 };
+        const cover     = e.cover_url || FALLBACK_MEDIA_IMG;
         return `
           <article class="event-card" data-id="${e.id}">
-            ${renderMedia({ imageUrl: cover, alt: e.title || "Event cover", height: 140, badge: "Event" })}
+            ${renderMedia({ imageUrl: cover, alt: e.title || 'Event cover', height: 140, badge: 'Event' })}
             <div class="event-body">
-              <div class="event-title">${e.title || 'Event'}</div>
-              <div class="event-meta"><span>${whenLabel}</span><span class="event-status">RSVP Open</span></div>
-              <div class="event-meta"><span>${e.location || ''}</span><span>${promoter}</span></div>
-              <div class="event-meta" style="font-size:10px; margin-top:4px;">
+              <div class="event-title">${esc(e.title || 'Event')}</div>
+              <div class="event-meta"><span>${esc(whenLabel)}</span><span class="event-status">RSVP Open</span></div>
+              <div class="event-meta"><span>${esc(e.location || '')}</span><span>${esc(promoter)}</span></div>
+              <div class="event-meta" style="font-size:10px;margin-top:4px;">
                 <span>✅ ${counts.yes_count} going</span><span>🤔 ${counts.maybe_count} maybe</span>
               </div>
               <div class="event-actions">
@@ -1169,61 +1171,70 @@
           </article>`;
       }
 
-      strip.innerHTML = events.map(render).join('');
+      strip.innerHTML = events.map(renderEvent).join('');
 
       strip.onclick = function(ev){
         const actionBtn = ev.target.closest?.('[data-action]');
+        const card      = ev.target.closest('.event-card');
+        if (!card) return;
+        const id = card.dataset.id;
         if (actionBtn){
-          const card = ev.target.closest('.event-card');
-          if (!card) return;
-          const id = card.dataset.id;
           const action = actionBtn.dataset.action;
           if (action === 'view') location.href = `/event.html?id=${id}`;
           if (action === 'rsvp') authUI.requireLogin().then(ok => { if (ok) location.href = `/event.html?id=${id}#rsvp`; });
           return;
         }
-        const card = ev.target.closest('.event-card');
-        if (!card) return;
-        location.href = `/event.html?id=${card.dataset.id}`;
+        location.href = `/event.html?id=${id}`;
       };
     }
 
-    // ===== Sightings =====
+    // ===== Sightings (5 most recent: 1 featured + 4 side) =====
     async function loadFrontSightings(){
-      const main = document.getElementById('sightingMain');
-      const sideList = document.getElementById('sightingSideList');
+      const main      = document.getElementById('sightingMain');
+      const sideList  = document.getElementById('sightingSideList');
       const mainMedia = document.getElementById('sightingMainMedia');
       if (!main || !sideList || !mainMedia) return;
-
-      const { data, error } = await supabase
-        .from('sightings_with_like_count')
-        .select('id,title,caption,location,parish,image_url,video_url,created_at,like_count,comment_count,author_handle,category')
-        .order('created_at', { ascending:false })
-        .limit(4);
 
       const mainCaptionEl = main.querySelector('.sighting-caption');
       const mainTitleEl   = main.querySelector('.sighting-title');
       const mainMetaTop   = main.querySelector('.sighting-meta-top');
       const mainFooter    = main.querySelector('.sighting-footer');
 
+      // Try enriched view; fall back to raw sightings table
+      let data, error;
+      ({ data, error } = await supabase
+        .from('sightings_with_like_count')
+        .select('id,title,caption,location,parish,image_url,video_url,created_at,like_count,comment_count,author_handle,category')
+        .order('created_at', { ascending: false })
+        .limit(5));
+
+      if (error){
+        console.warn('sightings view unavailable, falling back:', error.message);
+        ({ data, error } = await supabase
+          .from('sightings')
+          .select('id,title,caption,location,parish,image_url,video_url,created_at,author_handle,category')
+          .order('created_at', { ascending: false })
+          .limit(5));
+        if (!error && data) data = data.map(s => ({ ...s, like_count: 0, comment_count: 0 }));
+      }
+
       if (error || !data?.length){
-        mainTitleEl.textContent = error ? "Couldn't load sightings right now." : "Be the first to drop a sighting.";
+        mainTitleEl.textContent   = error ? "Couldn't load sightings right now." : "Be the first to drop a sighting.";
         mainCaptionEl.textContent = error ? "Refresh in a bit." : "Catch a link-up, a pull or a clean park-up and upload it here.";
-        mainMedia.innerHTML = renderMedia({ imageUrl: FALLBACK_MEDIA_IMG, alt:"Sighting", height:160 }) + `<div class="sighting-badge">Jamaica</div>`;
+        mainMedia.innerHTML = renderMedia({ imageUrl: FALLBACK_MEDIA_IMG, alt:'Sighting', height:160 }) + `<div class="sighting-badge">Jamaica</div>`;
         sideList.innerHTML = `<div class="sighting-side-item"><span class="label">Feed is quiet</span><span>Waiting for first drop</span></div>`;
         return;
       }
 
       const first = data[0];
-      const rest = data.slice(1);
-      const created = first.created_at ? new Date(first.created_at) : null;
-      const timeAgo = created ? created.toLocaleDateString() : "";
-      const locLine = [first.parish, first.location].filter(Boolean).join(" · ");
+      const rest  = data.slice(1);
+      const locLine = [first.parish, first.location].filter(Boolean).join(' · ');
+      const timeAgo = first.created_at ? new Date(first.created_at).toLocaleDateString() : '';
 
       mainMedia.innerHTML = renderMedia({
         imageUrl: first.image_url || FALLBACK_MEDIA_IMG,
         videoUrl: first.video_url,
-        alt: first.title || "Sighting",
+        alt: first.title || 'Sighting',
         height: 160
       }) + `<div class="sighting-badge">${esc(locLine || 'Jamaica')}</div>`;
 
@@ -1231,7 +1242,7 @@
       if (labelSpan) labelSpan.textContent = (first.author_handle ? '@'+first.author_handle : 'Sighting') + (timeAgo ? ' · ' + timeAgo : '');
       const pill = mainMetaTop.querySelector('.pill-soft');
       if (pill) pill.textContent = first.category || 'Sighting';
-      mainTitleEl.textContent = first.title || 'Sighting';
+      mainTitleEl.textContent   = first.title || 'Sighting';
       mainCaptionEl.textContent = first.caption || '';
       const statSpan = mainFooter.querySelector('span');
       if (statSpan) statSpan.textContent = `❤ ${first.like_count || 0} · 💬 ${first.comment_count || 0}`;
@@ -1242,28 +1253,41 @@
         return;
       }
       sideList.innerHTML = rest.map(s => {
-        const loc = [s.parish, s.location].filter(Boolean).join(" · ");
-        const when = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
+        const loc    = [s.parish, s.location].filter(Boolean).join(' · ');
+        const when   = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
         const handle = s.author_handle ? '@'+s.author_handle : '';
         return `<div class="sighting-side-item" onclick="location.href='/sighting.html?id=${s.id}'">
           <span class="label">${esc(loc || 'Jamaica')}</span>
-          <span>${esc(handle)} · ${esc(when)}</span>
+          <span>${esc(handle)}${handle && when ? ' · ' : ''}${esc(when)}</span>
         </div>`;
       }).join('');
     }
 
-    // ===== Highlights =====
+    // ===== Highlights (5 most recent) =====
     async function loadFrontHighlights(){
       const grid = document.getElementById('highlightsGrid');
       if (!grid) return;
 
-      const { data, error } = await supabase
+      // Try enriched view; fall back to raw highlights table
+      let data, error;
+      ({ data, error } = await supabase
         .from('highlights_with_like_count')
         .select('id,title,category,image_url,video_url,body,created_at,like_count')
-        .order('created_at', { ascending:false })
-        .limit(3);
+        .order('created_at', { ascending: false })
+        .limit(5));
 
       if (error){
+        console.warn('highlights view unavailable, falling back:', error.message);
+        ({ data, error } = await supabase
+          .from('highlights')
+          .select('id,title,category,image_url,video_url,body,created_at')
+          .order('created_at', { ascending: false })
+          .limit(5));
+        if (!error && data) data = data.map(h => ({ ...h, like_count: 0 }));
+      }
+
+      if (error){
+        console.error('highlights load failed:', error);
         grid.innerHTML = `<article class="sighting-main"><p class="section-sub">Couldn't load highlights right now.</p></article>`;
         return;
       }
@@ -1273,35 +1297,37 @@
       }
 
       grid.innerHTML = data.map(h => {
-        const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : "";
-        const teaser = (h.body || '').slice(0,140);
-        const more = (h.body && h.body.length > 140) ? '…' : '';
-        const media = renderMedia({
+        const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
+        const teaser  = (h.body || '').slice(0, 140);
+        const more    = (h.body && h.body.length > 140) ? '…' : '';
+        const media   = renderMedia({
           imageUrl: h.image_url || FALLBACK_MEDIA_IMG,
           videoUrl: h.video_url,
-          alt: h.title || "Highlight",
+          alt: h.title || 'Highlight',
           height: 160,
-          badge: ""
+          badge: ''
         });
         return `
           <article class="sighting-main" onclick="location.href='/highlight.html?id=${h.id}'" style="cursor:pointer">
             ${media}
-            <div class="section-title" style="font-size:14px; letter-spacing:.14em; margin:10px 0 6px;">${esc(h.title || 'Highlight')}</div>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">${esc(h.category || '')} · ${esc(dateStr)}</p>
+            <div class="section-title" style="font-size:14px;letter-spacing:.14em;margin:10px 0 6px;">${esc(h.title || 'Highlight')}</div>
+            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${esc(h.category || '')}${h.category && dateStr ? ' · ' : ''}${esc(dateStr)}</p>
             <p class="section-sub" style="max-width:none;">${esc(teaser)}${more}</p>
-            <p style="margin-top:8px; font-size:11px; color:var(--text-muted);">♥ ${h.like_count || 0}</p>
+            <p style="margin-top:8px;font-size:11px;color:var(--text-muted);">♥ ${h.like_count || 0}</p>
           </article>`;
       }).join('');
     }
 
-    // ===== Boot =====
-    document.addEventListener('DOMContentLoaded', async ()=>{
+    // ===== Boot — all four feeds load in parallel =====
+    document.addEventListener('DOMContentLoaded', async () => {
       bindHoverAutoplay(document);
       // ✅ auth-ui.js handles auth state — no updateAuthUI() needed here
-      await loadFrontEvents();
-      await loadTopBuilds();
-      await loadFrontSightings();
-      await loadFrontHighlights();
+      await Promise.all([
+        loadFrontEvents(),
+        loadTopBuilds(),
+        loadFrontSightings(),
+        loadFrontHighlights()
+      ]);
     });
   </script>
 </body>
