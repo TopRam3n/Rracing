@@ -518,7 +518,7 @@
   /* Auth helpers — delegate to authUI */
   async function getUser(){
     if(window.authUI) return authUI.getUser();
-    const { data: { user } = {} } = await supabase.auth.getUser();
+    const user = authUI.getUser();
     return user || null;
   }
 
@@ -661,7 +661,7 @@
 
     if(error || !build){
       authNotice.style.display = 'block';
-      authNotice.textContent = 'We couldnt load this build. It may have been deleted or moved.';
+      authNotice.textContent = 'We could not load this build. It may have been deleted or moved.';
       return false;
     }
 

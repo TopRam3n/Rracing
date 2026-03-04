@@ -514,13 +514,19 @@
           </div>
 
           <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-            <a href="/my-profile.html">My Profile</a>
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
             <a href="/garage.html">My Garage</a>
             <a href="/tickets.html">My Tickets</a>
             <a href="/likes-builds.html">Liked Builds</a>
             <a href="/likes-sightings.html">Liked Sightings</a>
             <a href="/teams.html">My Teams</a>
-            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <div class="dd-sep"></div>
             <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
@@ -782,7 +788,7 @@
 
     /* ========= Permissions ========= */
     async function getCanManageEvent(e){
-      const { data:{ user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if (window.authUI?.refresh) await authUI.refresh();
       const isAdmin = window.authUI?.isAdmin?.() === true;
       const isProm  = window.authUI?.isPromoter?.() === true;
@@ -1099,7 +1105,7 @@
       const sel = document.getElementById('f_team');
       if (!sel) return;
       sel.innerHTML = `<option value="">My account</option>`;
-      const { data:{ user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if (!user) return;
       const { data, error } = await supabase.from('team_members')
         .select(`role, teams:team_id ( id, name, is_promoter )`)
@@ -1161,7 +1167,7 @@
     modalCreate.addEventListener('click', async ()=>{
       setCreateMsg(''); modalCreate.disabled = true;
       try{
-        const { data:{ user } } = await supabase.auth.getUser();
+        const user = authUI.getUser();
         if (!user){ toast('info', 'Sign in required', 'Please log in to manage events.'); return; }
 
         await authUI.refresh();

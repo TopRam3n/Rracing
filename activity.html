@@ -179,25 +179,33 @@
       <nav class="nav-links">
         <a href="/events.html">Events</a>
         <a href="/garage.html">Garage</a>
-        <a href="/sightings.html">Sightings</a>
+        <a href="/teams.html">Community</a>
         <a href="/highlights.html">Highlights</a>
         <a href="/marketplace.html">Marketplace</a>
+        <a href="/store.html">Store</a>
       </nav>
 
       <div class="nav-cta">
-        <a href="/marketplace.html" class="btn btn-ghost btn-pill-sm">Marketplace</a>
-
         <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
+        <button id="navJoinBtn" class="btn btn-primary btn-pill-sm">Join the Grid</button>
 
         <div id="navProfileWrap" class="profile-menu" style="display:none">
           <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
             <span id="navProfileInitials">U</span>
           </div>
-          <div id="navProfileDropdown" class="dropdown" style="display:none">
+          <div id="navProfileDropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
             <a href="/garage.html">My Garage</a>
             <a href="/tickets.html">My Tickets</a>
             <a href="/teams.html">My Teams</a>
             <a href="/activity.html">Activity</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <div class="dd-sep"></div>
             <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
         </div>
