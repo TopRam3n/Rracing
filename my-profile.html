@@ -1,1 +1,674 @@
-test
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My Profile — ROK Racers JA</title>
+  <link rel="icon" href="/Assets/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="/supabase-client.js"></script>
+  <script src="/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg:#141414; --bg1:#161616; --bg2:#1b1b1b;
+      --fg:#fff; --muted:#bdbdbd;
+      --accent:#e50914; --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .sub{color:var(--muted)}
+    h1,h2{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(18,18,18,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:14px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-img{width:48px;height:48px;border-radius:8px;object-fit:contain}
+    .title small{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:14px;
+      border:1px solid var(--line);cursor:pointer;
+      background:transparent;color:var(--fg);
+      font-family:inherit;
+    }
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.small{padding:6px 10px;font-size:14px}
+    .btn[disabled]{opacity:.5;pointer-events:none}
+
+    .section{padding:40px 0 56px}
+    .pill{
+      display:inline-flex;align-items:center;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid var(--line);background:var(--bg2);
+      font-size:12px;margin-right:6px;margin-top:4px;
+    }
+
+    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;border-bottom:1px solid var(--line);padding-bottom:4px}
+    .tab-btn{
+      border:none;background:transparent;color:var(--muted);
+      padding:8px 14px;border-radius:999px;
+      cursor:pointer;font:inherit;
+    }
+    .tab-btn.active{background:#fff;color:#000}
+    .tab-panel{display:none;margin-top:18px}
+    .tab-panel.active{display:block}
+
+    .grid{display:grid;gap:20px}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    .cols-2{grid-template-columns:repeat(2,1fr)}
+    @media(max-width:960px){.cols-3,.cols-2{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover{transform:translateY(-4px) scale(1.01)}
+    .card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+    .pad{padding:14px}
+
+    .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+
+    .avatar{
+      width:64px;height:64px;border-radius:50%;
+      background:var(--bg2);border:1px solid var(--line);
+      display:flex;align-items:center;justify-content:center;
+      font-size:28px;font-weight:600;
+    }
+
+    /* nav-auth: auth-ui.js renders these */
+    .nav-auth{display:flex;align-items:center;gap:10px}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:40px;height:40px;border-radius:50%;
+      background:var(--bg2);display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+    }
+    .profile-chip span{font-size:16px}
+    .dropdown{
+      position:absolute;right:0;top:48px;
+      background:var(--bg1);border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.45);
+      border-radius:14px;display:flex;flex-direction:column;
+      min-width:190px;z-index:999;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;border:none;background:transparent;color:var(--fg);
+      text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    .skeleton{
+      background:linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background-size:200% 100%;
+      animation:shimmer 1.2s infinite;
+      border-radius:14px;
+      border:1px solid var(--line);
+    }
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  </style>
+</head>
+<body>
+  <nav class="nav" role="navigation">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
+        <img src="/Assets/logo.png" class="logo-img" alt="">
+        <div class="title">
+          <h1>ROK RACERS JA</h1>
+          <small>Profile</small>
+        </div>
+      </a>
+
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div class="menu">
+          <a class="btn" href="/events.html">Events</a>
+          <a class="btn" href="/garage.html">Garage</a>
+          <a class="btn" href="/sightings.html">Sightings</a>
+          <a class="btn" href="/highlights.html">Highlights</a>
+        </div>
+        <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, navSignOutBtn -->
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Sign in</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown" style="display:none">
+              <a href="/profile.html">My Profile</a>
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/likes-highlights.html">Liked Highlights</a>
+              <a href="/teams.html">My Teams</a>
+              <a href="/activity.html">Activity</a>
+              <a href="/admin-events.html">Admin Events</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section">
+      <div class="row">
+        <div class="row" style="gap:16px;align-items:center;justify-content:flex-start">
+          <div class="avatar" id="profileAvatar">U</div>
+          <div>
+            <div class="row" style="justify-content:flex-start">
+              <h2 id="profileTitle" style="font-size:40px">My profile</h2>
+              <span id="myTeamPill" class="pill" style="display:none"></span>
+            </div>
+            <div id="profileEmail" class="sub"></div>
+          </div>
+        </div>
+        <button id="newBuildBtn" class="btn small" type="button" onclick="location.href='/create-build.html'">
+          + New build
+        </button>
+      </div>
+
+      <div id="authMessage" class="sub" style="margin-top:8px"></div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="garage">Garage</button>
+        <button class="tab-btn" data-tab="tickets">Tickets</button>
+        <button class="tab-btn" data-tab="liked-builds">Liked builds</button>
+        <button class="tab-btn" data-tab="liked-sightings">Liked sightings</button>
+        <button class="tab-btn" data-tab="liked-highlights">Liked highlights</button>
+      </div>
+
+      <!-- GARAGE -->
+      <div id="panel-garage" class="tab-panel active">
+        <div id="garageGrid" class="grid cols-3" style="margin-top:18px"></div>
+      </div>
+
+      <!-- TICKETS -->
+      <div id="panel-tickets" class="tab-panel">
+        <div id="ticketsGrid" class="grid cols-2" style="margin-top:18px"></div>
+      </div>
+
+      <!-- LIKED BUILDS -->
+      <div id="panel-liked-builds" class="tab-panel">
+        <div id="likedBuildsGrid" class="grid cols-3" style="margin-top:18px"></div>
+      </div>
+
+      <!-- LIKED SIGHTINGS -->
+      <div id="panel-liked-sightings" class="tab-panel">
+        <div id="likedSightingsGrid" class="grid cols-3" style="margin-top:18px"></div>
+      </div>
+
+      <!-- LIKED HIGHLIGHTS -->
+      <div id="panel-liked-highlights" class="tab-panel">
+        <div id="likedHighlightsGrid" class="grid cols-3" style="margin-top:18px"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id)=>document.getElementById(id);
+
+    function escapeHTML(s){
+      return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // ---- Tabs + lazy load ----
+    const loaded = {
+      garage:false,
+      tickets:false,
+      likedBuilds:false,
+      likedSightings:false,
+      likedHighlights:false
+    };
+
+    function showSkeleton(gridId, count, cols){
+      const grid = $(gridId);
+      if(!grid) return;
+      grid.className = `grid ${cols}`;
+      grid.innerHTML = Array.from({length:count}).map(()=>`
+        <article class="card">
+          <div class="skeleton" style="width:100%;aspect-ratio:16/9"></div>
+          <div class="pad">
+            <div class="skeleton" style="height:14px;width:70%"></div>
+            <div style="height:10px"></div>
+            <div class="skeleton" style="height:12px;width:45%"></div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const tab = btn.dataset.tab;
+
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
+        document.querySelectorAll('.tab-panel').forEach(p=>{
+          p.classList.toggle('active', p.id === `panel-${tab}`);
+        });
+
+        const user = window.__currentUser || null;
+        if(!user) return;
+
+        if(tab === 'garage' && !loaded.garage){ loaded.garage = true; await loadGarage(user); }
+        if(tab === 'tickets' && !loaded.tickets){ loaded.tickets = true; await loadTickets(user); }
+        if(tab === 'liked-builds' && !loaded.likedBuilds){ loaded.likedBuilds = true; await loadLikedBuilds(user); }
+        if(tab === 'liked-sightings' && !loaded.likedSightings){ loaded.likedSightings = true; await loadLikedSightings(user); }
+        if(tab === 'liked-highlights' && !loaded.likedHighlights){ loaded.likedHighlights = true; await loadLikedHighlights(user); }
+      });
+    });
+
+    async function ensureAuthedProfile(){
+      // Delegate to auth-ui.js — opens login modal if not signed in
+      const ok = await authUI.requireLogin();
+      if(!ok){
+        $('authMessage').textContent = 'Sign in to view your profile.';
+        return null;
+      }
+
+      const user = authUI.getUser();
+      if(!user){
+        $('authMessage').textContent = 'Sign in to view your profile.';
+        return null;
+      }
+
+      window.__currentUser = user;
+      $('authMessage').textContent = '';
+
+      const base = user.user_metadata?.full_name || user.email || 'Driver';
+      $('profileTitle').textContent = base;
+      $('profileEmail').textContent = user.email || '';
+      $('profileAvatar').textContent = base.trim().charAt(0).toUpperCase();
+
+      await loadMyTeamPill(user);
+
+      return user;
+    }
+
+    async function loadMyTeamPill(user){
+      const pill = $('myTeamPill');
+      if(!pill) return;
+
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('role, teams:team_id(id,name,is_promoter)')
+        .eq('user_id', user.id);
+
+      if(error || !data){ pill.style.display='none'; return; }
+
+      const active = (data || []).filter(r => r.role && r.role !== 'pending' && r.teams);
+      if(!active.length){ pill.style.display='none'; return; }
+
+      const t = active[0].teams;
+      pill.style.display = 'inline-flex';
+      pill.textContent = `My team: ${t.name || 'Team'}`;
+      pill.onclick = ()=> location.href = `/team.html?id=${encodeURIComponent(t.id)}`;
+      pill.style.cursor = 'pointer';
+    }
+
+    // ---- Loaders ----
+    async function loadGarage(user){
+      const gridId = 'garageGrid';
+      showSkeleton(gridId, 6, 'cols-3');
+
+      const { data, error } = await supabase
+        .from('builds')
+        .select('id,title,thumb_url,build_type,stage,power_goal,is_public,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false });
+
+      const grid = $(gridId);
+      if(error){
+        console.error(error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load builds.</div></article>`;
+        return;
+      }
+      if(!data || !data.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet. Hit "New build" to start your garage.</div></article>`;
+        return;
+      }
+
+      grid.innerHTML = data.map(b=>{
+        const d = b.created_at ? new Date(b.created_at) : null;
+        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}) : "";
+        const badges = [];
+        if(b.build_type) badges.push(b.build_type);
+        if(b.stage) badges.push(`Stage ${b.stage}`);
+        if(b.power_goal) badges.push(`${b.power_goal}hp`);
+        if(!b.is_public) badges.push('Private');
+
+        return `
+          <article class="card">
+            <a href="/build.html?id=${encodeURIComponent(b.id)}">
+              ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
+            </a>
+            <div class="pad">
+              <strong>${escapeHTML(b.title)}</strong>
+              ${when ? `<div class="sub">${escapeHTML(when)}</div>` : ''}
+              <div style="margin-top:6px">
+                ${badges.map(x => `<span class="pill">${escapeHTML(x)}</span>`).join('')}
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function loadTickets(user){
+      const gridId = 'ticketsGrid';
+      showSkeleton(gridId, 4, 'cols-2');
+
+      const rsvpRes = await supabase
+        .from('event_rsvps')
+        .select('event_id,status,created_at')
+        .eq('user_id', user.id)
+        .eq('status','yes')
+        .order('created_at',{ascending:false});
+
+      const grid = $(gridId);
+      if(rsvpRes.error){
+        console.error(rsvpRes.error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load tickets.</div></article>`;
+        return;
+      }
+      const rsvps = rsvpRes.data || [];
+      if(!rsvps.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">No tickets yet — RSVP "Yes" to an event and it'll show up here.</div></article>`;
+        return;
+      }
+
+      const eventIds = [...new Set(rsvps.map(r=>r.event_id))];
+      const evRes = await supabase
+        .from('events')
+        .select('id,title,starts_at,location,cover_url')
+        .in('id', eventIds);
+
+      if(evRes.error){
+        console.error(evRes.error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load events for your tickets.</div></article>`;
+        return;
+      }
+
+      const events = evRes.data || [];
+      const map = new Map(events.map(e=>[e.id,e]));
+
+      const latestByEvent = new Map();
+      rsvps.forEach(r=>{
+        const prev = latestByEvent.get(r.event_id);
+        if(!prev || new Date(r.created_at) > new Date(prev.created_at)){
+          latestByEvent.set(r.event_id,r);
+        }
+      });
+
+      const rows = [];
+      latestByEvent.forEach((r,eventId)=>{
+        const ev = map.get(eventId);
+        if(ev) rows.push({rsvp:r,event:ev});
+      });
+
+      rows.sort((a,b)=>{
+        const da = a.event.starts_at ? new Date(a.event.starts_at) : new Date(0);
+        const db = b.event.starts_at ? new Date(b.event.starts_at) : new Date(0);
+        return da-db;
+      });
+
+      grid.innerHTML = rows.map(({rsvp,event})=>{
+        const d = event.starts_at ? new Date(event.starts_at) : null;
+        const m = d ? d.toLocaleString("en-US",{month:"short"}).toUpperCase() : "--";
+        const day = d ? String(d.getDate()).padStart(2,"0") : "--";
+        const when = d ? d.toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit"}) : "";
+        const loc = event.location ? `${when ? when + " • " : ""}${event.location}` : when;
+        const booked = new Date(rsvp.created_at).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric"});
+
+        return `
+          <article class="card">
+            ${event.cover_url ? `<img src="${escapeHTML(event.cover_url)}" alt="${escapeHTML(event.title)}" loading="lazy">` : ''}
+            <div class="pad">
+              <div class="row" style="margin-bottom:6px">
+                <div style="display:flex;gap:10px;align-items:center">
+                  <div style="background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:60px;text-align:center">
+                    <div style="font-family:'Bebas Neue';font-size:20px">${m}</div>
+                    <div style="font-family:'Bebas Neue';font-size:24px">${day}</div>
+                  </div>
+                  <div>
+                    <strong>${escapeHTML(event.title)}</strong>
+                    ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ''}
+                  </div>
+                </div>
+                <span class="pill">RSVP: ${escapeHTML(String(rsvp.status || '').toUpperCase())}</span>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <span class="sub">Booked on ${escapeHTML(booked)}</span>
+                <a class="btn small" href="/event.html?id=${encodeURIComponent(event.id)}">View event</a>
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function loadLikedBuilds(user){
+      const gridId = 'likedBuildsGrid';
+      showSkeleton(gridId, 6, 'cols-3');
+
+      const { data, error } = await supabase
+        .from('build_likes')
+        .select(`
+          id,
+          created_at,
+          builds (
+            id,
+            title,
+            thumb_url,
+            build_type,
+            stage,
+            power_goal,
+            is_public,
+            created_at
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at',{ascending:false});
+
+      const grid = $(gridId);
+      if(error){
+        console.error(error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load liked builds.</div></article>`;
+        return;
+      }
+
+      const rows = (data || []).filter(r=>r.builds);
+      if(!rows.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">You haven't liked any builds yet.</div></article>`;
+        return;
+      }
+
+      grid.innerHTML = rows.map(r=>{
+        const b = r.builds;
+        const d = b.created_at ? new Date(b.created_at) : null;
+        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}) : "";
+        const badges = [];
+        if(b.build_type) badges.push(b.build_type);
+        if(b.stage) badges.push(`Stage ${b.stage}`);
+        if(b.power_goal) badges.push(`${b.power_goal}hp`);
+        if(!b.is_public) badges.push('Private');
+
+        return `
+          <article class="card">
+            <a href="/build.html?id=${encodeURIComponent(b.id)}">
+              ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
+            </a>
+            <div class="pad">
+              <strong>${escapeHTML(b.title)}</strong>
+              ${when ? `<div class="sub">${escapeHTML(when)}</div>` : ''}
+              <div style="margin-top:6px">
+                ${badges.map(x=>`<span class="pill">${escapeHTML(x)}</span>`).join('')}
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function loadLikedSightings(user){
+      const gridId = 'likedSightingsGrid';
+      showSkeleton(gridId, 6, 'cols-3');
+
+      const { data, error } = await supabase
+        .from('sighting_likes')
+        .select(`
+          id,
+          created_at,
+          sightings (
+            id,
+            title,
+            image_url,
+            location,
+            parish,
+            created_at
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at',{ascending:false});
+
+      const grid = $(gridId);
+      if(error){
+        console.error(error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load liked sightings.</div></article>`;
+        return;
+      }
+
+      const rows = (data || []).filter(r=>r.sightings);
+      if(!rows.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">You haven't liked any sightings yet.</div></article>`;
+        return;
+      }
+
+      grid.innerHTML = rows.map(r=>{
+        const s = r.sightings;
+        const d = s.created_at ? new Date(s.created_at) : null;
+        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}) : "";
+        const loc = s.location || s.parish || "";
+
+        return `
+          <article class="card">
+            <a href="/sighting.html?id=${encodeURIComponent(s.id)}">
+              ${s.image_url ? `<img src="${escapeHTML(s.image_url)}" alt="${escapeHTML(s.title || 'Car sighting')}" loading="lazy">` : ''}
+            </a>
+            <div class="pad">
+              <strong>${escapeHTML(s.title || 'Untitled sighting')}</strong>
+              ${loc ? `<div class="sub">${escapeHTML(loc)}</div>` : ''}
+              <div style="margin-top:6px">
+                ${when ? `<span class="pill">${escapeHTML(when)}</span>` : ''}
+                ${s.parish ? `<span class="pill">${escapeHTML(s.parish)}</span>` : ''}
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function loadLikedHighlights(user){
+      const gridId = 'likedHighlightsGrid';
+      showSkeleton(gridId, 6, 'cols-3');
+
+      const { data, error } = await supabase
+        .from('highlight_likes')
+        .select(`
+          id,
+          created_at,
+          highlights (
+            id,
+            title,
+            cover_url,
+            category,
+            excerpt,
+            created_at
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at',{ascending:false});
+
+      const grid = $(gridId);
+      if(error){
+        console.error(error);
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load liked highlights.</div></article>`;
+        return;
+      }
+
+      const rows = (data || []).filter(r=>r.highlights);
+      if(!rows.length){
+        grid.innerHTML = `<article class="card"><div class="pad sub">You haven't liked any highlights yet.</div></article>`;
+        return;
+      }
+
+      grid.innerHTML = rows.map(r=>{
+        const h = r.highlights;
+        const d = h.created_at ? new Date(h.created_at) : null;
+        const when = d ? d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}) : "";
+
+        return `
+          <article class="card">
+            <a href="/highlight.html?id=${encodeURIComponent(h.id)}">
+              ${h.cover_url ? `<img src="${escapeHTML(h.cover_url)}" alt="${escapeHTML(h.title)}" loading="lazy">` : ''}
+            </a>
+            <div class="pad">
+              <strong>${escapeHTML(h.title)}</strong>
+              ${h.excerpt ? `<div class="sub">${escapeHTML(h.excerpt)}</div>` : ''}
+              <div style="margin-top:6px">
+                ${h.category ? `<span class="pill">${escapeHTML(h.category)}</span>` : ''}
+                ${when ? `<span class="pill">${escapeHTML(when)}</span>` : ''}
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      // seed skeleton for first tab so it feels instant
+      showSkeleton('garageGrid', 6, 'cols-3');
+
+      const user = await ensureAuthedProfile();
+      if(!user){
+        $('garageGrid').innerHTML = `<article class="card"><div class="pad sub">Sign in to view your profile.</div></article>`;
+        $('ticketsGrid').innerHTML = '';
+        $('likedBuildsGrid').innerHTML = '';
+        $('likedSightingsGrid').innerHTML = '';
+        $('likedHighlightsGrid').innerHTML = '';
+        return;
+      }
+
+      // Load only Garage initially (lazy-load others on tab click)
+      loaded.garage = true;
+      await loadGarage(user);
+
+      // auth-ui.js owns onAuthStateChange — subscribe via onChange instead
+      authUI.onChange(async ()=>{
+        // If user signs out, clear profile state
+        const u = authUI.getUser();
+        if(!u){
+          window.__currentUser = null;
+          $('profileTitle').textContent = 'My profile';
+          $('profileEmail').textContent = '';
+          $('profileAvatar').textContent = 'U';
+          $('garageGrid').innerHTML = `<article class="card"><div class="pad sub">Sign in to view your profile.</div></article>`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

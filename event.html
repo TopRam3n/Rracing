@@ -11,18 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Supabase -->
+  <!-- ✅ Shared Supabase client + auth UI -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-    });
-  </script>
-
-  <!-- Shared auth (optional, if present) -->
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -64,7 +55,6 @@
     .container{ width: min(1100px, 100% - 32px); margin:0 auto; }
     @media (min-width:1280px){ .container{ width:min(1200px, 100% - 64px); } }
 
-    /* ===== Nav (matched to index vibe) ===== */
     .nav-wrapper{
       position: sticky; top:0; z-index: 50;
       backdrop-filter: blur(16px);
@@ -83,10 +73,7 @@
       gap:18px;
     }
 
-    .logo{
-      display:flex; align-items:center; gap:10px;
-      letter-spacing:0.04em;
-    }
+    .logo{ display:flex; align-items:center; gap:10px; letter-spacing:0.04em; }
     .logo-mark{
       width:36px; height:36px; border-radius:999px;
       border:1px solid rgba(24,201,100,0.7);
@@ -203,9 +190,7 @@
       font-size:10px; text-transform:uppercase; letter-spacing:.14em;
       padding:3px 8px; border-radius:999px;
       border:1px solid rgba(255,255,255,0.16);
-      color:var(--text-muted);
-      background:rgba(0,0,0,0.25);
-      white-space:nowrap;
+      color:var(--text-muted); background:rgba(0,0,0,0.25); white-space:nowrap;
     }
 
     @media (max-width: 860px){
@@ -213,11 +198,7 @@
       .logo-text-sub{ display:none; }
     }
 
-    /* ===== Page layout ===== */
-    .page{
-      min-height: 100vh;
-      position:relative;
-    }
+    .page{ min-height: 100vh; position:relative; }
     .page::after{
       content:""; position:fixed; inset-inline:0; bottom:-120px; height:220px;
       background: radial-gradient(circle at bottom, rgba(24, 201, 100, 0.22), transparent 60%);
@@ -238,7 +219,6 @@
     h1,h2{ font-family:"Bebas Neue"; letter-spacing:2px; text-transform:uppercase; }
     h2{ font-size:36px; margin-bottom:12px; }
 
-    /* ===== Premium event header (unique cool feature) ===== */
     .event-header{
       display:grid;
       grid-template-columns: 1.25fr 1fr;
@@ -246,48 +226,33 @@
       align-items:stretch;
       padding:14px;
     }
-    @media (max-width:900px){
-      .event-header{ grid-template-columns:1fr; }
-    }
+    @media (max-width:900px){ .event-header{ grid-template-columns:1fr; } }
 
     .poster{
       border-radius: 18px;
       overflow:hidden;
       border:1px solid rgba(255,255,255,0.08);
       position:relative;
-      height: 320px; /* controlled cover size */
+      height: 320px;
       background: #0b0b10;
     }
-    @media (max-width:600px){
-      .poster{ height:240px; }
-    }
+    @media (max-width:600px){ .poster{ height:240px; } }
     .poster::after{
-      content:"";
-      position:absolute; inset:0;
+      content:""; position:absolute; inset:0;
       background:
         radial-gradient(circle at 15% 10%, rgba(255,217,59,0.22), transparent 55%),
         radial-gradient(circle at 85% 85%, rgba(24,201,100,0.25), transparent 55%),
         linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.55));
       pointer-events:none;
     }
-    .poster img{
-      width:100%; height:100%;
-      object-fit:cover;
-      transform: scale(1.02);
-    }
+    .poster img{ width:100%; height:100%; object-fit:cover; transform: scale(1.02); }
     .poster-badge{
-      position:absolute;
-      left:12px; bottom:12px;
-      z-index:2;
+      position:absolute; left:12px; bottom:12px; z-index:2;
       display:inline-flex; align-items:center; gap:8px;
-      border-radius:999px;
-      padding:6px 10px;
+      border-radius:999px; padding:6px 10px;
       border:1px solid rgba(255,255,255,0.18);
       background: rgba(0,0,0,0.55);
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:0.18em;
-      color:#fff;
+      font-size:10px; text-transform:uppercase; letter-spacing:0.18em; color:#fff;
       backdrop-filter: blur(10px);
     }
     .poster-badge .dot{
@@ -305,48 +270,30 @@
       overflow:hidden;
     }
     .event-panel::before{
-      content:"";
-      position:absolute; inset:-30%;
+      content:""; position:absolute; inset:-30%;
       background:
         radial-gradient(circle at 10% 10%, rgba(255,217,59,0.12), transparent 50%),
         radial-gradient(circle at 90% 90%, rgba(24,201,100,0.18), transparent 50%);
-      opacity:0.9;
-      pointer-events:none;
+      opacity:0.9; pointer-events:none;
     }
     .event-panel > *{ position:relative; z-index:1; }
 
-    .event-title{
-      font-size:46px;
-      line-height:0.95;
-      margin-bottom:10px;
-    }
-    @media (max-width:600px){
-      .event-title{ font-size:38px; }
-    }
+    .event-title{ font-size:46px; line-height:0.95; margin-bottom:10px; }
+    @media (max-width:600px){ .event-title{ font-size:38px; } }
 
     .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
     .chip{
       display:inline-flex; align-items:center; gap:8px;
-      border-radius:999px;
-      padding:7px 11px;
+      border-radius:999px; padding:7px 11px;
       border:1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.02);
-      font-size:12px;
-      color: var(--text-muted);
-      letter-spacing:0.10em;
-      text-transform:uppercase;
-      white-space:nowrap;
+      font-size:12px; color: var(--text-muted);
+      letter-spacing:0.10em; text-transform:uppercase; white-space:nowrap;
     }
     .chip strong{ color:#fff; font-weight:700; letter-spacing:0.06em; text-transform:none; }
 
-    .desc{
-      margin-top:12px;
-      color: var(--text-muted);
-      font-size:14px;
-      line-height:1.45;
-    }
+    .desc{ margin-top:12px; color: var(--text-muted); font-size:14px; line-height:1.45; }
 
-    /* RSVP rail */
     .rsvp-rail{
       margin-top:14px;
       border-radius: 16px;
@@ -360,16 +307,8 @@
       align-items:center; justify-content:space-between;
       margin-bottom:10px;
     }
-    .rsvp-title{
-      font-size:12px;
-      letter-spacing:0.18em;
-      text-transform:uppercase;
-      color: var(--text-muted);
-    }
+    .rsvp-title{ font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color: var(--text-muted); }
     .rsvp-status{ font-size:12px; color: var(--text-muted); }
-    .rsvp-actions{
-      display:flex; gap:8px; flex-wrap:wrap;
-    }
     .btn-xs{ padding:6px 12px; font-size:10px; letter-spacing:0.16em; }
     .btn-outline-light{
       border-color: rgba(255,255,255,0.24);
@@ -390,7 +329,6 @@
       font-size:14px;
     }
 
-    /* Tickets */
     .info-block{
       margin-top:12px;
       border-radius:16px;
@@ -398,41 +336,24 @@
       background: rgba(0,0,0,0.22);
       padding:12px;
     }
-    .info-title{
-      font-size:12px;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      color:var(--text-muted);
-      margin-bottom:8px;
-    }
-    .pay-row{
-      display:flex; gap:10px; flex-wrap:wrap;
-      align-items:center; justify-content:space-between;
-    }
+    .info-title{ font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+    .pay-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .btn-yellow{
       background: radial-gradient(circle at top left, #ffe58a, var(--accent-secondary));
-      color:#111;
-      border-color: rgba(255,217,59,0.7);
+      color:#111; border-color: rgba(255,217,59,0.7);
       box-shadow: 0 0 18px rgba(255,217,59,0.25);
       font-weight:800;
     }
-    .btn-yellow:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 0 26px rgba(255,217,59,0.32);
-    }
+    .btn-yellow:hover{ transform: translateY(-1px); box-shadow: 0 0 26px rgba(255,217,59,0.32); }
 
     .code-pill{
       display:inline-flex; align-items:center; gap:8px;
-      border-radius:999px;
-      padding:8px 12px;
+      border-radius:999px; padding:8px 12px;
       border:1px solid rgba(255,217,59,.25);
       background: rgba(255,217,59,.08);
-      font-weight:900;
-      letter-spacing:.12em;
-      text-transform:uppercase;
+      font-weight:900; letter-spacing:.12em; text-transform:uppercase;
     }
 
-    /* Team badge */
     .team-badge{
       display:flex; gap:10px; align-items:center; flex-wrap:wrap;
       border:1px solid rgba(255,255,255,.10);
@@ -442,26 +363,17 @@
     }
     .team-badge img{
       width:28px; height:28px; border-radius:8px;
-      object-fit:cover;
-      border:1px solid rgba(255,255,255,.12);
+      object-fit:cover; border:1px solid rgba(255,255,255,.12);
     }
     .team-badge .pill{
       display:inline-flex; align-items:center;
       padding:5px 10px; border-radius:999px;
-      background: var(--accent-secondary);
-      color:#111;
-      font-size:12px;
-      border:1px solid rgba(255,217,59,.65);
-      font-weight:900;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
+      background: var(--accent-secondary); color:#111;
+      font-size:12px; border:1px solid rgba(255,217,59,.65);
+      font-weight:900; letter-spacing:0.08em; text-transform:uppercase;
     }
 
-    /* Comments */
-    .comment-form{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin:10px 0 16px;
-    }
+    .comment-form{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 16px; }
     .comment-form .input{ flex:1; min-width: 220px; }
     .comment{
       border-top:1px solid rgba(255,255,255,0.06);
@@ -469,21 +381,16 @@
     }
     .comment .meta{
       display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
-      font-size:12px; color:var(--text-muted);
-      margin-bottom:8px;
+      font-size:12px; color:var(--text-muted); margin-bottom:8px;
     }
     .comment .actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
 
-    /* Blur-up */
     .blur-up{
       filter: blur(18px);
       transform: scale(1.03);
       transition: filter 350ms ease, transform 350ms ease;
     }
-    .blur-up.is-loaded{
-      filter: blur(0);
-      transform: scale(1.02);
-    }
+    .blur-up.is-loaded{ filter: blur(0); transform: scale(1.02); }
   </style>
 </head>
 
@@ -511,6 +418,7 @@
           <a href="/store.html">Store</a>
         </nav>
 
+        <!-- ✅ auth-ui.js wires all these by ID -->
         <div class="nav-cta">
           <span class="pill-viewing">👀 <span id="viewerCount">0</span> viewing</span>
 
@@ -568,6 +476,8 @@
     </main>
   </div>
 
+  <!-- ✅ NO inline auth modal — auth-ui.js injects it -->
+
   <script>
     const eventId = new URLSearchParams(location.search).get('id');
     const el = (id)=>document.getElementById(id);
@@ -578,8 +488,7 @@
 
     function fmt(d){
       if(!d) return "TBA";
-      const dt = new Date(d);
-      return dt.toLocaleString(undefined,{
+      return new Date(d).toLocaleString(undefined,{
         weekday:'short',month:'short',day:'2-digit',
         hour:'numeric',minute:'2-digit'
       });
@@ -590,7 +499,6 @@
       return msg.includes("column") && msg.includes("does not exist");
     }
 
-    // RSVP code generator: RR-8F3K2
     function generateRsvpCode(){
       const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let out = "RR-";
@@ -598,7 +506,6 @@
       return out;
     }
 
-    // ---------- Premium helpers ----------
     function applyBlurUp(img){
       if(!img) return;
       img.classList.add('blur-up');
@@ -608,142 +515,67 @@
       img.addEventListener('error', done, { once:true });
     }
 
-    // ---------- AUTH + NAV ----------
+    // ===== Nav solid on scroll =====
     const navWrapper = el('navWrapper');
     function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }
     updateNavSolid();
     window.addEventListener('scroll', updateNavSolid, { passive:true });
 
-    const loginBtn = el('loginBtn');
-    const joinBtn = el('joinBtn');
-    const profileMenu = el('profileMenu');
-    const profileChip = el('profileChip');
-    const dropdown = el('dropdown');
-    const initialsEl = el('profileInitials');
-    const ddEmail = el('ddEmail');
-    const signoutBtn = el('signoutBtn');
-
-    function setDropdownOpen(open){
-      if(!dropdown || !profileChip) return;
-      dropdown.classList.toggle('open', !!open);
-      profileChip.setAttribute("aria-expanded", open ? "true" : "false");
-    }
-    profileChip?.addEventListener('click', (e)=>{ e.stopPropagation(); setDropdownOpen(!dropdown.classList.contains('open')); });
-    dropdown?.addEventListener('click', (e)=> e.stopPropagation());
-    document.addEventListener('click', ()=> setDropdownOpen(false));
-
-    signoutBtn?.addEventListener('click', async ()=>{
-      await supabase.auth.signOut();
-      setDropdownOpen(false);
-    });
-
-    function initialsFromEmail(email){
-      const raw = (email || "").split("@")[0] || "u";
-      const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
-      const parts = cleaned.split(" ").filter(Boolean);
-      let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
-      return (initials || 'U').toUpperCase();
-    }
-
-    function openAuth(mode){
-      // If you have a shared modal system in auth-ui.js, it can hook here.
-      // For now: fallback to simple prompt-based login to avoid blocking.
-      // BUT: if your auth-ui.js exposes authUI.openAuth, use it.
-      if (window.authUI?.openAuth) return window.authUI.openAuth(mode);
-
-      alert("Use the homepage Log In / Join to sign in (auth modal). Then come back here.");
-    }
-
-    loginBtn?.addEventListener('click', ()=> openAuth('login'));
-    joinBtn?.addEventListener('click', ()=> openAuth('signup'));
-
-    async function updateAuthUI(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user){
-        loginBtn.style.display = "none";
-        joinBtn.style.display = "none";
-        profileMenu.style.display = "flex";
-        initialsEl.textContent = initialsFromEmail(user.email);
-        if (ddEmail) ddEmail.textContent = user.email || '—';
-      } else {
-        loginBtn.style.display = "inline-flex";
-        joinBtn.style.display = "inline-flex";
-        profileMenu.style.display = "none";
-        setDropdownOpen(false);
-      }
-    }
-
-    // Unified requireLogin
+    // ===== requireLogin via authUI =====
+    // ✅ Delegates to auth-ui.js — no inline modal needed
     async function requireLogin(callback){
+      const loggedIn = await authUI.requireLogin();
+      if (!loggedIn) return false;
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user){
-        openAuth('login');
-        return false;
-      }
       if (callback) callback(user);
       return true;
     }
 
-    // ---------- FK FIX: Ensure referenced user row exists ----------
+    // ===== FK FIX: Ensure referenced user row exists =====
     async function ensureUserRow(user){
       if(!user?.id) return;
-
-      // Try profiles first (most common pattern)
       try{
-        const { error } = await supabase
-          .from('profiles')
-          .upsert({
-            id: user.id,
-            email: user.email || null,
-            updated_at: new Date().toISOString()
-          }, { onConflict:'id' });
-
+        const { error } = await supabase.from('profiles').upsert({
+          id: user.id, email: user.email || null, updated_at: new Date().toISOString()
+        }, { onConflict:'id' });
         if (!error) return;
       } catch {}
-
-      // Fallback: some schemas use a custom users table with FK target
       try{
-        await supabase
-          .from('users')
-          .upsert({
-            id: user.id,
-            email: user.email || null,
-            updated_at: new Date().toISOString()
-          }, { onConflict:'id' });
+        await supabase.from('users').upsert({
+          id: user.id, email: user.email || null, updated_at: new Date().toISOString()
+        }, { onConflict:'id' });
       } catch {}
     }
 
-    // ---------- Page state ----------
+    // ===== Page state =====
     let currentUserId = null;
 
     async function syncPageAuth(){
       const { data: { user } } = await supabase.auth.getUser();
       currentUserId = user?.id || null;
-
-      // Ensure FK target row exists once logged in
       if (user) await ensureUserRow(user);
-
       el('commentForm').style.display = user ? 'flex' : 'none';
     }
 
-    supabase.auth.onAuthStateChange(async ()=>{
-      await syncPageAuth();
-      await updateAuthUI();
-      await loadMyRsvp();
-      await loadMyBuilds();
-    });
+    // ✅ Auth state changes handled by auth-ui.js onAuthStateChange
+    // We use authUI.onChange to react to auth changes on this page
+    if (window.authUI){
+      authUI.onChange(async ()=>{
+        await syncPageAuth();
+        await loadMyRsvp();
+        await loadMyBuilds();
+      });
+    }
 
-    // ---------- Team badge ----------
+    // ===== Team badge =====
     async function renderTeamForEvent(eventRow){
       const host = el('eventTeamBadge');
       if(!host) return;
       if(!eventRow?.team_id){ host.style.display='none'; return; }
 
       const { data: team, error: tErr } = await supabase
-        .from('teams')
-        .select('id,name,logo_url,is_promoter')
-        .eq('id', eventRow.team_id)
-        .maybeSingle();
+        .from('teams').select('id,name,logo_url,is_promoter')
+        .eq('id', eventRow.team_id).maybeSingle();
 
       if(tErr || !team){ host.style.display='none'; return; }
 
@@ -754,15 +586,13 @@
           <div style="font-weight:900; letter-spacing:.04em">${escapeHTML(team.name)}</div>
           ${team.is_promoter ? `<span class="pill">Promoter</span>` : ``}
           <a class="btn btn-ghost btn-pill-sm" href="/team.html?id=${team.id}" style="margin-left:auto">View</a>
-        </div>
-      `;
+        </div>`;
 
-      // blur-up team logo if present
       const tImg = host.querySelector('.team-logo');
       if(tImg) applyBlurUp(tImg);
     }
 
-    // ---------- Event render ----------
+    // ===== Event render =====
     async function loadEvent(){
       const card = el('eventCard');
       if(!eventId){
@@ -771,14 +601,8 @@
       }
 
       const { data, error } = await supabase.from('events')
-        .select(`
-          id,title,starts_at,ends_at,location,description,cover_url,
-          created_by,team_id,
-          payment_url,payment_label,payment_instructions,
-          teams:team_id(id,name,is_promoter,logo_url)
-        `)
-        .eq('id', eventId)
-        .maybeSingle();
+        .select(`id,title,starts_at,ends_at,location,description,cover_url,created_by,team_id,payment_url,payment_label,payment_instructions,teams:team_id(id,name,is_promoter,logo_url)`)
+        .eq('id', eventId).maybeSingle();
 
       if(error || !data){
         card.innerHTML = `<div class="pad muted">Event not found.</div>`;
@@ -811,7 +635,6 @@
 
             ${data.description ? `<div class="desc">${escapeHTML(data.description).replace(/\n/g,'<br>')}</div>` : `<div class="desc">No description yet.</div>`}
 
-            <!-- Tickets -->
             <div id="paymentBlock" class="info-block" style="${hasPay ? '' : 'display:none'}">
               <div class="info-title">Tickets</div>
               <div class="pay-row">
@@ -824,7 +647,6 @@
               </div>
             </div>
 
-            <!-- RSVP code -->
             <div id="rsvpCodeBlock" class="info-block" style="display:none">
               <div class="info-title">Your RSVP code</div>
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -839,7 +661,6 @@
               </div>
             </div>
 
-            <!-- RSVP rail -->
             <div class="rsvp-rail" id="rsvp">
               <div class="rsvp-top">
                 <div class="rsvp-title">RSVP + Attach Build</div>
@@ -862,16 +683,12 @@
                 </div>
               </div>
             </div>
-
           </div>
-        </div>
-      `;
+        </div>`;
 
-      // Blur-up cover
       const coverImg = el('coverImg');
       if (coverImg) applyBlurUp(coverImg);
 
-      // Wire payment button
       const payBtn = el('payNowBtn');
       if (payBtn && data.payment_url){
         payBtn.onclick = ()=> {
@@ -880,7 +697,7 @@
         };
       }
 
-      // Wire RSVP buttons
+      // ✅ RSVP buttons use authUI.requireLogin
       document.querySelectorAll('[data-rsvp]').forEach(btn=>{
         btn.addEventListener('click', ()=> requireLogin(async (user)=> {
           await ensureUserRow(user);
@@ -898,21 +715,13 @@
       }
     }
 
-    // ---------- RSVP ----------
+    // ===== RSVP =====
     async function refreshRsvpCounts(){
       const countsEl = el('rsvpCounts');
       if(!countsEl || !eventId) return;
-
-      const { data, error } = await supabase
-        .from('event_rsvp_counts')
-        .select('yes_count,maybe_count,no_count')
-        .eq('event_id', eventId)
-        .maybeSingle();
-
-      if(error || !data){
-        countsEl.textContent = '';
-        return;
-      }
+      const { data, error } = await supabase.from('event_rsvp_counts')
+        .select('yes_count,maybe_count,no_count').eq('event_id', eventId).maybeSingle();
+      if(error || !data){ countsEl.textContent = ''; return; }
       countsEl.textContent = `✅ ${data.yes_count} going • 🤔 ${data.maybe_count} maybe • ❌ ${data.no_count} not going`;
     }
 
@@ -920,31 +729,19 @@
       const block = el('rsvpCodeBlock');
       const text = el('rsvpCodeText');
       if(!block || !text) return;
-
-      if(!code){
-        block.style.display = 'none';
-        return;
-      }
-
+      if(!code){ block.style.display = 'none'; return; }
       block.style.display = 'block';
       text.textContent = code;
 
       el('copyRsvpCode')?.addEventListener('click', async ()=>{
-        try{
-          await navigator.clipboard.writeText(code);
-          alert('RSVP code copied.');
-        }catch{
-          prompt('Copy your RSVP code:', code);
-        }
+        try{ await navigator.clipboard.writeText(code); alert('RSVP code copied.'); }
+        catch{ prompt('Copy your RSVP code:', code); }
       }, { once:true });
 
       el('shareRsvpCode')?.addEventListener('click', async ()=>{
         const msg = `ROK Racers RSVP Code: ${code}`;
-        if (navigator.share){
-          try{ await navigator.share({ text: msg }); }catch{}
-        } else {
-          prompt('Share this RSVP code:', msg);
-        }
+        if (navigator.share){ try{ await navigator.share({ text: msg }); }catch{} }
+        else { prompt('Share this RSVP code:', msg); }
       }, { once:true });
     }
 
@@ -952,39 +749,25 @@
       const { data: { user } } = await supabase.auth.getUser();
       const badge = el('rsvpStatus');
       const sel = el('attachBuild');
-
       if(!user){
         if(badge) badge.textContent = '';
         if(sel) sel.value = '';
         showRsvpCodeUI(null);
         return;
       }
-
       await ensureUserRow(user);
 
       let rsvpRow = null;
-
-      const res = await supabase
-        .from('event_rsvps')
-        .select('status, build_id, rsvp_code')
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const res = await supabase.from('event_rsvps')
+        .select('status, build_id, rsvp_code').eq('event_id', eventId).eq('user_id', user.id).maybeSingle();
 
       if(res.error && isMissingColumnError(res.error)){
-        const res2 = await supabase
-          .from('event_rsvps')
-          .select('status, build_id')
-          .eq('event_id', eventId)
-          .eq('user_id', user.id)
-          .maybeSingle();
+        const res2 = await supabase.from('event_rsvps')
+          .select('status, build_id').eq('event_id', eventId).eq('user_id', user.id).maybeSingle();
         if(res2.error) return;
         rsvpRow = res2.data;
-      } else if(res.error){
-        return;
-      } else {
-        rsvpRow = res.data;
-      }
+      } else if(res.error){ return; }
+      else { rsvpRow = res.data; }
 
       if(rsvpRow){
         if(badge) badge.textContent = `Your RSVP: ${rsvpRow.status}`;
@@ -998,20 +781,13 @@
     }
 
     async function ensureRsvpCodeIfNew(userId){
-      const existingRes = await supabase
-        .from('event_rsvps')
-        .select('status, build_id, rsvp_code')
-        .eq('event_id', eventId)
-        .eq('user_id', userId)
-        .maybeSingle();
+      const existingRes = await supabase.from('event_rsvps')
+        .select('status, build_id, rsvp_code').eq('event_id', eventId).eq('user_id', userId).maybeSingle();
 
       if(existingRes.error && isMissingColumnError(existingRes.error)){
         return { existing: existingRes.data || null, code: null, columnMissing: true };
       }
-      if(existingRes.error){
-        return { existing: null, code: null, columnMissing: false };
-      }
-
+      if(existingRes.error){ return { existing: null, code: null, columnMissing: false }; }
       if(existingRes.data?.rsvp_code){
         return { existing: existingRes.data, code: existingRes.data.rsvp_code, columnMissing:false };
       }
@@ -1019,14 +795,9 @@
       for (let attempt=0; attempt<6; attempt++){
         const code = generateRsvpCode();
         if(existingRes.data){
-          const upd = await supabase
-            .from('event_rsvps')
-            .update({ rsvp_code: code })
-            .eq('event_id', eventId)
-            .eq('user_id', userId);
-
+          const upd = await supabase.from('event_rsvps').update({ rsvp_code: code })
+            .eq('event_id', eventId).eq('user_id', userId);
           if(!upd.error) return { existing: existingRes.data, code, columnMissing:false };
-
           const msg = (upd.error?.message || "").toLowerCase();
           if(msg.includes('duplicate') || msg.includes('unique')) continue;
           return { existing: existingRes.data, code:null, columnMissing:false };
@@ -1039,102 +810,54 @@
 
     async function upsertRsvp(newStatus){
       const { data: { user } } = await supabase.auth.getUser();
-      if(!user){
-        alert('Sign in first.');
-        return;
-      }
-
+      if(!user){ alert('Sign in first.'); return; }
       await ensureUserRow(user);
 
       const buildId = el('attachBuild')?.value || null;
       const codeInfo = await ensureRsvpCodeIfNew(user.id);
 
       if (codeInfo.existing){
-        const { error } = await supabase
-          .from('event_rsvps')
-          .upsert({
-            event_id: eventId,
-            user_id: user.id,
-            status: newStatus,
-            build_id: buildId || null
-          }, { onConflict: 'event_id,user_id' });
-
-        if(error){
-          alert('RSVP failed: ' + error.message);
-          return;
-        }
+        const { error } = await supabase.from('event_rsvps')
+          .upsert({ event_id: eventId, user_id: user.id, status: newStatus, build_id: buildId || null }, { onConflict: 'event_id,user_id' });
+        if(error){ alert('RSVP failed: ' + error.message); return; }
       } else {
-        const payload = {
-          event_id: eventId,
-          user_id: user.id,
-          status: newStatus,
-          build_id: buildId || null
-        };
-
+        const payload = { event_id: eventId, user_id: user.id, status: newStatus, build_id: buildId || null };
         if (!codeInfo.columnMissing && codeInfo.code) payload.rsvp_code = codeInfo.code;
-
-        const { error } = await supabase
-          .from('event_rsvps')
-          .upsert(payload, { onConflict: 'event_id,user_id' });
-
+        const { error } = await supabase.from('event_rsvps').upsert(payload, { onConflict: 'event_id,user_id' });
         if(error){
           if (isMissingColumnError(error)){
             delete payload.rsvp_code;
-            const { error: e2 } = await supabase
-              .from('event_rsvps')
-              .upsert(payload, { onConflict: 'event_id,user_id' });
+            const { error: e2 } = await supabase.from('event_rsvps').upsert(payload, { onConflict: 'event_id,user_id' });
             if (e2){ alert('RSVP failed: ' + e2.message); return; }
           } else {
-            alert('RSVP failed: ' + error.message);
-            return;
+            alert('RSVP failed: ' + error.message); return;
           }
         }
       }
-
       await loadMyRsvp();
       await refreshRsvpCounts();
     }
 
-    // ---------- BUILDS (public OWNED only) ----------
+    // ===== BUILDS =====
     async function loadMyBuilds(){
       const { data: { user } } = await supabase.auth.getUser();
       const sel = el('attachBuild');
       if(!user || !sel) return;
-
       await ensureUserRow(user);
 
-      // Try: builds has build_type
-      const attempt1 = await supabase
-        .from('builds')
-        .select('id,title,is_public,build_type,created_at')
-        .eq('user_id', user.id)
-        .eq('is_public', true)
-        .or('build_type.eq.Owned,build_type.eq.owned')
-        .order('created_at', { ascending:false });
+      const attempt1 = await supabase.from('builds')
+        .select('id,title,is_public,build_type,created_at').eq('user_id', user.id).eq('is_public', true)
+        .or('build_type.eq.Owned,build_type.eq.owned').order('created_at', { ascending:false });
 
       let rows = null;
-
-      if (!attempt1.error){
-        rows = attempt1.data || [];
-      } else if (isMissingColumnError(attempt1.error)){
-        // Fallback if build_type doesn't exist
-        const attempt2 = await supabase
-          .from('builds')
-          .select('id,title,is_public,created_at')
-          .eq('user_id', user.id)
-          .eq('is_public', true)
-          .order('created_at', { ascending:false });
-
+      if (!attempt1.error){ rows = attempt1.data || []; }
+      else if (isMissingColumnError(attempt1.error)){
+        const attempt2 = await supabase.from('builds').select('id,title,is_public,created_at')
+          .eq('user_id', user.id).eq('is_public', true).order('created_at', { ascending:false });
         if (!attempt2.error) rows = attempt2.data || [];
       } else {
-        // If the or() fails due to enum mismatch, fallback to public builds without type filter
-        const attempt3 = await supabase
-          .from('builds')
-          .select('id,title,is_public,build_type,created_at')
-          .eq('user_id', user.id)
-          .eq('is_public', true)
-          .order('created_at', { ascending:false });
-
+        const attempt3 = await supabase.from('builds').select('id,title,is_public,build_type,created_at')
+          .eq('user_id', user.id).eq('is_public', true).order('created_at', { ascending:false });
         if (!attempt3.error) rows = attempt3.data || [];
       }
 
@@ -1142,13 +865,12 @@
         sel.innerHTML = `<option value="">— No public owned builds yet —</option>`;
         return;
       }
-
       sel.innerHTML = `<option value="">— None —</option>` + rows.map(b =>
         `<option value="${b.id}">${escapeHTML(b.title || 'Untitled build')}</option>`
       ).join('');
     }
 
-    // ---------- COMMENTS ----------
+    // ===== COMMENTS =====
     function renderComment(c){
       const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
       const isOwner = currentUserId && (c.user_id === currentUserId);
@@ -1169,21 +891,13 @@
 
     async function loadComments(){
       const wrap = el('comments');
-      const { data, error } = await supabase
-        .from('comments')
+      const { data, error } = await supabase.from('comments')
         .select('id, body, created_at, user_id, target_type, target_id')
-        .eq('target_type', 'event')
-        .eq('target_id', eventId)
+        .eq('target_type', 'event').eq('target_id', eventId)
         .order('created_at', { ascending:true });
 
-      if(error){
-        wrap.innerHTML = `<div class="pad muted">Couldn’t load comments.</div>`;
-        return;
-      }
-      if(!data || !data.length){
-        wrap.innerHTML = `<div class="pad muted">No comments yet — be the first.</div>`;
-        return;
-      }
+      if(error){ wrap.innerHTML = `<div class="pad muted">Couldn't load comments.</div>`; return; }
+      if(!data || !data.length){ wrap.innerHTML = `<div class="pad muted">No comments yet — be the first.</div>`; return; }
       wrap.innerHTML = `<div id="commentsInner"></div>`;
       el('commentsInner').innerHTML = data.map(renderComment).join('');
     }
@@ -1192,31 +906,14 @@
       const input = el('commentText');
       const text = (input.value || '').trim();
       if(!text) return;
-
       const { data: { user } } = await supabase.auth.getUser();
-      if(!user){
-        openAuth('login');
-        return;
-      }
-
+      if(!user){ authUI.requireLogin(); return; }
       await ensureUserRow(user);
-
-      const { error } = await supabase
-        .from('comments')
-        .insert({
-          user_id: user.id,
-          target_type: 'event',
-          target_id: eventId,
-          body: text
-        });
-
-      if(error){
-        alert("Couldn’t post: " + error.message);
-        return;
-      }
-
+      const { error } = await supabase.from('comments').insert({
+        user_id: user.id, target_type: 'event', target_id: eventId, body: text
+      });
+      if(error){ alert("Couldn't post: " + error.message); return; }
       input.value = "";
-      // live will also insert, but we refresh quickly to keep consistent state
       await loadComments();
     }
 
@@ -1228,7 +925,6 @@
     el('comments')?.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action]');
       if(!btn) return;
-
       const commentEl = e.target.closest('.comment');
       const id = commentEl?.dataset.id;
       const action = btn.dataset.action;
@@ -1237,8 +933,7 @@
         if(!confirm('Delete this comment?')) return;
         const { error } = await supabase.from('comments').delete().eq('id', id);
         if(error) return alert('Delete failed: ' + error.message);
-        await loadComments();
-        return;
+        await loadComments(); return;
       }
 
       if(action === 'edit'){
@@ -1255,30 +950,24 @@
         return;
       }
 
-      if(action === 'cancel'){
-        await loadComments();
-        return;
-      }
+      if(action === 'cancel'){ await loadComments(); return; }
 
       if(action === 'save'){
         const node = e.target.closest('.comment');
         const ta = node.querySelector('textarea');
         const newText = (ta.value || '').trim();
         if(!newText) return alert('Comment cannot be empty.');
-
         const { error } = await supabase.from('comments').update({ body: newText }).eq('id', id);
         if(error) return alert('Update failed: ' + error.message);
-
         await loadComments();
       }
     });
 
-    // Live comments (optional)
+    // ===== Live comments =====
     let commentsChannel;
     function setupLiveComments(){
       if(!eventId) return;
       commentsChannel?.unsubscribe();
-
       commentsChannel = supabase.channel(`comments-${eventId}`)
         .on('postgres_changes',
           { event:'*', schema:'public', table:'comments', filter:`target_id=eq.${eventId}` },
@@ -1290,19 +979,16 @@
         .subscribe();
     }
 
-    // ---------- Presence (viewer count) ----------
+    // ===== Presence =====
     let presenceChannel;
     async function setupPresence(){
       if(!eventId) return;
-
       const { data: { user } } = await supabase.auth.getUser();
       const key = user?.id || `anon-${crypto.getRandomValues(new Uint32Array(1))[0]}`;
-
       presenceChannel?.unsubscribe();
       presenceChannel = supabase.channel(`presence-event-${eventId}`, {
         config: { presence: { key } }
       });
-
       presenceChannel
         .on('presence', { event:'sync' }, ()=>{
           const state = presenceChannel.presenceState();
@@ -1317,10 +1003,10 @@
         });
     }
 
-    // ---------- Boot ----------
+    // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async ()=>{
       await syncPageAuth();
-      await updateAuthUI();
+      // ✅ auth-ui.js handles nav auth UI — no updateAuthUI() needed
 
       await loadEvent();
       await loadComments();

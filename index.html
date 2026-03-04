@@ -9,16 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
+  <!-- ✅ Shared Supabase client (single init, no duplicates) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    });
-  </script>
+  <script src="/supabase-client.js"></script>
 
+  <!-- ✅ Shared auth UI (injects modal, wires nav, exposes authUI) -->
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -27,8 +22,8 @@
       --bg-alt: #111111;
       --bg-card: #141414;
 
-      --accent-main: #128b02;         /* primary green */
-      --accent-secondary: #FFD93B;    /* yellow stays */
+      --accent-main: #128b02;
+      --accent-secondary: #FFD93B;
       --accent-cyan: #FFD93B;
 
       --text-main: #ffffff;
@@ -539,101 +534,8 @@
       .section-header{ flex-direction:column; align-items:flex-start; }
     }
 
-    /* Auth modal */
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.72);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:9999;
-    }
-    .modal{
-      width:min(560px, 96vw);
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(12,12,16,.96);
-      box-shadow: 0 40px 120px -30px rgba(0,0,0,.8);
-      overflow:hidden;
-      backdrop-filter: blur(16px);
-    }
-    .modal-head{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
-    .modal-title{
-      font-family:"Bebas Neue";
-      letter-spacing:2px;
-      text-transform:uppercase;
-      font-size:28px;
-      margin:0;
-    }
-    .modal-close{
-      border:1px solid rgba(255,255,255,.14);
-      background:transparent;
-      color:#fff;
-      border-radius:999px;
-      padding:6px 10px;
-      cursor:pointer;
-    }
-    .modal-body{ padding:16px; display:grid; gap:10px; }
-    .tabs{ display:flex; gap:8px; }
-    .tab{
-      flex:1;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      padding:8px 10px;
-      cursor:pointer;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      font-size:11px;
-      color:var(--text-muted);
-    }
-    .tab.active{
-      color:#fff;
-      border-color: rgba(255,217,59,.35);
-      box-shadow: 0 0 18px rgba(255,217,59,.18);
-    }
-    .field label{ font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px; }
-    .field input, .field select{
-      width:100%;
-      padding:11px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(20,20,24,.9);
-      color:#fff;
-      outline:none;
-      font-size:14px;
-      font-family:inherit;
-    }
-    .auth-msg{ font-size:12px; color:var(--text-muted); min-height:16px; }
-    .auth-msg.ok{ color:#9affc5; }
-    .auth-msg.bad{ color:#ff9a9a; }
-    .btn-wide{ width:100%; justify-content:center; }
-    .divider{
-      display:flex; align-items:center; gap:10px;
-      color: var(--text-muted);
-      font-size:11px; text-transform:uppercase; letter-spacing:.14em;
-      margin:8px 0;
-    }
-    .divider::before,.divider::after{
-      content:""; flex:1; height:1px; background: rgba(255,255,255,.10);
-    }
-    .hint{
-      font-size:12px;
-      color:var(--text-muted);
-      line-height:1.3;
-    }
-    .hint strong{ color:#fff; }
-
     /* =========================
        ✅ PREMIUM MEDIA (DROP-IN)
-       - fallback image
-       - blur-up
-       - video hover autoplay
        ========================= */
     .media-wrap{
       position:relative;
@@ -673,8 +575,6 @@
       border: 1px solid rgba(255,255,255,0.22);
       z-index: 4;
     }
-
-    /* Blur-up: starts blurred, snaps crisp on load */
     .blur-up{
       filter: blur(18px);
       transform: scale(1.06);
@@ -687,8 +587,6 @@
       transform: scale(1);
       opacity: 1;
     }
-
-    /* Hover affordance for video cards */
     .hover-play{
       cursor:pointer;
     }
@@ -732,6 +630,7 @@
           <a href="/store.html">Store</a>
         </nav>
 
+        <!-- ✅ auth-ui.js wires all these by ID automatically -->
         <div class="nav-cta">
           <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
           <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
@@ -782,7 +681,7 @@
 
           <p class="hero-sub">
             ROK Racers JA is the home for Jamaican car culture — track days, street meets, garages and builds.
-            Discover events, flex your build, and see who’s really outside tonight.
+            Discover events, flex your build, and see who's really outside tonight.
           </p>
 
           <div class="hero-actions">
@@ -866,7 +765,7 @@
           <div>
             <h2 class="section-title">Top Builds in the Garage</h2>
             <p class="section-sub">
-              The island’s most-liked builds — street, track, and show specials. Drop your own and see where it lands.
+              The island's most-liked builds — street, track, and show specials. Drop your own and see where it lands.
             </p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/garage.html'">View all builds</button>
@@ -893,7 +792,7 @@
           <div>
             <h2 class="section-title">Sightings Across the Island</h2>
             <p class="section-sub">
-              Gas station link-ups, toll runs, late-night pulls — see what’s been spotted in real time.
+              Gas station link-ups, toll runs, late-night pulls — see what's been spotted in real time.
             </p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" id="uploadSightingBtn" onclick="location.href='/sightings-new.html'"> Upload a Sighting </button>
@@ -901,7 +800,6 @@
 
         <div class="sightings-grid">
           <article id="sightingMain" class="sighting-main">
-            <!-- ✅ now supports image/video + blur-up -->
             <div class="sighting-media" id="sightingMainMedia">
               <div class="sighting-badge">Loading…</div>
             </div>
@@ -945,7 +843,7 @@
           <div>
             <h2 class="section-title">Highlights & Stories</h2>
             <p class="section-sub">
-              Features, recaps and drops from the paddock — a quick taste of what’s happening beyond the grid.
+              Features, recaps and drops from the paddock — a quick taste of what's happening beyond the grid.
             </p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='/highlights.html'">View All Highlights</button>
@@ -964,7 +862,7 @@
           <div>
             <h2 class="section-title">Join the mailing list</h2>
             <p class="section-sub">
-              Weekly drops: upcoming meets, top sightings, and community picks — straight from the island’s grid.
+              Weekly drops: upcoming meets, top sightings, and community picks — straight from the island's grid.
             </p>
           </div>
         </div>
@@ -977,7 +875,7 @@
         </form>
 
         <p id="subscribeMsg" class="section-sub" style="margin-top:10px; display:none;">
-          Thanks! We’ll send updates soon.
+          Thanks! We'll send updates soon.
         </p>
       </div>
     </section>
@@ -998,53 +896,7 @@
     </footer>
   </div>
 
-  <!-- AUTH MODAL -->
-  <div id="authBackdrop" class="modal-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-      <div class="modal-head">
-        <h2 class="modal-title" id="authTitle">Driver Access</h2>
-        <button class="modal-close" id="authClose" type="button">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="tabs">
-          <button class="tab active" id="tabLogin" type="button">Log in</button>
-          <button class="tab" id="tabSignup" type="button">Sign up</button>
-        </div>
-
-        <div class="field" id="roleField" style="display:none;">
-          <label>Choose your role</label>
-          <select id="authRole">
-            <option value="">Select one…</option>
-            <option value="racer">Racer</option>
-            <option value="promoter">Team Promoter</option>
-          </select>
-          <div class="hint" style="margin-top:6px;">
-            <strong>Racer</strong>: post builds, sightings, RSVP to events.<br>
-            <strong>Team Promoter</strong>: create and promote events for your team.
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Email</label>
-          <input id="authEmail" type="email" autocomplete="email" placeholder="you@email.com"/>
-        </div>
-
-        <div class="field">
-          <label>Password</label>
-          <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••"/>
-        </div>
-
-        <div class="auth-msg" id="authMsg"></div>
-
-        <button class="btn btn-primary btn-wide" id="authSubmit" type="button">Log in</button>
-
-        <div class="divider">or</div>
-
-        <button class="btn btn-ghost btn-wide" id="googleBtn" type="button">Continue with Google</button>
-      </div>
-    </div>
-  </div>
+  <!-- ✅ NO inline auth modal — auth-ui.js injects it -->
 
   <script>
     // ===== Motion =====
@@ -1059,7 +911,6 @@
       const yaw   = driftAngle + Math.sin(driftAngle/8) * 5;
       const pitch = 70 + Math.sin(driftAngle/14) * 1.6;
       const radius = 20 + Math.sin(driftAngle/10) * 0.5;
-
       mv.cameraOrbit = yaw + "deg " + pitch + "deg " + radius + "m";
       const fov = 40 + Math.sin(driftAngle/16) * 1.4;
       mv.fieldOfView = fov + "deg";
@@ -1107,78 +958,41 @@
       }[m]));
     }
 
-    // blur-up: when image loads, remove blur
-    function markLoaded(img){
-      if (!img) return;
-      img.classList.add('is-loaded');
-    }
-
     function renderMedia({ imageUrl, videoUrl, alt = "media", height = 140, badge = "", forceFallbackImage = true }){
       const h = Number(height) || 140;
-
-      // Video wins if present
       if (videoUrl){
         return `
           <div class="media-wrap hover-play" style="height:${h}px">
-            <video
-              class="hover-video"
-              src="${esc(videoUrl)}"
-              muted
-              playsinline
-              preload="metadata"
-              poster="${esc(FALLBACK_MEDIA_IMG)}"
-            ></video>
+            <video class="hover-video" src="${esc(videoUrl)}" muted playsinline preload="metadata" poster="${esc(FALLBACK_MEDIA_IMG)}"></video>
             <div class="media-overlay"></div>
             ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
             <div class="play-badge">Video</div>
-          </div>
-        `;
+          </div>`;
       }
-
-      // Image (or fallback)
       const finalImg = (imageUrl && String(imageUrl).trim()) ? imageUrl : (forceFallbackImage ? FALLBACK_MEDIA_IMG : "");
       if (finalImg){
         return `
           <div class="media-wrap" style="height:${h}px">
-            <img
-              class="blur-up"
-              src="${esc(finalImg)}"
-              alt="${esc(alt)}"
-              loading="lazy"
-              decoding="async"
-              onload="this.classList.add('is-loaded')"
-            >
+            <img class="blur-up" src="${esc(finalImg)}" alt="${esc(alt)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
             <div class="media-overlay"></div>
             ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
-          </div>
-        `;
+          </div>`;
       }
-
-      // last resort placeholder
       return `
         <div class="media-wrap" style="height:${h}px">
           <div class="media-overlay"></div>
           ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
-        </div>
-      `;
+        </div>`;
     }
 
-    // ✅ Video autoplay silently on hover (and pause on leave)
+    // ✅ Video autoplay on hover
     function bindHoverAutoplay(root = document){
-      // Desktop hover
       root.addEventListener('mouseenter', async (e)=>{
         const wrap = e.target.closest?.('.hover-play');
         if (!wrap) return;
         const v = wrap.querySelector('video.hover-video');
         if (!v) return;
-
-        try{
-          v.loop = true;
-          v.muted = true;
-          // make sure it’s ready
-          if (v.readyState < 2) { v.load(); }
-          await v.play();
-        } catch {}
+        try{ v.loop = true; v.muted = true; if (v.readyState < 2) v.load(); await v.play(); } catch {}
       }, true);
 
       root.addEventListener('mouseleave', (e)=>{
@@ -1186,252 +1000,28 @@
         if (!wrap) return;
         const v = wrap.querySelector('video.hover-video');
         if (!v) return;
-
-        try{
-          v.pause();
-          // rewind slightly so it feels snappy next hover
-          v.currentTime = 0;
-        } catch {}
+        try{ v.pause(); v.currentTime = 0; } catch {}
       }, true);
 
-      // Mobile: tap to play/pause
       root.addEventListener('click', async (e)=>{
         const wrap = e.target.closest?.('.hover-play');
         if (!wrap) return;
         const v = wrap.querySelector('video.hover-video');
         if (!v) return;
-
-        // prevent parent card click from navigating when tapping video
-        e.preventDefault();
-        e.stopPropagation();
-
+        e.preventDefault(); e.stopPropagation();
         try{
-          if (v.paused){
-            v.loop = true;
-            v.muted = true;
-            if (v.readyState < 2) { v.load(); }
-            await v.play();
-          } else {
-            v.pause();
-            v.currentTime = 0;
-          }
+          if (v.paused){ v.loop = true; v.muted = true; if (v.readyState < 2) v.load(); await v.play(); }
+          else { v.pause(); v.currentTime = 0; }
         } catch {}
       }, true);
     }
-
-    // ===== AUTH UI + MODAL =====
-    const loginBtn    = document.getElementById("loginBtn");
-    const joinBtn     = document.getElementById("joinBtn");
-    const profileMenu = document.getElementById("profileMenu");
-    const profileChip = document.getElementById("profileChip");
-    const dropdown    = document.getElementById("dropdown");
-    const initialsEl  = document.getElementById("profileInitials");
-    const signoutBtn  = document.getElementById("signoutBtn");
-    const ddEmail     = document.getElementById("ddEmail");
-    const myEventsLink = document.getElementById("myEventsLink");
-
-    const authBackdrop = document.getElementById('authBackdrop');
-    const authClose = document.getElementById('authClose');
-    const tabLogin = document.getElementById('tabLogin');
-    const tabSignup = document.getElementById('tabSignup');
-    const authEmail = document.getElementById('authEmail');
-    const authPassword = document.getElementById('authPassword');
-    const authSubmit = document.getElementById('authSubmit');
-    const authMsg = document.getElementById('authMsg');
-    const googleBtn = document.getElementById('googleBtn');
-
-    const roleField = document.getElementById('roleField');
-    const authRole = document.getElementById('authRole');
-
-    let authMode = 'login';
-
-    function setAuthMsg(text, kind){
-      authMsg.textContent = text || '';
-      authMsg.className = 'auth-msg' + (kind ? (' ' + kind) : '');
-    }
-
-    function openAuth(mode){
-      authMode = mode || 'login';
-      tabLogin.classList.toggle('active', authMode === 'login');
-      tabSignup.classList.toggle('active', authMode === 'signup');
-      authSubmit.textContent = authMode === 'signup' ? 'Sign up' : 'Log in';
-
-      roleField.style.display = (authMode === 'signup') ? 'block' : 'none';
-      if(authMode !== 'signup') authRole.value = '';
-
-      setAuthMsg('', '');
-      authEmail.value = '';
-      authPassword.value = '';
-      authBackdrop.style.display = 'flex';
-      setTimeout(()=>authEmail.focus(), 50);
-    }
-
-    function closeAuth(){
-      authBackdrop.style.display = 'none';
-      setAuthMsg('', '');
-    }
-
-    loginBtn?.addEventListener('click', ()=> openAuth('login'));
-    joinBtn?.addEventListener('click', ()=> openAuth('signup'));
-    authClose?.addEventListener('click', closeAuth);
-    authBackdrop?.addEventListener('click', (e)=>{ if(e.target === authBackdrop) closeAuth(); });
-
-    tabLogin?.addEventListener('click', ()=>{
-      authMode = 'login';
-      tabLogin.classList.add('active'); tabSignup.classList.remove('active');
-      authSubmit.textContent = 'Log in';
-      roleField.style.display = 'none';
-      authRole.value = '';
-      setAuthMsg('', '');
-    });
-
-    tabSignup?.addEventListener('click', ()=>{
-      authMode = 'signup';
-      tabSignup.classList.add('active'); tabLogin.classList.remove('active');
-      authSubmit.textContent = 'Sign up';
-      roleField.style.display = 'block';
-      setAuthMsg('', '');
-    });
-
-    async function upsertProfileRole(userId, role){
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ id: userId, role, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-      if (error) console.warn('Profile role upsert failed (check profiles table):', error.message);
-    }
-
-    authSubmit?.addEventListener('click', async ()=>{
-      const email = (authEmail.value || '').trim();
-      const password = (authPassword.value || '').trim();
-      const chosenRole = (authRole?.value || '').trim();
-
-      if(!email || !email.includes('@')) { setAuthMsg('Enter a valid email.', 'bad'); return; }
-      if(!password || password.length < 6) { setAuthMsg('Password must be at least 6 characters.', 'bad'); return; }
-
-      if(authMode === 'signup' && !chosenRole){
-        setAuthMsg('Select a role to continue.', 'bad');
-        return;
-      }
-
-      authSubmit.disabled = true;
-      setAuthMsg('Working…', '');
-
-      try{
-        if(authMode === 'signup'){
-          const { data, error } = await supabase.auth.signUp({ email, password });
-          if(error) throw error;
-          const uid = data?.user?.id;
-          if (uid) await upsertProfileRole(uid, chosenRole);
-          setAuthMsg('Signed up. Check your email if confirmation is enabled.', 'ok');
-        } else {
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if(error) throw error;
-          setAuthMsg('Logged in.', 'ok');
-        }
-      } catch(err){
-        console.error(err);
-        setAuthMsg(err.message || 'Auth failed.', 'bad');
-      } finally {
-        authSubmit.disabled = false;
-      }
-    });
-
-    googleBtn?.addEventListener('click', async ()=>{
-      setAuthMsg('Redirecting to Google…', 'ok');
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + '/index.html' }
-      });
-      if(error){
-        console.error(error);
-        setAuthMsg(error.message || 'Google sign-in failed.', 'bad');
-      }
-    });
-
-    function setDropdownOpen(open){
-      if(!dropdown || !profileChip) return;
-      dropdown.classList.toggle('open', !!open);
-      profileChip.setAttribute("aria-expanded", open ? "true" : "false");
-    }
-
-    profileChip?.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      setDropdownOpen(!dropdown.classList.contains('open'));
-    });
-
-    document.addEventListener("click", ()=> setDropdownOpen(false));
-    dropdown?.addEventListener('click', (e)=> e.stopPropagation());
-    signoutBtn?.addEventListener("click", async ()=>{ await supabase.auth.signOut(); setDropdownOpen(false); });
-
-    function initialsFromEmail(email){
-      const raw = (email || "").split("@")[0] || "u";
-      const cleaned = raw.replace(/[^a-z0-9]+/gi, " ").trim();
-      const parts = cleaned.split(" ").filter(Boolean);
-      let initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : cleaned.slice(0,2);
-      return (initials || 'U').toUpperCase();
-    }
-
-    async function getCurrentRole(userId){
-      try{
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .maybeSingle();
-        return data?.role || null;
-      } catch {
-        return null;
-      }
-    }
-
-    async function updateAuthUI(){
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user){
-        loginBtn.style.display = "none";
-        joinBtn.style.display = "none";
-        profileMenu.style.display = "flex";
-        closeAuth();
-
-        initialsEl.textContent = initialsFromEmail(user.email);
-        if (ddEmail) ddEmail.textContent = user.email || '—';
-
-        const role = await getCurrentRole(user.id);
-        if (myEventsLink){
-          myEventsLink.style.display = (role === 'promoter') ? 'flex' : 'none';
-        }
-      } else {
-        loginBtn.style.display = "inline-flex";
-        joinBtn.style.display = "inline-flex";
-        profileMenu.style.display = "none";
-        setDropdownOpen(false);
-      }
-    }
-
-    supabase.auth.onAuthStateChange(() => updateAuthUI());
-
-    window.authUI = window.authUI || {};
-    window.authUI.requireLogin = async function(callback){
-      const { data: { user }} = await supabase.auth.getUser();
-      if (!user){
-        openAuth('login');
-        return false;
-      }
-      if (callback) callback();
-      return true;
-    };
 
     // ===== Top 5 builds =====
     async function loadTopBuilds(){
       const grid = document.getElementById('top-builds-grid');
       if (!grid) return;
 
-      grid.innerHTML = `
-        <article class="build-card">
-          <div class="build-body">
-            <div class="build-title">Warming up the dyno…</div>
-          </div>
-        </article>`;
+      grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Warming up the dyno…</div></div></article>`;
 
       const { data, error } = await supabase
         .from('public_builds_with_like_count_and_trophies')
@@ -1442,28 +1032,17 @@
 
       if (error){
         console.error(error);
-        grid.innerHTML = `
-          <article class="build-card">
-            <div class="build-body">
-              <div class="build-title">Couldn’t load builds right now.</div>
-            </div>
-          </article>`;
+        grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Couldn't load builds right now.</div></div></article>`;
         return;
       }
 
       if (!data?.length){
-        grid.innerHTML = `
-          <article class="build-card">
-            <div class="build-body">
-              <div class="build-title">No public builds on the grid yet.</div>
-            </div>
-          </article>`;
+        grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">No public builds on the grid yet.</div></div></article>`;
         return;
       }
 
       const { data: auth } = await supabase.auth.getUser();
       let likedSet = new Set();
-
       if (auth?.user?.id){
         const { data: liked } = await supabase
           .from('build_likes')
@@ -1477,15 +1056,10 @@
         const isLiked = likedSet.has(b.id);
         const heart = isLiked ? '♥' : '♡';
         const img = b.thumb_url
-          ? `<img class="blur-up" src="${b.thumb_url}" alt="${esc(b.title)}" loading="lazy" decoding="async"
-                onload="this.classList.add('is-loaded')"
-                style="width:100%;height:100%;object-fit:cover;">`
-          : `<img class="blur-up" src="${FALLBACK_MEDIA_IMG}" alt="Build" loading="lazy" decoding="async"
-                onload="this.classList.add('is-loaded')"
-                style="width:100%;height:100%;object-fit:cover;opacity:.92;">`;
+          ? `<img class="blur-up" src="${b.thumb_url}" alt="${esc(b.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;">`
+          : `<img class="blur-up" src="${FALLBACK_MEDIA_IMG}" alt="Build" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;opacity:.92;">`;
         const owner = b.owner_handle ? '@' + b.owner_handle : 'Build owner';
         const type = b.build_type || 'Build';
-
         return `
           <article class="build-card" data-build="${b.id}">
             <div class="build-image">
@@ -1493,22 +1067,13 @@
               <div class="build-owner">${owner}</div>
               <div class="build-chip">${type}</div>
             </div>
-
-            <div class="build-body">
-              <div class="build-title">${b.title || 'Untitled build'}</div>
-            </div>
-
+            <div class="build-body"><div class="build-title">${b.title || 'Untitled build'}</div></div>
             <div class="build-footer">
-              <div class="build-stats">
-                <div class="build-likes">❤ <span class="likes">${b.like_count || 0}</span></div>
-              </div>
+              <div class="build-stats"><div class="build-likes">❤ <span class="likes">${b.like_count || 0}</span></div></div>
               <div class="build-parish">${b.parish || ''}</div>
             </div>
-
-            <button class="build-like-btn" data-like
-              aria-pressed="${isLiked ? 'true':'false'}"
-              title="${auth?.user ? (isLiked ? 'Remove boost' : 'Boost') : 'Sign in to boost'}"
-              type="button">${heart}</button>
+            <button class="build-like-btn" data-like aria-pressed="${isLiked ? 'true':'false'}"
+              title="${auth?.user ? (isLiked ? 'Remove boost' : 'Boost') : 'Sign in to boost'}" type="button">${heart}</button>
           </article>`;
       }).join('');
 
@@ -1520,45 +1085,32 @@
 
         if (btn){
           const likesEl = card.querySelector('.likes');
-          const { data: auth2 } = await supabase.auth.getUser();
-          if (!auth2?.user){
-            openAuth('login');
-            return;
-          }
+          // ✅ Use authUI.requireLogin instead of inline openAuth
+          const loggedIn = await authUI.requireLogin();
+          if (!loggedIn) return;
 
+          const { data: auth2 } = await supabase.auth.getUser();
           const { data: existing } = await supabase
-            .from('build_likes')
-            .select('build_id')
-            .eq('build_id', buildId)
-            .eq('user_id', auth2.user.id)
-            .maybeSingle();
+            .from('build_likes').select('build_id')
+            .eq('build_id', buildId).eq('user_id', auth2.user.id).maybeSingle();
 
           if (existing){
-            const { error } = await supabase
-              .from('build_likes')
-              .delete()
-              .eq('build_id', buildId)
-              .eq('user_id', auth2.user.id);
-
-            if (error){ console.error(error); alert('Try again.'); return; }
-
+            const { error } = await supabase.from('build_likes').delete()
+              .eq('build_id', buildId).eq('user_id', auth2.user.id);
+            if (error){ console.error(error); return; }
             btn.textContent = '♡';
             btn.setAttribute('aria-pressed','false');
             likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
           } else {
-            const { error } = await supabase
-              .from('build_likes')
+            const { error } = await supabase.from('build_likes')
               .insert({ build_id: buildId, user_id: auth2.user.id });
-
-            if (error){ console.error(error); alert('Try again.'); return; }
-
+            if (error){ console.error(error); return; }
             btn.textContent = '♥';
             btn.setAttribute('aria-pressed','true');
             likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
           }
           return;
         }
-
         location.href = `/build.html?id=${buildId}`;
       };
     }
@@ -1576,24 +1128,12 @@
 
       if (error){
         console.error(error);
-        strip.innerHTML = `
-          <article class="event-card">
-            <div class="event-body">
-              <div class="event-title">Couldn’t load events right now.</div>
-              <div class="event-meta"><span>Refresh and try again in a bit.</span></div>
-            </div>
-          </article>`;
+        strip.innerHTML = `<article class="event-card"><div class="event-body"><div class="event-title">Couldn't load events right now.</div></div></article>`;
         return;
       }
 
       if (!events?.length){
-        strip.innerHTML = `
-          <article class="event-card">
-            <div class="event-body">
-              <div class="event-title">No events posted yet.</div>
-              <div class="event-meta"><span>Be the first promoter to post.</span></div>
-            </div>
-          </article>`;
+        strip.innerHTML = `<article class="event-card"><div class="event-body"><div class="event-title">No events posted yet.</div><div class="event-meta"><span>Be the first promoter to post.</span></div></div></article>`;
         return;
       }
 
@@ -1601,51 +1141,26 @@
       try{
         const ids = events.map(e => e.id);
         const { data: counts } = await supabase
-          .from('event_rsvp_counts')
-          .select('event_id,yes_count,maybe_count,no_count')
-          .in('event_id', ids);
+          .from('event_rsvp_counts').select('event_id,yes_count,maybe_count,no_count').in('event_id', ids);
         countsMap = new Map((counts || []).map(c => [c.event_id, c]));
       } catch {}
 
       function render(e){
         const d = e.starts_at ? new Date(e.starts_at) : null;
-        const whenLabel = d
-          ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" })
-          : "TBA";
-
+        const whenLabel = d ? d.toLocaleString("en-US",{ weekday:"short", hour:"numeric", minute:"2-digit" }) : "TBA";
         const promoter = e.promoter_handle ? '@' + e.promoter_handle : '';
         const counts = countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 };
-
-        // ✅ Cover fallback to /Assets/logo.png
         const cover = e.cover_url || FALLBACK_MEDIA_IMG;
-
         return `
           <article class="event-card" data-id="${e.id}">
-            ${renderMedia({
-              imageUrl: cover,
-              alt: e.title || "Event cover",
-              height: 140,
-              badge: "Event"
-            })}
-
+            ${renderMedia({ imageUrl: cover, alt: e.title || "Event cover", height: 140, badge: "Event" })}
             <div class="event-body">
               <div class="event-title">${e.title || 'Event'}</div>
-
-              <div class="event-meta">
-                <span>${whenLabel}</span>
-                <span class="event-status">RSVP Open</span>
-              </div>
-
-              <div class="event-meta">
-                <span>${e.location || ''}</span>
-                <span>${promoter}</span>
-              </div>
-
+              <div class="event-meta"><span>${whenLabel}</span><span class="event-status">RSVP Open</span></div>
+              <div class="event-meta"><span>${e.location || ''}</span><span>${promoter}</span></div>
               <div class="event-meta" style="font-size:10px; margin-top:4px;">
-                <span>✅ ${counts.yes_count} going</span>
-                <span>🤔 ${counts.maybe_count} maybe</span>
+                <span>✅ ${counts.yes_count} going</span><span>🤔 ${counts.maybe_count} maybe</span>
               </div>
-
               <div class="event-actions">
                 <button class="btn btn-outline-light btn-xs" type="button" data-action="view">View Details</button>
                 <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">RSVP + Attach Build</button>
@@ -1664,14 +1179,12 @@
           const id = card.dataset.id;
           const action = actionBtn.dataset.action;
           if (action === 'view') location.href = `/event.html?id=${id}`;
-          if (action === 'rsvp') authUI.requireLogin(()=> location.href = `/event.html?id=${id}#rsvp`);
+          if (action === 'rsvp') authUI.requireLogin().then(ok => { if (ok) location.href = `/event.html?id=${id}#rsvp`; });
           return;
         }
-
         const card = ev.target.closest('.event-card');
         if (!card) return;
-        const id = card.dataset.id;
-        location.href = `/event.html?id=${id}`;
+        location.href = `/event.html?id=${card.dataset.id}`;
       };
     }
 
@@ -1693,43 +1206,20 @@
       const mainMetaTop   = main.querySelector('.sighting-meta-top');
       const mainFooter    = main.querySelector('.sighting-footer');
 
-      if (error){
-        console.error(error);
-        mainTitleEl.textContent = "Couldn’t load sightings right now.";
-        mainCaptionEl.textContent = "Refresh in a bit or check back later.";
-        sideList.innerHTML = `<div class="sighting-side-item"><span class="label">No additional sightings</span><span>—</span></div>`;
-        // fallback media
-        mainMedia.innerHTML = renderMedia({ imageUrl: FALLBACK_MEDIA_IMG, alt:"Sighting", height:160 });
-        return;
-      }
-
-      if (!data?.length){
-        const labelSpan = mainMetaTop.querySelector('span');
-        if (labelSpan) labelSpan.textContent = "Island feed";
-        const pill = mainMetaTop.querySelector('.pill-soft');
-        if (pill) pill.textContent = 'Sighting';
-        mainTitleEl.textContent = "Be the first to drop a sighting.";
-        mainCaptionEl.textContent = "Catch a link-up, a pull or a clean park-up and upload it here.";
-        const countSpan = mainFooter.querySelector('span');
-        if (countSpan) countSpan.textContent = "❤ 0 · 💬 0";
+      if (error || !data?.length){
+        mainTitleEl.textContent = error ? "Couldn't load sightings right now." : "Be the first to drop a sighting.";
+        mainCaptionEl.textContent = error ? "Refresh in a bit." : "Catch a link-up, a pull or a clean park-up and upload it here.";
+        mainMedia.innerHTML = renderMedia({ imageUrl: FALLBACK_MEDIA_IMG, alt:"Sighting", height:160 }) + `<div class="sighting-badge">Jamaica</div>`;
         sideList.innerHTML = `<div class="sighting-side-item"><span class="label">Feed is quiet</span><span>Waiting for first drop</span></div>`;
-
-        mainMedia.innerHTML = renderMedia({
-          imageUrl: FALLBACK_MEDIA_IMG,
-          alt: "Sighting",
-          height: 160
-        }) + `<div class="sighting-badge">Jamaica</div>`;
         return;
       }
 
       const first = data[0];
       const rest = data.slice(1);
-
       const created = first.created_at ? new Date(first.created_at) : null;
       const timeAgo = created ? created.toLocaleDateString() : "";
       const locLine = [first.parish, first.location].filter(Boolean).join(" · ");
 
-      // ✅ media render (video wins, else image, else fallback logo)
       mainMedia.innerHTML = renderMedia({
         imageUrl: first.image_url || FALLBACK_MEDIA_IMG,
         videoUrl: first.video_url,
@@ -1738,33 +1228,27 @@
       }) + `<div class="sighting-badge">${esc(locLine || 'Jamaica')}</div>`;
 
       const labelSpan = mainMetaTop.querySelector('span');
-      if (labelSpan) labelSpan.textContent =
-        (first.author_handle ? '@'+first.author_handle : 'Sighting') + (timeAgo ? ' · ' + timeAgo : '');
+      if (labelSpan) labelSpan.textContent = (first.author_handle ? '@'+first.author_handle : 'Sighting') + (timeAgo ? ' · ' + timeAgo : '');
       const pill = mainMetaTop.querySelector('.pill-soft');
       if (pill) pill.textContent = first.category || 'Sighting';
-
       mainTitleEl.textContent = first.title || 'Sighting';
       mainCaptionEl.textContent = first.caption || '';
-
       const statSpan = mainFooter.querySelector('span');
       if (statSpan) statSpan.textContent = `❤ ${first.like_count || 0} · 💬 ${first.comment_count || 0}`;
-
       main.onclick = () => { location.href = '/sighting.html?id=' + first.id; };
 
       if (!rest.length){
         sideList.innerHTML = `<div class="sighting-side-item"><span class="label">No more sightings</span><span>—</span></div>`;
         return;
       }
-
       sideList.innerHTML = rest.map(s => {
         const loc = [s.parish, s.location].filter(Boolean).join(" · ");
         const when = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
         const handle = s.author_handle ? '@'+s.author_handle : '';
-        return `
-          <div class="sighting-side-item" onclick="location.href='/sighting.html?id=${s.id}'">
-            <span class="label">${esc(loc || 'Jamaica')}</span>
-            <span>${esc(handle)} · ${esc(when)}</span>
-          </div>`;
+        return `<div class="sighting-side-item" onclick="location.href='/sighting.html?id=${s.id}'">
+          <span class="label">${esc(loc || 'Jamaica')}</span>
+          <span>${esc(handle)} · ${esc(when)}</span>
+        </div>`;
       }).join('');
     }
 
@@ -1780,11 +1264,9 @@
         .limit(3);
 
       if (error){
-        console.error(error);
-        grid.innerHTML = `<article class="sighting-main"><p class="section-sub">Couldn’t load highlights right now. Refresh and try again.</p></article>`;
+        grid.innerHTML = `<article class="sighting-main"><p class="section-sub">Couldn't load highlights right now.</p></article>`;
         return;
       }
-
       if (!data?.length){
         grid.innerHTML = `<article class="sighting-main"><p class="section-sub">The paddock is quiet — new stories will land here soon.</p></article>`;
         return;
@@ -1794,8 +1276,6 @@
         const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : "";
         const teaser = (h.body || '').slice(0,140);
         const more = (h.body && h.body.length > 140) ? '…' : '';
-
-        // ✅ media render (video wins, else image, else fallback logo)
         const media = renderMedia({
           imageUrl: h.image_url || FALLBACK_MEDIA_IMG,
           videoUrl: h.video_url,
@@ -1803,7 +1283,6 @@
           height: 160,
           badge: ""
         });
-
         return `
           <article class="sighting-main" onclick="location.href='/highlight.html?id=${h.id}'" style="cursor:pointer">
             ${media}
@@ -1817,10 +1296,8 @@
 
     // ===== Boot =====
     document.addEventListener('DOMContentLoaded', async ()=>{
-      // ✅ enable hover video autoplay
       bindHoverAutoplay(document);
-
-      await updateAuthUI();
+      // ✅ auth-ui.js handles auth state — no updateAuthUI() needed here
       await loadFrontEvents();
       await loadTopBuilds();
       await loadFrontSightings();

@@ -11,16 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- ✅ Shared Supabase client + auth UI -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-    });
-  </script>
-
-  <!-- Shared auth UI -->
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -129,8 +122,6 @@
       border-color: rgba(255,255,255,0.25);
       background: rgba(255,255,255,0.02);
     }
-
-    /* Danger button (Delete) */
     .btn-danger{
       border-color: rgba(255, 77, 77, 0.55);
       color: #ffd2d2;
@@ -377,7 +368,6 @@
       font-size:28px;
       margin:0;
     }
-    /* ✅ Fix: content area scroll so buttons are always reachable */
     .modal .content{
       padding: 16px;
       display:grid;
@@ -513,6 +503,7 @@
         <a href="/store.html">Store</a>
       </nav>
 
+      <!-- ✅ auth-ui.js wires these by ID -->
       <div class="nav-cta">
         <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
         <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
@@ -529,9 +520,7 @@
             <a href="/likes-builds.html">Liked Builds</a>
             <a href="/likes-sightings.html">Liked Sightings</a>
             <a href="/teams.html">My Teams</a>
-
             <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events</a>
-
             <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>
@@ -563,12 +552,9 @@
 
       <button class="btn btn-ghost btn-pill-sm" id="prevMonth" type="button">←</button>
 
-      <span id="monthLabel" class="hint" style="min-width:120px; text-align:center">
-        —
-      </span>
+      <span id="monthLabel" class="hint" style="min-width:120px; text-align:center">—</span>
 
       <button class="btn btn-ghost btn-pill-sm" id="nextMonth" type="button">→</button>
-
 
       <select id="when" aria-label="When">
         <option value="upcoming">Upcoming</option>
@@ -685,7 +671,7 @@
 
         <div>
           <label class="hint" style="display:block; margin-bottom:6px">Description <span class="hint">(optional)</span></label>
-          <textarea id="f_desc" rows="4" placeholder="What’s happening, what to bring, rules, pricing…"></textarea>
+          <textarea id="f_desc" rows="4" placeholder="What's happening, what to bring, rules, pricing…"></textarea>
         </div>
 
         <div id="createMsg" class="hint" style="min-height:18px"></div>
@@ -715,8 +701,7 @@
           <div class="title">${escapeHTML(title || 'Notice')}</div>
           <div class="msg">${escapeHTML(msg || '')}</div>
         </div>
-        <button class="x" type="button" aria-label="Dismiss">✕</button>
-      `;
+        <button class="x" type="button" aria-label="Dismiss">✕</button>`;
       const btn = el.querySelector('.x');
       const kill = ()=>{ el.style.opacity = '0'; el.style.transform = 'translateY(6px)'; setTimeout(()=> el.remove(), 160); };
       btn.addEventListener('click', kill);
@@ -729,9 +714,7 @@
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
     function isUpcoming(dateStr){
-      const now = new Date();
-      const d   = new Date(dateStr);
-      return d >= now;
+      return new Date(dateStr) >= new Date();
     }
     function toISO(localDT){
       if (!localDT) return null;
@@ -739,27 +722,18 @@
       return new Date(`${date}T${time}:00`).toISOString();
     }
     function monthLabel(year, month0){
-      const d = new Date(year, month0, 1);
-      return d.toLocaleString("en-US", { month:"long", year:"numeric" });
+      return new Date(year, month0, 1).toLocaleString("en-US", { month:"long", year:"numeric" });
     }
-
     function updateMonthLabel(){
       const el = document.getElementById('monthLabel');
       if (!el) return;
-
       el.classList.add('bump');
       el.textContent = monthLabel(viewYear, viewMonth);
-
       clearTimeout(el._t);
       el._t = setTimeout(() => el.classList.remove('bump'), 160);
     }
-
-    function fmtWhen(d){
-      return d.toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
-    }
-    function fmtShortTime(d){
-      return d.toLocaleString("en-US", { hour:"numeric", minute:"2-digit" });
-    }
+    function fmtWhen(d){ return d.toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }); }
+    function fmtShortTime(d){ return d.toLocaleString("en-US", { hour:"numeric", minute:"2-digit" }); }
     function toLocalInput(iso){
       if (!iso) return '';
       const d = new Date(iso);
@@ -781,51 +755,38 @@
     function buildYearOptions(){
       const y = document.getElementById('year');
       if (!y) return;
-
-      const yearsInData = (cached || [])
-        .filter(e => e.starts_at)
-        .map(e => new Date(e.starts_at).getFullYear());
-
+      const yearsInData = (cached || []).filter(e => e.starts_at).map(e => new Date(e.starts_at).getFullYear());
       const minY = Math.min(viewYear, ...(yearsInData.length ? yearsInData : [viewYear]));
       const maxY = Math.max(viewYear, ...(yearsInData.length ? yearsInData : [viewYear]));
-
       y.innerHTML = '';
       for (let yy = minY; yy <= maxY; yy++){
         const opt = document.createElement('option');
-        opt.value = String(yy);
-        opt.textContent = String(yy);
+        opt.value = String(yy); opt.textContent = String(yy);
         y.appendChild(opt);
       }
     }
 
     function stepMonth(delta){
-      let y = viewYear;
-      let m = viewMonth + delta;
+      let y = viewYear; let m = viewMonth + delta;
       if (m < 0){ m = 11; y -= 1; }
       if (m > 11){ m = 0; y += 1; }
-      viewYear = y;
-      viewMonth = m;
-      buildYearOptions();
-      setMonthUI();
-      applyFilters();
-      updateMonthLabel();
+      viewYear = y; viewMonth = m;
+      buildYearOptions(); setMonthUI(); applyFilters(); updateMonthLabel();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /* ========= Data state ========= */
     let cached   = [];
     let filtered = [];
-    let teamsIndex = new Map(); // team_id -> {id,name,is_promoter,logo_url?}
+    let teamsIndex = new Map();
 
     /* ========= Permissions ========= */
     async function getCanManageEvent(e){
       const { data:{ user } } = await supabase.auth.getUser();
       if (window.authUI?.refresh) await authUI.refresh();
-
       const isAdmin = window.authUI?.isAdmin?.() === true;
       const isProm  = window.authUI?.isPromoter?.() === true;
       const isOwner = !!(user && e?.created_by && user.id === e.created_by);
-
       return { canManage: (isAdmin || isProm || isOwner), user, isAdmin, isProm, isOwner };
     }
 
@@ -833,24 +794,13 @@
     async function loadHostTeamsForFilter(){
       const sel = document.getElementById('hostTeam');
       if(!sel) return;
-
       sel.innerHTML = `<option value="">Select a team…</option>`;
-
-      const { data, error } = await supabase
-        .from('teams')
-        .select('id,name,is_promoter,logo_url')
-        .order('name', { ascending:true });
-
-      if(error){
-        console.error('loadHostTeamsForFilter', error);
-        return;
-      }
-
+      const { data, error } = await supabase.from('teams').select('id,name,is_promoter,logo_url').order('name', { ascending:true });
+      if(error){ console.error('loadHostTeamsForFilter', error); return; }
       teamsIndex = new Map((data || []).map(t => [t.id, t]));
       (data || []).forEach(t=>{
         const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = t.name || 'Team';
+        opt.value = t.id; opt.textContent = t.name || 'Team';
         sel.appendChild(opt);
       });
     }
@@ -864,30 +814,22 @@
     async function fetchAll(){
       const wrap = document.getElementById('calendarWrap');
       wrap.innerHTML = `<div class="empty-card">Loading events…</div>`;
-
       await loadHostTeamsForFilter();
 
       const [eventsRes, countsRes] = await Promise.all([
-        supabase
-          .from('events')
+        supabase.from('events')
           .select('id,title,starts_at,ends_at,location,description,cover_url,created_by,team_id,promoter_handle,payment_url,payment_label,payment_instructions,parish,created_at')
           .order('starts_at', { ascending:true, nullsLast:true }),
-        supabase
-          .from('event_rsvp_counts')
-          .select('event_id,yes_count,maybe_count,no_count')
+        supabase.from('event_rsvp_counts').select('event_id,yes_count,maybe_count,no_count')
       ]);
 
       if (eventsRes.error){
         console.error('eventsRes.error', eventsRes.error);
-        wrap.innerHTML = `<div class="empty-card">
-          Couldn’t load events right now.<br/>
-          <span class="hint">${escapeHTML(eventsRes.error.message || '')}</span>
-        </div>`;
+        wrap.innerHTML = `<div class="empty-card">Couldn't load events right now.<br/><span class="hint">${escapeHTML(eventsRes.error.message || '')}</span></div>`;
         return [];
       }
 
       const countsMap = new Map((countsRes.data || []).map(c => [c.event_id, c]));
-
       return (eventsRes.data || []).map(e => ({
         ...e,
         counts: countsMap.get(e.id) || { yes_count:0, maybe_count:0, no_count:0 }
@@ -898,31 +840,16 @@
     function applyFilters(){
       const q     = document.getElementById('q').value.trim().toLowerCase();
       const when  = document.getElementById('when').value;
-
-      const hostFilter = document.getElementById('hostFilter').value; // all | promoters | team
+      const hostFilter = document.getElementById('hostFilter').value;
       const hostTeamId = document.getElementById('hostTeam').value;
 
       let rows = cached.slice(0);
+      if (when === 'upcoming') rows = rows.filter(r => r.starts_at && isUpcoming(r.starts_at));
+      else if (when === 'past') rows = rows.filter(r => r.starts_at && !isUpcoming(r.starts_at));
 
-      // When
-      if (when === 'upcoming'){
-        rows = rows.filter(r => r.starts_at && isUpcoming(r.starts_at));
-      } else if (when === 'past'){
-        rows = rows.filter(r => r.starts_at && !isUpcoming(r.starts_at));
-      }
+      if (hostFilter === 'promoters') rows = rows.filter(isPromoterEvent);
+      else if (hostFilter === 'team'){ rows = hostTeamId ? rows.filter(r => r.team_id === hostTeamId) : []; }
 
-      // Host
-      if (hostFilter === 'promoters'){
-        rows = rows.filter(isPromoterEvent);
-      } else if (hostFilter === 'team'){
-        if (hostTeamId){
-          rows = rows.filter(r => r.team_id === hostTeamId);
-        } else {
-          rows = [];
-        }
-      }
-
-      // Search
       if (q){
         rows = rows.filter(r => {
           const hostName = r.team_id ? (teamsIndex.get(r.team_id)?.name || '') : '';
@@ -930,7 +857,6 @@
         });
       }
 
-      // ✅ Single month view filter (year + month)
       rows = rows.filter(r => {
         if (!r.starts_at) return false;
         const d = new Date(r.starts_at);
@@ -948,48 +874,36 @@
       }
     }
 
-    /* ========= Calendar renderer (single month only) ========= */
+    /* ========= Calendar renderer ========= */
     function renderCalendar(rows){
       const wrap = document.getElementById('calendarWrap');
       if (!wrap) return;
-
-      // Render the selected month grid even if no events match
       const key = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
       wrap.innerHTML = renderMonth(key, rows || []);
     }
 
     function renderMonth(key, monthEvents){
       const [yy, mm] = key.split('-').map(Number);
-      const year = yy;
-      const month0 = mm - 1;
-
+      const year = yy; const month0 = mm - 1;
       const first = new Date(year, month0, 1);
       const last  = new Date(year, month0 + 1, 0);
       const daysInMonth = last.getDate();
-      const startDow = first.getDay(); // 0 Sun .. 6 Sat
-
+      const startDow = first.getDay();
       const cells = [];
       const prevLast = new Date(year, month0, 0).getDate();
 
-      for(let i=0;i<startDow;i++){
-        const dayNum = prevLast - (startDow - 1 - i);
-        cells.push({ num:dayNum, muted:true, date:null });
-      }
-      for(let d=1; d<=daysInMonth; d++){
-        cells.push({ num:d, muted:false, date:new Date(year, month0, d) });
-      }
+      for(let i=0;i<startDow;i++) cells.push({ num:prevLast - (startDow - 1 - i), muted:true, date:null });
+      for(let d=1; d<=daysInMonth; d++) cells.push({ num:d, muted:false, date:new Date(year, month0, d) });
       while(cells.length % 7 !== 0) cells.push({ num: (cells.length - (startDow + daysInMonth) + 1), muted:true, date:null });
 
       const byDay = new Map();
       for(const e of monthEvents){
-        const d = new Date(e.starts_at);
-        const day = d.getDate();
+        const day = new Date(e.starts_at).getDate();
         if(!byDay.has(day)) byDay.set(day, []);
         byDay.get(day).push(e);
       }
 
       const dowLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
       return `
         <section class="month-card">
           <div class="month-head">
@@ -999,135 +913,90 @@
             </div>
             <div class="tagline">Click an event to expand</div>
           </div>
-
-          <div class="dow">
-            ${dowLabels.map(d=>`<div>${d}</div>`).join('')}
-          </div>
-
+          <div class="dow">${dowLabels.map(d=>`<div>${d}</div>`).join('')}</div>
           <div class="month-grid">
             ${cells.map(c=>{
               const dayEvents = (!c.muted && c.date) ? (byDay.get(c.num) || []) : [];
               const pills = dayEvents.slice(0,3).map(e=> renderEventPill(e)).join('');
-              const more = dayEvents.length > 3
-                ? `<div class="hint" style="margin-top:6px;color:var(--text-muted)">+${dayEvents.length-3} more…</div>`
-                : '';
-              return `
-                <div class="day ${c.muted?'muted':''}">
-                  <div class="day-num">${c.num}</div>
-                  ${pills}
-                  ${more}
-                </div>
-              `;
+              const more = dayEvents.length > 3 ? `<div class="hint" style="margin-top:6px;color:var(--text-muted)">+${dayEvents.length-3} more…</div>` : '';
+              return `<div class="day ${c.muted?'muted':''}"><div class="day-num">${c.num}</div>${pills}${more}</div>`;
             }).join('')}
           </div>
-
-          ${monthEvents.length ? `` : `
-            <div style="padding:0 16px 16px">
-              <div class="hint">No events in this month yet. Promoters/admins can post one.</div>
-            </div>
-          `}
-        </section>
-      `;
+          ${monthEvents.length ? `` : `<div style="padding:0 16px 16px"><div class="hint">No events in this month yet. Promoters/admins can post one.</div></div>`}
+        </section>`;
     }
 
     function renderEventPill(e){
       const d = new Date(e.starts_at);
       const t = fmtShortTime(d);
       const host = e.team_id ? teamsIndex.get(e.team_id) : null;
-
       const loc = [e.parish, e.location].filter(Boolean).join(' · ');
       const hostLine = host ? `Host: ${escapeHTML(host.name)}` : '';
-
       const yes = e.counts?.yes_count || 0;
       const maybe = e.counts?.maybe_count || 0;
-
       return `
         <a class="event-pill" data-event="${escapeHTML(e.id)}" href="javascript:void(0)" role="button" aria-label="Open event details">
           <strong>${escapeHTML(e.title || 'Event')}</strong>
-          <div class="meta">
-            <span>${escapeHTML(t)}</span>
-            <span>✅ ${yes} · 🤔 ${maybe}</span>
-          </div>
+          <div class="meta"><span>${escapeHTML(t)}</span><span>✅ ${yes} · 🤔 ${maybe}</span></div>
           ${loc ? `<div class="host">${escapeHTML(loc)}</div>` : (hostLine ? `<div class="host">${hostLine}</div>` : '')}
           ${hostLine && loc ? `<div class="host">${hostLine}</div>` : ``}
-        </a>
-      `;
+        </a>`;
     }
 
     /* ========= Details modal ========= */
     const detailsBackdrop = document.getElementById('detailsBackdrop');
-    const detailsClose = document.getElementById('detailsClose');
-    const detailsTitle = document.getElementById('detailsTitle');
-    const detailsCover = document.getElementById('detailsCover');
-    const detailsWhen  = document.getElementById('detailsWhen');
-    const detailsWhere = document.getElementById('detailsWhere');
-    const detailsHost  = document.getElementById('detailsHost');
-    const detailsStatus= document.getElementById('detailsStatus');
-    const detailsCounts= document.getElementById('detailsCounts');
-    const detailsDesc  = document.getElementById('detailsDesc');
-    const detailsGo    = document.getElementById('detailsGo');
-    const detailsRSVP  = document.getElementById('detailsRSVP');
-    const detailsEdit  = document.getElementById('detailsEdit');
-    const detailsDelete= document.getElementById('detailsDelete');
 
     function openDetails(e){
       const d = new Date(e.starts_at);
-      detailsTitle.textContent = e.title || "Event";
-      detailsWhen.textContent = e.starts_at ? fmtWhen(d) : "TBA";
+      document.getElementById('detailsTitle').textContent = e.title || "Event";
+      document.getElementById('detailsWhen').textContent = e.starts_at ? fmtWhen(d) : "TBA";
 
       const loc = [e.parish, e.location].filter(Boolean).join(" · ");
-      detailsWhere.textContent = loc || "Location TBA";
+      document.getElementById('detailsWhere').textContent = loc || "Location TBA";
 
       const host = e.team_id ? teamsIndex.get(e.team_id) : null;
-      if (host){
-        detailsHost.style.display = 'inline-flex';
-        detailsHost.textContent = `Hosted by ${host.name}`;
-      } else {
-        detailsHost.style.display = 'none';
-      }
+      const detailsHost = document.getElementById('detailsHost');
+      if (host){ detailsHost.style.display = 'inline-flex'; detailsHost.textContent = `Hosted by ${host.name}`; }
+      else { detailsHost.style.display = 'none'; }
 
       const past = e.starts_at && !isUpcoming(e.starts_at);
-      detailsStatus.textContent = past ? "Completed" : "RSVP Open";
+      document.getElementById('detailsStatus').textContent = past ? "Completed" : "RSVP Open";
 
-      const yes = e.counts?.yes_count || 0;
-      const maybe = e.counts?.maybe_count || 0;
-      const no = e.counts?.no_count || 0;
-      detailsCounts.textContent = `✅ ${yes} · 🤔 ${maybe} · ❌ ${no}`;
+      const yes = e.counts?.yes_count || 0, maybe = e.counts?.maybe_count || 0, no = e.counts?.no_count || 0;
+      document.getElementById('detailsCounts').textContent = `✅ ${yes} · 🤔 ${maybe} · ❌ ${no}`;
 
+      const detailsCover = document.getElementById('detailsCover');
       if (e.cover_url){
         detailsCover.style.display = 'block';
         detailsCover.innerHTML = `<img src="${escapeHTML(e.cover_url)}" alt="${escapeHTML(e.title||'Event cover')}" loading="lazy">`;
       } else {
-        detailsCover.style.display = 'none';
-        detailsCover.innerHTML = '';
+        detailsCover.style.display = 'none'; detailsCover.innerHTML = '';
       }
 
-      detailsDesc.textContent = e.description || "No description yet.";
+      document.getElementById('detailsDesc').textContent = e.description || "No description yet.";
 
-      detailsGo.onclick = () => location.href = `/event.html?id=${encodeURIComponent(e.id)}`;
-      detailsRSVP.onclick = () => {
-        if (window.authUI && typeof authUI.requireLogin === 'function'){
-          authUI.requireLogin(()=> location.href = `/event.html?id=${encodeURIComponent(e.id)}#rsvp`, {
-            message: "Please log in or sign up to RSVP."
-          });
-        } else {
-          location.href = `/event.html?id=${encodeURIComponent(e.id)}#rsvp`;
-        }
+      document.getElementById('detailsGo').onclick = () => location.href = `/event.html?id=${encodeURIComponent(e.id)}`;
+      document.getElementById('detailsRSVP').onclick = () => {
+        // ✅ Use authUI.requireLogin
+        authUI.requireLogin({ message: "Please log in to RSVP." }).then(ok => {
+          if (ok) location.href = `/event.html?id=${encodeURIComponent(e.id)}#rsvp`;
+        });
       };
 
       (async ()=>{
         const { canManage } = await getCanManageEvent(e);
-        detailsEdit.style.display = canManage ? 'inline-flex' : 'none';
-        detailsDelete.style.display = canManage ? 'inline-flex' : 'none';
-
+        const editBtn = document.getElementById('detailsEdit');
+        const delBtn = document.getElementById('detailsDelete');
+        editBtn.style.display = canManage ? 'inline-flex' : 'none';
+        delBtn.style.display = canManage ? 'inline-flex' : 'none';
         if (canManage){
-          detailsEdit.onclick = async ()=> startEdit(e);
-          detailsDelete.onclick = async ()=> doDelete(e);
+          editBtn.onclick = async ()=> startEdit(e);
+          delBtn.onclick = async ()=> doDelete(e);
         }
       })().catch(err=>{
         console.error(err);
-        detailsEdit.style.display = 'none';
-        detailsDelete.style.display = 'none';
+        document.getElementById('detailsEdit').style.display = 'none';
+        document.getElementById('detailsDelete').style.display = 'none';
       });
 
       detailsBackdrop.style.display = 'flex';
@@ -1139,7 +1008,7 @@
       detailsBackdrop.setAttribute('aria-hidden','true');
     }
 
-    detailsClose.addEventListener('click', closeDetails);
+    document.getElementById('detailsClose').addEventListener('click', closeDetails);
     detailsBackdrop.addEventListener('click', (ev)=>{ if (ev.target === detailsBackdrop) closeDetails(); });
 
     document.addEventListener('click', (ev)=>{
@@ -1154,35 +1023,24 @@
     document.getElementById('hostFilter').addEventListener('change', async ()=>{
       const mode = document.getElementById('hostFilter').value;
       const teamSel = document.getElementById('hostTeam');
-
       if(mode === 'team'){
         teamSel.style.display = 'inline-block';
         if(teamSel.options.length <= 1) await loadHostTeamsForFilter();
       } else {
-        teamSel.style.display = 'none';
-        teamSel.value = '';
+        teamSel.style.display = 'none'; teamSel.value = '';
       }
       applyFilters();
     });
 
     document.getElementById('hostTeam').addEventListener('change', applyFilters);
     document.getElementById('apply').addEventListener('click', applyFilters);
-
-    // ✅ Year/month controls + arrows (single month view)
     document.getElementById('prevMonth').addEventListener('click', ()=> stepMonth(-1));
     document.getElementById('nextMonth').addEventListener('click', ()=> stepMonth(1));
-
     document.getElementById('year').addEventListener('change', (e)=>{
-      viewYear = Number(e.target.value);
-      setMonthUI();
-      applyFilters();
-      updateMonthLabel();
+      viewYear = Number(e.target.value); setMonthUI(); applyFilters(); updateMonthLabel();
     });
     document.getElementById('month').addEventListener('change', (e)=>{
-      viewMonth = Number(e.target.value);
-      setMonthUI();
-      applyFilters();
-      updateMonthLabel();
+      viewMonth = Number(e.target.value); setMonthUI(); applyFilters(); updateMonthLabel();
     });
 
     /* ========= Create/Edit modal ========= */
@@ -1193,33 +1051,17 @@
     const modalCreate = document.getElementById('modalCreate');
     const createMsg = document.getElementById('createMsg');
 
-    const f_title = document.getElementById('f_title');
-    const f_starts= document.getElementById('f_starts');
-    const f_ends  = document.getElementById('f_ends');
-    const f_parish= document.getElementById('f_parish');
-    const f_location = document.getElementById('f_location');
-    const f_team  = document.getElementById('f_team');
-    const f_cover = document.getElementById('f_cover_file');
-    const f_desc  = document.getElementById('f_desc');
-
-    let modalMode = "create";               // "create" | "edit"
+    let modalMode = "create";
     let editingEventId = null;
     let editingExistingCoverUrl = null;
 
     function setCreateMsg(text){ createMsg.textContent = text || ''; }
-    function setModalTitle(text){
-      const t = document.getElementById('modalTitle');
-      if (t) t.textContent = text;
-    }
+    function setModalTitle(text){ const t = document.getElementById('modalTitle'); if (t) t.textContent = text; }
     function resetForm(){
-      f_title.value = '';
-      f_starts.value = '';
-      f_ends.value = '';
-      f_parish.value = '';
-      f_location.value = '';
-      f_desc.value = '';
-      f_team.value = '';
-      if (f_cover) f_cover.value = '';
+      ['f_title','f_parish','f_location','f_desc'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+      ['f_starts','f_ends'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+      const ft = document.getElementById('f_team'); if(ft) ft.value = '';
+      const fc = document.getElementById('f_cover_file'); if(fc) fc.value = '';
       setCreateMsg('');
     }
 
@@ -1235,31 +1077,20 @@
 
     modalClose.addEventListener('click', closeCreateModal);
     modalCancel.addEventListener('click', ()=>{
-      modalMode = "create";
-      editingEventId = null;
-      editingExistingCoverUrl = null;
-      setModalTitle("Create Event");
-      resetForm();
-      closeCreateModal();
+      modalMode = "create"; editingEventId = null; editingExistingCoverUrl = null;
+      setModalTitle("Create Event"); resetForm(); closeCreateModal();
     });
     modalBackdrop.addEventListener('click', (e)=>{ if(e.target === modalBackdrop) closeCreateModal(); });
 
     async function uploadEventCover(file, userId){
       if(!file) return null;
-
       const ok = ["image/jpeg","image/png","image/webp"];
       if(!ok.includes(file.type)) throw new Error("Upload JPG, PNG, or WEBP.");
       if(file.size > 6 * 1024 * 1024) throw new Error("Max image size is 6MB.");
-
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `covers/${userId}/${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`;
-
-      const { error: upErr } = await supabase.storage.from("event-covers").upload(path, file, {
-        upsert:false,
-        contentType:file.type
-      });
+      const { error: upErr } = await supabase.storage.from("event-covers").upload(path, file, { upsert:false, contentType:file.type });
       if(upErr) throw upErr;
-
       const { data } = supabase.storage.from("event-covers").getPublicUrl(path);
       return data?.publicUrl || null;
     }
@@ -1268,153 +1099,87 @@
       const sel = document.getElementById('f_team');
       if (!sel) return;
       sel.innerHTML = `<option value="">My account</option>`;
-
       const { data:{ user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data, error } = await supabase
-        .from('team_members')
-        .select(`
-          role,
-          teams:team_id ( id, name, is_promoter )
-        `)
-        .eq('user_id', user.id)
-        .in('role', ['owner','manager']);
-
-      if (error){
-        console.error('loadMyTeamOptions error', error);
-        return;
-      }
-
-      const teams = (data || []).map(r => r.teams).filter(Boolean);
-      teams.forEach(t => {
+      const { data, error } = await supabase.from('team_members')
+        .select(`role, teams:team_id ( id, name, is_promoter )`)
+        .eq('user_id', user.id).in('role', ['owner','manager']);
+      if (error){ console.error('loadMyTeamOptions error', error); return; }
+      (data || []).map(r => r.teams).filter(Boolean).forEach(t => {
         const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = t.name || 'Team';
+        opt.value = t.id; opt.textContent = t.name || 'Team';
         sel.appendChild(opt);
       });
     }
 
     async function startEdit(e){
       await loadMyTeamOptions();
-
-      modalMode = "edit";
-      editingEventId = e.id;
-      editingExistingCoverUrl = e.cover_url || null;
-
+      modalMode = "edit"; editingEventId = e.id; editingExistingCoverUrl = e.cover_url || null;
       setModalTitle("Edit Event");
       setCreateMsg('Optional: upload a new cover to replace the current one.');
-
-      f_title.value = e.title || '';
-      f_parish.value = e.parish || '';
-      f_location.value = e.location || '';
-      f_desc.value = e.description || '';
-      f_team.value = e.team_id || '';
-
-      f_starts.value = toLocalInput(e.starts_at);
-      f_ends.value = toLocalInput(e.ends_at);
-
-      if (f_cover) f_cover.value = '';
-
-      closeDetails();
-      openCreateModal();
+      document.getElementById('f_title').value = e.title || '';
+      document.getElementById('f_parish').value = e.parish || '';
+      document.getElementById('f_location').value = e.location || '';
+      document.getElementById('f_desc').value = e.description || '';
+      document.getElementById('f_team').value = e.team_id || '';
+      document.getElementById('f_starts').value = toLocalInput(e.starts_at);
+      document.getElementById('f_ends').value = toLocalInput(e.ends_at);
+      const fc = document.getElementById('f_cover_file'); if(fc) fc.value = '';
+      closeDetails(); openCreateModal();
     }
 
     async function doDelete(e){
-      const ok = confirm("Delete this event permanently? This can’t be undone.");
+      const ok = confirm("Delete this event permanently? This can't be undone.");
       if (!ok) return;
-
       const { error } = await supabase.from('events').delete().eq('id', e.id);
-      if (error){
-        toast('error', 'Delete failed', error.message || "Couldn’t delete event.");
-        return;
-      }
-
+      if (error){ toast('error', 'Delete failed', error.message || "Couldn't delete event."); return; }
       closeDetails();
-      cached = await fetchAll();
-      buildYearOptions();
-      setMonthUI();
-      applyFilters();
+      cached = await fetchAll(); buildYearOptions(); setMonthUI(); applyFilters();
       toast('success', 'Deleted', 'Event removed from the calendar.');
     }
 
     if (addEventBtn){
       addEventBtn.addEventListener('click', async ()=>{
-        if (window.authUI){
-          const okLogin = await authUI.requireLogin(null, { message: "Please log in or sign up to create events." });
-          if (!okLogin) return;
+        // ✅ Use authUI.requireLogin
+        const loggedIn = await authUI.requireLogin({ message: "Please log in to create events." });
+        if (!loggedIn) return;
 
-          await authUI.refresh();
-          const isAdmin = authUI?.isAdmin?.() === true;
-          const isProm  = authUI?.isPromoter?.() === true;
-
-          if (!isAdmin && !isProm){
-            toast('error', 'No access', 'Promoter or Admin accounts only.');
-            return;
-          }
-
-          modalMode = "create";
-          editingEventId = null;
-          editingExistingCoverUrl = null;
-          setModalTitle("Create Event");
-          resetForm();
-
-          await loadMyTeamOptions();
-          openCreateModal();
+        await authUI.refresh();
+        const isAdmin = authUI?.isAdmin?.() === true;
+        const isProm  = authUI?.isPromoter?.() === true;
+        if (!isAdmin && !isProm){
+          toast('error', 'No access', 'Promoter or Admin accounts only.');
           return;
         }
 
-        const { data:{ user } } = await supabase.auth.getUser();
-        if (!user){
-          toast('info', 'Sign in required', 'Please log in or sign up to create events.');
-          return;
-        }
-
-        modalMode = "create";
-        editingEventId = null;
-        editingExistingCoverUrl = null;
-        setModalTitle("Create Event");
-        resetForm();
-
-        await loadMyTeamOptions();
-        openCreateModal();
+        modalMode = "create"; editingEventId = null; editingExistingCoverUrl = null;
+        setModalTitle("Create Event"); resetForm();
+        await loadMyTeamOptions(); openCreateModal();
       });
     }
 
     modalCreate.addEventListener('click', async ()=>{
-      setCreateMsg('');
-      modalCreate.disabled = true;
-
+      setCreateMsg(''); modalCreate.disabled = true;
       try{
         const { data:{ user } } = await supabase.auth.getUser();
-        if (!user){
-          toast('info', 'Sign in required', 'Please log in or sign up to manage events.');
-          return;
-        }
+        if (!user){ toast('info', 'Sign in required', 'Please log in to manage events.'); return; }
 
-        if (window.authUI){
-          await authUI.refresh();
-          const isAdmin = authUI?.isAdmin?.() === true;
-          const isProm  = authUI?.isPromoter?.() === true;
-          if (!isAdmin && !isProm){
-            toast('error', 'No access', 'Promoter or Admin accounts only.');
-            return;
-          }
-        }
+        await authUI.refresh();
+        const isAdmin = authUI?.isAdmin?.() === true;
+        const isProm  = authUI?.isPromoter?.() === true;
+        if (!isAdmin && !isProm){ toast('error', 'No access', 'Promoter or Admin accounts only.'); return; }
 
-        const title = f_title.value.trim();
-        const startsRaw = f_starts.value;
-        const endsRaw = f_ends.value;
-        const parishTxt = f_parish.value.trim() || null;
-        const locationTxt = f_location.value.trim() || null;
-        const desc = f_desc.value.trim() || null;
-        const teamId = f_team.value || null;
+        const title = document.getElementById('f_title').value.trim();
+        const startsRaw = document.getElementById('f_starts').value;
+        const endsRaw = document.getElementById('f_ends').value;
+        const parishTxt = document.getElementById('f_parish').value.trim() || null;
+        const locationTxt = document.getElementById('f_location').value.trim() || null;
+        const desc = document.getElementById('f_desc').value.trim() || null;
+        const teamId = document.getElementById('f_team').value || null;
+        const f_cover = document.getElementById('f_cover_file');
         const file = f_cover?.files?.[0] || null;
 
-        if (!title || !startsRaw){
-          toast('error', 'Missing fields', 'Title and start time are required.');
-          return;
-        }
+        if (!title || !startsRaw){ toast('error', 'Missing fields', 'Title and start time are required.'); return; }
 
         setCreateMsg(file ? 'Uploading cover…' : 'Saving…');
 
@@ -1424,98 +1189,49 @@
 
         if (modalMode === "create"){
           const row = {
-            title,
-            starts_at: toISO(startsRaw),
-            ends_at: endsRaw ? toISO(endsRaw) : null,
-            location: locationTxt,
-            parish: parishTxt,
-            description: desc,
-            cover_url: coverUrl,
-            created_by: user.id,
-            team_id: teamId,
-            promoter_handle: null,
-            payment_url: "",
-            payment_label: "",
-            payment_instructions: ""
+            title, starts_at: toISO(startsRaw), ends_at: endsRaw ? toISO(endsRaw) : null,
+            location: locationTxt, parish: parishTxt, description: desc, cover_url: coverUrl,
+            created_by: user.id, team_id: teamId,
+            promoter_handle: null, payment_url: "", payment_label: "", payment_instructions: ""
           };
-
           const { error } = await supabase.from('events').insert(row);
-          if (error){
-            toast('error', 'Create failed', error.message || "Couldn’t create event.");
-            return;
-          }
-
-          closeCreateModal();
-          cached = await fetchAll();
-          buildYearOptions();
-          setMonthUI();
-          applyFilters();
-          toast('success', 'Created', 'Event added to the calendar.');
-          resetForm();
-          return;
+          if (error){ toast('error', 'Create failed', error.message || "Couldn't create event."); return; }
+          closeCreateModal(); cached = await fetchAll(); buildYearOptions(); setMonthUI(); applyFilters();
+          toast('success', 'Created', 'Event added to the calendar.'); resetForm(); return;
         }
 
-        if (!editingEventId){
-          toast('error', 'Edit failed', 'No event selected to edit.');
-          return;
-        }
+        if (!editingEventId){ toast('error', 'Edit failed', 'No event selected to edit.'); return; }
 
         const patch = {
-          title,
-          starts_at: toISO(startsRaw),
-          ends_at: endsRaw ? toISO(endsRaw) : null,
-          location: locationTxt,
-          parish: parishTxt,
-          description: desc,
-          cover_url: coverUrl,
-          team_id: teamId
+          title, starts_at: toISO(startsRaw), ends_at: endsRaw ? toISO(endsRaw) : null,
+          location: locationTxt, parish: parishTxt, description: desc, cover_url: coverUrl, team_id: teamId
         };
-
         const { error } = await supabase.from('events').update(patch).eq('id', editingEventId);
-        if (error){
-          toast('error', 'Update failed', error.message || "Couldn’t update event.");
-          return;
-        }
+        if (error){ toast('error', 'Update failed', error.message || "Couldn't update event."); return; }
 
         closeCreateModal();
         toast('success', 'Updated', 'Event changes saved.');
-
-        modalMode = "create";
-        editingEventId = null;
-        editingExistingCoverUrl = null;
-        setModalTitle("Create Event");
-        resetForm();
-
-        cached = await fetchAll();
-        buildYearOptions();
-        setMonthUI();
-        applyFilters();
+        modalMode = "create"; editingEventId = null; editingExistingCoverUrl = null;
+        setModalTitle("Create Event"); resetForm();
+        cached = await fetchAll(); buildYearOptions(); setMonthUI(); applyFilters();
       } catch(err){
         console.error(err);
         toast('error', 'Something stalled', err.message || 'Try again.');
       } finally {
-        modalCreate.disabled = false;
-        setCreateMsg('');
+        modalCreate.disabled = false; setCreateMsg('');
       }
     });
 
     /* ========= Boot ========= */
     window.addEventListener('DOMContentLoaded', async ()=>{
       await loadHostTeamsForFilter();
-
       cached = await fetchAll();
 
-      // If there are events, default view to the first upcoming event month (nice UX)
       const upcoming = (cached || []).find(e => e.starts_at && isUpcoming(e.starts_at));
       const base = upcoming?.starts_at ? new Date(upcoming.starts_at) : new Date();
-      viewYear = base.getFullYear();
-      viewMonth = base.getMonth();
+      viewYear = base.getFullYear(); viewMonth = base.getMonth();
 
-      buildYearOptions();
-      setMonthUI();
-
-      applyFilters();
-      updateMonthLabel();
+      buildYearOptions(); setMonthUI(); applyFilters(); updateMonthLabel();
     });
   </script>
 </body>

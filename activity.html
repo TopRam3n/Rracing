@@ -8,20 +8,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
-
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -83,6 +70,8 @@
     .btn-primary:hover{transform:translateY(-1px)}
     .btn-pill-sm{padding:6px 14px;font-size:11px;letter-spacing:.16em}
 
+    /* auth-ui.js wires navSignInBtn, navProfileWrap, navProfileChip,
+       navProfileInitials, navProfileDropdown, navSignOutBtn */
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
       width:32px;height:32px;border-radius:50%;
@@ -198,19 +187,18 @@
       <div class="nav-cta">
         <a href="/marketplace.html" class="btn btn-ghost btn-pill-sm">Marketplace</a>
 
-        <button id="loginBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
-        <button id="joinBtn" class="btn btn-primary btn-pill-sm">Join the Grid</button>
+        <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
 
-        <div id="profileMenu" class="profile-menu" style="display:none">
-          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
-            <span id="profileInitials">U</span>
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="navProfileInitials">U</span>
           </div>
-          <div id="dropdown" class="dropdown">
+          <div id="navProfileDropdown" class="dropdown" style="display:none">
             <a href="/garage.html">My Garage</a>
             <a href="/tickets.html">My Tickets</a>
             <a href="/teams.html">My Teams</a>
             <a href="/activity.html">Activity</a>
-            <button id="signoutBtn" type="button">Sign out</button>
+            <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -293,7 +281,7 @@
   }
 
   async function loadActivity(){
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = authUI.getUser();
 
     if(!user){
       whoPill.textContent = "Signed out";
@@ -301,7 +289,7 @@
         <div class="empty">
           You need to log in to see your activity.
           <div style="margin-top:10px">
-            <button class="btn btn-primary btn-pill-sm" onclick="authUI.openAuthModal('login')">Log in</button>
+            <button class="btn btn-primary btn-pill-sm" onclick="authUI.requireLogin(()=>location.reload())">Log in</button>
           </div>
         </div>`;
       return;
@@ -311,7 +299,7 @@
 
     const items = [];
 
-    // 1) Builds created (if builds table exists with owner_id)
+    // 1) Builds created
     const buildsRes = await tryQuery(() =>
       supabase.from('builds')
         .select('id,title,created_at')
@@ -379,7 +367,7 @@
       });
     }
 
-    // 5) Event RSVPs (event_rsvps)
+    // 5) Event RSVPs
     const rsvpRes = await tryQuery(() =>
       supabase.from('event_rsvps')
         .select('event_id,status,created_at')
@@ -394,7 +382,6 @@
       });
     }
 
-    // Sort newest first
     items.sort((a,b)=>{
       const ta = a.ts ? new Date(a.ts).getTime() : 0;
       const tb = b.ts ? new Date(b.ts).getTime() : 0;
@@ -403,6 +390,9 @@
 
     render(items);
   }
+
+  // Reload activity on auth change
+  authUI.onChange(() => loadActivity());
 
   document.addEventListener('DOMContentLoaded', loadActivity);
 </script>

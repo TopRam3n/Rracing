@@ -10,18 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
-
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -94,7 +83,7 @@
       margin-top:10px;
     }
 
-    /* nav auth */
+    /* auth-ui.js wires these nav IDs */
     .nav-auth{display:flex;align-items:center;gap:10px}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
@@ -135,6 +124,8 @@
           <a class="btn" href="/sightings.html">Sightings</a>
         </div>
 
+        <!-- auth-ui.js wires: navSignInBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, navSignOutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Sign in</button>
           <div id="navProfileWrap" class="profile-menu" style="display:none">
@@ -164,10 +155,10 @@
 
       <div id="authWarning" class="hint sub" style="display:none"></div>
 
-      <form id="sightingForm" class="card" style="margin-top:18px">
+      <div id="sightingForm" class="card" style="margin-top:18px">
         <div class="field">
           <label for="title">Caption</label>
-          <input id="title" type="text" placeholder="e.g. Clean S15 leaving Half-Way-Tree…" required>
+          <input id="title" type="text" placeholder="e.g. Clean S15 leaving Half-Way-Tree…">
         </div>
 
         <div class="field">
@@ -217,7 +208,7 @@
 
         <div class="field">
           <label for="media">Photo or 15s video</label>
-          <input id="media" type="file" accept="image/*,video/*" required>
+          <input id="media" type="file" accept="image/*,video/*">
           <p class="sub" style="font-size:12px;margin-top:6px">
             Images: JPG/PNG. Videos: MP4/MOV recommended, max 15 seconds.
           </p>
@@ -226,20 +217,19 @@
         <div id="preview" class="preview" style="display:none"></div>
 
         <div class="row" style="margin-top:14px">
-          <button id="saveBtn" type="submit" class="btn primary">Post sighting</button>
+          <button id="saveBtn" class="btn primary">Post sighting</button>
           <a href="/sightings.html" class="btn">Cancel</a>
           <span id="formMsg" class="sub"></span>
         </div>
-      </form>
+      </div>
     </section>
   </main>
 
   <script>
-    const BUCKET = 'sightings'; // ensure storage bucket exists
+    const BUCKET = 'sightings';
     const MAX_VIDEO_SECONDS = 15;
 
     const authWarning = document.getElementById('authWarning');
-    const form = document.getElementById('sightingForm');
     const formMsg = document.getElementById('formMsg');
     const saveBtn = document.getElementById('saveBtn');
     const mediaInput = document.getElementById('media');
@@ -254,24 +244,26 @@
       authWarning.textContent = '';
     }
 
-    async function ensureSignedIn(){
-      const { data: { user } } = await supabase.auth.getUser();
+    function syncAuthWarning(){
+      const user = authUI.getUser();
       if(!user){
         setWarn('Sign in to post a sighting. This will attach to your profile.');
         saveBtn.disabled = true;
-        return null;
+      } else {
+        clearWarn();
+        saveBtn.disabled = false;
       }
-      clearWarn();
-      saveBtn.disabled = false;
-      return user;
     }
 
-    // Prompt when they try to upload
+    // auth-ui.js owns onAuthStateChange — use authUI.onChange
+    authUI.onChange(() => syncAuthWarning());
+
+    // Warn before file picker opens
     mediaInput.addEventListener('click', () => {
       alert('Please blur all license plates before uploading.');
     });
 
-    // Validate & preview
+    // Validate & preview on file select
     mediaInput.addEventListener('change', async () => {
       preview.style.display = 'none';
       preview.innerHTML = '';
@@ -318,11 +310,9 @@
 
     async function uploadMedia(user){
       const file = mediaInput.files?.[0];
-      if(!file) throw new Error("Please choose a photo or video.");
+      if(!file) throw new Error('Please choose a photo or video.');
 
       const isVideo = file.type.startsWith('video/');
-      const ext = (file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg')).toLowerCase();
-
       const safeName = file.name.replace(/[^a-z0-9._-]/gi,'_');
       const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safeName}`;
 
@@ -337,25 +327,24 @@
       return {
         publicUrl: data?.publicUrl,
         path,
-        mediaType: isVideo ? 'video' : 'image',
-        ext
+        mediaType: isVideo ? 'video' : 'image'
       };
     }
 
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
+    saveBtn.addEventListener('click', async ()=>{
       formMsg.textContent = '';
       saveBtn.disabled = true;
       saveBtn.textContent = 'Posting…';
 
-      const ok = await window.authUI?.requireLogin?.(null, { silent:true });
+      // Delegate auth to auth-ui.js modal
+      const ok = await authUI.requireLogin();
       if(!ok){
         saveBtn.disabled = false;
         saveBtn.textContent = 'Post sighting';
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user){
         formMsg.textContent = 'Sign-in required.';
         saveBtn.disabled = false;
@@ -371,16 +360,14 @@
         const username = document.getElementById('username').value.trim() || null;
         const social = document.getElementById('social').value.trim() || null;
 
-        if(!title) throw new Error("Caption is required.");
+        if(!title) throw new Error('Caption is required.');
 
-        // media validation already handled on change, but we re-check here
         const file = mediaInput.files?.[0];
-        if(!file) throw new Error("Photo or video is required.");
+        if(!file) throw new Error('Photo or video is required.');
 
-        const { publicUrl, path, mediaType } = await uploadMedia(user);
-        if(!publicUrl) throw new Error("Upload succeeded but URL missing.");
+        const { publicUrl, mediaType } = await uploadMedia(user);
+        if(!publicUrl) throw new Error('Upload succeeded but URL missing.');
 
-        // NOTE: requires sightings.media_url + sightings.media_type + optional username/description columns
         const { data, error } = await supabase
           .from('sightings')
           .insert({
@@ -392,7 +379,6 @@
             social_handle: social,
             image_url: publicUrl,
             image_type: mediaType,
-            
           })
           .select('id')
           .maybeSingle();
@@ -401,18 +387,17 @@
 
         formMsg.textContent = 'Posted! Redirecting…';
         window.location.href = `/sighting.html?id=${data.id}`;
-      }catch(err){
+      } catch(err){
         console.error(err);
-        formMsg.textContent = 'Couldn’t post sighting: ' + (err?.message || String(err));
-      }finally{
+        formMsg.textContent = 'Couldn\'t post sighting: ' + (err?.message || String(err));
+      } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Post sighting';
       }
     });
 
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      await ensureSignedIn();
-      supabase.auth.onAuthStateChange(ensureSignedIn);
+    window.addEventListener('DOMContentLoaded', () => {
+      syncAuthWarning();
     });
   </script>
 </body>

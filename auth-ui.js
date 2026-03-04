@@ -1,667 +1,544 @@
-// /auth-ui.js
-// Shared Supabase auth + nav UI (email+password modal) + role helpers
-// Supports BOTH nav id sets used across your site:
-// - navSignInBtn / navJoinBtn / navProfileWrap / navProfileChip / navProfileInitials / navProfileDropdown / navSignOutBtn
-// - loginBtn / joinBtn / profileMenu / profileChip / profileInitials / dropdown / signoutBtn
-// - signinBtn (legacy) also supported
+// auth-ui.js  v2
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared auth + nav UI for ROK Racers JA.
+// Requires: supabase-client.js loaded first (sets window.supabase + helpers).
+//
+// What this file does:
+//   • Injects one auth modal (login / signup / forgot password)
+//   • Wires nav login/join/signout buttons (supports both id sets across pages)
+//   • Exposes window.authUI for page scripts
+//   • ONE onAuthStateChange listener — pages must NOT add their own
+//
+// Pages should:
+//   • NOT define their own login/signup modals
+//   • NOT call supabase.auth.onAuthStateChange themselves
+//   • USE window.authUI.requireLogin(), authUI.getUser(), etc.
+// ─────────────────────────────────────────────────────────────────────────────
 
 (function () {
+  // Guard: don't init twice (e.g. if script tag appears twice)
+  if (window.__authUIReady) return;
+  window.__authUIReady = true;
+
   if (!window.supabase) {
-    console.warn("[auth-ui] Supabase client not found. Make sure you createClient BEFORE including auth-ui.js.");
+    console.error("[auth-ui] supabase client not found. Load supabase-client.js first.");
     return;
   }
 
-  // --------- Optional config (safe defaults) ----------
-  const AUTH_UI_CONFIG = {
-    resetRedirectTo: (location.origin + "/reset-password.html"),
-
+  // ── Config ────────────────────────────────────────────────────────────────
+  const CFG = {
     profileTable: "profiles",
-    profileIdColumn: "id",
-    profileHandleColumn: "handle",
+    resetRedirectTo: location.origin + "/reset-password.html",
     handleMin: 3,
     handleMax: 20,
-
-    promoterTable: "event_promoters",
-    promoterEmailColumn: "email",
-
-    adminTable: "event_admins",
-    adminEmailColumn: "email",
-
-    adminAllowlist: [
-      // "admin@rokracersja.com",
-    ],
+    adminAllowlist: [],
   };
 
+  // ── State ─────────────────────────────────────────────────────────────────
   const state = {
     user: null,
+    role: null,        // from profiles.role
     isPromoter: false,
     isAdmin: false,
     listeners: [],
     navBound: false,
-    modalBound: false,
+    modalReady: false,
     modalOpen: false,
+    loginResolvers: [], // pending requireLogin() promises
   };
 
   const $ = (id) => document.getElementById(id);
 
-  // -----------------------
-  // Toast helper
-  // -----------------------
-  function toast(message = "Please log in / sign up.", _kind = "info") {
-    let el = document.getElementById("authUiToast");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "authUiToast";
-      el.style.cssText = `
-        position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-        background:rgba(10,10,14,.92);
+  // ── CSS injection ─────────────────────────────────────────────────────────
+  function injectStyles() {
+    if ($("__authUiStyles")) return;
+    const s = document.createElement("style");
+    s.id = "__authUiStyles";
+    s.textContent = `
+      /* ── Auth modal backdrop ───────────────────────────────── */
+      #__authModal{
+        position:fixed;inset:0;display:none;align-items:center;
+        justify-content:center;background:rgba(0,0,0,.72);z-index:9999;padding:18px;
+      }
+      #__authModal.open{ display:flex; }
+      #__authModalBox{
+        width:min(480px,96vw);
+        background:rgba(12,12,16,.97);
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:18px;
+        box-shadow:0 40px 120px -30px rgba(0,0,0,.85);
+        overflow:hidden;
+        backdrop-filter:blur(20px);
+        font-family:"Rajdhani",system-ui,sans-serif;
+      }
+      #__authModalHead{
+        display:flex;align-items:center;justify-content:space-between;
+        padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+      }
+      #__authModalTitle{
+        font-family:"Bebas Neue",system-ui,sans-serif;
+        letter-spacing:2px;font-size:26px;margin:0;color:#fff;text-transform:uppercase;
+      }
+      #__authModalClose{
+        border:1px solid rgba(255,255,255,.14);background:transparent;color:#fff;
+        border-radius:999px;padding:6px 10px;cursor:pointer;font-size:13px;
+        transition:border-color .18s ease,background .18s ease;
+      }
+      #__authModalClose:hover{ border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06); }
+      #__authModalBody{ padding:16px;display:grid;gap:12px; }
+
+      /* tabs */
+      .__auth-tabs{ display:flex;gap:8px; }
+      .__auth-tab{
+        flex:1;border-radius:999px;padding:10px 12px;
         border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.02);
+        color:#bdbdbd;cursor:pointer;
+        font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+        font-family:"Rajdhani",system-ui,sans-serif;
+        transition:color .18s ease,border-color .18s ease,box-shadow .18s ease;
+      }
+      .__auth-tab.active{
+        color:#fff;border-color:rgba(18,139,2,.75);
+        box-shadow:0 0 18px rgba(18,139,2,.35);
+      }
+
+      /* fields */
+      .__auth-field label{ display:block;font-size:12px;color:#bdbdbd;margin-bottom:6px;text-transform:uppercase;letter-spacing:.12em; }
+      .__auth-field input,.__auth-field select{
+        width:100%;padding:11px 12px;border-radius:12px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(20,20,24,.9);color:#fff;
+        outline:none;font-size:14px;font-family:"Rajdhani",system-ui,sans-serif;
+        transition:border-color .18s ease,box-shadow .18s ease;
+      }
+      .__auth-field input:focus,.__auth-field select:focus{
+        border-color:rgba(18,139,2,.65);
+        box-shadow:0 0 0 1px rgba(18,139,2,.3);
+      }
+      .__auth-field .hint{ font-size:11px;color:#888;margin-top:4px;line-height:1.3; }
+
+      /* message */
+      .__auth-msg{ font-size:12px;color:#bdbdbd;min-height:16px;line-height:1.4; }
+      .__auth-msg.ok{ color:#9affc5; }
+      .__auth-msg.bad{ color:#ff9a9a; }
+
+      /* buttons */
+      .__auth-btn{
+        border-radius:999px;padding:11px 14px;
+        font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+        cursor:pointer;border:1px solid rgba(255,255,255,.14);
+        background:transparent;color:#fff;width:100%;
+        font-family:"Rajdhani",system-ui,sans-serif;
+        transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease;
+      }
+      .__auth-btn:disabled{ opacity:.55;pointer-events:none; }
+      .__auth-btn.primary{
+        background:radial-gradient(circle at top left,#39ff96,#128b02);
+        border-color:rgba(18,139,2,.85);
+        box-shadow:0 0 24px rgba(18,139,2,.5);
         color:#fff;
-        padding:10px 14px;
-        border-radius:999px;
-        font-size:13px;
-        letter-spacing:.02em;
-        z-index:10000;
-        box-shadow:0 18px 40px rgba(0,0,0,.6);
-        backdrop-filter: blur(14px);
-        opacity:0; transition:opacity .18s ease, transform .18s ease;
-        pointer-events:none;
-        max-width:min(520px, 92vw);
-        text-align:center;
-      `;
-      document.body.appendChild(el);
-    }
-
-    el.textContent = message;
-    el.style.opacity = "1";
-    el.style.transform = "translateX(-50%) translateY(-2px)";
-
-    clearTimeout(el._t);
-    el._t = setTimeout(() => {
-      el.style.opacity = "0";
-      el.style.transform = "translateX(-50%) translateY(6px)";
-    }, 2400);
-  }
-
-  function escapeHTML(s) {
-    return (s || "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[m]));
-  }
-
-  function clampStr(s, max) {
-    s = (s || "").trim();
-    return s.length > max ? s.slice(0, max) : s;
-  }
-
-  function normalizeHandle(raw) {
-    const s = (raw || "").trim().toLowerCase();
-    return s.replace(/[^a-z0-9._]/g, "");
-  }
-
-  function notifyListeners() {
-    state.listeners.forEach((fn) => {
-      try {
-        fn({ user: state.user, isPromoter: state.isPromoter, isAdmin: state.isAdmin });
-      } catch (err) {
-        console.error("[auth-ui] listener error:", err);
       }
-    });
-  }
+      .__auth-btn.primary:hover{ transform:translateY(-1px);box-shadow:0 0 32px rgba(18,139,2,.7); }
+      .__auth-btn.ghost{ border-color:rgba(255,255,255,.12);color:#bdbdbd; }
+      .__auth-btn.ghost:hover{ color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.03); }
 
-  // -----------------------
-  // Role checks (non-fatal)
-  // -----------------------
-  async function checkPromoter() {
-    state.isPromoter = false;
-    if (!state.user?.email) return;
-
-    try {
-      const email = state.user.email.toLowerCase();
-      const { data, error } = await supabase
-        .from(AUTH_UI_CONFIG.promoterTable)
-        .select("id")
-        .eq(AUTH_UI_CONFIG.promoterEmailColumn, email)
-        .maybeSingle();
-
-      if (error) {
-        // table/policy missing should NOT break auth
-        return;
+      .__auth-links{
+        display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+        margin-top:-4px;
       }
-      state.isPromoter = !!data;
-    } catch {
-      // silent
-    }
-  }
-
-  async function checkAdmin() {
-    state.isAdmin = false;
-    if (!state.user?.email) return;
-
-    const email = state.user.email.toLowerCase();
-
-    if ((AUTH_UI_CONFIG.adminAllowlist || []).map(e => String(e).toLowerCase()).includes(email)) {
-      state.isAdmin = true;
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from(AUTH_UI_CONFIG.adminTable)
-        .select("id")
-        .eq(AUTH_UI_CONFIG.adminEmailColumn, email)
-        .maybeSingle();
-
-      if (error) return;
-      state.isAdmin = !!data;
-    } catch {
-      // silent
-    }
-  }
-
-  // -----------------------
-  // Load user + roles (hardened)
-  // -----------------------
-  let _loading = false;
-  let _rolesTimer = null;
-
-  async function loadUserAndRoles() {
-    if (_loading) return;
-    _loading = true;
-
-    try {
-      // Use persisted session first (prevents "logged out flash")
-      const { data: { session }, error: sErr } = await supabase.auth.getSession();
-      if (sErr) console.warn("[auth-ui] getSession error (non-fatal):", sErr);
-
-      state.user = session?.user || null;
-
-      // Fallback if needed
-      if (!state.user) {
-        const { data: { user } } = await supabase.auth.getUser();
-        state.user = user || null;
+      .__auth-link{
+        font-size:12px;color:#FFD93B;cursor:pointer;
+        background:transparent;border:none;padding:0;
+        font-family:"Rajdhani",system-ui,sans-serif;
+        letter-spacing:.06em;
+        transition:opacity .15s ease;
       }
+      .__auth-link:hover{ opacity:.75; }
 
-      // roles (non-blocking feel, but still reliable)
-      await Promise.allSettled([checkPromoter(), checkAdmin()]);
-
-      updateNavUI();
-      notifyListeners();
-    } catch (err) {
-      console.error("[auth-ui] loadUserAndRoles error:", err);
-    } finally {
-      _loading = false;
-    }
-  }
-
-  function scheduleRoleRefresh() {
-    clearTimeout(_rolesTimer);
-    _rolesTimer = setTimeout(() => {
-      // roles can change after login; keep light
-      loadUserAndRoles();
-    }, 80);
-  }
-
-  // -----------------------
-  // Modal UI (injected)
-  // -----------------------
-  function ensureAuthModal() {
-    if (state.modalBound) return;
-
-    const style = document.createElement("style");
-    style.id = "authUiStyle";
-    style.textContent = `
-      .authui-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.68);z-index:9999;padding:18px;}
-      .authui-modal{width:min(480px,96vw);background:rgba(12,12,16,.96);border:1px solid rgba(255,255,255,.10);border-radius:18px;box-shadow:0 40px 120px -30px rgba(0,0,0,.8);overflow:hidden;backdrop-filter:blur(16px);}
-      .authui-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
-      .authui-title{font-family:"Bebas Neue",system-ui,sans-serif;letter-spacing:2px;font-size:26px;margin:0;color:#fff;text-transform:uppercase;}
-      .authui-close{border:1px solid rgba(255,255,255,.14);background:transparent;color:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;}
-      .authui-body{padding:16px;display:grid;gap:10px;}
-      .authui-tabs{display:flex;gap:8px;}
-      .authui-tab{flex:1;border-radius:999px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.02);color:#bdbdbd;cursor:pointer;font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
-      .authui-tab.active{color:#fff;border-color:rgba(255,217,59,.55);box-shadow:0 0 0 1px rgba(255,217,59,.28);}
-      .authui-field label{display:block;font-size:12px;color:#bdbdbd;margin:6px 0 6px;}
-      .authui-field input{width:100%;padding:11px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(20,20,24,.9);color:#fff;outline:none;font-size:14px;font-family:inherit;}
-      .authui-field input:focus{border-color:rgba(255,217,59,.55);box-shadow:0 0 0 1px rgba(255,217,59,.25);}
-      .authui-help{font-size:12px;color:#bdbdbd;line-height:1.3;}
-      .authui-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:6px;}
-      .authui-btn{border-radius:999px;padding:10px 14px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:#fff;}
-      .authui-btn.primary{border-color:rgba(229,9,20,.9);background:radial-gradient(circle at top left,#ff4d4d,#e50914);box-shadow:0 0 18px rgba(229,9,20,.55);}
-      .authui-btn[disabled]{opacity:.6;pointer-events:none}
-      .authui-links{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
-      .authui-link{font-size:12px;color:#ffd93b;cursor:pointer;text-decoration:none;background:transparent;border:none;padding:0;}
-      .authui-msg{font-size:12px;color:#bdbdbd;min-height:16px;}
-      .authui-msg.ok{color:#9affc5;}
-      .authui-msg.bad{color:#ff9090;}
+      .__auth-or{
+        display:flex;align-items:center;gap:10px;
+        color:#555;font-size:11px;text-transform:uppercase;letter-spacing:.14em;
+      }
+      .__auth-or::before,.__auth-or::after{
+        content:"";flex:1;height:1px;background:rgba(255,255,255,.08);
+      }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(s);
+  }
 
-    const wrap = document.createElement("div");
-    wrap.id = "authUiBackdrop";
-    wrap.className = "authui-backdrop";
-    wrap.innerHTML = `
-      <div class="authui-modal" role="dialog" aria-modal="true" aria-labelledby="authUiTitle">
-        <div class="authui-head">
-          <h2 id="authUiTitle" class="authui-title">Join the grid</h2>
-          <button class="authui-close" type="button" aria-label="Close">✕</button>
+  // ── Modal HTML ────────────────────────────────────────────────────────────
+  function injectModal() {
+    if ($("__authModal")) return;
+    const div = document.createElement("div");
+    div.id = "__authModal";
+    div.setAttribute("role", "dialog");
+    div.setAttribute("aria-modal", "true");
+    div.setAttribute("aria-labelledby", "__authModalTitle");
+    div.innerHTML = `
+      <div id="__authModalBox">
+        <div id="__authModalHead">
+          <h2 id="__authModalTitle">Join the Grid</h2>
+          <button id="__authModalClose" type="button" aria-label="Close">✕</button>
         </div>
-
-        <div class="authui-body">
-          <div class="authui-tabs">
-            <button id="authUiTabLogin" class="authui-tab active" type="button">Log in</button>
-            <button id="authUiTabSignup" class="authui-tab" type="button">Sign up</button>
+        <div id="__authModalBody">
+          <div class="__auth-tabs">
+            <button id="__authTabLogin" class="__auth-tab active" type="button">Log in</button>
+            <button id="__authTabSignup" class="__auth-tab" type="button">Sign up</button>
           </div>
 
-          <div class="authui-field">
-            <label for="authUiEmail">Email</label>
-            <input id="authUiEmail" type="email" autocomplete="email" placeholder="you@email.com" />
+          <div class="__auth-field" id="__authRoleWrap" style="display:none">
+            <label>Your role</label>
+            <select id="__authRole">
+              <option value="">Select one…</option>
+              <option value="racer">Racer</option>
+              <option value="promoter">Team Promoter</option>
+            </select>
           </div>
 
-          <div class="authui-field">
-            <label for="authUiPassword">Password</label>
-            <input id="authUiPassword" type="password" autocomplete="current-password" placeholder="••••••••" />
+          <div class="__auth-field">
+            <label for="__authEmail">Email</label>
+            <input id="__authEmail" type="email" autocomplete="email" placeholder="you@email.com"/>
+          </div>
+          <div class="__auth-field">
+            <label for="__authPassword">Password</label>
+            <input id="__authPassword" type="password" autocomplete="current-password" placeholder="••••••••"/>
           </div>
 
-          <div id="authUiHandleWrap" class="authui-field" style="display:none">
-            <label for="authUiHandle">Username (optional)</label>
-            <input id="authUiHandle" type="text" autocomplete="username" placeholder="e.g. rrxngdriver" />
-            <div class="authui-help">Used for @handles across the site (if profiles table exists).</div>
-          </div>
+          <div id="__authMsg" class="__auth-msg"></div>
 
-          <div id="authUiMsg" class="authui-msg"></div>
+          <button id="__authSubmit" class="__auth-btn primary" type="button">Log in</button>
 
-          <div class="authui-actions">
-            <button id="authUiSubmit" class="authui-btn primary" type="button">Log in</button>
-            <div class="authui-links">
-              <button id="authUiForgot" class="authui-link" type="button">Forgot password</button>
-            </div>
-          </div>
+          <div class="__auth-or">or</div>
+          <button id="__authGoogle" class="__auth-btn ghost" type="button">Continue with Google</button>
 
-          <div class="authui-help">
-            By continuing, you agree to behave like you’re on the island’s grid (no nonsense).
+          <div class="__auth-links">
+            <button id="__authForgot" class="__auth-link" type="button">Forgot password?</button>
           </div>
         </div>
       </div>
     `;
-    document.body.appendChild(wrap);
+    document.body.appendChild(div);
 
-    wrap.querySelector(".authui-close").addEventListener("click", closeAuthModal);
-    wrap.addEventListener("click", (e) => { if (e.target === wrap) closeAuthModal(); });
-
-    $("authUiTabLogin").addEventListener("click", () => setAuthMode("login"));
-    $("authUiTabSignup").addEventListener("click", () => setAuthMode("signup"));
-    $("authUiSubmit").addEventListener("click", submitAuth);
-    $("authUiForgot").addEventListener("click", forgotPasswordFlow);
+    // ── Bind modal events ──
+    $("__authModalClose").onclick = closeModal;
+    $("__authModal").addEventListener("click", (e) => { if (e.target === $("__authModal")) closeModal(); });
+    $("__authTabLogin").onclick = () => setMode("login");
+    $("__authTabSignup").onclick = () => setMode("signup");
+    $("__authSubmit").onclick = submitAuth;
+    $("__authGoogle").onclick = googleAuth;
+    $("__authForgot").onclick = forgotPassword;
 
     document.addEventListener("keydown", (e) => {
       if (!state.modalOpen) return;
-      if (e.key === "Escape") closeAuthModal();
+      if (e.key === "Escape") closeModal();
       if (e.key === "Enter") {
-        const active = document.activeElement;
-        if (active && (active.id === "authUiEmail" || active.id === "authUiPassword" || active.id === "authUiHandle")) {
-          submitAuth();
-        }
+        const t = document.activeElement?.id;
+        if (["__authEmail","__authPassword","__authRole"].includes(t)) submitAuth();
       }
     });
 
-    state.modalBound = true;
-    setAuthMode("login");
+    state.modalReady = true;
   }
 
-  let authMode = "login";
+  let _mode = "login";
 
-  function setAuthMode(mode) {
-    authMode = mode === "signup" ? "signup" : "login";
+  function setMode(mode) {
+    _mode = mode;
+    const isSignup = mode === "signup";
 
-    const tabLogin = $("authUiTabLogin");
-    const tabSignup = $("authUiTabSignup");
-    const title = $("authUiTitle");
-    const submit = $("authUiSubmit");
-    const handleWrap = $("authUiHandleWrap");
-    const pwd = $("authUiPassword");
-
-    tabLogin.classList.toggle("active", authMode === "login");
-    tabSignup.classList.toggle("active", authMode === "signup");
-
-    if (authMode === "login") {
-      title.textContent = "Welcome back";
-      submit.textContent = "Log in";
-      handleWrap.style.display = "none";
-      pwd.setAttribute("autocomplete", "current-password");
-    } else {
-      title.textContent = "Join the grid";
-      submit.textContent = "Sign up";
-      handleWrap.style.display = "block";
-      pwd.setAttribute("autocomplete", "new-password");
-    }
-
-    setMsg("");
+    $("__authTabLogin").classList.toggle("active", !isSignup);
+    $("__authTabSignup").classList.toggle("active", isSignup);
+    $("__authModalTitle").textContent = isSignup ? "Join the Grid" : "Welcome Back";
+    $("__authSubmit").textContent = isSignup ? "Sign up" : "Log in";
+    $("__authRoleWrap").style.display = isSignup ? "block" : "none";
+    $("__authPassword").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
+    if (!isSignup) { const r = $("__authRole"); if (r) r.value = ""; }
+    setMsg("", "");
   }
 
   function setMsg(text, kind) {
-    const el = $("authUiMsg");
+    const el = $("__authMsg");
     if (!el) return;
     el.textContent = text || "";
-    el.className = "authui-msg" + (kind ? (" " + kind) : "");
+    el.className = "__auth-msg" + (kind ? " " + kind : "");
   }
 
-  function openAuthModal(mode) {
-    ensureAuthModal();
-    setAuthMode(mode || "login");
-
-    const wrap = $("authUiBackdrop");
-    wrap.style.display = "flex";
+  function openModal(mode) {
+    injectStyles();
+    injectModal();
+    setMode(mode || "login");
+    $("__authModal").classList.add("open");
+    $("__authPassword").value = "";
+    setMsg("", "");
     state.modalOpen = true;
-
-    $("authUiPassword").value = "";
-    setMsg("");
-
-    setTimeout(() => $("authUiEmail")?.focus(), 0);
+    setTimeout(() => $("__authEmail")?.focus(), 50);
   }
 
-  function closeAuthModal() {
-    const wrap = $("authUiBackdrop");
-    if (wrap) wrap.style.display = "none";
+  function closeModal() {
+    const el = $("__authModal");
+    if (el) el.classList.remove("open");
     state.modalOpen = false;
-  }
-
-  async function upsertProfileHandle(userId, handle) {
-    try {
-      const payload = {
-        [AUTH_UI_CONFIG.profileIdColumn]: userId,
-        [AUTH_UI_CONFIG.profileHandleColumn]: handle,
-      };
-
-      const { error } = await supabase
-        .from(AUTH_UI_CONFIG.profileTable)
-        .upsert(payload, { onConflict: AUTH_UI_CONFIG.profileIdColumn });
-
-      if (error) console.warn("[auth-ui] profile handle upsert failed (non-fatal):", error.message);
-    } catch {
-      // silent
-    }
+    setMsg("", "");
+    // resolve any pending requireLogin promises as false (user closed modal)
+    // We'll resolve them on auth state change success instead
   }
 
   async function submitAuth() {
-    const email = clampStr($("authUiEmail")?.value, 240).toLowerCase();
-    const password = $("authUiPassword")?.value || "";
-    const handleRaw = $("authUiHandle")?.value || "";
+    const email = ($("__authEmail")?.value || "").trim().toLowerCase();
+    const password = $("__authPassword")?.value || "";
+    const role = $("__authRole")?.value || "";
 
     if (!email || !email.includes("@")) return setMsg("Enter a valid email.", "bad");
-    if (!password || password.length < 6) return setMsg("Password must be at least 6 characters.", "bad");
+    if (password.length < 6) return setMsg("Password must be at least 6 characters.", "bad");
+    if (_mode === "signup" && !role) return setMsg("Select a role to continue.", "bad");
 
-    $("authUiSubmit").disabled = true;
+    $("__authSubmit").disabled = true;
+    setMsg("Working…", "");
 
     try {
-      if (authMode === "login") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (_mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) return setMsg(error.message || "Login failed.", "bad");
-
-        state.user = data?.user || null;
-        closeAuthModal();
-        scheduleRoleRefresh();
-        return;
+        setMsg("Logged in!", "ok");
+        setTimeout(closeModal, 400);
+      } else {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) return setMsg(error.message || "Signup failed.", "bad");
+        const uid = data?.user?.id;
+        if (uid && role) {
+          await supabase.from("profiles").upsert(
+            { id: uid, role, updated_at: new Date().toISOString() },
+            { onConflict: "id" }
+          );
+        }
+        setMsg("Account created! Check your email to confirm.", "ok");
       }
-
-      const handle = normalizeHandle(handleRaw);
-      if (handle && (handle.length < AUTH_UI_CONFIG.handleMin || handle.length > AUTH_UI_CONFIG.handleMax)) {
-        return setMsg(`Username must be ${AUTH_UI_CONFIG.handleMin}-${AUTH_UI_CONFIG.handleMax} chars.`, "bad");
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: location.href, data: handle ? { handle } : {} },
-      });
-
-      if (error) return setMsg(error.message || "Signup failed.", "bad");
-
-      const newUser = data?.user || null;
-      if (newUser && handle) await upsertProfileHandle(newUser.id, handle);
-
-      setMsg("Signup complete. Check your email if confirmation is required.", "ok");
-      scheduleRoleRefresh();
     } catch (err) {
-      console.error(err);
+      console.error("[auth-ui] submitAuth:", err);
       setMsg("Something stalled. Try again.", "bad");
     } finally {
-      $("authUiSubmit").disabled = false;
+      $("__authSubmit").disabled = false;
     }
   }
 
-  async function forgotPasswordFlow() {
-    const email = clampStr($("authUiEmail")?.value, 240).toLowerCase();
-    if (!email || !email.includes("@")) return setMsg("Type your email first, then tap Forgot password.", "bad");
-
-    $("authUiForgot").disabled = true;
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: AUTH_UI_CONFIG.resetRedirectTo,
-      });
-      if (error) return setMsg(error.message || "Could not send reset email.", "bad");
-      setMsg("Reset link sent. Check your email.", "ok");
-    } catch (err) {
-      console.error(err);
-      setMsg("Reset stalled. Try again.", "bad");
-    } finally {
-      $("authUiForgot").disabled = false;
-    }
+  async function googleAuth() {
+    setMsg("Redirecting to Google…", "");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname + location.search },
+    });
+    if (error) setMsg(error.message || "Google sign-in failed.", "bad");
   }
 
-  // -----------------------
-  // Nav UI wiring
-  // -----------------------
+  async function forgotPassword() {
+    const email = ($("__authEmail")?.value || "").trim().toLowerCase();
+    if (!email.includes("@")) return setMsg("Enter your email first.", "bad");
+    $("__authForgot").disabled = true;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: CFG.resetRedirectTo,
+    });
+    $("__authForgot").disabled = false;
+    if (error) return setMsg(error.message || "Reset failed.", "bad");
+    setMsg("Reset link sent — check your email.", "ok");
+  }
+
+  // ── Nav wiring ────────────────────────────────────────────────────────────
+  // Supports both nav ID sets used across the site
   function getNavEls() {
-    const navSignInBtn = $("navSignInBtn");
-    const navJoinBtn = $("navJoinBtn");
-    const navProfileWrap = $("navProfileWrap");
-    const navProfileChip = $("navProfileChip");
-    const navProfileInitials = $("navProfileInitials");
-    const navProfileDropdown = $("navProfileDropdown");
-
-    const loginBtn = $("loginBtn") || $("signinBtn");
-    const joinBtn = $("joinBtn");
-    const profileMenu = $("profileMenu");
-    const profileChip = $("profileChip");
-    const profileInitials = $("profileInitials");
-    const dropdown = $("dropdown");
-
-    const signOutBtn = $("navSignOutBtn") || $("signoutBtn");
-
     return {
-      signInBtn: navSignInBtn || loginBtn,
-      joinBtn: navJoinBtn || joinBtn,
-      profileWrap: navProfileWrap || profileMenu,
-      chip: navProfileChip || profileChip,
-      initialsEl: navProfileInitials || profileInitials,
-      dropdown: navProfileDropdown || dropdown,
-      signOutBtn,
+      loginBtn:   $("loginBtn")   || $("navSignInBtn") || $("signinBtn"),
+      joinBtn:    $("joinBtn")    || $("navJoinBtn"),
+      profileMenu:$("profileMenu")|| $("navProfileWrap"),
+      chip:       $("profileChip")|| $("navProfileChip"),
+      initials:   $("profileInitials") || $("navProfileInitials"),
+      dropdown:   $("dropdown")   || $("navProfileDropdown"),
+      signoutBtn: $("signoutBtn") || $("navSignOutBtn"),
+      ddEmail:    $("ddEmail")    || $("navDdEmail"),
+      myEventsLink: $("myEventsLink"),
     };
+  }
+
+  function getInitials(user) {
+    const base =
+      user?.user_metadata?.handle ||
+      user?.user_metadata?.full_name ||
+      (user?.email?.split("@")[0]) || "U";
+    const cleaned = String(base).replace(/[^a-z0-9]+/gi, " ").trim();
+    const parts = cleaned.split(" ").filter(Boolean);
+    const raw = parts.length >= 2 ? parts[0][0] + parts[1][0] : cleaned.slice(0, 2) || "U";
+    return raw.toUpperCase();
   }
 
   function updateNavUI() {
     const els = getNavEls();
-    const hasNav = els.signInBtn || els.profileWrap || els.chip;
-    if (!hasNav) return;
 
     if (state.user) {
-      if (els.signInBtn) els.signInBtn.style.display = "none";
-      if (els.joinBtn) els.joinBtn.style.display = "none";
-      if (els.profileWrap) els.profileWrap.style.display = "flex";
+      els.loginBtn && (els.loginBtn.style.display = "none");
+      els.joinBtn && (els.joinBtn.style.display = "none");
+      if (els.profileMenu) els.profileMenu.style.display = "flex";
+      if (els.initials) els.initials.textContent = getInitials(state.user);
+      if (els.ddEmail) els.ddEmail.textContent = state.user.email || "—";
 
-      if (els.initialsEl) {
-        const base =
-          state.user.user_metadata?.handle ||
-          state.user.user_metadata?.full_name ||
-          (state.user.email ? state.user.email.split("@")[0] : "U") ||
-          "U";
-
-        const cleaned = String(base).replace(/[^a-z0-9]+/gi, " ").trim();
-        const parts = cleaned.split(" ").filter(Boolean);
-        let initials = "";
-        if (parts.length >= 2) initials = (parts[0][0] + parts[1][0]);
-        else initials = cleaned.slice(0, 2) || "U";
-        els.initialsEl.textContent = initials.toUpperCase();
+      // Show promoter-only links
+      if (els.myEventsLink) {
+        els.myEventsLink.style.display =
+          (state.role === "promoter" || state.isPromoter) ? "flex" : "none";
       }
     } else {
-      if (els.signInBtn) els.signInBtn.style.display = "inline-flex";
-      if (els.joinBtn) els.joinBtn.style.display = "inline-flex";
-      if (els.profileWrap) els.profileWrap.style.display = "none";
-      if (els.dropdown) els.dropdown.style.display = "none";
+      els.loginBtn && (els.loginBtn.style.display = "inline-flex");
+      els.joinBtn && (els.joinBtn.style.display = "inline-flex");
+      if (els.profileMenu) els.profileMenu.style.display = "none";
+      // Close dropdown if open
+      if (els.dropdown) els.dropdown.classList.remove("open");
     }
 
-    // Bind once per page (prevents duplicate handlers)
     if (state.navBound) return;
     state.navBound = true;
 
-    if (els.signInBtn) els.signInBtn.addEventListener("click", () => openAuthModal("login"));
-    if (els.joinBtn) els.joinBtn.addEventListener("click", () => openAuthModal("signup"));
+    els.loginBtn?.addEventListener("click", () => openModal("login"));
+    els.joinBtn?.addEventListener("click", () => openModal("signup"));
 
-    if (els.chip && els.dropdown && els.profileWrap) {
+    els.signoutBtn?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      if (els.dropdown) els.dropdown.classList.remove("open");
+    });
+
+    // Dropdown toggle
+    if (els.chip && els.dropdown) {
       els.chip.addEventListener("click", (e) => {
         e.stopPropagation();
-        const isOpen = els.dropdown.style.display === "block";
-        els.dropdown.style.display = isOpen ? "none" : "block";
-        els.chip.setAttribute("aria-expanded", isOpen ? "false" : "true");
+        els.dropdown.classList.toggle("open");
+        els.chip.setAttribute("aria-expanded", els.dropdown.classList.contains("open") ? "true" : "false");
       });
-
       document.addEventListener("click", (e) => {
-        if (!els.profileWrap.contains(e.target)) {
-          els.dropdown.style.display = "none";
-          els.chip.setAttribute("aria-expanded", "false");
+        if (!els.profileMenu?.contains(e.target)) {
+          els.dropdown.classList.remove("open");
+          els.chip?.setAttribute("aria-expanded", "false");
         }
       });
-    }
-
-    if (els.signOutBtn) {
-      els.signOutBtn.addEventListener("click", async () => {
-        await signOut();
-      });
+      els.dropdown.addEventListener("click", (e) => e.stopPropagation());
     }
   }
 
-  // -----------------------
-  // Sign out helper
-  // -----------------------
-  async function signOut() {
+  // ── Role loading ──────────────────────────────────────────────────────────
+  async function loadRole(userId) {
     try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error("[auth-ui] signOut error:", err);
-    } finally {
-      state.user = null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+      state.role = data?.role || null;
+      state.isPromoter = state.role === "promoter";
+    } catch { state.role = null; }
+  }
+
+  // ── Auth state ────────────────────────────────────────────────────────────
+  let _initDone = false;
+
+  async function init() {
+    if (_initDone) return;
+    _initDone = true;
+
+    injectStyles();
+
+    const { data: { session } } = await supabase.auth.getSession();
+    state.user = session?.user || null;
+
+    if (state.user) await loadRole(state.user.id);
+
+    updateNavUI();
+    notifyListeners();
+  }
+
+  // Single auth listener for the entire app
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    state.user = session?.user || null;
+
+    if (state.user) {
+      await loadRole(state.user.id);
+      // Resolve any pending requireLogin promises
+      while (state.loginResolvers.length) {
+        state.loginResolvers.shift()(true);
+      }
+    } else {
+      state.role = null;
       state.isPromoter = false;
-      state.isAdmin = false;
+    }
+
+    updateNavUI();
+    notifyListeners();
+  });
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  // ── Notify listeners ──────────────────────────────────────────────────────
+  function notifyListeners() {
+    state.listeners.forEach((fn) => {
+      try { fn({ user: state.user, role: state.role, isPromoter: state.isPromoter }); }
+      catch (err) { console.error("[auth-ui] listener error:", err); }
+    });
+  }
+
+  // ── requireLogin ──────────────────────────────────────────────────────────
+  // Returns a Promise<boolean>. Resolves true once the user is logged in,
+  // or false if they dismiss the modal.
+  async function requireLogin(opts = {}) {
+    // Already logged in
+    if (state.user) return true;
+
+    // Show toast hint
+    if (opts.message) rokToast(opts.message);
+
+    openModal(opts.mode || "login");
+
+    // Return a promise that resolves when auth state changes (login success)
+    return new Promise((resolve) => {
+      // Resolve true on next successful login (handled in onAuthStateChange)
+      state.loginResolvers.push(resolve);
+
+      // If modal is closed without logging in, resolve false
+      // We detect this by watching modal close + checking state after a tick
+      const observer = new MutationObserver(() => {
+        if (!state.modalOpen && !state.user) {
+          state.loginResolvers = state.loginResolvers.filter((r) => r !== resolve);
+          observer.disconnect();
+          resolve(false);
+        }
+      });
+      const el = document.getElementById("__authModal");
+      if (el) observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+    });
+  }
+
+  // ── Public API ────────────────────────────────────────────────────────────
+  window.authUI = {
+    // User state
+    getUser: () => state.user,
+    getRole: () => state.role,
+    isPromoter: () => state.isPromoter,
+    isAdmin: () => state.isAdmin,
+
+    // Auth actions
+    requireLogin,
+    signOut: () => supabase.auth.signOut(),
+
+    // Modal control
+    open: openModal,
+    close: closeModal,
+
+    // Listeners
+    onChange: (fn) => { if (typeof fn === "function") state.listeners.push(fn); },
+
+    // Force refresh (e.g. after profile changes)
+    refresh: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      state.user = session?.user || null;
+      if (state.user) await loadRole(state.user.id);
       updateNavUI();
       notifyListeners();
-    }
-  }
-
-  // -----------------------
-  // Guards
-  // -----------------------
-  async function requireLogin(callback, opts = {}) {
-    if (state.user) {
-      if (callback) callback(state.user);
-      return true;
-    }
-
-    const msg = opts.message || "Please log in / sign up.";
-    if (!opts.silent) toast(msg);
-
-    openAuthModal(opts.mode || "login");
-    return false;
-  }
-
-  async function ensurePromoter(opts = {}) {
-    const { autoOffer = false, signInMessage, confirmText } = opts;
-
-    const ok = await requireLogin(null, { message: signInMessage || "Please sign in to manage events." });
-    if (!ok) return { promoter: false };
-
-    await checkPromoter();
-    updateNavUI();
-    notifyListeners();
-
-    if (state.isPromoter) return { promoter: true };
-    if (!autoOffer) return { promoter: false };
-
-    const text = confirmText || "Turn this account into an event promoter?";
-    const accept = window.confirm(text);
-    if (!accept) return { promoter: false, declined: true };
-
-    const email = state.user.email.toLowerCase();
-    const { error } = await supabase
-      .from(AUTH_UI_CONFIG.promoterTable)
-      .insert({ [AUTH_UI_CONFIG.promoterEmailColumn]: email });
-
-    // ignore "already exists"
-    if (error && error.code !== "23505") {
-      console.error("[auth-ui] ensurePromoter insert error:", error);
-      alert("Could not register as promoter: " + error.message);
-      return { promoter: false, error };
-    }
-
-    await checkPromoter();
-    updateNavUI();
-    notifyListeners();
-
-    return { promoter: state.isPromoter };
-  }
-
-  async function ensureAdmin(opts = {}) {
-    const ok = await requireLogin(null, { message: opts.signInMessage || "Please sign in first." });
-    if (!ok) return { admin: false };
-
-    await checkAdmin();
-    updateNavUI();
-    notifyListeners();
-
-    return { admin: state.isAdmin };
-  }
-
-  // -----------------------
-  // Auth listener (hardened)
-  // -----------------------
-  supabase.auth.onAuthStateChange((_event, session) => {
-    // Set immediately, then refresh roles/UI
-    state.user = session?.user || null;
-    updateNavUI();
-    notifyListeners();
-    scheduleRoleRefresh();
-  });
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    await loadUserAndRoles();
-  });
-
-  // -----------------------
-  // Public API
-  // -----------------------
-  window.authUI = {
-    getUser() { return state.user; },
-    isPromoter() { return state.isPromoter; },
-    isAdmin() { return state.isAdmin; },
-
-    onChange(fn) { if (typeof fn === "function") state.listeners.push(fn); },
-
-    requireLogin,
-    ensurePromoter,
-    ensureAdmin,
-
-    startSignin() { openAuthModal("login"); },
-    startSignup() { openAuthModal("signup"); },
-
-    openAuthModal,
-    closeAuthModal,
-    signOut,
-    refresh() { return loadUserAndRoles(); },
-
-    escapeHTML,
-    config: AUTH_UI_CONFIG,
+    },
   };
+
 })();

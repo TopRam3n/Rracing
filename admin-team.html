@@ -12,17 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-</script>
+<script src="/supabase-client.js"></script>
 <script src="/auth-ui.js"></script>
 
 <style>
@@ -237,16 +227,6 @@
   let team = null;
   let galleryUrls = [];
 
-  async function requireLogin(cb){
-    if(window.authUI && typeof authUI.requireLogin === 'function'){
-      return authUI.requireLogin(cb);
-    }
-    const { data:{ user } } = await supabase.auth.getUser();
-    if(!user){ alert('Please sign in.'); return false; }
-    cb?.(user);
-    return true;
-  }
-
   async function uploadToBucket(bucket, path, file){
     const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert:true });
     if(error) throw error;
@@ -268,11 +248,17 @@
 
     $('viewTeamLink').href = `/team.html?id=${encodeURIComponent(teamId)}`;
 
-    await requireLogin(async ()=>{
-      const { data:{ user } } = await supabase.auth.getUser();
-      currentUserId = user?.id || null;
-      $('statusLine').textContent = user ? `Signed in as ${user.email || 'Driver'}` : 'Not signed in.';
-    });
+    // Delegate sign-in to auth-ui.js
+    const ok = await authUI.requireLogin();
+    if(!ok){
+      $('statusLine').textContent = 'Not signed in.';
+      $('saveBtn').disabled = true;
+      return;
+    }
+
+    const user = authUI.getUser();
+    currentUserId = user?.id || null;
+    $('statusLine').textContent = user ? `Signed in as ${user.email || 'Driver'}` : 'Not signed in.';
 
     const { data:mem, error:memErr } = await supabase
       .from('team_members')
@@ -290,7 +276,7 @@
     myRole = mem.role;
     const canAdmin = (myRole === 'owner' || myRole === 'manager');
     if(!canAdmin){
-      $('statusLine').textContent = `Role: ${myRole}. You don’t have admin access.`;
+      $('statusLine').textContent = `Role: ${myRole}. You don't have admin access.`;
       $('saveBtn').disabled = true;
       $('sendInviteBtn').disabled = true;
       return;
@@ -360,7 +346,6 @@
   }
 
   async function loadMembers(){
-    // pending join requests
     const { data:pending, error:pendErr } = await supabase
       .from('team_members')
       .select('user_id,role,created_at')
@@ -370,7 +355,7 @@
 
     if(pendErr){
       console.error(pendErr);
-      $('pendingList').innerHTML = `<div class="sub">Couldn’t load pending.</div>`;
+      $('pendingList').innerHTML = `<div class="sub">Couldn't load pending.</div>`;
     }else{
       const list = pending || [];
       $('pendingList').innerHTML = list.length ? list.map(r => `
@@ -394,7 +379,6 @@
       });
     }
 
-    // active members
     const { data:members, error:memErr } = await supabase
       .from('team_members')
       .select('user_id,role,created_at')
@@ -403,7 +387,7 @@
 
     if(memErr){
       console.error(memErr);
-      $('memberList').innerHTML = `<div class="sub">Couldn’t load members.</div>`;
+      $('memberList').innerHTML = `<div class="sub">Couldn't load members.</div>`;
       return;
     }
 
@@ -490,10 +474,9 @@
     const invitedUserId = $('inviteUserId').value.trim();
     if(!invitedUserId){ $('inviteMsg').textContent = 'Paste a user UUID.'; return; }
 
-    const { data:{ user } } = await supabase.auth.getUser();
+    const user = authUI.getUser();
     if(!user){ alert('Sign in first.'); return; }
 
-    // prevent inviting existing members
     const { data:existing } = await supabase
       .from('team_members')
       .select('role')

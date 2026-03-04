@@ -12,18 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
-
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -41,8 +30,7 @@
     *{box-sizing:border-box}
     body{
       margin:0;
-      background:
-        radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
       color:var(--fg);
       font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
     }
@@ -65,7 +53,6 @@
     }
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
-
     .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .btn{
       display:inline-flex;gap:8px;align-items:center;
@@ -83,7 +70,7 @@
     .btn.primary:hover{box-shadow:0 0 26px rgba(229,9,20,.7);transform:translateY(-1px)}
     .btn[disabled]{opacity:.55;pointer-events:none}
 
-    /* nav auth */
+    /* auth-ui.js wires these nav IDs */
     .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
@@ -263,6 +250,8 @@
           <a class="btn" role="menuitem" href="/teams.html">Community</a>
         </div>
 
+        <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, navSignOutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Log in</button>
           <button id="navJoinBtn" class="btn primary">Join the grid</button>
@@ -348,21 +337,17 @@
     const $ = (id)=>document.getElementById(id);
     const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-    let currentUser = null;
-    let bookmarksById = new Set(); // if signed in
-    let likesById = new Set();     // optional (for heart fill)
+    let bookmarksById = new Set();
+    let likesById = new Set();
 
     async function syncAuth(){
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
+      const user = authUI.getUser();
       $('uploadBtn').style.display = user ? 'inline-flex' : 'none';
 
-      // preload bookmark/like state (non-fatal if tables don’t exist yet)
       bookmarksById = new Set();
       likesById = new Set();
 
       if(user){
-        // bookmarks
         try{
           const { data: b } = await supabase
             .from('sighting_bookmarks')
@@ -371,7 +356,6 @@
           (b||[]).forEach(x => bookmarksById.add(x.sighting_id));
         }catch(_){}
 
-        // likes (to render filled hearts)
         try{
           const { data: l } = await supabase
             .from('sighting_likes')
@@ -382,11 +366,8 @@
       }
     }
 
-    // Like count helper (simple + reliable)
     async function fetchLikeCounts(ids){
       if(!ids.length) return new Map();
-      // This will be slower if you have many rows.
-      // Later: create a view sightings_with_like_count like you did for highlights.
       const out = new Map();
       await Promise.all(ids.map(async (id)=>{
         const { count } = await supabase
@@ -415,6 +396,8 @@
 
     function renderGrid(items, likeCounts){
       const grid = $('grid');
+      const user = authUI.getUser();
+
       if(!items.length){
         grid.innerHTML = `<article class="card"><div class="pad sub">No sightings found. Clear filters or check back soon.</div></article>`;
         return;
@@ -427,8 +410,8 @@
         const handle = h.social_handle ? `<span class="pill">📸 ${escapeHTML(h.social_handle.startsWith('@') ? h.social_handle : '@'+h.social_handle)}</span>` : '';
         const likes = likeCounts.get(h.id) || 0;
 
-        const saved = currentUser && bookmarksById.has(h.id);
-        const liked = currentUser && likesById.has(h.id);
+        const saved = user && bookmarksById.has(h.id);
+        const liked = user && likesById.has(h.id);
 
         const snippetBase = (h.description || '').trim();
         const snippet = snippetBase.length > 140 ? snippetBase.slice(0,140) + '…' : snippetBase;
@@ -481,7 +464,7 @@
 
       if(error){
         console.error(error);
-        $('grid').innerHTML = `<article class="card"><div class="pad sub">Couldn’t load sightings right now.</div></article>`;
+        $('grid').innerHTML = `<article class="card"><div class="pad sub">Couldn't load sightings right now.</div></article>`;
         return;
       }
 
@@ -505,12 +488,12 @@
 
       if(sort === 'top'){
         rows.sort((a,b)=> (likeCounts.get(b.id)||0) - (likeCounts.get(a.id)||0));
-      } // else already newest first
+      }
 
       $('countBadge').textContent = `${rows.length} post${rows.length===1?'':'s'}`;
       renderGrid(rows, likeCounts);
 
-      // wire buttons (stop link navigation)
+      // Wire action buttons (stop link navigation)
       document.querySelectorAll('.likeBtn').forEach(btn=>{
         btn.addEventListener('click', async (e)=>{
           e.preventDefault(); e.stopPropagation();
@@ -528,10 +511,10 @@
     }
 
     async function toggleLike(id, btn){
-      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to like sightings." });
+      const ok = await authUI.requireLogin();
       if(!ok) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user) return;
 
       btn.disabled = true;
@@ -552,14 +535,14 @@
       }
 
       btn.disabled = false;
-      await applyFilters(); // simple refresh; later we can do inline updates only
+      await applyFilters();
     }
 
     async function toggleSave(id, btn){
-      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to save sightings." });
+      const ok = await authUI.requireLogin();
       if(!ok) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user) return;
 
       btn.disabled = true;
@@ -593,7 +576,9 @@
     window.addEventListener('DOMContentLoaded', async ()=>{
       await syncAuth();
       await applyFilters();
-      supabase.auth.onAuthStateChange(async ()=>{
+
+      // auth-ui.js owns onAuthStateChange — use authUI.onChange
+      authUI.onChange(async ()=>{
         await syncAuth();
         await applyFilters();
       });

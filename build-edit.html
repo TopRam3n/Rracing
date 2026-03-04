@@ -11,21 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
-<!-- Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-</script>
-
-<!-- Shared auth UI (navSignInBtn/navJoinBtn/navProfile* etc.) -->
+<script src="/supabase-client.js"></script>
 <script src="/auth-ui.js"></script>
 
 <style>
@@ -50,7 +37,7 @@
   a{color:var(--fg);text-decoration:none}
   .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-  /* NAV (match index/events/garage) */
+  /* NAV */
   .nav{
     position:sticky;top:0;z-index:50;
     background:rgba(5,5,8,.9);
@@ -112,6 +99,7 @@
   }
   .btn[disabled]{opacity:.55;pointer-events:none}
 
+  /* auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip, navProfileInitials, navProfileDropdown, signoutBtn */
   .profile-menu{position:relative;display:flex;align-items:center}
   .profile-chip{
     width:32px;height:32px;border-radius:50%;
@@ -274,6 +262,8 @@
           <a class="btn" role="menuitem" href="/store.html">Store</a>
         </div>
 
+        <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, signoutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Log in</button>
           <button id="navJoinBtn" class="btn primary">Join the grid</button>
@@ -305,7 +295,7 @@
         <div>
           <h2 id="pageTitle" style="font-size:44px;letter-spacing:2px;text-transform:uppercase;">Create a build</h2>
           <div class="sub" id="pageSub" style="margin-top:6px">
-            Lock in the basics first. Images + parts make your build feel real — we’ll layer 3D later.
+            Lock in the basics first. Images + parts make your build feel real — we'll layer 3D later.
           </div>
         </div>
         <div class="row">
@@ -319,7 +309,7 @@
       </div>
 
       <div id="limitNotice" class="banner" style="display:none;margin-bottom:14px">
-        <strong>Limit reached:</strong> You’ve used your 3 free builds. Upgrade path coming soon.
+        <strong>Limit reached:</strong> You've used your 3 free builds. Upgrade path coming soon.
       </div>
 
       <div class="grid cols-2">
@@ -378,7 +368,7 @@
                     <option value="bmw_e36_coupe">BMW E36 Coupe</option>
                     <option value="audi_a3_8v">Audi A3 8V</option>
                     <option value="honda_eg_hatch">Honda EG Hatch</option>
-                    <option value="other">Don’t see my car</option>
+                    <option value="other">Don't see my car</option>
                   </select>
                 </label>
               </div>
@@ -452,7 +442,7 @@
               <div class="sub" style="display:grid;gap:8px">
                 <div>1) Use real https image links (not Google Drive share links)</div>
                 <div>2) Public builds show up in the Garage feed</div>
-                <div>3) Add at least 1 part to make it feel “built”</div>
+                <div>3) Add at least 1 part to make it feel "built"</div>
               </div>
             </div>
           </div>
@@ -492,12 +482,9 @@
   const saveBtn     = $('saveBtn');
   const cancelBtn   = $('cancelBtn');
 
-  const formEl      = $('buildForm');
-
-  const heroInput   = $('hero_url');
-  const extraInput  = $('extra_urls');
-
-  const previewMain = $('previewMain');
+  const heroInput     = $('hero_url');
+  const extraInput    = $('extra_urls');
+  const previewMain   = $('previewMain');
   const previewThumbs = $('previewThumbs');
 
   const PART_CATEGORIES = [
@@ -519,7 +506,7 @@
     }catch(_){ return false; }
   }
 
-  /* ===== base_model_key safety (prevents “column not found” crash) ===== */
+  /* base_model_key safety */
   let _hasBaseModelKey = null;
   async function hasBaseModelKey(){
     if (_hasBaseModelKey !== null) return _hasBaseModelKey;
@@ -528,18 +515,17 @@
     return _hasBaseModelKey;
   }
 
-  /* ===== Auth gating ===== */
+  /* Auth helpers — delegate to authUI */
   async function getUser(){
+    if(window.authUI) return authUI.getUser();
     const { data: { user } = {} } = await supabase.auth.getUser();
     return user || null;
   }
 
   async function requireLogin(){
     if (window.authUI && typeof authUI.requireLogin === 'function'){
-      let ok = false;
-      await authUI.requireLogin(()=>{ ok = true; });
-      const u = await getUser();
-      return !!u;
+      const ok = await authUI.requireLogin();
+      return ok !== false;
     }
     const u = await getUser();
     return !!u;
@@ -550,7 +536,7 @@
     saveState.textContent = text;
   }
 
-  /* ===== Parts UI ===== */
+  /* Parts UI */
   function makePartRow(data={}){
     const wrap = document.createElement('div');
     wrap.className = 'part-row';
@@ -599,11 +585,10 @@
       btn.closest('.part-row')?.remove();
     });
 
-    // default one row for create mode (edit mode will load actual parts)
     if(!buildId) addRow({});
   })();
 
-  /* ===== Preview ===== */
+  /* Preview */
   function getImageList(){
     const hero = heroInput.value.trim();
     const extraRaw = extraInput.value.trim();
@@ -643,7 +628,7 @@
   heroInput.addEventListener('input', renderPreview);
   extraInput.addEventListener('input', renderPreview);
 
-  /* ===== Quota ===== */
+  /* Quota */
   async function updateQuota(){
     const user = await getUser();
     if(!user){
@@ -663,7 +648,7 @@
     return { used, atLimit };
   }
 
-  /* ===== Load build for edit mode ===== */
+  /* Load build for edit mode */
   async function loadBuildForEdit(){
     const user = await getUser();
     if(!user) return false;
@@ -676,7 +661,7 @@
 
     if(error || !build){
       authNotice.style.display = 'block';
-      authNotice.textContent = 'We couldn’t load this build. It may have been deleted or moved.';
+      authNotice.textContent = 'We couldnt load this build. It may have been deleted or moved.';
       return false;
     }
 
@@ -686,7 +671,6 @@
       return false;
     }
 
-    // Fill fields
     $('title').value = build.title || '';
     $('is_public').value = build.is_public ? 'true' : 'false';
     $('make').value = build.make || '';
@@ -696,12 +680,10 @@
     $('power_goal').value = build.power_goal || '';
     $('description').value = build.description || '';
 
-    // Base model key (optional)
     if(build.base_model_key && $('base_model')){
       $('base_model').value = build.base_model_key;
     }
 
-    // Images
     const { data: imgs } = await supabase
       .from('build_images')
       .select('image_url,sort_order,created_at')
@@ -713,7 +695,6 @@
     $('hero_url').value = list[0] || (build.custom_image_url || build.thumb_url || '');
     $('extra_urls').value = list.slice(1).join(', ');
 
-    // Parts
     const { data: parts } = await supabase
       .from('build_parts')
       .select('category,label,brand,spec,notes,created_at')
@@ -732,7 +713,7 @@
     return true;
   }
 
-  /* ===== Gather + validate ===== */
+  /* Gather + validate */
   function getPartsPayload(build_id){
     const list = $('partsList');
     const rows = [...list.querySelectorAll('.part-row')];
@@ -745,7 +726,6 @@
       const spec  = r.querySelector('[data-part-spec]')?.value?.trim() || '';
       const notes = r.querySelector('[data-part-notes]')?.value?.trim() || '';
 
-      // skip totally empty
       if(!label && !brand && !spec && !notes) return;
 
       out.push({
@@ -774,7 +754,6 @@
     const title = $('title').value.trim();
     if(!title) return { ok:false, msg:'Title is required.' };
 
-    // soft URL validation: only block if user typed something non-url
     const hero = $('hero_url').value.trim();
     if(hero && !isProbablyUrl(hero)) return { ok:false, msg:'Hero image URL must be a valid https:// link.' };
 
@@ -788,14 +767,14 @@
     return { ok:true };
   }
 
-  /* ===== Save handler ===== */
+  /* Save handler */
   async function saveBuild(){
     setSaveState('Saving…');
     saveBtn.disabled = true;
 
+    // Auth gate on save — opens authUI modal if not logged in
     const okLogin = await requireLogin();
     if(!okLogin){
-      alert('Please log in first.');
       saveBtn.disabled = false;
       setSaveState('Ready');
       return;
@@ -817,7 +796,6 @@
       return;
     }
 
-    // quota only blocks CREATE
     if(!buildId){
       const q = await updateQuota();
       if(q.atLimit){
@@ -829,7 +807,6 @@
       }
     }
 
-    // Build row
     const baseRow = {
       title: $('title').value.trim(),
       is_public: $('is_public').value === 'true',
@@ -850,7 +827,6 @@
       let id = buildId;
 
       if(!id){
-        // CREATE
         const { data: created, error } = await supabase
           .from('builds')
           .insert({ ...baseRow, user_id: user.id })
@@ -860,7 +836,6 @@
         if(error) throw error;
         id = created.id;
       }else{
-        // EDIT (verify owner in RLS, but also keep client strict)
         const { error } = await supabase
           .from('builds')
           .update(baseRow)
@@ -870,7 +845,6 @@
         if(error) throw error;
       }
 
-      // Images: replace set (simple + stable)
       const images = getImagesPayload(id);
       await supabase.from('build_images').delete().eq('build_id', id);
       if(images.length){
@@ -878,7 +852,6 @@
         if(ie) console.error('Image insert error', ie);
       }
 
-      // Parts: replace set (simple + stable)
       const parts = getPartsPayload(id);
       await supabase.from('build_parts').delete().eq('build_id', id);
       if(parts.length){
@@ -887,7 +860,6 @@
       }
 
       setSaveState('Saved');
-      // go to build page
       location.href = `/build.html?id=${encodeURIComponent(id)}`;
     }catch(err){
       console.error(err);
@@ -897,7 +869,7 @@
     }
   }
 
-  /* ===== Init mode + UI ===== */
+  /* Init mode + UI */
   function setMode(){
     if(buildId){
       pageTitle.textContent = 'Edit build';
@@ -926,14 +898,6 @@
 
   saveBtn.addEventListener('click', saveBuild);
 
-  // Auth state changes: update quota + show/hide notices
-  supabase.auth.onAuthStateChange(async ()=>{
-    const user = await getUser();
-    authNotice.style.display = user ? 'none' : 'block';
-    limitNotice.style.display = 'none';
-    await updateQuota();
-  });
-
   window.addEventListener('DOMContentLoaded', async ()=>{
     setMode();
     setSaveState('Ready');
@@ -949,9 +913,16 @@
       if(!ok) return;
       await loadBuildForEdit();
     }else{
-      // create mode: if logged in, good; if not, they’ll see authNotice
       renderPreview();
     }
+
+    // auth-ui.js owns onAuthStateChange — subscribe via authUI.onChange
+    authUI.onChange(async ()=>{
+      const u = await getUser();
+      authNotice.style.display = u ? 'none' : 'block';
+      limitNotice.style.display = 'none';
+      await updateQuota();
+    });
   });
 </script>
 </body>

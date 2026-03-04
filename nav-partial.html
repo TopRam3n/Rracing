@@ -1,0 +1,67 @@
+<!--
+  ══════════════════════════════════════════════════════════════
+  NAV PARTIAL  —  paste this <div class="nav-wrapper"> block
+  into every page, replacing whatever nav is there now.
+  auth-ui.js handles all wiring automatically.
+  ══════════════════════════════════════════════════════════════
+-->
+<div class="nav-wrapper" id="navWrapper">
+  <div class="container nav">
+
+    <a href="/index.html" class="logo">
+      <div class="logo-mark">
+        <img src="/Assets/logo.png" alt="ROK Racers JA logo">
+      </div>
+      <div>
+        <div class="logo-text-main">ROK RACERS JA</div>
+        <div class="logo-text-sub">Motorsport Community</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="/events.html">Events</a>
+      <a href="/garage.html">Garage</a>
+      <a href="/highlights.html">Highlights</a>
+      <a href="/teams.html">Community</a>
+      <a href="/marketplace.html">Marketplace</a>
+      <a href="/store.html">Store</a>
+    </nav>
+
+    <div class="nav-cta">
+      <!-- auth-ui.js looks for these IDs and wires them up -->
+      <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
+      <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+      <div id="profileMenu" class="profile-menu" style="display:none">
+        <div id="profileChip"
+             class="profile-chip"
+             aria-haspopup="true"
+             aria-expanded="false"
+             title="Account menu">
+          <span id="profileInitials">U</span>
+        </div>
+
+        <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+          <div class="dd-head">
+            <div class="dd-title">Signed in as</div>
+            <div class="dd-email" id="ddEmail">—</div>
+          </div>
+
+          <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+          <div class="dd-sep"></div>
+          <a href="/garage.html?view=my">My Garage</a>
+          <a href="/tickets.html">My Tickets</a>
+          <a href="/likes-build.html">Liked Builds</a>
+          <a href="/likes-sightings.html">Liked Sightings</a>
+          <a href="/teams.html">My Teams</a>
+          <a id="myEventsLink" href="/admin-events.html" style="display:none">
+            My Events <span class="dd-badge">Promoter</span>
+          </a>
+          <div class="dd-sep"></div>
+          <button id="signoutBtn" type="button">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

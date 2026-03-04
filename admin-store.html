@@ -3,24 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Merch Store (Admin View)— ROK Racers JA</title>
+  <title>Merch Store (Admin View) — ROK Racers JA</title>
   <meta name="description" content="Admin store management for ROK Racers JA." />
 
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
+  <script src="/supabase-client.js"></script>
+  <script src="/auth-ui.js"></script>
 
   <style>
     :root{
@@ -269,7 +258,7 @@
   </main>
 
 <script>
-  // ✅ Set your admin emails here
+  // Store admin is hardcoded email-based (separate from promoter system)
   const ADMIN_EMAILS = [
     "rokracers@gmail.com", "britneyl.patterson@gmail.com"
   ];
@@ -312,7 +301,7 @@
   }
 
   async function requireAdmin(){
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = authUI.getUser();
     currentUser = user || null;
 
     if (!user){
@@ -517,7 +506,6 @@
     await loadProducts();
   }
 
-  // Events
   createBtn.addEventListener('click', createProduct);
   refreshBtn.addEventListener('click', loadProducts);
   signoutBtn.addEventListener('click', async ()=>{

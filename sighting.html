@@ -10,18 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMT90MDAwLCJleHAiOjIwNzc3OTUwMDB9.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
-
+  <script src="/supabase-client.js"></script>
   <script src="/auth-ui.js"></script>
 
   <style>
@@ -98,7 +87,7 @@
       border-radius:12px;padding:10px 12px;color:#fff;font:inherit;min-height:60px;resize:vertical;
     }
 
-    /* nav auth */
+    /* auth-ui.js wires these nav IDs */
     .nav-auth{display:flex;align-items:center;gap:10px}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
@@ -138,6 +127,8 @@
           <a class="btn" href="/garage.html">Garage</a>
           <a class="btn" href="/sightings.html">Sightings</a>
         </div>
+        <!-- auth-ui.js wires: navSignInBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, navSignOutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Sign in</button>
           <div id="navProfileWrap" class="profile-menu" style="display:none">
@@ -206,10 +197,8 @@
     const sightingId = new URLSearchParams(location.search).get('id');
     const $ = (id)=>document.getElementById(id);
 
-    let currentUser = null;
     let liked = false;
     let likeCount = 0;
-
     let bookmarked = false;
 
     function escapeHTML(s){
@@ -223,15 +212,18 @@
       return h;
     }
 
-    async function syncAuth(){
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
+    function syncCommentForm(){
+      const user = authUI.getUser();
       $('commentFormRow').style.display = user ? 'flex' : 'none';
-      await refreshLikedState();
-      await refreshBookmarkState();
     }
 
-    // LOAD
+    // auth-ui.js owns onAuthStateChange — subscribe via onChange
+    authUI.onChange(async () => {
+      syncCommentForm();
+      await refreshLikedState();
+      await refreshBookmarkState();
+    });
+
     async function loadSighting(){
       if(!sightingId){
         $('error').textContent = 'Missing sighting ID.';
@@ -265,15 +257,12 @@
       if(data.parish) pieces.push(data.parish);
       $('meta').textContent = pieces.join(' • ');
 
-      // media fallback to existing image_url if you haven't migrated yet
-      const mediaUrl = data.image_url || data.image_url || null;
+      const mediaUrl = data.image_url || null;
       const mediaType = (data.image_type || (mediaUrl && mediaUrl.match(/\.(mp4|mov|webm)(\?|$)/i) ? 'video' : 'image')).toLowerCase();
 
       if(mediaUrl){
         if(mediaType === 'video'){
-          $('hero').innerHTML = `
-            <video controls playsinline preload="metadata" src="${escapeHTML(mediaUrl)}"></video>
-          `;
+          $('hero').innerHTML = `<video controls playsinline preload="metadata" src="${escapeHTML(mediaUrl)}"></video>`;
         }else{
           $('hero').innerHTML = `<img src="${escapeHTML(mediaUrl)}" alt="${escapeHTML(title)}">`;
         }
@@ -299,7 +288,6 @@
       await refreshBookmarkState();
     }
 
-    // LIKES
     async function loadLikeCount(){
       const { count, error } = await supabase
         .from('sighting_likes')
@@ -316,8 +304,7 @@
       const likeBtn = $('likeBtn');
       if(!sightingId) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
+      const user = authUI.getUser();
 
       if(!user){
         liked = false;
@@ -344,10 +331,10 @@
 
     $('likeBtn').addEventListener('click', async ()=>{
       if(!sightingId) return;
-      const ok = await window.authUI?.requireLogin?.(null, { silent:false, message:"Sign in to like sightings." });
+      const ok = await authUI.requireLogin();
       if(!ok) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user) return;
 
       const likeBtn = $('likeBtn');
@@ -379,13 +366,11 @@
       likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
     });
 
-    // BOOKMARKS
     async function refreshBookmarkState(){
       const btn = $('bookmarkBtn');
       btn.disabled = false;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
+      const user = authUI.getUser();
 
       if(!user){
         bookmarked = false;
@@ -409,10 +394,10 @@
     }
 
     $('bookmarkBtn').addEventListener('click', async ()=>{
-      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to save sightings." });
+      const ok = await authUI.requireLogin();
       if(!ok) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user) return;
 
       const btn = $('bookmarkBtn');
@@ -437,7 +422,6 @@
       await refreshBookmarkState();
     });
 
-    // COMMENTS
     function renderComment(c){
       const dt = c.created_at ? new Date(c.created_at).toLocaleString() : '';
       return `
@@ -458,7 +442,7 @@
 
       if(error){
         console.error(error);
-        wrap.textContent = 'Couldn’t load comments.';
+        wrap.textContent = 'Couldn\'t load comments.';
         return;
       }
       if(!data?.length){
@@ -469,14 +453,14 @@
     }
 
     $('commentPostBtn').addEventListener('click', async ()=>{
-      const ok = await window.authUI?.requireLogin?.(null, { message:"Sign in to comment." });
+      const ok = await authUI.requireLogin();
       if(!ok) return;
 
       const input = $('commentInput');
       const text = (input.value || '').trim();
       if(!text) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user) return;
 
       const { error } = await supabase
@@ -501,10 +485,9 @@
         $('error').textContent = 'Missing sighting ID in URL.';
         return;
       }
-      await syncAuth();
+      syncCommentForm();
       await loadSighting();
       await loadComments();
-      supabase.auth.onAuthStateChange(syncAuth);
     });
   </script>
 </body>

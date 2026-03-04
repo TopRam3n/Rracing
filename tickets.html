@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>My Tickets — ROK Racers JA</title>
-<meta name="description" content="See all the events you've RSVP’d to on ROK Racers JA." />
+<meta name="description" content="See all the events you've RSVP'd to on ROK Racers JA." />
 <link rel="icon" href="/Assets/og.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,14 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-  });
-</script>
-
+<script src="/supabase-client.js"></script>
 <script src="/auth-ui.js"></script>
 
 <style>
@@ -28,8 +21,8 @@
     --bg-alt: #111111;
     --bg-card: #141414;
 
-    --accent-main: #128b02;         /* primary green */
-    --accent-secondary: #FFD93B;    /* yellow */
+    --accent-main: #128b02;
+    --accent-secondary: #FFD93B;
     --accent-cyan: #FFD93B;
 
     --text-main: #ffffff;
@@ -58,7 +51,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Racing background overlays */
   body::before{
     content:"";
     position:fixed; inset:0;
@@ -100,9 +92,7 @@
   .sub{color:var(--text-muted);font-size:14px; line-height:1.4}
   .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
 
-  /* =========================
-     NAV (MATCHES INDEX.HTML)
-     ========================= */
+  /* NAV */
   .nav-wrapper{
     position: sticky; top: 0; z-index: 50;
     backdrop-filter: blur(16px);
@@ -176,7 +166,7 @@
   }
   .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
 
-  /* Profile menu */
+  /* Profile menu — auth-ui.js wires navSignInBtn, navProfileWrap, etc. */
   .profile-menu{ position:relative; display:flex; align-items:center; }
   .profile-chip{
     width:32px; height:32px; border-radius:50%;
@@ -244,7 +234,6 @@
 
   main{padding:28px 0 56px}
 
-  /* HERO */
   .hero{
     border-radius: var(--radius);
     border:1px solid rgba(255,255,255,0.10);
@@ -286,7 +275,6 @@
 
   .hero-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
-  /* Yellow button on this page keeps your “Browse Events” look */
   .btn-yellow{
     background: radial-gradient(circle at top left, #ffe58a, var(--accent-secondary));
     color:#111; font-weight:900;
@@ -295,7 +283,6 @@
   }
   .btn-yellow:hover{ box-shadow:0 0 30px rgba(255,217,59,.32); }
 
-  /* Filter pills */
   .filter-row{
     display:flex; flex-wrap:wrap; gap:8px;
     margin:16px 0 18px;
@@ -328,7 +315,6 @@
     border-color:#fff;
   }
 
-  /* GRID */
   .grid{
     display:grid;
     gap:18px;
@@ -336,7 +322,6 @@
   }
   @media(max-width:980px){ .grid{grid-template-columns:1fr;} }
 
-  /* Ticket card: “Gate Pass” */
   .ticket{
     border-radius: var(--radius);
     border:1px solid rgba(255,255,255,0.10);
@@ -352,8 +337,6 @@
     border-color: rgba(255,217,59,0.70);
     box-shadow: 0 34px 90px rgba(0,0,0,0.92);
   }
-
-  /* Checkered corner */
   .ticket::before{
     content:"";
     position:absolute; right:-26px; top:-26px;
@@ -391,7 +374,6 @@
     pointer-events:none;
   }
 
-  /* Blur-up */
   .blur-up{
     filter: blur(18px);
     transform: scale(1.08);
@@ -439,7 +421,6 @@
     opacity:0.9;
   }
 
-  /* Ticket barcode / QR lane */
   .lane{
     margin-top:12px;
     border-radius: 16px;
@@ -507,7 +488,6 @@
     color:var(--text-muted);
   }
 
-  /* Fake QR (visual only) */
   .qr{
     width:110px;
     border-radius:14px;
@@ -565,7 +545,6 @@
 </head>
 
 <body>
-  <!-- NAV (INDEX MATCH) -->
   <div class="nav-wrapper" id="navWrapper">
     <div class="container nav">
       <a href="/index.html" class="logo">
@@ -587,17 +566,17 @@
         <a href="/store.html">Store</a>
       </nav>
 
+      <!-- auth-ui.js wires: navSignInBtn, navProfileWrap, navProfileChip,
+           navProfileInitials, navProfileDropdown, navSignOutBtn -->
       <div class="nav-cta">
-        <!-- ✅ IDs MATCH INDEX (AUTH UI EXPECTS THESE) -->
-        <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
-        <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+        <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
 
-        <div id="profileMenu" class="profile-menu" style="display:none">
-          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
-            <span id="profileInitials">U</span>
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="navProfileInitials">U</span>
           </div>
 
-          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+          <div id="navProfileDropdown" class="dropdown" role="menu" aria-label="Account menu">
             <div class="dd-head">
               <div class="dd-title">Signed in as</div>
               <div class="dd-email" id="ddEmail">—</div>
@@ -615,7 +594,7 @@
             <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
 
             <div class="dd-sep"></div>
-            <button id="signoutBtn" type="button">Sign out</button>
+            <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -623,14 +602,13 @@
   </div>
 
   <main class="container">
-    <!-- HERO -->
     <section class="hero" aria-label="Ticket wallet header">
       <div class="hero-row">
         <div>
           <h2>My Tickets</h2>
           <p class="sub">
-            Your <strong>Gate Pass</strong> for every meet you RSVP’d to — free or paid.
-            Show your code at entry, and you’re good.
+            Your <strong>Gate Pass</strong> for every meet you RSVP'd to — free or paid.
+            Show your code at entry, and you're good.
           </p>
           <p id="authMessage" class="sub" style="margin-top:8px;"></p>
         </div>
@@ -642,7 +620,6 @@
       </div>
     </section>
 
-    <!-- FILTERS -->
     <div class="filter-row" id="filterRow" style="display:none">
       <span class="filter-label">View</span>
       <button class="filter-pill active" data-when="upcoming">Upcoming</button>
@@ -650,7 +627,6 @@
       <button class="filter-pill" data-when="all">All</button>
     </div>
 
-    <!-- GRID -->
     <section>
       <div id="ticketsGrid" class="grid" aria-live="polite">
         <div class="empty">Loading your tickets…</div>
@@ -659,7 +635,6 @@
   </main>
 
 <script>
-  // ===== Nav solid on scroll (matches index) =====
   const navWrapper = document.getElementById('navWrapper');
   function updateNavSolid(){ if(navWrapper) navWrapper.classList.toggle('nav-solid', window.scrollY > 40); }
   updateNavSolid();
@@ -734,7 +709,7 @@
         <div class="empty">
           <p style="margin:0 0 6px;">No tickets in this lane yet.</p>
           <p class="sub" style="margin:0 0 12px;">
-            Switch views, or jump on the board and RSVP “Yes”.
+            Switch views, or jump on the board and RSVP "Yes".
           </p>
           <button class="btn btn-primary" type="button" onclick="location.href='/events.html'">View events</button>
         </div>`;
@@ -801,7 +776,7 @@
             </div>
 
             <div class="actions">
-              <span class="tiny">Tip: screenshot this pass if you’re heading out.</span>
+              <span class="tiny">Tip: screenshot this pass if you're heading out.</span>
               <button class="btn btn-yellow" type="button" onclick="location.href='/event.html?id=${event.id}#rsvp'">
                 Manage RSVP
               </button>
@@ -825,15 +800,15 @@
 
     grid.innerHTML = `<div class="empty">Loading your tickets…</div>`;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = authUI.getUser();
 
     if (!user){
       authMsg.textContent = "Sign in to see your ticket wallet.";
       grid.innerHTML = `
         <div class="empty">
-          <p style="margin:0 0 8px;">You’re not signed in.</p>
+          <p style="margin:0 0 8px;">You're not signed in.</p>
           <button class="btn btn-primary" type="button"
-            onclick="window.authUI && authUI.requireLogin(()=>location.reload())">
+            onclick="authUI.requireLogin(()=>location.reload())">
             Log in to view tickets
           </button>
         </div>`;
@@ -851,7 +826,7 @@
       .in('status', ['yes','maybe'])
       .order('created_at',{ ascending:false });
 
-    if (rsvpRes.error && (rsvpRes.error.message || "").toLowerCase().includes("column") ){
+    if (rsvpRes.error && (rsvpRes.error.message || "").toLowerCase().includes("column")){
       rsvpRes = await supabase
         .from('event_rsvps')
         .select('event_id,status,created_at')
@@ -862,7 +837,7 @@
 
     if (rsvpRes.error){
       console.error(rsvpRes.error);
-      grid.innerHTML = `<div class="empty">Couldn’t load your tickets. Refresh in a bit.</div>`;
+      grid.innerHTML = `<div class="empty">Couldn't load your tickets. Refresh in a bit.</div>`;
       filterRow.style.display = 'none';
       return;
     }
@@ -873,7 +848,7 @@
         <div class="empty">
           <p style="margin:0 0 6px;">No tickets yet.</p>
           <p class="sub" style="margin:0 0 12px;">
-            RSVP “Yes” to an event and it will appear here as a Gate Pass.
+            RSVP "Yes" to an event and it will appear here as a Gate Pass.
           </p>
           <button class="btn btn-primary" type="button" onclick="location.href='/events.html'">Browse events</button>
         </div>`;
@@ -896,7 +871,7 @@
 
     if (evRes.error){
       console.error(evRes.error);
-      grid.innerHTML = `<div class="empty">Couldn’t load events linked to your tickets.</div>`;
+      grid.innerHTML = `<div class="empty">Couldn't load events linked to your tickets.</div>`;
       return;
     }
 
@@ -942,6 +917,9 @@
     pageState.filterWhen = when;
     renderTickets();
   });
+
+  // auth-ui.js owns onAuthStateChange; re-load when auth changes
+  authUI.onChange(() => loadTickets());
 
   document.addEventListener('DOMContentLoaded', loadTickets);
 </script>
