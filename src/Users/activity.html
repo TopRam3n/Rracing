@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Activity — ROK Racers JA</title>
+  <meta name="description" content="Your activity timeline on ROK Racers JA." />
+
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="../Security/supabase-client.js"></script>
+  <script src="../Security/auth-ui.js"></script>
+
+  <style>
+    :root{
+      --bg:#050508;
+      --card:#141414;
+      --muted:#bdbdbd;
+      --line:rgba(255,255,255,.08);
+      --accent:#e50914;
+      --accent2:#FFD93B;
+      --radius:18px;
+      --shadow:0 18px 40px rgba(0,0,0,.7);
+      --navH:76px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:#fff;
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1100px, 100% - 32px); margin:0 auto;}
+    .nav-wrapper{
+      position:sticky;top:0;z-index:40;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,5,8,0.9), rgba(5,5,8,0.6));
+      border-bottom:1px solid rgba(255,255,255,0.04);
+      transition:.3s;
+    }
+    .nav-solid{ background: rgba(5,5,8,0.98); border-bottom-color: rgba(255,255,255,0.10); box-shadow: var(--shadow); }
+    .nav{height:var(--navH); display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(229,9,20,.7); overflow:hidden; background:#000}
+    .logo-mark img{width:100%;height:100%;object-fit:cover;display:block}
+    .logo-text-main{font-family:"Bebas Neue"; letter-spacing:.04em; font-size:22px; text-transform:uppercase}
+    .logo-text-sub{font-size:11px;color:var(--accent2);text-transform:uppercase}
+    .nav-links{display:flex;gap:18px;align-items:center;font-size:13px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+    .nav-links a{padding-bottom:4px;position:relative}
+    .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2));transition:.18s;border-radius:999px}
+    .nav-links a:hover{color:#fff}
+    .nav-links a:hover::after{width:100%}
+    .nav-cta{display:flex;gap:8px;align-items:center}
+    .btn{
+      border-radius:999px; padding:8px 16px;
+      font-size:13px; text-transform:uppercase; letter-spacing:.15em;
+      border:1px solid transparent; background:transparent; color:#fff;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition:.18s;
+    }
+    .btn-ghost{border-color:rgba(255,255,255,.12); color:var(--muted)}
+    .btn-ghost:hover{border-color:rgba(255,255,255,.25); background:rgba(255,255,255,.02); color:#fff}
+    .btn-primary{
+      background: radial-gradient(circle at top left, #ff4d4d, var(--accent));
+      border-color: rgba(229,9,20,.9);
+      box-shadow: 0 0 24px rgba(229,9,20,.6);
+    }
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-pill-sm{padding:6px 14px;font-size:11px;letter-spacing:.16em}
+
+    /* auth-ui.js wires navSignInBtn, navProfileWrap, navProfileChip,
+       navProfileInitials, navProfileDropdown, navSignOutBtn */
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--card);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;border:1px solid rgba(255,255,255,.18);
+      cursor:pointer;font-size:13px;
+    }
+    .dropdown{
+      position:absolute; right:0; top:40px;
+      background:rgba(10,10,14,0.96);
+      border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.65);
+      border-radius:16px;
+      display:none;
+      flex-direction:column;
+      min-width:200px;
+      z-index:999;
+      backdrop-filter:blur(16px);
+      overflow:hidden;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;background:transparent;color:#fff;font-size:13px;width:100%;cursor:pointer
+    }
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06)}
+
+    @media(max-width:768px){ .nav-links{display:none} .logo-text-sub{display:none} }
+
+    .page{padding:22px 0 40px}
+    .title{
+      font-family:"Bebas Neue"; letter-spacing:2px; text-transform:uppercase;
+      font-size:52px; margin:18px 0 4px;
+    }
+    .sub{color:var(--muted); margin-bottom:18px}
+    .card{
+      border:1px solid var(--line);
+      background:radial-gradient(circle at top, rgba(255,255,255,0.05), rgba(10,10,10,0.96));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .filters{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin:10px 0 14px}
+    .pill{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.35);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--muted);
+    }
+
+    .timeline{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+    .item{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.30);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      cursor:pointer;
+      transition:.18s;
+    }
+    .item:hover{border-color:rgba(255,217,59,.35); transform:translateY(-1px)}
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background:var(--accent2);
+      box-shadow:0 0 10px rgba(255,217,59,.8);
+      margin-top:5px;
+      flex:0 0 auto;
+    }
+    .item-title{font-weight:700}
+    .item-meta{color:var(--muted); font-size:12px; margin-top:2px}
+    .item-type{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:10px; text-transform:uppercase; letter-spacing:.16em;
+      border:1px solid rgba(255,255,255,.12);
+      padding:3px 8px; border-radius:999px; color:var(--muted);
+      margin-bottom:6px;
+    }
+    .empty{
+      padding:16px;
+      border:1px dashed rgba(255,255,255,.16);
+      border-radius:16px;
+      color:var(--muted);
+      background:rgba(0,0,0,.22);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="./index.html" class="logo">
+        <div class="logo-mark"><img src="../../Assets/logo.png" alt="ROK Racers JA logo"></div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Motorsport Community</div>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="../Pages/events.html">Events</a>
+        <a href="../Pages/garage.html">Garage</a>
+        <a href="../Pages/teams.html">Community</a>
+        <a href="../Pages/highlights.html">Highlights</a>
+        <a href="../Pages/marketplace.html">Marketplace</a>
+        <a href="../Pages/store.html">Store</a>
+      </nav>
+
+      <div class="nav-cta">
+        <button id="navSignInBtn" class="btn btn-ghost btn-pill-sm">Log In</button>
+        <button id="navJoinBtn" class="btn btn-primary btn-pill-sm">Join the Grid</button>
+
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="navProfileInitials">U</span>
+          </div>
+          <div id="navProfileDropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+            <a href="../Pages/garage.html">My Garage</a>
+            <a href="../Pages/tickets.html">My Tickets</a>
+            <a href="../Pages/teams.html">My Teams</a>
+            <a href="./activity.html">Activity</a>
+            <a id="myEventsLink" href="../Admin/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <div class="dd-sep"></div>
+            <button id="navSignOutBtn" type="button">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container page">
+    <div class="title">Activity</div>
+    <div class="sub">Your recent moves across the grid.</div>
+
+    <div class="filters">
+      <div class="pill" id="whoPill">Signed out</div>
+      <div class="pill">Newest first</div>
+    </div>
+
+    <section class="card">
+      <div id="feed" class="timeline" aria-live="polite">
+        <div class="empty">Loading…</div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const navWrapper = document.getElementById('navWrapper');
+  function updateNavSolid(){ navWrapper.classList.toggle('nav-solid', window.scrollY > 40); }
+  updateNavSolid();
+  window.addEventListener('scroll', updateNavSolid, { passive:true });
+
+  const feed = document.getElementById('feed');
+  const whoPill = document.getElementById('whoPill');
+
+  function safeDate(ts){
+    try{
+      return ts ? new Date(ts).toLocaleString() : '';
+    }catch(e){ return '';}
+  }
+
+  function push(items, type, title, meta, href, ts){
+    items.push({ type, title, meta, href, ts: ts || null });
+  }
+
+  function render(items){
+    if (!items.length){
+      feed.innerHTML = `
+        <div class="empty">
+          No activity yet. Create a build, RSVP to an event, or drop a sighting.
+        </div>`;
+      return;
+    }
+
+    feed.innerHTML = items.map(it => `
+      <div class="item" role="link" tabindex="0" data-href="${it.href || ''}">
+        <div class="dot"></div>
+        <div style="flex:1">
+          <div class="item-type">${it.type}</div>
+          <div class="item-title">${it.title}</div>
+          <div class="item-meta">${it.meta || ''}${it.ts ? ' · ' + safeDate(it.ts) : ''}</div>
+        </div>
+      </div>
+    `).join('');
+
+    feed.onclick = (e)=>{
+      const row = e.target.closest('.item');
+      if(!row) return;
+      const href = row.dataset.href;
+      if(href) location.href = href;
+    };
+
+    feed.onkeydown = (e)=>{
+      if(e.key !== 'Enter') return;
+      const row = e.target.closest('.item');
+      if(!row) return;
+      const href = row.dataset.href;
+      if(href) location.href = href;
+    };
+  }
+
+  async function tryQuery(fn){
+    try{ return await fn(); }catch(e){ return { data:null, error:e }; }
+  }
+
+  async function loadActivity(){
+    const user = authUI.getUser();
+
+    if(!user){
+      whoPill.textContent = "Signed out";
+      feed.innerHTML = `
+        <div class="empty">
+          You need to log in to see your activity.
+          <div style="margin-top:10px">
+            <button class="btn btn-primary btn-pill-sm" onclick="authUI.requireLogin(()=>location.reload())">Log in</button>
+          </div>
+        </div>`;
+      return;
+    }
+
+    whoPill.textContent = "Signed in: " + (user.email || 'Driver');
+
+    const items = [];
+
+    // 1) Builds created
+    const buildsRes = await tryQuery(() =>
+      supabase.from('builds')
+        .select('id,title,created_at')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(12)
+    );
+    if (!buildsRes.error && buildsRes.data){
+      buildsRes.data.forEach(b=>{
+        push(items, "Build", `Created build: ${b.title || 'Untitled'}`, "Your garage", `/build.html?id=${b.id}`, b.created_at);
+      });
+    }
+
+    // 2) Sightings posted (try author_id then created_by)
+    const sightingsRes1 = await tryQuery(() =>
+      supabase.from('sightings')
+        .select('id,title,created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(12)
+    );
+    const sightingsRes2 = sightingsRes1.error ? await tryQuery(() =>
+      supabase.from('sightings')
+        .select('id,title,created_at')
+        .eq('created_by', user.id)
+        .order('created_at', { ascending:false })
+        .limit(12)
+    ) : { data:null, error:true };
+
+    const sightingsData = (!sightingsRes1.error && sightingsRes1.data) ? sightingsRes1.data
+                        : (!sightingsRes2.error && sightingsRes2.data) ? sightingsRes2.data
+                        : null;
+
+    if (sightingsData){
+      sightingsData.forEach(s=>{
+        push(items, "Sighting", `Posted sighting: ${s.title || 'Sighting'}`, "Island feed", `/sighting.html?id=${s.id}`, s.created_at);
+      });
+    }
+
+    // 3) Likes given (build_likes)
+    const blRes = await tryQuery(() =>
+      supabase.from('build_likes')
+        .select('build_id,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20)
+    );
+    if(!blRes.error && blRes.data){
+      blRes.data.forEach(r=>{
+        push(items, "Boost", `Boosted a build`, "Tap to view", `/build.html?id=${r.build_id}`, r.created_at);
+      });
+    }
+
+    // 4) Likes given (sighting_likes)
+    const slRes = await tryQuery(() =>
+      supabase.from('sighting_likes')
+        .select('sighting_id,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20)
+    );
+    if(!slRes.error && slRes.data){
+      slRes.data.forEach(r=>{
+        push(items, "Like", `Liked a sighting`, "Tap to view", `/sighting.html?id=${r.sighting_id}`, r.created_at);
+      });
+    }
+
+    // 5) Event RSVPs
+    const rsvpRes = await tryQuery(() =>
+      supabase.from('event_rsvps')
+        .select('event_id,status,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20)
+    );
+    if(!rsvpRes.error && rsvpRes.data){
+      rsvpRes.data.forEach(r=>{
+        const label = (r.status || 'RSVP').toUpperCase();
+        push(items, "RSVP", `RSVP: ${label}`, "Tap to view event", `/event.html?id=${r.event_id}`, r.created_at);
+      });
+    }
+
+    items.sort((a,b)=>{
+      const ta = a.ts ? new Date(a.ts).getTime() : 0;
+      const tb = b.ts ? new Date(b.ts).getTime() : 0;
+      return tb - ta;
+    });
+
+    render(items);
+  }
+
+  // Reload activity on auth change
+  authUI.onChange(() => loadActivity());
+
+  document.addEventListener('DOMContentLoaded', loadActivity);
+</script>
+</body>
+</html>
+

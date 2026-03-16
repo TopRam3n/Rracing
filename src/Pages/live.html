@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Live — ROK Racers JA</title>
+  <meta name="description" content="Watch live motorsport streams from Jamaican teams and events. Real-time, straight from the grid."/>
+  <link rel="icon" href="../../Assets/og.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="../Security/supabase-client.js"></script>
+  <script src="../Security/auth-ui.js"></script>
+
+  <!-- Design System (centralized tokens + components) -->
+  <link rel="stylesheet" href="../../styles/design-system.css">
+
+  <style>
+    :root{
+      --bg:#050508; --bg-card:#141414; --bg-card2:#1a1a1f;
+      --accent:#128b02; --yellow:#FFD93B; --red:#e50914;
+      --fg:#fff; --muted:#bdbdbd;
+      --line:rgba(255,255,255,0.06);
+      --shadow:0 18px 40px rgba(0,0,0,0.75);
+      --tf:0.18s ease-out; --tm:0.25s ease-out;
+      --r-lg:24px; --r-md:18px;
+      --nav:76px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(ellipse at 15% 0%,rgba(229,9,20,.10) 0,transparent 38%),
+        radial-gradient(ellipse at 85% 0%,rgba(18,139,2,.08) 0,transparent 38%),
+        radial-gradient(circle at top,#18080a 0,#050508 55%,#000 100%);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,-apple-system,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{width:min(1200px,100% - 32px);margin:0 auto}
+
+    /* ─ NAV ─ */
+    .nav-wrapper{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);background:linear-gradient(to bottom,rgba(5,5,8,.9),rgba(5,5,8,.6));border-bottom:1px solid rgba(255,255,255,.04);transition:background .35s,border-color .35s,box-shadow .35s}
+    .nav-wrapper.solid{background:rgba(5,5,8,.98);border-bottom-color:rgba(255,255,255,.10);box-shadow:0 18px 40px rgba(0,0,0,.7)}
+    .nav{height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .logo{display:flex;align-items:center;gap:8px;letter-spacing:.04em}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(229,9,20,.7);box-shadow:0 0 18px rgba(229,9,20,.35);overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+    .logo-mark img{width:100%;height:100%;object-fit:cover}
+    .logo-text-main{font-family:"Bebas Neue";font-size:22px;text-transform:uppercase}
+    .logo-text-sub{font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:.12em}
+    .nav-links{display:flex;gap:18px;align-items:center;font-size:13px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+    .nav-links a{position:relative;padding-bottom:4px}
+    .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:linear-gradient(to right,var(--red),var(--yellow));transition:width var(--tf);border-radius:999px}
+    .nav-links a:hover,.nav-links a.active{color:var(--fg)}
+    .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+    .nav-cta{display:flex;gap:8px;align-items:center}
+    .btn{border-radius:999px;padding:8px 16px;font-size:13px;text-transform:uppercase;letter-spacing:.15em;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:#fff;transition:background var(--tf),color var(--tf),border-color var(--tf),transform var(--tf),box-shadow var(--tf)}
+    .btn-primary{background:radial-gradient(circle at top left,#39ff96,var(--accent));box-shadow:0 0 24px rgba(24,201,100,.55);border-color:rgba(24,201,100,.85)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(24,201,100,.75)}
+    .btn-red{background:radial-gradient(circle at top left,#ff4d4d,var(--red));box-shadow:0 0 24px rgba(229,9,20,.55);border-color:rgba(229,9,20,.85)}
+    .btn-red:hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(229,9,20,.75)}
+    .btn-ghost{border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.02)}
+    .btn-sm{padding:6px 14px;font-size:11px;letter-spacing:.16em}
+    .btn[disabled]{opacity:.45;pointer-events:none}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{width:32px;height:32px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.18);transition:box-shadow var(--tf),border-color var(--tf),transform var(--tf);font-size:13px;user-select:none}
+    .profile-chip:hover{border-color:rgba(255,255,255,.32);box-shadow:0 0 16px rgba(255,217,59,.6);transform:translateY(-1px)}
+    .dropdown{position:absolute;right:0;top:44px;background:rgba(10,10,14,.96);border:1px solid var(--line);box-shadow:0 20px 40px rgba(0,0,0,.65);border-radius:16px;display:none;flex-direction:column;min-width:240px;z-index:999;backdrop-filter:blur(16px);overflow:hidden}
+    .dropdown.open{display:flex}
+    .dd-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
+    .dd-title{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+    .dd-email{font-size:13px;color:#fff;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dropdown a,.dropdown button{padding:10px 14px;text-align:left;border:none;background:transparent;color:var(--fg);font-size:13px;width:100%;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit}
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06)}
+    .dd-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0}
+    .dd-badge{font-size:10px;text-transform:uppercase;letter-spacing:.14em;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:rgba(0,0,0,.25);white-space:nowrap}
+    @media(max-width:768px){.nav-links{display:none}.nav-cta{gap:6px}.logo-text-sub{display:none}}
+
+    /* ─ LIVE DOT ─ */
+    .live-dot{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:5px 12px;border-radius:999px;
+      border:1px solid rgba(229,9,20,.5);
+      background:rgba(229,9,20,.08);
+      font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:#ff6b6b;
+    }
+    .live-dot::before{
+      content:"";width:8px;height:8px;border-radius:50%;
+      background:var(--red);
+      box-shadow:0 0 8px var(--red),0 0 16px rgba(229,9,20,.6);
+      animation:livepulse 1.4s ease-in-out infinite;
+    }
+    @keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+
+    /* ─ HERO ─ */
+    .hero{padding:52px 0 36px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+    @media(max-width:660px){.hero{grid-template-columns:1fr;padding:36px 0 24px}}
+    .hero-kicker{display:flex;align-items:center;gap:12px;font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--muted);margin-bottom:14px}
+    .hero-kicker-line{width:32px;height:2px;background:linear-gradient(to right,var(--red),var(--yellow));border-radius:999px}
+    .hero-title{font-family:"Bebas Neue";font-size:clamp(56px,9vw,100px);letter-spacing:5px;text-transform:uppercase;line-height:.88;background:linear-gradient(160deg,#fff 30%,rgba(255,255,255,.4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-title .hl{background:linear-gradient(135deg,#ff4444,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-sub{margin-top:12px;font-size:16px;color:var(--muted);max-width:50ch;line-height:1.55}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .hero-right{display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+    @media(max-width:660px){.hero-right{display:none}}
+    .stat-n{font-family:"Bebas Neue";font-size:52px;letter-spacing:2px;line-height:1;color:#fff}
+    .stat-l{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted)}
+
+    /* ─ TAPE ─ */
+    .tape{height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(229,9,20,.9),rgba(255,217,59,.8),rgba(18,139,2,.6));opacity:.5;margin-bottom:36px}
+
+    /* ─ FEATURED PLAYER ─ */
+    .player-wrap{
+      position:relative;
+      border-radius:var(--r-lg);
+      overflow:hidden;
+      background:#000;
+      border:1px solid rgba(229,9,20,.25);
+      box-shadow:0 0 80px rgba(229,9,20,.12),var(--shadow);
+      margin-bottom:28px;
+    }
+    .player-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 18px;
+      background:rgba(10,10,12,.92);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      flex-wrap:wrap;gap:10px;
+    }
+    .player-channel{display:flex;align-items:center;gap:10px}
+    .player-logo{width:36px;height:36px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.12);background:var(--bg-card2)}
+    .player-logo-placeholder{width:36px;height:36px;border-radius:10px;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid rgba(255,255,255,.10)}
+    .player-name{font-weight:700;font-size:16px;line-height:1.1}
+    .player-meta{font-size:12px;color:var(--muted)}
+    .player-actions{display:flex;gap:8px;align-items:center}
+    .iframe-wrap{
+      position:relative;width:100%;aspect-ratio:16/9;background:#000;
+    }
+    .iframe-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .player-empty{
+      aspect-ratio:16/9;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+      background:linear-gradient(180deg,#0c0005,#050508);
+      color:var(--muted);
+    }
+    .player-empty .big{font-family:"Bebas Neue";font-size:clamp(32px,5vw,52px);letter-spacing:3px;color:rgba(255,255,255,.2)}
+    .player-empty p{font-size:14px;text-align:center;max-width:40ch;line-height:1.5}
+
+    /* ─ LAYOUT ─ */
+    .feed-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+    @media(max-width:1000px){.feed-layout{grid-template-columns:1fr}}
+
+    /* ─ STREAM CARDS ─ */
+    .streams-label{
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+      margin-bottom:16px;
+    }
+    .section-title{font-family:"Bebas Neue";font-size:28px;letter-spacing:3px;text-transform:uppercase}
+
+    .stream-card{
+      display:flex;align-items:center;gap:14px;
+      padding:14px;
+      background:var(--bg-card);
+      border:1px solid var(--line);
+      border-radius:var(--r-md);
+      cursor:pointer;
+      transition:border-color var(--tm),transform var(--tm),box-shadow var(--tm);
+      margin-bottom:10px;
+    }
+    .stream-card:hover{border-color:rgba(229,9,20,.4);transform:translateY(-2px);box-shadow:0 10px 32px rgba(229,9,20,.1)}
+    .stream-card.active{border-color:rgba(229,9,20,.6);background:rgba(229,9,20,.05);box-shadow:0 0 24px rgba(229,9,20,.12)}
+    .stream-thumb{
+      width:80px;height:48px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#000;position:relative;
+    }
+    .stream-thumb img{width:100%;height:100%;object-fit:cover}
+    .stream-thumb-placeholder{width:80px;height:48px;border-radius:10px;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .stream-thumb .live-chip{
+      position:absolute;bottom:4px;left:4px;
+      background:var(--red);color:#fff;font-size:9px;text-transform:uppercase;letter-spacing:.1em;
+      padding:2px 6px;border-radius:4px;font-weight:700;line-height:1.2;
+    }
+    .stream-info{flex:1;min-width:0}
+    .stream-title{font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stream-team{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stream-viewers{font-size:11px;color:var(--muted);margin-top:4px}
+    .stream-arrow{color:rgba(255,255,255,.3);font-size:16px;flex-shrink:0;transition:color var(--tf)}
+    .stream-card:hover .stream-arrow,.stream-card.active .stream-arrow{color:var(--red)}
+
+    /* ─ SIDEBAR ─ */
+    .sidebar{position:sticky;top:calc(var(--nav) + 18px);display:flex;flex-direction:column;gap:14px}
+    @media(max-width:1000px){.sidebar{position:static}}
+    .panel{background:rgba(18,12,12,.85);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+    .panel.red-glow{border-color:rgba(229,9,20,.18);box-shadow:0 0 40px rgba(229,9,20,.06)}
+    .panel-body{padding:18px}
+    .panel-title{font-family:"Bebas Neue";font-size:22px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+    .panel-text{font-size:13px;color:var(--muted);line-height:1.5}
+    .pdiv{height:1px;background:var(--line);margin:14px 0}
+
+    /* ─ GO LIVE FORM ─ */
+    .go-live-form{display:none;flex-direction:column;gap:12px}
+    .go-live-form.open{display:flex}
+    .form-label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);display:block;margin-bottom:5px}
+    .form-input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:#fff;padding:10px 12px;border-radius:12px;font-family:inherit;font-size:13px;outline:none;transition:border-color var(--tf)}
+    .form-input:focus{border-color:rgba(229,9,20,.6)}
+    .form-input::placeholder{color:rgba(255,255,255,.3)}
+    .form-select option{background:#1a1a1a}
+    textarea.form-input{min-height:72px;resize:vertical;line-height:1.5}
+    .form-msg{font-size:12px;min-height:16px;color:var(--muted)}
+    .form-msg.ok{color:#9affc5}
+    .form-msg.err{color:#ff9a9a}
+
+    /* ─ EMPTY / SKELETON ─ */
+    .empty-state{padding:32px 20px;text-align:center;color:var(--muted);font-size:14px}
+    .empty-state strong{display:block;font-family:"Bebas Neue";font-size:24px;letter-spacing:2px;color:rgba(255,255,255,.2);margin-bottom:6px}
+    .skeleton{background:rgba(255,255,255,.04);border-radius:var(--r-md);animation:pulse 1.5s ease-in-out infinite;margin-bottom:10px}
+    @keyframes pulse{0%,100%{opacity:.4}50%{opacity:.85}}
+
+    /* ─ TAG ─ */
+    .tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);background:rgba(255,255,255,.02)}
+    .tag.red{border-color:rgba(229,9,20,.4);color:#ff8080;background:rgba(229,9,20,.06)}
+    .tag.green{border-color:rgba(18,139,2,.4);color:#9affc5;background:rgba(18,139,2,.06)}
+
+    /* ─ HOW IT WORKS ─ */
+    .how-tile{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+    .how-num{font-family:"Bebas Neue";font-size:28px;letter-spacing:1px;color:rgba(229,9,20,.6);line-height:1;flex-shrink:0;width:28px}
+    .how-text{font-size:13px;color:var(--muted);line-height:1.45}
+    .how-text strong{color:#fff}
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <div class="nav-wrapper" id="navWrapper">
+  <div class="container nav">
+
+    <a href="./index.html" class="logo">
+      <div class="logo-mark">
+        <img src="../../Assets/logo.png" alt="ROK Racers JA logo">
+      </div>
+      <div>
+        <div class="logo-text-main">ROK RACERS JA</div>
+        <div class="logo-text-sub">Motorsport Community</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="./events.html">Events</a>
+      <a href="./garage.html">Garage</a>
+      <a href="./teams.html">Community</a>
+      <a href="./live.html">Live</a>
+      <a href="./marketplace.html">Marketplace</a>
+      <a href="./store.html">Store</a>
+    </nav>
+
+    <div class="nav-cta">
+      <!-- auth-ui.js looks for these IDs and wires them up -->
+      <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
+      <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+      <div id="profileMenu" class="profile-menu" style="display:none">
+        <div id="profileChip"
+             class="profile-chip"
+             aria-haspopup="true"
+             aria-expanded="false"
+             title="Account menu">
+          <span id="profileInitials">U</span>
+        </div>
+
+        <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+          <div class="dd-head">
+            <div class="dd-title">Signed in as</div>
+            <div class="dd-email" id="ddEmail">—</div>
+          </div>
+
+          <a href="../Users/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+          <div class="dd-sep"></div>
+          <a href="/garage.html?view=my">My Garage</a>
+          <a href="./tickets.html">My Tickets</a>
+          <a href="./likes-build.html">Liked Builds</a>
+          <a href="./likes-sightings.html">Liked Sightings</a>
+          <a href="./teams.html">My Teams</a>
+          <a id="myEventsLink" href="../Admin/admin-events.html" style="display:none">
+            My Events <span class="dd-badge">Promoter</span>
+          </a>
+          <div class="dd-sep"></div>
+          <button id="signoutBtn" type="button">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div>
+        <div class="hero-kicker">
+          <div class="hero-kicker-line"></div>
+          <div class="live-dot">Live Now</div>
+        </div>
+        <h1 class="hero-title"><span class="hl">On</span><br>Air</h1>
+        <p class="hero-sub">Watch live streams from Jamaican motorsport events. Teams go live directly from the track — you watch right here.</p>
+        <div class="hero-actions">
+          <button id="goLiveHeroBtn" class="btn btn-red">📡 Go Live</button>
+          <a href="#streams" class="btn btn-ghost">Watch Now ↓</a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div>
+          <div class="stat-n" id="statLive">—</div>
+          <div class="stat-l">Live now</div>
+        </div>
+        <div>
+          <div class="stat-n" id="statTotal">—</div>
+          <div class="stat-l">Streams today</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tape" aria-hidden="true"></div>
+
+    <!-- FEATURED PLAYER -->
+    <div id="playerWrap" class="player-wrap" style="display:none">
+      <div class="player-header">
+        <div class="player-channel">
+          <div id="playerLogo" class="player-logo-placeholder">📡</div>
+          <div>
+            <div id="playerName" class="player-name">Loading…</div>
+            <div id="playerMeta" class="player-meta"></div>
+          </div>
+        </div>
+        <div class="player-actions">
+          <div class="live-dot" id="playerLiveDot" style="display:none">Live</div>
+          <a id="playerYTLink" href="#" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="display:none">Open on YouTube ↗</a>
+          <button id="playerClose" class="btn btn-ghost btn-sm">✕ Close</button>
+        </div>
+      </div>
+      <div class="iframe-wrap" id="playerIframe"></div>
+    </div>
+
+    <!-- NO STREAMS PLAYER -->
+    <div id="playerEmpty" class="player-wrap">
+      <div class="player-empty">
+        <div class="big">No Live Streams</div>
+        <p>No one's live right now. Check back soon — or if you're running an event, go live now and your stream appears here instantly.</p>
+        <button id="goLiveEmptyBtn" class="btn btn-red">📡 Go Live Now</button>
+      </div>
+    </div>
+
+    <!-- FEED -->
+    <div id="streams" class="feed-layout">
+
+      <!-- LEFT: stream list -->
+      <div>
+        <div class="streams-label">
+          <div>
+            <div class="section-title">All Streams</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px" id="streamsSub">Loading…</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="refreshBtn">↺ Refresh</button>
+        </div>
+
+        <div id="streamsList">
+          <div class="skeleton" style="height:76px"></div>
+          <div class="skeleton" style="height:76px"></div>
+          <div class="skeleton" style="height:76px"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: sidebar -->
+      <aside class="sidebar">
+
+        <!-- Go Live panel -->
+        <div class="panel red-glow" id="goLivePanel">
+          <div class="panel-body">
+            <div class="panel-title">📡 Go Live</div>
+            <p class="panel-text">Running an event? Put your YouTube stream link here and everyone on the site can watch.</p>
+
+            <div id="goLiveSignInNudge" style="display:none;margin-top:12px">
+              <button class="btn btn-red btn-sm" id="goLiveSignInBtn" style="width:100%">Sign in to go live</button>
+            </div>
+
+            <div id="goLiveFormWrap" style="display:none;margin-top:12px">
+              <div class="go-live-form open" id="goLiveForm">
+                <div>
+                  <label class="form-label">Stream title *</label>
+                  <input id="liveTitle" class="form-input" type="text" placeholder="e.g. Sunday Drag Night — Quarter Mile" maxlength="100">
+                </div>
+                <div>
+                  <label class="form-label">YouTube stream URL *</label>
+                  <input id="liveUrl" class="form-input" type="url" placeholder="https://youtube.com/live/… or youtu.be/…">
+                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">Paste your YouTube live link. Premieres and videos also work.</div>
+                </div>
+                <div>
+                  <label class="form-label">Team / channel name</label>
+                  <input id="liveTeam" class="form-input" type="text" placeholder="e.g. ROC Kings JA" maxlength="60">
+                </div>
+                <div>
+                  <label class="form-label">Location (optional)</label>
+                  <input id="liveLocation" class="form-input" type="text" placeholder="e.g. Caymanas Park, Kingston">
+                </div>
+                <div>
+                  <label class="form-label">Category</label>
+                  <select id="liveCategory" class="form-input form-select">
+                    <option value="Drag">Drag Racing</option>
+                    <option value="Drift">Drift</option>
+                    <option value="Track">Track Day</option>
+                    <option value="Street Meet">Street Meet</option>
+                    <option value="Show">Car Show</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div id="liveFormMsg" class="form-msg"></div>
+                <button id="liveSubmitBtn" class="btn btn-red">Go Live Now</button>
+                <div id="myLiveSection" style="display:none">
+                  <div class="pdiv"></div>
+                  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Your active stream:</div>
+                  <div id="myLiveCard"></div>
+                  <button id="endLiveBtn" class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%">End Stream</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">How it works</div>
+            <div class="how-tile"><div class="how-num">1</div><div class="how-text"><strong>Start your stream</strong> on YouTube — just hit Go Live on your phone or setup.</div></div>
+            <div class="how-tile"><div class="how-num">2</div><div class="how-text"><strong>Paste your link</strong> in the Go Live panel and hit the button.</div></div>
+            <div class="how-tile"><div class="how-num">3</div><div class="how-text"><strong>Everyone on the site</strong> can see your stream right here, embedded, instantly.</div></div>
+            <div class="pdiv"></div>
+            <p class="panel-text">Streams auto-expire after 8 hours. End yours early anytime from this panel.</p>
+          </div>
+        </div>
+
+        <!-- Past streams teaser -->
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">Past Streams</div>
+            <p class="panel-text">Recorded events and highlights from recent streams.</p>
+            <div style="margin-top:12px">
+              <a href="./highlights.html" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">View Highlights →</a>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+  </div><!-- /container -->
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    // ── Nav scroll ────────────────────────────────────────────────────────────
+    window.addEventListener('scroll',()=>$('navWrapper').classList.toggle('solid',window.scrollY>40),{passive:true});
+
+    // ── YouTube URL → embed ID ────────────────────────────────────────────────
+    function extractYouTubeId(url) {
+      if (!url) return null;
+      url = url.trim();
+
+      // youtu.be/ID or youtu.be/live/ID
+      let m = url.match(/youtu\.be\/(?:live\/)?([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+
+      // youtube.com/live/ID
+      m = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+
+      // youtube.com/watch?v=ID
+      m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+
+      // youtube.com/embed/ID
+      m = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+
+      // youtube.com/shorts/ID
+      m = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+
+      return null;
+    }
+
+    function makeEmbedUrl(videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1`;
+    }
+
+    function makeThumbnailUrl(videoId) {
+      return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    }
+
+    // ── Player ────────────────────────────────────────────────────────────────
+    let activeStreamId = null;
+
+    function openPlayer(stream) {
+      const vid = extractYouTubeId(stream.stream_url);
+      if (!vid) { alert('Invalid YouTube URL — cannot embed.'); return; }
+
+      activeStreamId = stream.id;
+
+      $('playerEmpty').style.display = 'none';
+      $('playerWrap').style.display = 'block';
+
+      // Header
+      if (stream.logo_url) {
+        $('playerLogo').outerHTML = `<img id="playerLogo" class="player-logo" src="${esc(stream.logo_url)}" alt="">`;
+      } else {
+        const logo = $('playerLogo');
+        logo.className = 'player-logo-placeholder';
+        logo.textContent = '📡';
+      }
+      $('playerName').textContent = stream.title || 'Live Stream';
+      const metaParts = [stream.team_name, stream.location, stream.category].filter(Boolean);
+      $('playerMeta').textContent = metaParts.join(' · ');
+
+      // Live dot
+      if (stream.is_live !== false) $('playerLiveDot').style.display = 'inline-flex';
+
+      // YouTube link
+      const ytLink = $('playerYTLink');
+      ytLink.href = stream.stream_url;
+      ytLink.style.display = 'inline-flex';
+
+      // Embed iframe
+      $('playerIframe').innerHTML = `<iframe src="${makeEmbedUrl(vid)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="${esc(stream.title||'Live Stream')}"></iframe>`;
+
+      $('playerWrap').scrollIntoView({ behavior:'smooth', block:'start' });
+
+      // Mark active card
+      document.querySelectorAll('.stream-card').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === stream.id);
+      });
+    }
+
+    $('playerClose').addEventListener('click', () => {
+      $('playerWrap').style.display = 'none';
+      $('playerIframe').innerHTML = '';
+      if (!allStreams.length) $('playerEmpty').style.display = 'block';
+      activeStreamId = null;
+      document.querySelectorAll('.stream-card').forEach(el => el.classList.remove('active'));
+    });
+
+    // ── Streams data ──────────────────────────────────────────────────────────
+    let allStreams = [];
+
+    async function loadStreams() {
+      $('streamsList').innerHTML = `
+        <div class="skeleton" style="height:76px"></div>
+        <div class="skeleton" style="height:76px"></div>
+        <div class="skeleton" style="height:76px"></div>`;
+
+      const eightHoursAgo = new Date(Date.now() - 8*60*60*1000).toISOString();
+
+      const { data, error } = await supabase
+        .from('live_streams')
+        .select('*')
+        .eq('is_active', true)
+        .gte('created_at', eightHoursAgo)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error(error);
+        $('streamsList').innerHTML = `<div class="empty-state"><strong>Couldn't load</strong>Try refreshing in a moment.</div>`;
+        return;
+      }
+
+      allStreams = data || [];
+
+      // Stats
+      $('statLive').textContent = allStreams.length || '0';
+      $('statTotal').textContent = allStreams.length || '0';
+      $('streamsSub').textContent = allStreams.length
+        ? `${allStreams.length} stream${allStreams.length===1?'':'s'} live`
+        : 'No streams right now — check back soon';
+
+      // Show/hide empty state
+      if (!allStreams.length) {
+        $('playerWrap').style.display = 'none';
+        $('playerIframe').innerHTML = '';
+        $('playerEmpty').style.display = 'block';
+        $('streamsList').innerHTML = `<div class="empty-state"><strong>No Live Streams</strong>Be the first to go live today.</div>`;
+        return;
+      }
+
+      $('playerEmpty').style.display = 'none';
+
+      // Auto-open first stream if none active
+      if (!activeStreamId) openPlayer(allStreams[0]);
+
+      renderStreamList(allStreams);
+    }
+
+    function renderStreamList(streams) {
+      if (!streams.length) {
+        $('streamsList').innerHTML = `<div class="empty-state"><strong>No Streams</strong>Nobody's live right now.</div>`;
+        return;
+      }
+      $('streamsList').innerHTML = streams.map(s => {
+        const vid = extractYouTubeId(s.stream_url);
+        const thumb = vid ? makeThumbnailUrl(vid) : null;
+        const isActive = s.id === activeStreamId;
+        const catTag = s.category ? `<span class="tag red">${esc(s.category)}</span>` : '';
+
+        return `
+          <div class="stream-card${isActive?' active':''}" data-id="${esc(s.id)}" role="button" tabindex="0" aria-label="Watch ${esc(s.title)}">
+            ${thumb
+              ? `<div class="stream-thumb"><img src="${thumb}" alt="" loading="lazy"><div class="live-chip">Live</div></div>`
+              : `<div class="stream-thumb-placeholder">📡</div>`
+            }
+            <div class="stream-info">
+              <div class="stream-title">${esc(s.title||'Live Stream')}</div>
+              <div class="stream-team">${esc([s.team_name,s.location].filter(Boolean).join(' · '))}</div>
+              <div class="stream-viewers">${catTag}</div>
+            </div>
+            <div class="stream-arrow">▶</div>
+          </div>`;
+      }).join('');
+
+      // Wire click
+      $('streamsList').querySelectorAll('.stream-card').forEach(card => {
+        const onClick = () => {
+          const stream = allStreams.find(s => s.id === card.dataset.id);
+          if (stream) openPlayer(stream);
+          document.querySelectorAll('.stream-card').forEach(c => c.classList.toggle('active', c.dataset.id === card.dataset.id));
+        };
+        card.addEventListener('click', onClick);
+        card.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') onClick(); });
+      });
+    }
+
+    // ── Go Live ───────────────────────────────────────────────────────────────
+    let myActiveStreamId = null;
+
+    function syncGoLivePanel() {
+      const user = authUI.getUser();
+      if (!user) {
+        $('goLiveSignInNudge').style.display = 'block';
+        $('goLiveFormWrap').style.display = 'none';
+      } else {
+        $('goLiveSignInNudge').style.display = 'none';
+        $('goLiveFormWrap').style.display = 'block';
+        checkMyStream(user.id);
+      }
+    }
+
+    async function checkMyStream(userId) {
+      const eightHoursAgo = new Date(Date.now() - 8*60*60*1000).toISOString();
+      const { data } = await supabase
+        .from('live_streams')
+        .select('id,title,stream_url')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .gte('created_at', eightHoursAgo)
+        .maybeSingle();
+
+      if (data) {
+        myActiveStreamId = data.id;
+        $('myLiveSection').style.display = 'block';
+        $('myLiveCard').innerHTML = `
+          <div style="font-size:13px;padding:10px;background:rgba(229,9,20,.06);border:1px solid rgba(229,9,20,.2);border-radius:12px">
+            <div class="live-dot" style="margin-bottom:6px">On Air</div>
+            <div style="font-weight:700;margin-top:4px">${esc(data.title)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;word-break:break-all">${esc(data.stream_url)}</div>
+          </div>`;
+        $('liveSubmitBtn').style.display = 'none';
+      } else {
+        myActiveStreamId = null;
+        $('myLiveSection').style.display = 'none';
+        $('liveSubmitBtn').style.display = 'flex';
+      }
+    }
+
+    async function submitStream() {
+      const msg = $('liveFormMsg');
+      msg.textContent = '';
+      msg.className = 'form-msg';
+
+      const user = authUI.getUser();
+      if (!user) { await authUI.requireLogin(); syncGoLivePanel(); return; }
+
+      const title    = $('liveTitle').value.trim();
+      const url      = $('liveUrl').value.trim();
+      const team     = $('liveTeam').value.trim() || null;
+      const location = $('liveLocation').value.trim() || null;
+      const category = $('liveCategory').value || null;
+
+      if (!title) { msg.textContent = 'Stream title is required.'; msg.className='form-msg err'; return; }
+      if (!url)   { msg.textContent = 'YouTube URL is required.'; msg.className='form-msg err'; return; }
+
+      const vid = extractYouTubeId(url);
+      if (!vid) {
+        msg.textContent = 'Couldn\'t read a YouTube video ID from that URL. Use a youtube.com/live or youtu.be link.';
+        msg.className = 'form-msg err';
+        return;
+      }
+
+      $('liveSubmitBtn').disabled = true;
+      $('liveSubmitBtn').textContent = 'Going live…';
+
+      try {
+        // End any previous active stream for this user
+        await supabase.from('live_streams')
+          .update({ is_active: false, ended_at: new Date().toISOString() })
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        const { error } = await supabase.from('live_streams').insert({
+          user_id: user.id,
+          title,
+          stream_url: url,
+          team_name: team,
+          location,
+          category,
+          is_active: true,
+        });
+
+        if (error) throw error;
+
+        msg.textContent = '✓ You\'re live! Your stream is now visible to everyone.';
+        msg.className = 'form-msg ok';
+
+        // Clear form
+        ['liveTitle','liveUrl','liveTeam','liveLocation'].forEach(id => $(id).value='');
+        $('liveCategory').value = 'Drag';
+
+        await loadStreams();
+        await checkMyStream(user.id);
+      } catch (err) {
+        console.error(err);
+        msg.textContent = 'Couldn\'t go live: ' + (err?.message || String(err));
+        msg.className = 'form-msg err';
+      } finally {
+        $('liveSubmitBtn').disabled = false;
+        $('liveSubmitBtn').textContent = 'Go Live Now';
+      }
+    }
+
+    async function endStream() {
+      const user = authUI.getUser();
+      if (!user || !myActiveStreamId) return;
+
+      if (!confirm('End your live stream? It will be removed from the listing.')) return;
+
+      await supabase.from('live_streams')
+        .update({ is_active: false, ended_at: new Date().toISOString() })
+        .eq('id', myActiveStreamId);
+
+      myActiveStreamId = null;
+      $('liveFormMsg').textContent = 'Stream ended.';
+      $('liveFormMsg').className = 'form-msg';
+
+      await loadStreams();
+      await checkMyStream(user.id);
+    }
+
+    // ── Wire ─────────────────────────────────────────────────────────────────
+    $('liveSubmitBtn').addEventListener('click', submitStream);
+    $('endLiveBtn').addEventListener('click', endStream);
+    $('refreshBtn').addEventListener('click', loadStreams);
+
+    // Go Live shortcut buttons
+    function openGoLivePanel() {
+      $('goLivePanel').scrollIntoView({ behavior:'smooth', block:'start' });
+      const user = authUI.getUser();
+      if (!user) authUI.requireLogin();
+    }
+    $('goLiveHeroBtn').addEventListener('click', openGoLivePanel);
+    $('goLiveEmptyBtn').addEventListener('click', openGoLivePanel);
+    $('goLiveSignInBtn').addEventListener('click', () => authUI.requireLogin());
+
+    authUI.onChange(syncGoLivePanel);
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', async () => {
+      syncGoLivePanel();
+      await loadStreams();
+
+      // Auto-refresh every 60s
+      setInterval(loadStreams, 60_000);
+    });
+  </script>
+</body>
+</html>
+

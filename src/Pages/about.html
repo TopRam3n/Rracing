@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>About — ROK Racers JA</title>
+  <meta name="description" content="What ROK Racers JA is, why it exists, and how the Jamaican motorsport community uses it." />
+  <link rel="icon" href="../../Assets/og.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  });
+  </script>
+
+  <!-- Shared auth (nav + requireLogin) -->
+  <script src="../Security/auth-ui.js"></script>
+
+  <!-- Design System (centralized tokens + components) -->
+  <link rel="stylesheet" href="../../styles/design-system.css">
+
+  <style>
+    :root{
+      --bg:#050508;
+      --bg1:#141414;
+      --bg2:#1b1b1b;
+      --fg:#fff;
+      --muted:#bdbdbd;
+      --accent:#128b02;
+      --accent-yellow:#FFD93B;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
+      color:var(--fg);
+      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    a{color:var(--fg);text-decoration:none}
+    .container{max-width:1280px;margin:0 auto;padding:0 24px}
+
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(5,5,8,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(140%) blur(12px);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;gap:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:12px;object-fit:cover}
+    h1,h2,h3{font-family:"Bebas Neue";letter-spacing:2px;margin:0}
+    .sub{color:var(--muted)}
+    .menu{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 14px;border-radius:999px;
+      border:1px solid var(--line);
+      cursor:pointer;background:transparent;color:var(--fg);
+      font-family:inherit;font-size:13px;
+      transition:transform .18s ease-out, box-shadow .18s ease-out, background .18s ease-out, border-color .18s ease-out;
+    }
+    .btn:hover{background:rgba(255,255,255,0.03)}
+    .btn.primary{
+      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
+      color:#fff;border-color:rgba(229,9,20,.9);
+      box-shadow:0 0 18px rgba(229,9,20,.5);
+    }
+    .btn.primary:hover{box-shadow:0 0 26px rgba(229,9,20,.7);transform:translateY(-1px)}
+
+    .nav-auth{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .profile-menu{position:relative;display:flex;align-items:center;}
+    .profile-chip{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--bg2);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:600;cursor:pointer;border:1px solid var(--line);
+      font-size:13px;
+      transition:box-shadow .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+    }
+    .profile-chip:hover{
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 16px rgba(255,217,59,.6);
+      transform:translateY(-1px);
+    }
+    .dropdown{
+      position:absolute;right:0;top:40px;
+      background:#121212;border:1px solid var(--line);
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border-radius:16px;display:flex;flex-direction:column;
+      min-width:190px;z-index:60;
+    }
+    .dropdown a,.dropdown button{
+      padding:10px 16px;text-align:left;border:none;
+      background:transparent;color:var(--fg);font-size:13px;
+      width:100%;cursor:pointer;font-family:inherit;
+    }
+    .dropdown a:hover,.dropdown button:hover{background:#1f1f1f}
+
+    @media(max-width:640px){
+      .nav-inner{flex-wrap:wrap}
+      .menu{order:3;width:100%;justify-content:flex-start}
+      .nav-auth{order:2;width:100%;justify-content:flex-end}
+    }
+
+    .hero{
+      padding:44px 0 18px;
+      position:relative;
+    }
+    .hero::after{
+      content:"";position:absolute;inset-inline:0;bottom:-140px;height:240px;
+      background:radial-gradient(circle at bottom, rgba(229,9,20,0.25), transparent 60%);
+      pointer-events:none;
+    }
+    .hero h2{font-size:54px;text-transform:uppercase}
+    .hero p{max-width:760px;font-size:16px;line-height:1.6;margin-top:10px;color:var(--muted)}
+    .pill-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:7px 12px;border-radius:999px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:13px;color:var(--fg);
+    }
+    .pill .dot{
+      width:8px;height:8px;border-radius:99px;background:var(--accent-yellow);
+      box-shadow:0 0 10px rgba(255,217,59,.9);
+    }
+
+    .section{padding:34px 0 54px}
+    .grid{display:grid;gap:16px}
+    .cols-2{grid-template-columns:1.1fr .9fr}
+    @media(max-width:900px){.cols-2{grid-template-columns:1fr}}
+
+    .card{
+      background:var(--bg1);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .pad{padding:18px}
+    .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-yellow)}
+    .card h3{font-size:28px;text-transform:uppercase;margin-top:6px}
+    .card p{color:var(--muted);line-height:1.6;margin-top:10px}
+    .list{margin:10px 0 0 18px;color:var(--muted);line-height:1.7}
+    .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+    .split{
+      display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .stat{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 14px;
+      min-width:170px;
+    }
+    .stat .n{font-family:"Bebas Neue";letter-spacing:2px;font-size:28px}
+    .stat .t{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+
+    footer{
+      padding:24px 0 34px;
+      border-top:1px solid rgba(255,255,255,0.06);
+      color:var(--muted);
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="./index.html" aria-label="ROK Racers JA home">
+        <img src="../../Assets/logo.png" alt="" class="logo">
+        <div>
+          <h1>ROK RACERS JA</h1>
+          <small class="sub" style="font-size:12px;text-transform:uppercase;letter-spacing:.16em;">About</small>
+        </div>
+      </a>
+
+      <div class="menu" role="menubar" aria-label="Main menu">
+        <a class="btn" role="menuitem" href="./events.html">Events</a>
+        <a class="btn" role="menuitem" href="./garage.html">Garage</a>
+        <a class="btn" role="menuitem" href="./teams.html">Community</a>
+        <a class="btn" role="menuitem" href="./marketplace.html">Marketplace</a>
+        <a class="btn" role="menuitem" href="./store.html">Store</a>
+      </div>
+
+      <div class="nav-auth">
+        <button id="loginBtn" class="btn">Log in</button>
+        <button id="joinBtn" class="btn primary">Join the grid</button>
+
+        <div id="navProfileWrap" class="profile-menu" style="display:none">
+          <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+            <span id="navProfileInitials">U</span>
+          </div>
+          <div id="navProfileDropdown" class="dropdown" style="display:none">
+            <a href="./garage.html">My Garage</a>
+            <a href="./tickets.html">My Tickets</a>
+            <a href="./likes-builds.html">Liked Builds</a>
+            <a href="./likes-sightings.html">Liked Sightings</a>
+            <a href="./teams.html">My Teams</a>
+            <a href="../Users/activity.html">Activity</a>
+            <button id="navSignOutBtn" type="button">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Jamrock meets speed</h2>
+      <p>
+        ROK Racers JA is a digital paddock for Jamaican car culture. Events, builds, sightings, and community —
+        one place to see what’s on, who’s outside, and what’s being built across the island.
+      </p>
+
+      <div class="pill-row">
+        <span class="pill"><span class="dot"></span> Events hub</span>
+        <span class="pill"><span class="dot"></span> Garage builds</span>
+        <span class="pill"><span class="dot"></span> Island sightings</span>
+        <span class="pill"><span class="dot"></span> Promoter tools</span>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn primary" href="./events.html">View events</a>
+        <a class="btn" href="./garage.html">Explore builds</a>
+        <button class="btn" type="button" onclick="authUI.requireLogin(()=>location.href='/build-new.html')">Create my build</button>
+      </div>
+
+      <div class="split">
+        <div class="stat"><div class="n">1</div><div class="t">Island grid</div></div>
+        <div class="stat"><div class="n">Events</div><div class="t">Track days · runs · link-ups</div></div>
+        <div class="stat"><div class="n">Builds</div><div class="t">Street · track · show</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid cols-2">
+        <article class="card">
+          <div class="pad">
+            <div class="kicker">What this is</div>
+            <h3>The grid, online</h3>
+            <p>
+              ROK Racers JA connects promoters, drivers, and fans in one place. Track nights, gas station link-ups,
+              mountain runs — every meet can live on the same grid instead of getting lost in stories and chats.
+            </p>
+            <p>
+              Use the Garage to show off your build, attach it to an event when you RSVP, and keep a living history
+              of where your car has been.
+            </p>
+            <ul class="list">
+              <li>Find events fast</li>
+              <li>RSVP and show your build</li>
+              <li>See island sightings and threads</li>
+              <li>Support local teams and promoters</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="pad">
+            <div class="kicker">How to use it</div>
+            <h3>Core flows</h3>
+            <p><strong>1)</strong> Browse events → open event → RSVP (and attach your build).</p>
+            <p><strong>2)</strong> Create a build → make it public → climb into the Top Builds.</p>
+            <p><strong>3)</strong> Drop sightings → start a thread → keep the island feed alive.</p>
+
+            <div class="cta-row" style="margin-top:12px">
+              <a class="btn" href="./events.html">Events</a>
+              <a class="btn" href="./sightings.html">Sightings</a>
+              <a class="btn" href="./highlights.html">Highlights</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card">
+        <div class="pad">
+          <div class="kicker">Roadmap</div>
+          <h3>What’s coming next</h3>
+          <p>
+            We’re focused on getting the core right first. After that, we expand into deeper promoter tools,
+            ticketing, parts and vendors, and partner perks.
+          </p>
+          <ul class="list">
+            <li>Ticketing and promoter event tools</li>
+            <li>Parts and vendor discovery</li>
+            <li>Mechanic and inspection bookings</li>
+            <li>Stories and features on local drivers</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      © ROK Racers JA · Built for the island grid.
+    </div>
+  </footer>
+
+  <script>
+    // Ensure auth-ui.js has a requireLogin fallback (safe)
+    window.authUI = window.authUI || {};
+    window.authUI.requireLogin = window.authUI.requireLogin || (async (cb)=>{
+      const { data:{ user } } = await supabase.auth.getUser();
+      if(!user){ alert("Please sign in first."); return false; }
+      cb?.(); return true;
+    });
+  </script>
+</body>
+</html>
+
+
