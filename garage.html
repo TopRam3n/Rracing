@@ -654,7 +654,7 @@ const buildViewer = $('buildViewer');
 let autoRotateActive = false;
 
 function open3DViewer(buildId, modelUrl, title) {
-  $(buildViewer).src = modelUrl;
+  buildViewer.src = modelUrl;
   $('viewerTitle').textContent = title || 'Build';
   viewer3DBackdrop.classList.add('open');
   autoRotateActive = false;
@@ -663,7 +663,7 @@ function open3DViewer(buildId, modelUrl, title) {
 
 function close3DViewer() {
   viewer3DBackdrop.classList.remove('open');
-  $(buildViewer).src = '';
+  buildViewer.src = '';
   autoRotateActive = false;
 }
 
@@ -687,10 +687,20 @@ function imgUrl(b) {
   return rokStorageUrl('build-photos', raw) || '/Assets/logo.png';
 }
 
+function glbUrl(b) {
+  const raw = String(b.model_url || '').trim();
+  if (!raw) return '';
+  if (!/\.glb(\?|#|$)/i.test(raw)) return '';
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/')) return raw;
+  return rokStorageUrl('build-models', raw) || rokStorageUrl('car-models', raw) || raw;
+}
+
 function buildCard(b) {
   const car     = [b.year, b.make, b.model].filter(Boolean).join(' ');
   const typeMap = { owned: 'Owned', dream: 'Dream', for_sale: 'For Sale' };
-  const is3D    = !!(b.is_3d || b.model_url || b.car_model_id);
+  const modelSrc = glbUrl(b);
+  const hasGlb   = !!modelSrc;
+  const is3D     = hasGlb;
   const priv    = b.is_public === false;
   const liked   = !!b._liked;
   const count   = Number(b.like_count ?? b.likes_count ?? 0);
@@ -699,8 +709,9 @@ function buildCard(b) {
     <article class="card ${is3D ? 'card-3d' : ''}" role="listitem" data-build="${rokEsc(b.id)}">
       <a href="/build.html?id=${rokEsc(b.id)}" style="display:block">
         <div class="card-media">
-          <img src="${rokEsc(imgUrl(b))}" alt="${rokEsc(b.title || 'Build')}" loading="lazy"
-               onerror="this.src='/Assets/logo.png'">
+          ${hasGlb
+            ? `<model-viewer src="${rokEsc(modelSrc)}" alt="${rokEsc(b.title || 'Build')} 3D model" camera-controls auto-rotate interaction-prompt="none" reveal="auto" loading="lazy"></model-viewer>`
+            : `<img src="${rokEsc(imgUrl(b))}" alt="${rokEsc(b.title || 'Build')}" loading="lazy" onerror="this.src='/Assets/logo.png'">`}
           <div class="chip ${is3D ? 'yellow' : ''}">${is3D ? '3D Build' : 'Photo Build'}</div>
           ${priv ? '<div class="chip" style="left:auto;right:10px">Private</div>' : ''}
         </div>
@@ -716,7 +727,7 @@ function buildCard(b) {
         <div class="like-row">
           <span class="like-count">❤ <span class="likes">${count}</span></span>
           <div style="display:flex; gap:6px;">
-            ${is3D && b.model_url ? `<button class="btn btn-ghost btn-pill-sm view-3d-btn" data-build="${rokEsc(b.id)}" data-model="${rokEsc(b.model_url)}" data-title="${rokEsc(b.title)}" type="button" title="View 3D model">📦</button>` : ''}
+            ${hasGlb ? `<button class="btn btn-ghost btn-pill-sm view-3d-btn" data-build="${rokEsc(b.id)}" data-model="${rokEsc(modelSrc)}" data-title="${rokEsc(b.title)}" type="button" title="View 3D model">📦</button>` : ''}
             <button class="btn btn-ghost btn-pill-sm" data-like
               aria-pressed="${liked ? 'true' : 'false'}"
               title="${liked ? 'Remove boost' : 'Boost this build'}"
