@@ -11,18 +11,24 @@
 
   <!-- ✅ Shared Supabase client (single init, no duplicates) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="src/Security/supabase-client.js"></script>
+  <script src="../Security/supabase-client.js"></script>
 
   <!-- ✅ Shared auth UI (injects modal, wires nav, exposes authUI) -->
-  <script src="src/Security/auth-ui.js"></script>
+  <script src="../Security/auth-ui.js"></script>
 
   <!-- ✅ Three.js for advanced 3D effects and drift animation -->
-  <script async src="https://unpkg.com/three@r128/build/three.min.js"></script>
-  <script async src="https://unpkg.com/three@r128/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="src/drift-animation.js"></script>
+  <script type="module">
+    import { initHeroDrift } from "../drift-animation.js";
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const heroEl = document.querySelector(".hero");
+      const textBlockEl = document.querySelector(".hero .hero-left");
+      initHeroDrift(heroEl, textBlockEl);
+    });
+  </script>
 
   <!-- ✅ Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="styles/design-system.css">
+  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root {
@@ -655,7 +661,7 @@
 
     <a href="./index.html" class="logo">
       <div class="logo-mark">
-        <img src="Assets/logo.png" alt="ROK Racers JA logo">
+        <img src="../../Assets/logo.png" alt="ROK Racers JA logo">
       </div>
       <div>
         <div class="logo-text-main">ROK RACERS JA</div>
@@ -667,6 +673,7 @@
       <a href="./events.html">Events</a>
       <a href="./garage.html">Garage</a>
       <a href="./teams.html">Community</a>
+      <a href="./drivers.html">Drivers</a>
       <a href="./live.html">Live</a>
       <a href="./highlights.html">Feed</a>
       <a href="./marketplace.html">Marketplace</a>
