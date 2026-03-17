@@ -4,7 +4,6 @@
   "public": false,
   "cleanUrls": true,
   "trailingSlash": false,
-  "env": ["VITE_SUPABASE_URL", "VITE_SUPABASE_KEY"],
   "headers": [
     {
       "source": "/(.*)",
