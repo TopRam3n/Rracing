@@ -257,12 +257,12 @@
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
         <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/src/Features/about.html">About</a>
-          <a class="btn" role="menuitem" href="/src/Features/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/src/Features/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/src/Features/teams.html">Community</a>
-          <a class="btn" role="menuitem" href="/src/Features/marketplace.html">Marketplace</a>
-          <a class="btn" role="menuitem" href="/src/Features/store.html">Store</a>
+          <a class="btn" role="menuitem" href="./about.html">About</a>
+          <a class="btn" role="menuitem" href="./events.html">Events</a>
+          <a class="btn" role="menuitem" href="./garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="./teams.html">Community</a>
+          <a class="btn" role="menuitem" href="./marketplace.html">Marketplace</a>
+          <a class="btn" role="menuitem" href="./store.html">Store</a>
         </div>
 
         <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
@@ -276,17 +276,17 @@
               <span id="navProfileInitials">U</span>
             </div>
             <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html?view=my">My Garage</a>
-              <a href="/src/Features/tickets.html">My Tickets</a>
-              <a href="/src/Features/likes-builds.html">Liked Builds</a>
-              <a href="/src/Features/likes-sightings.html">Liked Sightings</a>
-              <a href="/src/Features/teams.html">My Teams</a>
+              <a href="./garage.html?view=my">My Garage</a>
+              <a href="./tickets.html">My Tickets</a>
+              <a href="./likes-build.html">Liked Builds</a>
+              <a href="./likes-sightings.html">Liked Sightings</a>
+              <a href="./teams.html">My Teams</a>
               <a href="activity.html">Activity</a>
               <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
 
-          <a class="btn" href="/src/Features/garage.html">← Back</a>
+          <a class="btn" href="./garage.html">← Back</a>
         </div>
       </div>
     </div>
@@ -895,7 +895,7 @@
     if(buildId){
       location.href = `/build.html?id=${encodeURIComponent(buildId)}`;
     }else{
-      location.href = '/garage.html';
+      location.href = './garage.html';
     }
   });
 

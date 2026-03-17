@@ -416,7 +416,7 @@
 
           <a href="../Users/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
           <div class="dd-sep"></div>
-          <a href="/garage.html?view=my">My Garage</a>
+          <a href="./garage.html?view=my">My Garage</a>
           <a href="./tickets.html">My Tickets</a>
           <a href="./likes-build.html">Liked Builds</a>
           <a href="./likes-sightings.html">Liked Sightings</a>
@@ -563,7 +563,7 @@ window.addEventListener('scroll', () => {
 $('newBuildBtn').addEventListener('click', async () => {
   const ok = await authUI.requireLogin({ message: 'Sign in to add your build to the grid.' });
   if (!ok) return;
-  location.href = '/build-new.html';
+  location.href = './build-new.html';
 });
 
 // ── Quota display ─────────────────────────────────────────────
@@ -697,7 +697,7 @@ function buildCard(b) {
 
   return `
     <article class="card ${is3D ? 'card-3d' : ''}" role="listitem" data-build="${rokEsc(b.id)}">
-      <a href="/build.html?id=${rokEsc(b.id)}" style="display:block">
+      <a href="./build.html?id=${rokEsc(b.id)}" style="display:block">
         <div class="card-media">
           <img src="${rokEsc(imgUrl(b))}" alt="${rokEsc(b.title || 'Build')}" loading="lazy"
                onerror="this.src='/Assets/logo.png'">

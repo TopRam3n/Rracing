@@ -384,7 +384,7 @@
               <strong>${escapeHTML(ev.title)}</strong>
               ${when || ev.location ? `<div class="sub">${escapeHTML([when,ev.location].filter(Boolean).join(' • '))}</div>` : ''}
             </div>
-            <a href="/event.html?id=${ev.id}" class="btn small">View</a>
+            <a href="./event.html?id=${ev.id}" class="btn small">View</a>
           </div>`;
       }).join('');
 

@@ -605,7 +605,7 @@
             <div class="team-footer">
               <span class="team-members">${memberTxt ? `👥 ${memberTxt}` : ''}</span>
               <div style="display:flex;gap:8px">
-                <a class="btn btn-ghost btn-sm" href="/team.html?id=${esc(t.id)}">View →</a>
+                <a class="btn btn-ghost btn-sm" href="./team.html?id=${esc(t.id)}">View →</a>
                 <button class="btn btn-primary btn-sm apply-btn" data-id="${esc(t.id)}" data-name="${esc(t.name)}">Apply</button>
               </div>
             </div>
@@ -703,7 +703,7 @@
             ? `<img src="${esc(t.logo_url)}" alt="" style="width:36px;height:36px;border-radius:10px;object-fit:cover">`
             : `<div style="width:36px;height:36px;border-radius:10px;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-size:18px">🏁</div>`;
           return `
-            <a class="my-team-chip" href="/team.html?id=${esc(t.id)}">
+            <a class="my-team-chip" href="./team.html?id=${esc(t.id)}">
               ${logo}
               <div>
                 <div class="my-team-chip-name">${esc(t.name)}</div>
@@ -840,7 +840,7 @@
 
     // ── CREATE TEAM (promoters only) ──────────────────────────────────────
     $('createTeamBtn').onclick = () => {
-      window.location.href = '/admin-team.html';
+      window.location.href = './admin-team.html';
     };
 
     function syncCreateBtn() {

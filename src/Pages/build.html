@@ -267,7 +267,7 @@
             </div>
             <a href="../Users/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
-            <a href="/garage.html?view=my">My Garage</a>
+            <a href="./garage.html?view=my">My Garage</a>
             <a href="./tickets.html">My Tickets</a>
             <a href="./likes-build.html">Liked Builds</a>
             <a href="./likes-sightings.html">Liked Sightings</a>
@@ -398,7 +398,7 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // ── Buttons ───────────────────────────────────────────────────
-$('backBtn').addEventListener('click', () => location.href = '/garage.html');
+$('backBtn').addEventListener('click', () => location.href = './garage.html');
 $('shareBtn').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(location.href);
@@ -514,7 +514,7 @@ async function loadOwner(userId) {
   if (!data) return;
   const el = $('buildOwner');
   if (data.handle) {
-    el.innerHTML = `Built by <a href="/profile.html?handle=${encodeURIComponent(data.handle)}" style="text-decoration:underline">@${rokEsc(data.handle)}</a>`;
+    el.innerHTML = `Built by <a href="./profile.html?handle=${encodeURIComponent(data.handle)}" style="text-decoration:underline">@${rokEsc(data.handle)}</a>`;
   } else if (data.display_name) {
     el.textContent = `Built by ${data.display_name}`;
   }
