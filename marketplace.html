@@ -1,292 +1,157 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Marketplace | ROK Racers JA</title>
-  <meta name="description" content="Buy, sell, and discover cars, parts, and gear across Jamaica's motorsport community." />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Marketplace — ROK Racers JA</title>
+  <meta name="description" content="Buy, sell, and discover cars, parts, and gear across Jamaica's motorsport community."/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="supabase-client.js"></script>
-  <script src="auth-ui.js"></script>
-  <link rel="stylesheet" href="design-system.css" />
-
+  <script src="./supabase-client.js"></script>
+  <script src="./auth-ui.js"></script>
+  <link rel="stylesheet" href="./design-system.css"/>
   <style>
-    :root {
-      --bg: #040507;
-      --bg-elev: #121317;
-      --line: rgba(255,255,255,0.1);
-      --text: #f6f7fb;
-      --muted: #b8bdc9;
-      --accent: #11a014;
-      --accent-2: #ffd93b;
-      --accent-3: #e50914;
-      --radius: 18px;
-      --shadow: 0 24px 60px rgba(0,0,0,.45);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      color: var(--text);
-      font-family: Rajdhani, system-ui, sans-serif;
-      background:
-        radial-gradient(1200px 400px at 80% -5%, rgba(17,160,20,.25), transparent 60%),
-        radial-gradient(900px 380px at 10% 5%, rgba(229,9,20,.2), transparent 55%),
-        linear-gradient(180deg, #0a0b10, #040507);
-    }
-    a { color: inherit; text-decoration: none; }
-    .container { width: min(1240px, 100% - 32px); margin: 0 auto; }
+    :root{--bg:#040507;--bg-elev:#121317;--line:rgba(255,255,255,0.09);--text:#f6f7fb;--muted:#b8bdc9;--accent:#11a014;--accent-2:#ffd93b;--accent-3:#e50914;--radius:18px;--shadow:0 24px 60px rgba(0,0,0,.45);--nav-height:74px;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{min-height:100%;color:var(--text);font-family:Rajdhani,system-ui,sans-serif;background:radial-gradient(1200px 400px at 80% -5%,rgba(17,160,20,.22),transparent 60%),radial-gradient(900px 380px at 10% 5%,rgba(229,9,20,.18),transparent 55%),linear-gradient(180deg,#0a0b10,#040507);-webkit-font-smoothing:antialiased;}
+    a{color:inherit;text-decoration:none;}
+    .container{width:min(1240px,100% - 32px);margin:0 auto;}
 
-    .nav-wrap {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      backdrop-filter: blur(10px);
-      background: rgba(4,5,7,.72);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .nav {
-      min-height: 74px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-mark {
-      width: 38px; height: 38px; border-radius: 999px; overflow: hidden;
-      border: 1px solid rgba(17,160,20,.7);
-      box-shadow: 0 0 16px rgba(17,160,20,.34);
-      background: #000;
-      display: grid; place-items: center;
-    }
-    .logo-mark img { width: 100%; height: 100%; object-fit: cover; }
-    .logo-main { font-family: "Bebas Neue", sans-serif; letter-spacing: .06em; font-size: 24px; }
-    .logo-sub { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-2); }
+    .nav-wrap{position:sticky;top:0;z-index:40;backdrop-filter:blur(12px);background:rgba(4,5,7,.8);border-bottom:1px solid rgba(255,255,255,.06);}
+    .nav{min-height:var(--nav-height);display:flex;align-items:center;justify-content:space-between;gap:16px;}
+    .logo{display:flex;align-items:center;gap:10px;}
+    .logo-mark{width:38px;height:38px;border-radius:999px;overflow:hidden;border:1px solid rgba(17,160,20,.7);box-shadow:0 0 16px rgba(17,160,20,.34);background:#000;display:grid;place-items:center;}
+    .logo-mark img{width:100%;height:100%;object-fit:cover;}
+    .logo-main{font-family:"Bebas Neue",sans-serif;letter-spacing:.06em;font-size:24px;}
+    .logo-sub{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-2);}
+    .links{display:flex;gap:16px;align-items:center;text-transform:uppercase;font-size:12px;letter-spacing:.13em;color:var(--muted);}
+    .links a{position:relative;padding-bottom:3px;}
+    .links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:1.5px;background:linear-gradient(to right,var(--accent),var(--accent-2));transition:width .18s;border-radius:999px;}
+    .links a:hover{color:#fff;}
+    .links a:hover::after,.links a.active::after{width:100%;}
+    .links a.active{color:#fff;}
+    .cta{display:flex;gap:8px;align-items:center;}
+    .btn{border:1px solid transparent;border-radius:999px;background:transparent;color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.12em;font-size:11px;padding:9px 16px;font-family:inherit;transition:all .18s;}
+    .btn-ghost{border-color:rgba(255,255,255,.18);color:var(--muted);}
+    .btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.35);}
+    .btn-primary{border-color:rgba(17,160,20,.7);background:radial-gradient(circle at top left,#23bf28,#0d8211);box-shadow:0 0 18px rgba(17,160,20,.3);}
+    .btn-primary:hover{box-shadow:0 0 28px rgba(17,160,20,.5);transform:translateY(-1px);}
+    .btn-accent{border-color:rgba(229,9,20,.6);background:rgba(229,9,20,.12);color:#ff6b6b;}
+    .btn-accent:hover{background:rgba(229,9,20,.2);border-color:rgba(229,9,20,.9);}
+    @media(max-width:900px){.links{display:none;}.logo-sub{display:none;}}
 
-    .links {
-      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-      text-transform: uppercase; font-size: 12px; letter-spacing: .13em; color: var(--muted);
-    }
-    .links a.active { color: #fff; }
+    /* profile dropdown */
+    .profile-menu{position:relative;display:flex;align-items:center;}
+    .profile-chip{width:32px;height:32px;border-radius:50%;background:#1a1a1e;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.18);font-size:13px;user-select:none;transition:all .18s;}
+    .profile-chip:hover{border-color:rgba(255,255,255,.32);box-shadow:0 0 16px rgba(255,217,59,.4);}
+    .dropdown{position:absolute;right:0;top:44px;background:rgba(10,10,14,.96);border:1px solid rgba(255,255,255,.08);box-shadow:0 20px 40px rgba(0,0,0,.65);border-radius:16px;display:none;flex-direction:column;min-width:240px;z-index:999;backdrop-filter:blur(16px);overflow:hidden;}
+    .dropdown.open{display:flex;}
+    .dd-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px;}
+    .dd-title{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);}
+    .dd-email{font-size:13px;color:#fff;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .dropdown a,.dropdown button{padding:10px 14px;text-align:left;border:none;background:transparent;color:#f6f7fb;font-size:13px;width:100%;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit;}
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06);}
+    .dd-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 0;}
+    .dd-badge{font-size:10px;text-transform:uppercase;letter-spacing:.14em;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:rgba(0,0,0,.25);}
 
-    .cta { display: flex; gap: 8px; align-items: center; }
-    .btn {
-      border: 1px solid transparent;
-      border-radius: 999px;
-      background: transparent;
-      color: #fff;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      font-size: 11px;
-      padding: 9px 14px;
-    }
-    .btn-ghost { border-color: rgba(255,255,255,.18); color: var(--muted); }
-    .btn-primary {
-      border-color: rgba(17,160,20,.7);
-      background: radial-gradient(circle at top left, #23bf28, #0d8211);
-      box-shadow: 0 0 18px rgba(17,160,20,.3);
-    }
+    /* page */
+    main{padding:22px 0 60px;}
 
-    .hero {
-      margin: 26px auto 14px;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 24px;
-      background:
-        linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.01) 32%),
-        linear-gradient(145deg, rgba(229,9,20,.16), rgba(17,160,20,.16) 55%, rgba(255,217,59,.08));
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      position: relative;
-    }
-    .hero::after {
-      content: "";
-      position: absolute;
-      right: -30px;
-      top: -40px;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,217,59,.26), transparent 70%);
-      pointer-events: none;
-    }
-    .hero-inner {
-      padding: 28px;
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 20px;
-    }
-    @media (max-width: 880px) { .hero-inner { grid-template-columns: 1fr; } }
-    .kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-transform: uppercase;
-      letter-spacing: .2em;
-      color: var(--muted);
-      font-size: 11px;
-    }
-    .kicker span {
-      width: 30px;
-      height: 2px;
-      border-radius: 999px;
-      background: linear-gradient(to right, var(--accent-3), var(--accent));
-    }
-    h1 {
-      margin: 10px 0 8px;
-      font-family: "Bebas Neue", sans-serif;
-      text-transform: uppercase;
-      font-size: clamp(48px, 9vw, 84px);
-      line-height: .86;
-      letter-spacing: .05em;
-    }
-    .sub { color: var(--muted); font-size: 17px; max-width: 52ch; }
+    /* hero */
+    .hero{border:1px solid rgba(255,255,255,.08);border-radius:24px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.01) 32%),linear-gradient(145deg,rgba(229,9,20,.14),rgba(17,160,20,.14) 55%,rgba(255,217,59,.07));box-shadow:var(--shadow);overflow:hidden;margin-bottom:22px;}
+    .hero-inner{padding:28px;display:grid;grid-template-columns:1.3fr .7fr;gap:24px;align-items:center;}
+    @media(max-width:880px){.hero-inner{grid-template-columns:1fr;}}
+    .kicker{display:inline-flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);font-size:11px;margin-bottom:10px;}
+    .kicker span{width:30px;height:2px;border-radius:999px;background:linear-gradient(to right,var(--accent-3),var(--accent));}
+    .hero h1{font-family:"Bebas Neue",sans-serif;text-transform:uppercase;font-size:clamp(48px,9vw,80px);line-height:.86;letter-spacing:.05em;margin-bottom:12px;}
+    .hero .sub{color:var(--muted);font-size:15px;max-width:50ch;line-height:1.5;}
+    .hero-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+    .metric{border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.3);padding:14px 12px;text-align:center;}
+    .metric b{font-family:"Bebas Neue";letter-spacing:.06em;font-size:38px;display:block;line-height:1;}
+    .metric small{color:var(--muted);text-transform:uppercase;letter-spacing:.14em;font-size:10px;}
 
-    .hero-metrics {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 10px;
-      align-self: end;
-    }
-    .metric {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(0,0,0,.25);
-      padding: 10px;
-      min-height: 80px;
-    }
-    .metric b { font-family: "Bebas Neue"; letter-spacing: .06em; font-size: 34px; display: block; }
-    .metric small { color: var(--muted); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; }
+    /* toolbar */
+    .toolbar{display:grid;grid-template-columns:1.4fr .7fr .7fr .5fr;gap:10px;margin-bottom:18px;align-items:center;}
+    @media(max-width:840px){.toolbar{grid-template-columns:1fr 1fr;}}
+    @media(max-width:540px){.toolbar{grid-template-columns:1fr;}}
+    .input,.select{width:100%;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:#fff;padding:11px 14px;font-family:inherit;font-size:14px;outline:none;transition:border-color .18s;}
+    .input:focus,.select:focus{border-color:rgba(17,160,20,.6);}
+    .select option{background:#111;}
 
-    .toolbar {
-      margin-top: 18px;
-      display: grid;
-      grid-template-columns: 1.3fr .8fr .8fr;
-      gap: 10px;
-    }
-    @media (max-width: 840px) { .toolbar { grid-template-columns: 1fr; } }
-    .input, .select {
-      width: 100%;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,.35);
-      color: #fff;
-      padding: 11px 14px;
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-    }
+    .results-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+    .results-head h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);}
 
-    .results-head {
-      margin-top: 18px;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .results-head h2 {
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      font-size: 14px;
-      color: var(--muted);
-    }
+    /* category tabs */
+    .cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+    .cat-tab{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:.1em;transition:all .18s;font-family:inherit;}
+    .cat-tab:hover{border-color:rgba(255,255,255,.28);color:#fff;}
+    .cat-tab.active{background:rgba(17,160,20,.15);border-color:rgba(17,160,20,.5);color:rgba(17,160,20,.9);}
 
-    .grid {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 14px;
-      padding-bottom: 42px;
-    }
-    @media (max-width: 980px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+    /* grid */
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding-bottom:42px;}
+    @media(max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media(max-width:620px){.grid{grid-template-columns:1fr;}}
 
-    .card {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.02) 20%, rgba(0,0,0,.25) 60%);
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      min-height: 320px;
-    }
-    .thumb {
-      height: 180px;
-      background: linear-gradient(135deg, #1f2430, #12151f);
-    }
-    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .body { padding: 12px; display: grid; gap: 8px; flex: 1; }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.2);
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      width: fit-content;
-    }
-    .title { font-size: 22px; font-weight: 700; line-height: 1.1; }
-    .meta { color: var(--muted); font-size: 13px; }
-    .price {
-      font-weight: 800;
-      letter-spacing: .05em;
-      font-size: 20px;
-    }
-    .row { margin-top: auto; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02) 22%,rgba(0,0,0,.28));box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .2s,border-color .2s,box-shadow .2s;}
+    .card:hover{transform:translateY(-3px);border-color:rgba(255,217,59,.35);box-shadow:0 28px 60px rgba(0,0,0,.6);}
+    .thumb{height:190px;background:linear-gradient(135deg,#1f2430,#12151f);position:relative;overflow:hidden;}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s;}
+    .card:hover .thumb img{transform:scale(1.04);}
+    .thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:.15;}
+    .cat-pill{position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.22);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.6);z-index:2;}
+    .condition-pill{position:absolute;top:10px;right:10px;font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,217,59,.4);color:var(--accent-2);background:rgba(41,31,0,.6);z-index:2;}
+    .body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;}
+    .card-title{font-size:17px;font-weight:700;line-height:1.15;color:#fff;}
+    .card-meta{color:var(--muted);font-size:12px;display:flex;gap:10px;flex-wrap:wrap;}
+    .card-desc{color:var(--muted);font-size:13px;line-height:1.4;flex:1;}
+    .price-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);}
+    .price{font-weight:800;letter-spacing:.04em;font-size:20px;color:#fff;}
+    .price-orig{font-size:12px;color:var(--muted);text-decoration:line-through;}
 
-    .empty {
-      grid-column: 1 / -1;
-      border: 1px dashed var(--line);
-      border-radius: var(--radius);
-      padding: 22px;
-      color: var(--muted);
-      background: rgba(0,0,0,.24);
-      text-align: center;
-      font-size: 15px;
-    }
+    .empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:var(--radius);padding:32px;color:var(--muted);background:rgba(0,0,0,.24);text-align:center;font-size:15px;}
+    .empty strong{display:block;font-family:"Bebas Neue";font-size:22px;letter-spacing:1px;color:#fff;margin-bottom:8px;}
+
+    /* sell modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-start;justify-content:center;padding:24px 16px;z-index:9999;overflow-y:auto;}
+    .modal-backdrop.open{display:flex;}
+    .modal{width:min(600px,96vw);border-radius:20px;border:1px solid rgba(255,255,255,.10);background:rgba(10,10,14,.96);box-shadow:0 40px 120px -30px rgba(0,0,0,.8);overflow:hidden;backdrop-filter:blur(16px);}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08);}
+    .modal-title{font-family:"Bebas Neue";letter-spacing:2px;text-transform:uppercase;font-size:28px;}
+    .modal-close{border:1px solid rgba(255,255,255,.14);background:transparent;color:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;font-family:inherit;}
+    .modal-body{padding:18px;display:grid;gap:12px;}
+    .field label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;}
+    .field input,.field select,.field textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(20,20,24,.9);color:#fff;outline:none;font-size:14px;font-family:inherit;}
+    .field textarea{min-height:80px;resize:vertical;}
+    .modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);}
+    .msg{font-size:12px;min-height:16px;}
+    .msg.ok{color:#9affc5;}
+    .msg.bad{color:#ff9a9a;}
   </style>
 </head>
 <body>
   <div class="nav-wrap">
     <div class="container nav">
       <a href="./index.html" class="logo">
-        <div class="logo-mark"><img src="./Assets/logo.png" alt="ROK Racers JA logo" /></div>
-        <div>
-          <div class="logo-main">ROK RACERS JA</div>
-          <div class="logo-sub">Motorsport Community</div>
-        </div>
+        <div class="logo-mark"><img src="./Assets/logo.png" alt="ROK Racers JA"/></div>
+        <div><div class="logo-main">ROK RACERS JA</div><div class="logo-sub">Motorsport Community</div></div>
       </a>
-
       <nav class="links" aria-label="Main navigation">
         <a href="./events.html">Events</a>
         <a href="./garage.html">Garage</a>
         <a href="./teams.html">Community</a>
         <a href="./live.html">Live</a>
         <a href="./highlights.html">Feed</a>
-        <a class="active" href="./marketplace.html">Marketplace</a>
+        <a href="./marketplace.html" class="active">Marketplace</a>
         <a href="./store.html">Store</a>
       </nav>
-
       <div class="cta">
         <button id="loginBtn" class="btn btn-ghost" type="button">Log In</button>
         <button id="joinBtn" class="btn btn-primary" type="button">Join The Grid</button>
         <div id="profileMenu" class="profile-menu" style="display:none">
-          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
-            <span id="profileInitials">U</span>
-          </div>
-          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-            <div class="dd-head">
-              <div class="dd-title">Signed in as</div>
-              <div class="dd-email" id="ddEmail">-</div>
-            </div>
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu"><span id="profileInitials">U</span></div>
+          <div id="dropdown" class="dropdown" role="menu">
+            <div class="dd-head"><div class="dd-title">Signed in as</div><div class="dd-email" id="ddEmail">—</div></div>
             <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
             <a href="./garage.html?view=my">My Garage</a>
@@ -308,9 +173,13 @@
         <div>
           <div class="kicker"><span></span>Island Listings</div>
           <h1>Marketplace</h1>
-          <p class="sub">Cars, parts, swaps, and hard-to-find bits from racers and builders around the island. Search by keyword, filter by type, and move fast on good deals.</p>
+          <p class="sub">Cars, parts, swaps, and hard-to-find bits from racers and builders around the island. Move fast — good deals don't wait.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="sellBtn" type="button">+ Post a Listing</button>
+            <button class="btn btn-ghost" type="button" onclick="document.getElementById('search').focus()">Browse Parts</button>
+          </div>
         </div>
-        <div class="hero-metrics">
+        <div class="metrics">
           <article class="metric"><b id="statListings">0</b><small>Active Listings</small></article>
           <article class="metric"><b id="statCars">0</b><small>Cars</small></article>
           <article class="metric"><b id="statParts">0</b><small>Parts</small></article>
@@ -318,147 +187,262 @@
       </div>
     </section>
 
-    <section class="toolbar" aria-label="Marketplace filters">
-      <input id="search" class="input" type="search" placeholder="Search title, category, or location" />
-      <select id="category" class="select">
-        <option value="all">All categories</option>
-        <option value="car">Cars</option>
-        <option value="part">Parts</option>
-        <option value="wheel">Wheels/Tires</option>
-        <option value="service">Service</option>
-      </select>
-      <select id="sort" class="select">
+    <div class="toolbar">
+      <input id="search" class="input" type="search" placeholder="Search title, category, or parish…"/>
+      <select id="sortSel" class="select">
         <option value="newest">Newest first</option>
-        <option value="low">Price low to high</option>
-        <option value="high">Price high to low</option>
+        <option value="low">Price: Low to High</option>
+        <option value="high">Price: High to Low</option>
       </select>
-    </section>
+      <select id="parishSel" class="select">
+        <option value="">All parishes</option>
+        <option>Kingston</option><option>St. Andrew</option><option>St. Catherine</option>
+        <option>St. Thomas</option><option>Portland</option><option>St. Mary</option>
+        <option>St. Ann</option><option>Trelawny</option><option>St. James</option>
+        <option>Hanover</option><option>Westmoreland</option><option>St. Elizabeth</option>
+        <option>Manchester</option><option>Clarendon</option>
+      </select>
+      <button class="btn btn-ghost" id="clearFilters" type="button">Clear</button>
+    </div>
+
+    <div class="cat-tabs" role="group" aria-label="Category filter">
+      <button class="cat-tab active" data-cat="all" type="button">All</button>
+      <button class="cat-tab" data-cat="car" type="button">Cars</button>
+      <button class="cat-tab" data-cat="part" type="button">Parts</button>
+      <button class="cat-tab" data-cat="wheel" type="button">Wheels/Tires</button>
+      <button class="cat-tab" data-cat="service" type="button">Services</button>
+      <button class="cat-tab" data-cat="accessory" type="button">Accessories</button>
+    </div>
 
     <div class="results-head">
-      <h2 id="resultCount">0 results</h2>
-      <a class="btn btn-ghost" href="./store.html">Need official merch instead? Visit Store</a>
+      <h2 id="resultCount">Loading…</h2>
+      <a class="btn btn-ghost" href="./store.html">Official merch? Visit the Store →</a>
     </div>
 
     <section id="listingGrid" class="grid" aria-live="polite"></section>
   </main>
 
+  <!-- SELL MODAL -->
+  <div id="sellBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Post a Listing</div>
+        <button class="modal-close" id="sellClose" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field"><label>Title *</label><input id="sl_title" placeholder="e.g. 1999 Nissan Silvia S15"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field">
+            <label>Category *</label>
+            <select id="sl_cat">
+              <option value="car">Car</option>
+              <option value="part">Part</option>
+              <option value="wheel">Wheels/Tires</option>
+              <option value="service">Service</option>
+              <option value="accessory">Accessory</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Condition</label>
+            <select id="sl_cond"><option value="used">Used</option><option value="new">New</option><option value="like_new">Like New</option><option value="for_parts">For Parts</option></select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field"><label>Price (JMD) *</label><input id="sl_price" type="number" placeholder="e.g. 350000"/></div>
+          <div class="field">
+            <label>Parish *</label>
+            <select id="sl_parish">
+              <option value="">Select parish…</option>
+              <option>Kingston</option><option>St. Andrew</option><option>St. Catherine</option>
+              <option>St. Thomas</option><option>Portland</option><option>St. Mary</option>
+              <option>St. Ann</option><option>Trelawny</option><option>St. James</option>
+              <option>Hanover</option><option>Westmoreland</option><option>St. Elizabeth</option>
+              <option>Manchester</option><option>Clarendon</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Description</label><textarea id="sl_desc" placeholder="Condition, mods, contact preference, negotiable?"></textarea></div>
+        <div class="field"><label>Contact / WhatsApp</label><input id="sl_contact" placeholder="Phone or IG handle"/></div>
+        <div id="sl_msg" class="msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="sellCancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="sellSubmit" type="button">Post Listing</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const supabase = window.supabase;
-    const grid = document.getElementById('listingGrid');
-    const resultCount = document.getElementById('resultCount');
-    const searchInput = document.getElementById('search');
-    const categorySelect = document.getElementById('category');
-    const sortSelect = document.getElementById('sort');
+    const grid=document.getElementById('listingGrid');
+    const resultCount=document.getElementById('resultCount');
+    const searchInput=document.getElementById('search');
+    const sortSel=document.getElementById('sortSel');
+    const parishSel=document.getElementById('parishSel');
 
-    const statListings = document.getElementById('statListings');
-    const statCars = document.getElementById('statCars');
-    const statParts = document.getElementById('statParts');
-
-    const fallback = [
-      { id: 'f1', title: 'Subaru WRX STI EJ207', category: 'car', location: 'Kingston', price_jmd: 295000000, image_url: './Assets/logo.png', created_at: '2026-03-01T10:00:00Z' },
-      { id: 'f2', title: 'BBS 18in Wheels Set', category: 'wheel', location: 'Montego Bay', price_jmd: 52000000, image_url: './Assets/logo.png', created_at: '2026-03-08T10:00:00Z' },
-      { id: 'f3', title: 'Forged Pistons 4G63', category: 'part', location: 'Spanish Town', price_jmd: 16000000, image_url: './Assets/logo.png', created_at: '2026-02-21T10:00:00Z' },
-      { id: 'f4', title: 'Dyno Tune Session', category: 'service', location: 'Portmore', price_jmd: 1900000, image_url: './Assets/logo.png', created_at: '2026-02-28T10:00:00Z' },
-      { id: 'f5', title: 'Honda Type R Front Clip', category: 'part', location: 'May Pen', price_jmd: 68000000, image_url: './Assets/logo.png', created_at: '2026-03-10T10:00:00Z' }
+    const fallback=[
+      {id:'f1',title:'Subaru WRX STI EJ207',category:'car',location:'Kingston',price_jmd:29500000,condition:'used',description:'Full roll cage, bucket seats, built motor. Race-ready.',created_at:'2026-03-01T10:00:00Z'},
+      {id:'f2',title:'BBS RS 18" Wheels — Set of 4',category:'wheel',location:'Montego Bay',price_jmd:5200000,condition:'like_new',description:'Only 2 track days on them. 5×114.3 PCD.',created_at:'2026-03-08T10:00:00Z'},
+      {id:'f3',title:'Forged Pistons 4G63 +0.5',category:'part',location:'Spanish Town',price_jmd:1600000,condition:'new',description:'Still in box. Sized for 2.0 4G63.',created_at:'2026-02-21T10:00:00Z'},
+      {id:'f4',title:'Dyno Tune Session',category:'service',location:'Portmore',price_jmd:190000,condition:'new',description:'Full ECU flash + 4-wheel dyno run. Appointment only.',created_at:'2026-02-28T10:00:00Z'},
+      {id:'f5',title:'Honda DC5 Type R Front Clip',category:'part',location:'May Pen',price_jmd:6800000,condition:'used',description:'Clean clip, no rust. JDM spec.',created_at:'2026-03-10T10:00:00Z'},
+      {id:'f6',title:'NRG Quick Release + Hub',category:'accessory',location:'Kingston',price_jmd:320000,condition:'used',description:'Fits EK/EG/DC chassis.',created_at:'2026-03-12T10:00:00Z'},
     ];
 
-    let allListings = [];
+    let allListings=[], activeCat='all';
 
-    function fmtJmd(cents) {
-      return new Intl.NumberFormat('en-JM', { style: 'currency', currency: 'JMD' }).format((cents || 0) / 100);
+    function esc(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+    function fmtJmd(cents){
+      const val=(cents||0)/100;
+      return val>=1000000
+        ? 'JMD '+new Intl.NumberFormat('en-JM').format(Math.round(val/100000)/10)+'M'
+        : 'JMD '+new Intl.NumberFormat('en-JM').format(val);
     }
 
-    function normalizeCategory(v) {
-      const s = String(v || '').trim().toLowerCase();
-      if (!s) return 'part';
-      if (s.includes('car')) return 'car';
-      if (s.includes('wheel') || s.includes('tire') || s.includes('tyre')) return 'wheel';
-      if (s.includes('service') || s.includes('tune')) return 'service';
+    const CAT_MAP={car:'Car',part:'Part',wheel:'Wheel/Tire',service:'Service',accessory:'Accessory'};
+    const COND_MAP={used:'Used',new:'New',like_new:'Like New',for_parts:'For Parts'};
+
+    function normCat(v){
+      const s=String(v||'').toLowerCase();
+      if(s.includes('car')) return 'car';
+      if(s.includes('wheel')||s.includes('tire')||s.includes('tyre')) return 'wheel';
+      if(s.includes('service')||s.includes('tune')) return 'service';
+      if(s.includes('access')) return 'accessory';
       return 'part';
     }
 
-    function computeStats(rows) {
-      statListings.textContent = rows.length;
-      statCars.textContent = rows.filter(r => normalizeCategory(r.category) === 'car').length;
-      statParts.textContent = rows.filter(r => ['part', 'wheel'].includes(normalizeCategory(r.category))).length;
+    function updateStats(rows){
+      document.getElementById('statListings').textContent=rows.length;
+      document.getElementById('statCars').textContent=rows.filter(r=>normCat(r.category)==='car').length;
+      document.getElementById('statParts').textContent=rows.filter(r=>['part','wheel','accessory'].includes(normCat(r.category))).length;
     }
 
-    function applyFilters() {
-      const q = searchInput.value.trim().toLowerCase();
-      const category = categorySelect.value;
-      const sort = sortSelect.value;
-
-      let rows = allListings.filter(r => {
-        const text = [r.title, r.category, r.location].join(' ').toLowerCase();
-        if (q && !text.includes(q)) return false;
-        if (category !== 'all' && normalizeCategory(r.category) !== category) return false;
+    function applyFilters(){
+      const q=searchInput.value.trim().toLowerCase();
+      const sort=sortSel.value;
+      const parish=parishSel.value.toLowerCase();
+      let rows=allListings.filter(r=>{
+        const cat=normCat(r.category);
+        if(activeCat!=='all'&&cat!==activeCat) return false;
+        const text=`${r.title||''} ${r.description||''} ${r.location||''}`.toLowerCase();
+        if(q&&!text.includes(q)) return false;
+        if(parish&&!(r.location||'').toLowerCase().includes(parish)) return false;
         return true;
       });
-
-      if (sort === 'low') rows.sort((a,b) => (a.price_jmd || 0) - (b.price_jmd || 0));
-      if (sort === 'high') rows.sort((a,b) => (b.price_jmd || 0) - (a.price_jmd || 0));
-      if (sort === 'newest') rows.sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
+      if(sort==='low') rows.sort((a,b)=>(a.price_jmd||0)-(b.price_jmd||0));
+      if(sort==='high') rows.sort((a,b)=>(b.price_jmd||0)-(a.price_jmd||0));
+      if(sort==='newest') rows.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
       render(rows);
     }
 
-    function render(rows) {
-      resultCount.textContent = `${rows.length} ${rows.length === 1 ? 'result' : 'results'}`;
-      if (!rows.length) {
-        grid.innerHTML = '<div class="empty">No listings match this filter yet. Try another category or search.</div>';
+    function render(rows){
+      resultCount.textContent=`${rows.length} listing${rows.length===1?'':'s'}`;
+      if(!rows.length){
+        grid.innerHTML=`<div class="empty"><strong>No listings found</strong>Try a different filter, or post your own listing above.</div>`;
         return;
       }
-
-      grid.innerHTML = rows.map(item => {
-        const cat = normalizeCategory(item.category);
-        const cap = cat.charAt(0).toUpperCase() + cat.slice(1);
+      grid.innerHTML=rows.map(item=>{
+        const cat=normCat(item.category);
+        const cond=COND_MAP[item.condition]||'Used';
+        const price=fmtJmd(item.price_jmd||0);
         return `
           <article class="card">
-            <div class="thumb">${item.image_url ? `<img src="${item.image_url}" alt="${item.title}" loading="lazy" />` : ''}</div>
+            <div class="thumb">
+              ${item.image_url
+                ?`<img src="${esc(item.image_url)}" alt="${esc(item.title)}" loading="lazy"/>`
+                :`<div class="thumb-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5"><rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M2 12h20M7 7l2-4h6l2 4"/></svg></div>`}
+              <div class="cat-pill">${esc(CAT_MAP[cat]||'Item')}</div>
+              <div class="condition-pill">${esc(cond)}</div>
+            </div>
             <div class="body">
-              <div class="pill">${cap}</div>
-              <div class="title">${item.title || 'Untitled listing'}</div>
-              <div class="meta">${item.location || 'Jamaica'} · ${new Date(item.created_at || Date.now()).toLocaleDateString()}</div>
-              <div class="row">
-                <div class="price">${fmtJmd(item.price_jmd || 0)}</div>
-                <a class="btn btn-primary" href="./marketplace.html">Message Seller</a>
+              <div class="card-title">${esc(item.title||'Listing')}</div>
+              <div class="card-meta">
+                <span>📍 ${esc(item.location||'Jamaica')}</span>
+                <span>📅 ${new Date(item.created_at||Date.now()).toLocaleDateString('en-JM',{day:'numeric',month:'short'})}</span>
+              </div>
+              <div class="card-desc">${esc((item.description||'').slice(0,120))}${(item.description||'').length>120?'…':''}</div>
+              <div class="price-row">
+                <div class="price">${esc(price)}</div>
+                <button class="btn btn-primary" style="font-size:12px;padding:8px 14px;" onclick="contactSeller('${esc(item.contact||'')}','${esc(item.title||'')}')">Message Seller</button>
               </div>
             </div>
-          </article>
-        `;
+          </article>`;
       }).join('');
     }
 
-    async function loadListings() {
-      if (!supabase) {
-        allListings = fallback;
-        computeStats(allListings);
+    function contactSeller(contact, title) {
+      if (!contact) { alert('Contact the seller through the community page.'); return; }
+      const msg=encodeURIComponent(`Hi! I saw your listing for "${title}" on ROK Racers JA — is it still available?`);
+      if (contact.startsWith('http')||contact.includes('instagram')||contact.startsWith('@')) {
+        window.open(contact.startsWith('@')?`https://instagram.com/${contact.slice(1)}`:contact,'_blank');
+      } else {
+        window.open(`https://wa.me/1876${contact.replace(/\D/g,'')}?text=${msg}`,'_blank');
+      }
+    }
+    window.contactSeller=contactSeller;
+
+    // Category tabs
+    document.querySelectorAll('.cat-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        activeCat=tab.dataset.cat;
         applyFilters();
-        return;
+      });
+    });
+
+    document.getElementById('clearFilters').addEventListener('click',()=>{
+      searchInput.value=''; sortSel.value='newest'; parishSel.value='';
+      activeCat='all';
+      document.querySelectorAll('.cat-tab').forEach(t=>t.classList.toggle('active',t.dataset.cat==='all'));
+      applyFilters();
+    });
+
+    searchInput.addEventListener('input',applyFilters);
+    sortSel.addEventListener('change',applyFilters);
+    parishSel.addEventListener('change',applyFilters);
+
+    // Sell modal
+    const sellBackdrop=document.getElementById('sellBackdrop');
+    document.getElementById('sellBtn').addEventListener('click',async()=>{
+      const ok=await authUI.requireLogin({message:'Sign in to post a listing.'});
+      if(!ok) return;
+      sellBackdrop.classList.add('open');
+    });
+    document.getElementById('sellClose').addEventListener('click',()=>sellBackdrop.classList.remove('open'));
+    document.getElementById('sellCancel').addEventListener('click',()=>sellBackdrop.classList.remove('open'));
+    sellBackdrop.addEventListener('click',e=>{if(e.target===sellBackdrop)sellBackdrop.classList.remove('open');});
+
+    const slMsg=document.getElementById('sl_msg');
+    document.getElementById('sellSubmit').addEventListener('click',async()=>{
+      const title=document.getElementById('sl_title').value.trim();
+      const cat=document.getElementById('sl_cat').value;
+      const cond=document.getElementById('sl_cond').value;
+      const price=parseFloat(document.getElementById('sl_price').value)||0;
+      const parish=document.getElementById('sl_parish').value;
+      const desc=document.getElementById('sl_desc').value.trim();
+      const contact=document.getElementById('sl_contact').value.trim();
+      if(!title||!price||!parish){slMsg.textContent='Title, price, and parish are required.';slMsg.className='msg bad';return;}
+      const user=authUI.getUser(); if(!user) return;
+      slMsg.textContent='Posting…'; slMsg.className='msg';
+      const {error}=await supabase.from('marketplace_listings').insert({title,category:cat,condition:cond,price_jmd:Math.round(price*100),location:parish,description:desc,contact,user_id:user.id,status:'active'});
+      if(error){slMsg.textContent='Could not post: '+error.message;slMsg.className='msg bad';return;}
+      slMsg.textContent='Posted! Your listing is now live.';slMsg.className='msg ok';
+      setTimeout(()=>{sellBackdrop.classList.remove('open');loadListings();},1200);
+    });
+
+    async function loadListings(){
+      try{
+        const {data,error}=await supabase.from('marketplace_listings').select('id,title,category,condition,location,price_jmd,image_url,description,contact,created_at,status').eq('status','active').order('created_at',{ascending:false}).limit(60);
+        if(error||!data) throw error||new Error('no data');
+        allListings=data;
+      }catch(err){
+        console.warn('marketplace_listings unavailable; using fallback',err?.message);
+        allListings=fallback;
       }
-
-      try {
-        const { data, error } = await supabase
-          .from('marketplace_listings')
-          .select('id,title,category,location,price_jmd,image_url,created_at,status')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(60);
-
-        if (error || !data) throw error || new Error('No data');
-        allListings = data.map(d => ({ ...d, category: normalizeCategory(d.category) }));
-      } catch (err) {
-        console.warn('marketplace_listings unavailable; using fallback cards', err?.message || err);
-        allListings = fallback;
-      }
-
-      computeStats(allListings);
+      updateStats(allListings);
       applyFilters();
     }
-
-    searchInput.addEventListener('input', applyFilters);
-    categorySelect.addEventListener('change', applyFilters);
-    sortSelect.addEventListener('change', applyFilters);
 
     loadListings();
   </script>
