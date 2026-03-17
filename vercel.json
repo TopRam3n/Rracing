@@ -1,7 +1,7 @@
 {
   "buildCommand": "echo 'Static site, no build needed'",
-  "outputDirectory": "./public",
-  "public": true,
+  "outputDirectory": ".",
+  "public": false,
   "cleanUrls": true,
   "trailingSlash": false,
   "env": [
@@ -42,9 +42,38 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/src/api/$1"
-    }
+    { "source": "/", "destination": "/src/Pages/index.html" },
+    { "source": "/index.html", "destination": "/src/Pages/index.html" },
+    { "source": "/about.html", "destination": "/src/Pages/about.html" },
+    { "source": "/build.html", "destination": "/src/Pages/build.html" },
+    { "source": "/build-new.html", "destination": "/src/Pages/build-new.html" },
+    { "source": "/build-edit.html", "destination": "/src/Pages/build-edit.html" },
+    { "source": "/cart.html", "destination": "/src/Pages/cart.html" },
+    { "source": "/create-build.html", "destination": "/src/Pages/create-build.html" },
+    { "source": "/driver-profile.html", "destination": "/src/Pages/driver-profile.html" },
+    { "source": "/event.html", "destination": "/src/Pages/event.html" },
+    { "source": "/events.html", "destination": "/src/Pages/events.html" },
+    { "source": "/garage.html", "destination": "/src/Pages/garage.html" },
+    { "source": "/highlight.html", "destination": "/src/Pages/highlight.html" },
+    { "source": "/highlights.html", "destination": "/src/Pages/highlights.html" },
+    { "source": "/highlights-new.html", "destination": "/src/Pages/highlights-new.html" },
+    { "source": "/likes-build.html", "destination": "/src/Pages/likes-build.html" },
+    { "source": "/likes-sightings.html", "destination": "/src/Pages/likes-sightings.html" },
+    { "source": "/live.html", "destination": "/src/Pages/live.html" },
+    { "source": "/marketplace.html", "destination": "/src/Pages/marketplace.html" },
+    { "source": "/sighting.html", "destination": "/src/Pages/sighting.html" },
+    { "source": "/sightings.html", "destination": "/src/Pages/sightings.html" },
+    { "source": "/sightings-new.html", "destination": "/src/Pages/sightings-new.html" },
+    { "source": "/store.html", "destination": "/src/Pages/store.html" },
+    { "source": "/team.html", "destination": "/src/Pages/team.html" },
+    { "source": "/teams.html", "destination": "/src/Pages/teams.html" },
+    { "source": "/tickets.html", "destination": "/src/Pages/tickets.html" },
+    { "source": "/my-profile.html", "destination": "/src/Users/my-profile.html" },
+    { "source": "/profile.html", "destination": "/src/Users/profile.html" },
+    { "source": "/activity.html", "destination": "/src/Users/activity.html" },
+    { "source": "/admin-events.html", "destination": "/src/Admin/admin-events.html" },
+    { "source": "/admin-store.html", "destination": "/src/Admin/admin-store.html" },
+    { "source": "/admin-team.html", "destination": "/src/Admin/admin-team.html" },
+    { "source": "/api/(.*)", "destination": "/src/api/$1" }
   ]
 }
