@@ -1038,6 +1038,13 @@
         return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
       });
 
+      if (!rows.length && !q && !hostTeamId && hostFilter !== 'team') {
+        rows = cached
+          .filter(r => r.starts_at && isUpcoming(r.starts_at))
+          .sort((a,b) => new Date(a.starts_at) - new Date(b.starts_at))
+          .slice(0, 24);
+      }
+
       filtered = rows;
       renderAllViews(filtered);
 

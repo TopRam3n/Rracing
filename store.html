@@ -6,6 +6,8 @@
   <title>Merch Store</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth-ui.js"></script>
 
   <!-- Design System (centralized tokens + components) -->
   <link rel="stylesheet" href="../../styles/design-system.css">
@@ -152,9 +154,7 @@
   </aside>
 
   <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE"; // keep your existing one
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase;
 
     const grid = document.getElementById('grid');
     const cartCount = document.getElementById('cartCount');
@@ -212,35 +212,8 @@
     }
 
     loginBtn.addEventListener('click', async ()=>{
-      const mode = prompt("Type 1 for email+password login, 2 for Google:");
-      if (mode === '2'){
-        const { error } = await sb.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.href }
-        });
-        if (error) alert(error.message);
-        return;
-      }
-
-      const email = prompt("Email:");
-      const pass = prompt("Password:");
-      if (!email || !pass) return;
-
-      // Try sign-in; if it fails, offer sign-up
-      let res = await sb.auth.signInWithPassword({ email, password: pass });
-      if (res.error){
-        const yn = confirm("No account found or wrong password. Create account with this email/password?");
-        if (!yn) return;
-
-        const signUp = await sb.auth.signUp({ email, password: pass });
-        if (signUp.error) return alert(signUp.error.message);
-
-        // ensure profile row (role defaults to user)
-        const { data: { user } } = await sb.auth.getUser();
-        if (user){
-          await sb.from('profiles').upsert({ id: user.id, email: user.email });
-        }
-        alert("Account created. If email confirmation is enabled, check your inbox.");
+      if (window.authUI?.open) {
+        window.authUI.open('login');
       }
     });
 

@@ -17,9 +17,15 @@
   <script src="auth-ui.js"></script>
 
   <!-- ✅ Three.js for advanced 3D effects and drift animation -->
-  <script async src="https://unpkg.com/three@r128/build/three.min.js"></script>
-  <script async src="https://unpkg.com/three@r128/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="drift-animation.js"></script>
+  <script type="module">
+    import { initHeroDrift } from "./drift-animation.js";
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const heroEl = document.querySelector(".hero");
+      const textBlockEl = document.querySelector(".hero .hero-left");
+      initHeroDrift(heroEl, textBlockEl);
+    });
+  </script>
 
   <!-- ✅ Design System (centralized tokens + components) -->
   <link rel="stylesheet" href="design-system.css">
@@ -84,7 +90,7 @@
       display:flex; align-items:center; justify-content:space-between;
       gap: 20px;
     }
-    .logo { display:flex; align-items:center; gap:8px; letter-spacing:0.04em; }
+    .logo { display:flex; align-items:center; gap:10px; letter-spacing:0.04em; }
     .logo-mark{
       width:36px;height:36px;border-radius:999px;
       border:1px solid rgba(24, 201, 100, 0.7);
