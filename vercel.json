@@ -4,10 +4,10 @@
   "public": false,
   "cleanUrls": true,
   "trailingSlash": false,
-  "env": [
-    "VITE_SUPABASE_URL",
-    "VITE_SUPABASE_KEY"
-  ],
+  "env": {
+    "VITE_SUPABASE_URL": { "required": true },
+    "VITE_SUPABASE_KEY": { "required": true }
+  },
   "headers": [
     {
       "source": "/(.*)",
