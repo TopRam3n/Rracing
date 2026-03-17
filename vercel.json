@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/src/Pages/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/src/Admin/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    }
+  ]
+}

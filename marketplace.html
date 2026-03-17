@@ -1,74 +1,466 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Marketplace — ROK Racers JA</title>
-  <meta name="description" content="Marketplace coming soon." />
-  <link rel="icon" href="../../Assets/og.png"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Marketplace | ROK Racers JA</title>
+  <meta name="description" content="Buy, sell, and discover cars, parts, and gear across Jamaica's motorsport community." />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth-ui.js"></script>
+  <link rel="stylesheet" href="design-system.css" />
 
   <style>
-    :root{
-      --bg:#050508; --bg1:#141414; --bg2:#1b1b1b;
-      --fg:#fff; --muted:#bdbdbd; --accent:#e50914; --accent-yellow:#FFD93B;
-      --line:rgba(255,255,255,.08); --shadow:0 40px 120px -30px rgba(0,0,0,.7);
+    :root {
+      --bg: #040507;
+      --bg-elev: #121317;
+      --line: rgba(255,255,255,0.1);
+      --text: #f6f7fb;
+      --muted: #b8bdc9;
+      --accent: #11a014;
+      --accent-2: #ffd93b;
+      --accent-3: #e50914;
+      --radius: 18px;
+      --shadow: 0 24px 60px rgba(0,0,0,.45);
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:radial-gradient(circle at top, #161623 0, #050508 55%, #000 100%);
-      color:var(--fg);
-      font-family:"Rajdhani",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Rajdhani, system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 400px at 80% -5%, rgba(17,160,20,.25), transparent 60%),
+        radial-gradient(900px 380px at 10% 5%, rgba(229,9,20,.2), transparent 55%),
+        linear-gradient(180deg, #0a0b10, #040507);
     }
-    a{color:var(--fg);text-decoration:none}
-    .container{max-width:980px;margin:0 auto;padding:56px 24px}
-    h1{font-family:"Bebas Neue";letter-spacing:2px;margin:0;font-size:64px}
-    .sub{color:var(--muted)}
-    .card{
-      margin-top:18px;
-      background:var(--bg1);
-      border:1px solid var(--line);
-      border-radius:20px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1240px, 100% - 32px); margin: 0 auto; }
+
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(10px);
+      background: rgba(4,5,7,.72);
+      border-bottom: 1px solid rgba(255,255,255,.06);
     }
-    .pad{padding:18px}
-    .btn{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:10px 14px;border-radius:999px;
-      border:1px solid var(--line);
-      cursor:pointer;font-size:13px;
-      background:transparent;color:var(--fg);
+    .nav {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
     }
-    .btn.primary{
-      background:radial-gradient(circle at top left,#ff4d4d,var(--accent));
-      color:#fff;border-color:rgba(229,9,20,.9);
-      box-shadow:0 0 18px rgba(229,9,20,.5);
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark {
+      width: 38px; height: 38px; border-radius: 999px; overflow: hidden;
+      border: 1px solid rgba(17,160,20,.7);
+      box-shadow: 0 0 16px rgba(17,160,20,.34);
+      background: #000;
+      display: grid; place-items: center;
     }
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .logo-mark img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-main { font-family: "Bebas Neue", sans-serif; letter-spacing: .06em; font-size: 24px; }
+    .logo-sub { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-2); }
+
+    .links {
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+      text-transform: uppercase; font-size: 12px; letter-spacing: .13em; color: var(--muted);
+    }
+    .links a.active { color: #fff; }
+
+    .cta { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 11px;
+      padding: 9px 14px;
+    }
+    .btn-ghost { border-color: rgba(255,255,255,.18); color: var(--muted); }
+    .btn-primary {
+      border-color: rgba(17,160,20,.7);
+      background: radial-gradient(circle at top left, #23bf28, #0d8211);
+      box-shadow: 0 0 18px rgba(17,160,20,.3);
+    }
+
+    .hero {
+      margin: 26px auto 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.01) 32%),
+        linear-gradient(145deg, rgba(229,9,20,.16), rgba(17,160,20,.16) 55%, rgba(255,217,59,.08));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      top: -40px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,217,59,.26), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 20px;
+    }
+    @media (max-width: 880px) { .hero-inner { grid-template-columns: 1fr; } }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .kicker span {
+      width: 30px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--accent-3), var(--accent));
+    }
+    h1 {
+      margin: 10px 0 8px;
+      font-family: "Bebas Neue", sans-serif;
+      text-transform: uppercase;
+      font-size: clamp(48px, 9vw, 84px);
+      line-height: .86;
+      letter-spacing: .05em;
+    }
+    .sub { color: var(--muted); font-size: 17px; max-width: 52ch; }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      align-self: end;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0,0,0,.25);
+      padding: 10px;
+      min-height: 80px;
+    }
+    .metric b { font-family: "Bebas Neue"; letter-spacing: .06em; font-size: 34px; display: block; }
+    .metric small { color: var(--muted); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; }
+
+    .toolbar {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1.3fr .8fr .8fr;
+      gap: 10px;
+    }
+    @media (max-width: 840px) { .toolbar { grid-template-columns: 1fr; } }
+    .input, .select {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.35);
+      color: #fff;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .results-head {
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .results-head h2 {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .grid {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 14px;
+      padding-bottom: 42px;
+    }
+    @media (max-width: 980px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.02) 20%, rgba(0,0,0,.25) 60%);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 320px;
+    }
+    .thumb {
+      height: 180px;
+      background: linear-gradient(135deg, #1f2430, #12151f);
+    }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .body { padding: 12px; display: grid; gap: 8px; flex: 1; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.2);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      width: fit-content;
+    }
+    .title { font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .price {
+      font-weight: 800;
+      letter-spacing: .05em;
+      font-size: 20px;
+    }
+    .row { margin-top: auto; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+
+    .empty {
+      grid-column: 1 / -1;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      color: var(--muted);
+      background: rgba(0,0,0,.24);
+      text-align: center;
+      font-size: 15px;
+    }
   </style>
 </head>
 <body>
-  <main class="container">
-    <h1>Marketplace</h1>
-    <div class="sub">A one stop shop for all the cars, parts and deals you need— coming soon!</div>
+  <div class="nav-wrap">
+    <div class="container nav">
+      <a href="./index.html" class="logo">
+        <div class="logo-mark"><img src="./Assets/logo.png" alt="ROK Racers JA logo" /></div>
+        <div>
+          <div class="logo-main">ROK RACERS JA</div>
+          <div class="logo-sub">Motorsport Community</div>
+        </div>
+      </a>
 
-    <div class="card">
-      <div class="pad">
-        <div class="row">
-          <a class="btn" href="./index.html">Home</a>
+      <nav class="links" aria-label="Main navigation">
+        <a href="./events.html">Events</a>
+        <a href="./garage.html">Garage</a>
+        <a href="./teams.html">Community</a>
+        <a href="./live.html">Live</a>
+        <a href="./highlights.html">Feed</a>
+        <a class="active" href="./marketplace.html">Marketplace</a>
+        <a href="./store.html">Store</a>
+      </nav>
+
+      <div class="cta">
+        <button id="loginBtn" class="btn btn-ghost" type="button">Log In</button>
+        <button id="joinBtn" class="btn btn-primary" type="button">Join The Grid</button>
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="profileInitials">U</span>
+          </div>
+          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">-</div>
+            </div>
+            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+            <a href="./garage.html?view=my">My Garage</a>
+            <a href="./tickets.html">My Tickets</a>
+            <a href="./likes-build.html">Liked Builds</a>
+            <a href="./likes-sightings.html">Liked Sightings</a>
+            <a href="./teams.html">My Teams</a>
+            <div class="dd-sep"></div>
+            <button id="signoutBtn" type="button">Sign out</button>
+          </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <div class="kicker"><span></span>Island Listings</div>
+          <h1>Marketplace</h1>
+          <p class="sub">Cars, parts, swaps, and hard-to-find bits from racers and builders around the island. Search by keyword, filter by type, and move fast on good deals.</p>
+        </div>
+        <div class="hero-metrics">
+          <article class="metric"><b id="statListings">0</b><small>Active Listings</small></article>
+          <article class="metric"><b id="statCars">0</b><small>Cars</small></article>
+          <article class="metric"><b id="statParts">0</b><small>Parts</small></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="Marketplace filters">
+      <input id="search" class="input" type="search" placeholder="Search title, category, or location" />
+      <select id="category" class="select">
+        <option value="all">All categories</option>
+        <option value="car">Cars</option>
+        <option value="part">Parts</option>
+        <option value="wheel">Wheels/Tires</option>
+        <option value="service">Service</option>
+      </select>
+      <select id="sort" class="select">
+        <option value="newest">Newest first</option>
+        <option value="low">Price low to high</option>
+        <option value="high">Price high to low</option>
+      </select>
+    </section>
+
+    <div class="results-head">
+      <h2 id="resultCount">0 results</h2>
+      <a class="btn btn-ghost" href="./store.html">Need official merch instead? Visit Store</a>
+    </div>
+
+    <section id="listingGrid" class="grid" aria-live="polite"></section>
   </main>
+
+  <script>
+    const supabase = window.supabase;
+    const grid = document.getElementById('listingGrid');
+    const resultCount = document.getElementById('resultCount');
+    const searchInput = document.getElementById('search');
+    const categorySelect = document.getElementById('category');
+    const sortSelect = document.getElementById('sort');
+
+    const statListings = document.getElementById('statListings');
+    const statCars = document.getElementById('statCars');
+    const statParts = document.getElementById('statParts');
+
+    const fallback = [
+      { id: 'f1', title: 'Subaru WRX STI EJ207', category: 'car', location: 'Kingston', price_jmd: 295000000, image_url: './Assets/logo.png', created_at: '2026-03-01T10:00:00Z' },
+      { id: 'f2', title: 'BBS 18in Wheels Set', category: 'wheel', location: 'Montego Bay', price_jmd: 52000000, image_url: './Assets/logo.png', created_at: '2026-03-08T10:00:00Z' },
+      { id: 'f3', title: 'Forged Pistons 4G63', category: 'part', location: 'Spanish Town', price_jmd: 16000000, image_url: './Assets/logo.png', created_at: '2026-02-21T10:00:00Z' },
+      { id: 'f4', title: 'Dyno Tune Session', category: 'service', location: 'Portmore', price_jmd: 1900000, image_url: './Assets/logo.png', created_at: '2026-02-28T10:00:00Z' },
+      { id: 'f5', title: 'Honda Type R Front Clip', category: 'part', location: 'May Pen', price_jmd: 68000000, image_url: './Assets/logo.png', created_at: '2026-03-10T10:00:00Z' }
+    ];
+
+    let allListings = [];
+
+    function fmtJmd(cents) {
+      return new Intl.NumberFormat('en-JM', { style: 'currency', currency: 'JMD' }).format((cents || 0) / 100);
+    }
+
+    function normalizeCategory(v) {
+      const s = String(v || '').trim().toLowerCase();
+      if (!s) return 'part';
+      if (s.includes('car')) return 'car';
+      if (s.includes('wheel') || s.includes('tire') || s.includes('tyre')) return 'wheel';
+      if (s.includes('service') || s.includes('tune')) return 'service';
+      return 'part';
+    }
+
+    function computeStats(rows) {
+      statListings.textContent = rows.length;
+      statCars.textContent = rows.filter(r => normalizeCategory(r.category) === 'car').length;
+      statParts.textContent = rows.filter(r => ['part', 'wheel'].includes(normalizeCategory(r.category))).length;
+    }
+
+    function applyFilters() {
+      const q = searchInput.value.trim().toLowerCase();
+      const category = categorySelect.value;
+      const sort = sortSelect.value;
+
+      let rows = allListings.filter(r => {
+        const text = [r.title, r.category, r.location].join(' ').toLowerCase();
+        if (q && !text.includes(q)) return false;
+        if (category !== 'all' && normalizeCategory(r.category) !== category) return false;
+        return true;
+      });
+
+      if (sort === 'low') rows.sort((a,b) => (a.price_jmd || 0) - (b.price_jmd || 0));
+      if (sort === 'high') rows.sort((a,b) => (b.price_jmd || 0) - (a.price_jmd || 0));
+      if (sort === 'newest') rows.sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+      render(rows);
+    }
+
+    function render(rows) {
+      resultCount.textContent = `${rows.length} ${rows.length === 1 ? 'result' : 'results'}`;
+      if (!rows.length) {
+        grid.innerHTML = '<div class="empty">No listings match this filter yet. Try another category or search.</div>';
+        return;
+      }
+
+      grid.innerHTML = rows.map(item => {
+        const cat = normalizeCategory(item.category);
+        const cap = cat.charAt(0).toUpperCase() + cat.slice(1);
+        return `
+          <article class="card">
+            <div class="thumb">${item.image_url ? `<img src="${item.image_url}" alt="${item.title}" loading="lazy" />` : ''}</div>
+            <div class="body">
+              <div class="pill">${cap}</div>
+              <div class="title">${item.title || 'Untitled listing'}</div>
+              <div class="meta">${item.location || 'Jamaica'} · ${new Date(item.created_at || Date.now()).toLocaleDateString()}</div>
+              <div class="row">
+                <div class="price">${fmtJmd(item.price_jmd || 0)}</div>
+                <a class="btn btn-primary" href="./marketplace.html">Message Seller</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    async function loadListings() {
+      if (!supabase) {
+        allListings = fallback;
+        computeStats(allListings);
+        applyFilters();
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('marketplace_listings')
+          .select('id,title,category,location,price_jmd,image_url,created_at,status')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(60);
+
+        if (error || !data) throw error || new Error('No data');
+        allListings = data.map(d => ({ ...d, category: normalizeCategory(d.category) }));
+      } catch (err) {
+        console.warn('marketplace_listings unavailable; using fallback cards', err?.message || err);
+        allListings = fallback;
+      }
+
+      computeStats(allListings);
+      applyFilters();
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    categorySelect.addEventListener('change', applyFilters);
+    sortSelect.addEventListener('change', applyFilters);
+
+    loadListings();
+  </script>
 </body>
 </html>
-
-
