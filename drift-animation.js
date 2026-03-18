@@ -12,8 +12,8 @@
  *   });
  */
 
-import * as THREE from "https://unpkg.com/three@0.128.0/build/three.module.js";
-import { GLTFLoader } from "https://unpkg.com/three@0.128.0/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from "https://esm.sh/three@0.128.0";
+import { GLTFLoader } from "https://esm.sh/three@0.128.0/examples/jsm/loaders/GLTFLoader.js";
 
 export function initHeroDrift(heroEl, titleEl) {
   if (!heroEl || !titleEl) return;
@@ -116,7 +116,7 @@ export function initHeroDrift(heroEl, titleEl) {
 
   const loader = new GLTFLoader();
   loader.load(
-    "/Assets/car.glb",
+    "car.glb",
     (gltf) => {
       carGroup = gltf.scene;
 
