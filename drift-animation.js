@@ -116,7 +116,7 @@ export function initHeroDrift(heroEl, titleEl) {
 
   const loader = new GLTFLoader();
   loader.load(
-    "./Assets/car.glb",          // ← your existing GLB path
+    "./Assets/car-poster.png`",          // ← your existing GLB path
     (gltf) => {
       carGroup = gltf.scene;
 
