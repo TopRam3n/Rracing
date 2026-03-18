@@ -74,7 +74,7 @@ export function initHeroDrift(heroEl, titleEl) {
   // so the car disappears behind it exactly like going behind a building
   const occluder = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 2.5),
-    new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: true })
+    new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })
   );
   occluder.renderOrder = 1; // render before car (renderOrder 2)
   scene.add(occluder);
@@ -116,7 +116,7 @@ export function initHeroDrift(heroEl, titleEl) {
 
   const loader = new GLTFLoader();
   loader.load(
-    "./Assets/car-poster.png`",          // ← your existing GLB path
+    "/Assets/car.glb",
     (gltf) => {
       carGroup = gltf.scene;
 
