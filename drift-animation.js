@@ -183,6 +183,7 @@ export function initHeroDrift(heroEl, titleEl) {
   let t     = 0;
   let frame = 0;
   let rafId = null;
+  let isFrontLayer = false;
 
   // Respect prefers-reduced-motion
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -197,6 +198,13 @@ export function initHeroDrift(heroEl, titleEl) {
     const z  = Math.sin(t) * PATH_RZ;
     const nx = Math.cos(t + 0.04) * PATH_RX;
     const nz = Math.sin(t + 0.04) * PATH_RZ;
+
+    // Bring the car in front of text only near the horizontal center of the path.
+    const shouldBeFront = Math.abs(x) < PATH_RX * 0.34;
+    if (shouldBeFront !== isFrontLayer) {
+      canvas.style.zIndex = shouldBeFront ? "3" : "1";
+      isFrontLayer = shouldBeFront;
+    }
 
     // Direction the car is heading (tangent to ellipse)
     const travelAngle = Math.atan2(nx - x, nz - z);
