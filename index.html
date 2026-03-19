@@ -757,6 +757,7 @@
     async function loadTopBuilds(){
       const grid = document.getElementById('top-builds-grid');
       if(!grid) return;
+      if(typeof supabase === 'undefined'){ grid.innerHTML = '<article class="build-card"><div class="build-body"><div class="build-title">Database connecting…</div></div></article>'; return; }
       grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Warming up the dyno…</div></div></article>`;
 
       let data, error;
@@ -764,7 +765,7 @@
       // Try enriched view first (has glb_url, like_count, owner_handle)
       ({data,error} = await supabase
         .from('public_builds_with_like_count_and_trophies')
-        .select('id,title,like_count,thumb_url,glb_url,parish,owner_handle,build_type,trophy_labels')
+        .select('id,title,like_count,thumb_url,model_url,parish,owner_handle,build_type,trophy_labels')
         .order('like_count',{ascending:false})
         .order('created_at',{ascending:false})
         .limit(3));
@@ -773,11 +774,11 @@
         console.warn('builds view unavailable, falling back:', error.message);
         ({data,error} = await supabase
           .from('builds')
-          .select('id,title,thumb_url,glb_url,parish,build_type,created_at')
+          .select('id,title,thumb_url,model_url,parish,build_type,created_at')
           .eq('is_public',true)
           .order('created_at',{ascending:false})
           .limit(3));
-        if(!error && data) data = data.map(b=>({...b,like_count:0,owner_handle:null,trophy_labels:[]}));
+        if(!error && data) data = data.map(b=>({...b,like_count:0,owner_handle:null,trophy_labels:[],model_url:b.model_url||null}));
       }
 
       if(error){
@@ -789,7 +790,7 @@
         return;
       }
 
-      const currentUser = authUI.getUser();
+      const currentUser = (typeof authUI !== "undefined") ? authUI.getUser() : null;
       let likedSet = new Set();
       if(currentUser?.id){
         const {data:liked} = await supabase
@@ -806,9 +807,10 @@
         const type    = b.build_type || 'Build';
 
         // GLB-first: live 3D viewer if glb_url exists, otherwise photo thumbnail
-        const mediaHtml = b.glb_url
+        const glbSrc = b.model_url || b.glb_url || null;
+        const mediaHtml = glbSrc
           ? `<model-viewer
-               src="${esc(b.glb_url)}"
+               src="${esc(glbSrc)}"
                ${b.thumb_url?`poster="${esc(b.thumb_url)}"`:''}
                alt="${esc(b.title||'Build')}"
                camera-controls
@@ -848,6 +850,7 @@
         const buildId = card.dataset.build;
         if(btn){
           const likesEl = card.querySelector('.likes');
+          if(typeof authUI === "undefined") return;
           const loggedIn = await authUI.requireLogin();
           if(!loggedIn) return;
           const user = authUI.getUser();
@@ -937,7 +940,7 @@
         if(actionBtn){
           const action = actionBtn.dataset.action;
           if(action==='view') location.href=`./event.html?id=${id}`;
-          if(action==='rsvp') authUI.requireLogin().then(ok=>{if(ok)location.href=`./event.html?id=${id}#rsvp`;});
+          if(action==='rsvp') { if(typeof authUI !== 'undefined') authUI.requireLogin().then(ok=>{if(ok)location.href=`./event.html?id=${id}#rsvp`;}); }
           return;
         }
         location.href=`./event.html?id=${id}`;
@@ -1049,53 +1052,57 @@
     }
 
     // ── BOOT ─────────────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', async () => {
+    // Each loader is wrapped independently — one failing can never block others.
+    function safeFn(fn, label) {
+      return fn().catch(err => console.error('[rok] ' + label + ' failed:', err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
       bindHoverAutoplay(document);
-      await Promise.all([
-        loadFrontEvents(),
-        loadTopBuilds(),
-        loadFrontSightings(),
-        loadFrontHighlights()
-      ]);
 
-      // Real-time: reload sightings on new insert
-      supabase.channel('public:sightings').on(
-        'postgres_changes',
-        {event:'INSERT',schema:'public',table:'sightings',filter:'is_public=eq.true'},
-        ()=>{ setTimeout(()=>loadFrontSightings(),2000); }
-      ).subscribe();
+      // Fire all four feeds in parallel — each isolated
+      safeFn(loadFrontEvents,     'events');
+      safeFn(loadTopBuilds,       'builds');
+      safeFn(loadFrontSightings,  'sightings');
+      safeFn(loadFrontHighlights, 'highlights');
 
-      supabase.channel('public:events').on(
-        'postgres_changes',
-        {event:'INSERT',schema:'public',table:'events'},
-        ()=>{ setTimeout(()=>loadFrontEvents(),2000); }
-      ).subscribe();
+      // Real-time: reload feeds on new inserts
+      if(typeof supabase !== 'undefined'){
+        supabase.channel('public:sightings').on(
+          'postgres_changes',
+          {event:'INSERT',schema:'public',table:'sightings'},
+          ()=>{ setTimeout(()=>safeFn(loadFrontSightings,'sightings-rt'),2000); }
+        ).subscribe();
+
+        supabase.channel('public:events').on(
+          'postgres_changes',
+          {event:'INSERT',schema:'public',table:'events'},
+          ()=>{ setTimeout(()=>safeFn(loadFrontEvents,'events-rt'),2000); }
+        ).subscribe();
+      }
     });
   </script>
 
-  <!-- CHARACTER SCRAMBLE — hero title animation -->
+  <!-- CHARACTER SCRAMBLE — hero title (v2: preserves gradient via innerHTML) -->
   <script>
   (function(){
-    // Characters to cycle through — motorsport flavour
     var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%*-=+';
 
-    // Scramble a single DOM element to its target text.
-    // resolvedClass: CSS class re-applied once text lands (e.g. "highlight")
-    function scrambleEl(el, targetText, resolvedClass, startDelay, onDone){
-      // Hide initially so nothing flashes before scramble starts
+    // Scramble el using innerHTML so highlight gradient class is preserved.
+    // resolvedClass: CSS class applied to EACH settled character span.
+    function scrambleEl(el, targetText, resolvedClass, startDelay){
       el.style.opacity = '0';
 
       setTimeout(function(){
         el.style.opacity = '1';
 
-        var chars  = targetText.split('');
-        var total  = chars.length;
-        var settled = new Array(total).fill(false);
+        var chars    = targetText.split('');
+        var total    = chars.length;
+        var settled  = new Array(total).fill(false);
 
-        // How many frames before each character settles.
-        // Characters settle left-to-right, slightly staggered.
+        // Each char settles left-to-right with slight randomness
         var settleAt = chars.map(function(_, i){
-          return Math.floor(8 + i * 2.2 + Math.random() * 4);
+          return Math.floor(10 + i * 2.4 + Math.random() * 5);
         });
 
         var frame = 0;
@@ -1104,32 +1111,37 @@
         function tick(){
           frame++;
 
-          var output = chars.map(function(c, i){
-            if(c === ' ')  return ' ';
-            if(settled[i]) return c;
+          var html = chars.map(function(c, i){
+            if(c === ' ') return '<span style="display:inline-block;width:.35em"> </span>';
 
-            if(frame >= settleAt[i]){
+            var glyphClass = (resolvedClass && settled[i]) ? resolvedClass : '';
+            var style = '';
+
+            if(settled[i]){
+              // Settled — show real character with class for gradient
+              return '<span class="' + glyphClass + '">' + c + '</span>';
+            } else if(frame >= settleAt[i]){
               settled[i] = true;
-              return c;
+              return '<span class="' + (resolvedClass || '') + '">' + c + '</span>';
+            } else {
+              // Glitching — random char, dimmer colour
+              var rnd = CHARS[Math.floor(Math.random() * CHARS.length)];
+              return '<span style="color:rgba(255,255,255,0.35)">' + rnd + '</span>';
             }
-            // Random glitch character
-            return CHARS[Math.floor(Math.random() * CHARS.length)];
           }).join('');
 
-          // Re-apply highlight class to the second line's text
-          if(resolvedClass){
-            el.className = resolvedClass + ' scramble-resolving';
-          }
-          el.textContent = output;
+          el.innerHTML = html;
 
-          var allDone = settled.every(Boolean);
-          if(!allDone){
+          if(!settled.every(Boolean)){
             raf = requestAnimationFrame(tick);
           } else {
-            // Final settled state
-            el.textContent = targetText;
-            if(resolvedClass) el.className = resolvedClass;
-            if(onDone) onDone();
+            // All settled — restore clean HTML
+            if(resolvedClass){
+              el.className = resolvedClass;
+              el.textContent = targetText;
+            } else {
+              el.textContent = targetText;
+            }
           }
         }
 
@@ -1137,19 +1149,17 @@
       }, startDelay);
     }
 
-    // Wait for DOM + fonts before running
     function runScramble(){
       var l1 = document.getElementById('scrambleLine1');
       var l2 = document.getElementById('scrambleLine2');
       if(!l1 || !l2) return;
 
-      // Line 1: "Jamaica" — starts at 400ms (loader is fading by then)
-      scrambleEl(l1, 'Jamaica', null, 400, function(){
-        // Line 2 starts scrambling 80ms after line 1 begins to settle
-      });
+      // "Jamaica" — no gradient, plain white
+      scrambleEl(l1, 'Jamaica', null, 400);
 
-      // Line 2: "motorsport grid" — starts 180ms after line 1 to stagger them
-      scrambleEl(l2, 'motorsport grid', 'highlight', 580, null);
+      // "motorsport grid" — highlight class = green/yellow gradient
+      // Starts 200ms after line1 so they overlap nicely
+      scrambleEl(l2, 'motorsport grid', 'highlight', 600);
     }
 
     if(document.readyState === 'loading'){

@@ -1,13 +1,22 @@
 /**
- * drift-animation.js  v2
+ * drift-animation.js  v3
  * ROK Racers JA — Hero drift animation
  *
- * Loads car.glb from the Assets/ folder and orbits it around
- * the hero text block using Three.js + smoke particles.
+ * v3 fix: removed the z-index canvas flip entirely.
+ * The glitch was caused by canvas.style.zIndex snapping between 1 and 3
+ * every time the car crossed the text midpoint — causing a hard visual pop.
  *
- * Usage (already wired in index.html):
- *   import { initHeroDrift } from "./drift-animation.js";
- *   initHeroDrift(heroEl, textBlockEl);
+ * New approach:
+ *  - Canvas sits at z-index:1 (behind HTML text) permanently.
+ *  - The car ALWAYS renders behind the text — which is correct 90% of the time.
+ *  - When the car passes "through" the front arc we fade its opacity down
+ *    smoothly so it dips behind the text gracefully instead of hard-cutting.
+ *  - Text has strong text-shadow so it always reads clearly.
+ *  - No snapping, no glitch, smooth orbital feel.
+ *
+ * If you truly need the car in front of text, the right solution is to
+ * render the text inside Three.js using CSS3DRenderer — but that requires
+ * rebuilding the text hierarchy. This approach looks great and has zero flicker.
  */
 
 import * as THREE from "https://esm.sh/three@0.128.0";
@@ -19,7 +28,7 @@ export function initHeroDrift(heroEl, titleEl) {
     return;
   }
 
-  // ── Canvas ────────────────────────────────────────────────
+  // ── Canvas — stays BEHIND html text permanently (z-index:1) ──────────
   const canvas = document.createElement("canvas");
   canvas.style.cssText =
     "position:absolute;inset:0;width:100%!important;height:100%!important;" +
@@ -64,52 +73,14 @@ export function initHeroDrift(heroEl, titleEl) {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // ── Occluder (depth-only — car disappears behind text block) ──
-  const occluder = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 2.5),
-    new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })
-  );
-  occluder.renderOrder = 1;
-  scene.add(occluder);
-
-  function resizeOccluder() {
-    const rect     = titleEl.getBoundingClientRect();
-    const heroRect = heroEl.getBoundingClientRect();
-    if (!rect.width || !rect.height) return; // not visible yet
-
-    const ndcX  = ((rect.left + rect.right)  / 2 - heroRect.left) / heroRect.width  *  2 - 1;
-    const ndcY  = -(((rect.top  + rect.bottom) / 2 - heroRect.top)  / heroRect.height *  2 - 1);
-    const ndcHW = (rect.width  / heroRect.width);
-    const ndcHH = (rect.height / heroRect.height);
-
-    const ref   = new THREE.Vector3(0, 1, 0).project(camera);
-    const ndcZ  = ref.z;
-
-    const unproject = (x, y) => new THREE.Vector3(x, y, ndcZ).unproject(camera);
-    const centre = unproject(ndcX, ndcY);
-    const left   = unproject(ndcX - ndcHW, ndcY);
-    const top    = unproject(ndcX, ndcY + ndcHH);
-
-    const worldW = Math.abs(centre.x - left.x) * 2 * 1.1;
-    const worldH = Math.abs(centre.y - top.y)  * 2 * 1.1;
-
-    occluder.geometry.dispose();
-    occluder.geometry = new THREE.BoxGeometry(worldW, worldH, 2.5);
-    occluder.position.set(centre.x, centre.y, 0);
-  }
-
-  // Measure after fonts are loaded (text block height depends on font)
-  // document.fonts.ready is a Promise — always safe to await even after fonts loaded
-  document.fonts.ready.then(() => setTimeout(resizeOccluder, 100));
-
   // ── Car GLB ───────────────────────────────────────────────
-  // Try Assets/car.glb first (matches your folder structure), fallback to car.glb
   let carGroup = null;
-  const GLB_PATHS = ["car.glb", "car.glb", "car.glb"];
+  // Try multiple paths to find car.glb regardless of deployment structure
+  const GLB_PATHS = ["car.glb", "./car.glb", "Assets/car.glb", "/car.glb"];
 
   function tryLoadGLB(paths, index = 0) {
     if (index >= paths.length) {
-      console.warn("[drift-animation] car.glb not found at any path — scene will run without car.");
+      console.warn("[drift-animation] car.glb not found — animation runs without car model.");
       return;
     }
     const loader = new GLTFLoader();
@@ -120,45 +91,35 @@ export function initHeroDrift(heroEl, titleEl) {
         const box    = new THREE.Box3().setFromObject(carGroup);
         const centre = box.getCenter(new THREE.Vector3());
         const size   = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-
         carGroup.position.sub(centre);
-        carGroup.scale.setScalar(2.7 / maxDim);
-
+        carGroup.scale.setScalar(5.5 / Math.max(size.x, size.y, size.z));
         carGroup.traverse((child) => {
           if (child.isMesh) {
             child.castShadow    = true;
             child.receiveShadow = true;
-            child.renderOrder   = 2;
           }
         });
-
         scene.add(carGroup);
-        console.log("[drift-animation] car.glb loaded from:", paths[index]);
+        console.log("[drift-animation] Loaded:", paths[index]);
       },
       undefined,
-      () => {
-        // This path failed — try the next one silently
-        tryLoadGLB(paths, index + 1);
-      }
+      () => tryLoadGLB(paths, index + 1)
     );
   }
-
   tryLoadGLB(GLB_PATHS);
 
   // ── Smoke particles ───────────────────────────────────────
   const smokes = [];
-
   function spawnSmoke(x, z) {
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.09 + Math.random() * 0.09, 5, 5),
       new THREE.MeshBasicMaterial({
-        color: 0xbbbbbb, transparent: true, depthWrite: false, opacity: 0.18,
+        color: 0xcccccc, transparent: true, depthWrite: false, opacity: 0.18,
       })
     );
     mesh.position.set(
       x + (Math.random() - 0.5) * 0.3,
-      0.12 + Math.random() * 0.12,
+      0.1 + Math.random() * 0.1,
       z + (Math.random() - 0.5) * 0.3
     );
     mesh.userData = {
@@ -166,28 +127,34 @@ export function initHeroDrift(heroEl, titleEl) {
       vx: (Math.random() - 0.5) * 0.018,
       vy: 0.012 + Math.random() * 0.012,
     };
-    mesh.renderOrder = 2;
     scene.add(mesh);
     smokes.push(mesh);
   }
 
   // ── Drift path ────────────────────────────────────────────
-  const PATH_RX      = 5.2;   // horizontal radius
-  const PATH_RZ      = 2.6;   // depth radius
-  const PATH_Y       = -1.2;  // vertical offset (car sits below text)
-  const SPEED        = 0.011; // radians per frame
+  const PATH_RX = 6.8;   // horizontal radius
+  const PATH_RZ = 3.2;   // depth radius
+  const PATH_Y  = -1.2;  // height (car sits just below text centreline)
+  const SPEED   = 0.011; // radians per frame (~1 full orbit per ~9 seconds)
 
-  let t            = 0;
-  let frame        = 0;
-  let rafId        = null;
-  let isFrontLayer = false;
+  let t     = 0;
+  let frame = 0;
+  let rafId = null;
+
+  // How "deep" into the front arc the car currently is (0 = side, 1 = fully front).
+  // Used to smoothly fade opacity rather than hard-switch z-index.
+  // z = positive = coming toward camera.
+  // We fade opacity DOWN as car approaches front (z>0) so it gracefully
+  // dips behind/through the text without any snap.
+  const FADE_START_Z = 0.5; // world-space z threshold where fade begins
+  const FADE_END_Z   = 2.2; // world-space z where opacity bottoms out
+  const FADE_MIN_OP  = 0.25; // don't go fully invisible — keep a ghost visible
 
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   function animate() {
     rafId = requestAnimationFrame(animate);
     frame++;
-
     t += SPEED;
 
     const x  = Math.cos(t) * PATH_RX;
@@ -195,29 +162,48 @@ export function initHeroDrift(heroEl, titleEl) {
     const nx = Math.cos(t + 0.04) * PATH_RX;
     const nz = Math.sin(t + 0.04) * PATH_RZ;
 
-    // Layer switching: car goes in front of text near horizontal centre
-    const shouldBeFront = Math.abs(x) < PATH_RX * 0.34;
-    if (shouldBeFront !== isFrontLayer) {
-      canvas.style.zIndex = shouldBeFront ? "3" : "1";
-      isFrontLayer = shouldBeFront;
-    }
-
     const travelAngle = Math.atan2(nx - x, nz - z);
-    const driftAngle  = Math.cos(t) * 0.38; // ~22° max drift
+    const driftAngle  = Math.cos(t) * 0.38; // max ~22° body slip
 
     if (carGroup) {
       carGroup.position.set(x, PATH_Y, z);
       carGroup.rotation.y = travelAngle + driftAngle;
+
+      // ── Smooth opacity fade when car enters the "front" arc ──────────
+      // z > 0  means car is between camera and text centre (passing "in front")
+      // We fade it to FADE_MIN_OP so it looks like it passes behind/through
+      // the text without any hard z-index snap or glitch.
+      let targetOpacity = 1;
+      if (z > FADE_START_Z) {
+        const t01 = Math.min((z - FADE_START_Z) / (FADE_END_Z - FADE_START_Z), 1);
+        targetOpacity = 1 - t01 * (1 - FADE_MIN_OP);
+      }
+
+      carGroup.traverse((child) => {
+        if (child.isMesh && child.material) {
+          // Handle both single material and material arrays
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach(mat => {
+            mat.transparent = true;
+            // Lerp current opacity toward target for smoothness
+            mat.opacity = mat.opacity !== undefined
+              ? mat.opacity + (targetOpacity - mat.opacity) * 0.18
+              : targetOpacity;
+          });
+        }
+      });
     }
 
     accentLight.position.set(x, 2 + PATH_Y, z);
 
+    // Spawn smoke from rear of car every 3 frames
     if (frame % 3 === 0) {
       const rearX = x - Math.sin(travelAngle) * 1.2;
       const rearZ = z - Math.cos(travelAngle) * 1.2;
       spawnSmoke(rearX, rearZ);
     }
 
+    // Tick + cull smoke particles
     for (let i = smokes.length - 1; i >= 0; i--) {
       const p = smokes[i];
       p.userData.life -= 0.022;
@@ -237,28 +223,23 @@ export function initHeroDrift(heroEl, titleEl) {
   }
 
   function startLoop() { if (!rafId) animate(); }
-  function stopLoop()  { if (rafId) cancelAnimationFrame(rafId); rafId = null; }
+  function stopLoop()  { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
   if (prefersReduced.matches) {
-    renderer.render(scene, camera); // one static frame
+    renderer.render(scene, camera);
   } else {
     startLoop();
   }
-
-  prefersReduced.addEventListener?.("change", (e) => {
-    e.matches ? stopLoop() : startLoop();
-  });
+  prefersReduced.addEventListener?.("change", e => e.matches ? stopLoop() : startLoop());
 
   // ── Resize ────────────────────────────────────────────────
   const ro = new ResizeObserver(() => {
     renderer.setSize(W(), H());
     camera.aspect = W() / H();
     camera.updateProjectionMatrix();
-    setTimeout(resizeOccluder, 50);
   });
   ro.observe(heroEl);
 
-  // ── Cleanup ───────────────────────────────────────────────
   return function destroy() {
     stopLoop();
     ro.disconnect();
