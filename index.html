@@ -226,7 +226,15 @@
       width: 32px; height: 2px; border-radius:999px;
       background: linear-gradient(to right, var(--accent-main), var(--accent-cyan));
     }
-    .hero-kicker span{ font-size:11px; text-transform:uppercase; letter-spacing:0.22em; color:var(--accent-cyan); filter:drop-shadow(0 0 8px rgba(0,0,0,1)); }
+    .hero-kicker span{ display:inline-flex; align-items:center; gap:8px; font-size:10px; text-transform:uppercase; letter-spacing:0.26em; color:var(--accent-cyan); }
+    .hero-kicker-dot{
+      width:6px; height:6px; border-radius:50%;
+      background:var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan), 0 0 16px rgba(18,139,2,0.5);
+      animation: kickerBlink 1.8s ease-in-out infinite;
+      flex-shrink:0;
+    }
+    @keyframes kickerBlink{ 0%,100%{opacity:1} 50%{opacity:0.15} }
 
     /* ↑↑ BIGGER TITLE — was clamp(40px,7vw,62px) */
     .hero-title{
@@ -235,17 +243,22 @@
       line-height: 0.88;
       text-transform: uppercase;
       letter-spacing: 3px;
-      text-shadow: 0 0 40px rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 0 80px rgba(0,0,0,0.9);
+    }
+    /* "Jamaica" line gets a fade — bright top, softer bottom */
+    #scrambleLine1{
+      background: linear-gradient(160deg, #ffffff 30%, rgba(255,255,255,0.55));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 32px rgba(0,0,0,1)) drop-shadow(0 2px 8px rgba(0,0,0,1));
     }
     .hero-title span.highlight{
-      background: linear-gradient(120deg, #3dff9f, #18C964, #ffdf40);
-      -webkit-background-clip: text; background-clip: text; color: transparent;
+      color: #3dff9f;
+      text-shadow: 0 0 40px rgba(61,255,150,0.55), 0 0 80px rgba(61,255,150,0.25);
     }
     .hero-sub{
-      font-size: 16px; color: var(--text-muted);
-      max-width: 520px; line-height: 1.6;
-      margin: 0 auto;
-      text-shadow: 0 0 20px rgba(0,0,0,1), 0 1px 4px rgba(0,0,0,1);
+      font-size: 15px; color: rgba(255,255,255,0.65);
+      max-width: 500px; line-height: 1.65;
+      margin: 0 auto; letter-spacing: 0.01em;
+      text-shadow: 0 0 24px rgba(0,0,0,1), 0 1px 6px rgba(0,0,0,1);
     }
     .hero-actions{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
     .hero-meta{
@@ -254,25 +267,40 @@
       filter: drop-shadow(0 1px 8px rgba(0,0,0,0.9));
     }
     .hero-meta-pill{
-      padding:4px 12px; border-radius:999px;
+      padding:6px 14px; border-radius:999px;
       background: rgba(0,0,0,0.5);
       border: 1px solid rgba(255,255,255,0.14);
       backdrop-filter: blur(4px);
+      display:inline-flex; align-items:center; gap:8px;
     }
+    .hero-live-row{ display:inline-flex; align-items:center; gap:6px; }
+    .hero-live-line{ display:inline-block; width:16px; height:2px; border-radius:999px; background:var(--accent-red, #e50914); flex-shrink:0; }
+    .hero-live-dot{
+      width:6px; height:6px; border-radius:50%;
+      background:#e50914;
+      box-shadow: 0 0 8px #e50914, 0 0 16px rgba(229,9,20,0.5);
+      animation: liveDotBlink 1.4s ease-in-out infinite;
+      flex-shrink:0;
+    }
+    @keyframes liveDotBlink{ 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.75)} }
     .hero-stats{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
     .hero-stat-pill{
-      padding:5px 14px; border-radius:999px;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.14);
-      font-size:12px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-muted);
+      padding:8px 20px; border-radius:10px;
+      background: rgba(255,217,59,0.06);
+      border: 1px solid rgba(255,217,59,0.28);
+      box-shadow: 0 0 18px rgba(255,217,59,0.12), inset 0 0 12px rgba(255,217,59,0.04);
+      display:inline-flex; flex-direction:column; align-items:center; gap:2px;
       backdrop-filter: blur(4px);
     }
+    .hero-stat-pill strong{ font-size:24px; font-weight:700; color:#FFD93B; letter-spacing:0; line-height:1; font-family:"Bebas Neue"; text-shadow: 0 0 16px rgba(255,217,59,0.8); }
+    .hero-stat-pill span{ font-size:9px; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,217,59,0.55); }
 
 
     /* ── SECTIONS ── */
     .section{ position:relative; padding:36px 0 48px; z-index:1; }
     .section-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:10px; flex-wrap:wrap; }
-    .section-title{ font-family:"Bebas Neue"; font-size:28px; text-transform:uppercase; letter-spacing:0.12em; }
+    .section-title{ font-family:"Bebas Neue"; font-size:28px; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px; }
+    .section-title::before{ content:""; display:block; width:3px; height:26px; border-radius:999px; background:linear-gradient(to bottom, var(--accent-main), transparent); flex-shrink:0; }
     .section-sub{ font-size:13px; color:var(--text-muted); max-width:480px; line-height:1.5; margin-top:4px; }
 
     /* ── EVENTS STRIP ── */
@@ -537,7 +565,7 @@
           <section class="hero-left">
             <div class="hero-kicker">
               <div class="hero-kicker-line"></div>
-              <span>Jamaica · Motorsport · Night Shift</span>
+              <span><span class="hero-kicker-dot"></span>Jamaica · Motorsport · Night Shift</span>
             </div>
 
             <h1 class="hero-title">
@@ -551,18 +579,21 @@
             </p>
 
             <div class="hero-actions">
-              <button class="btn btn-primary" type="button" onclick="location.href='./events.html'">View Upcoming Events</button>
-              <button class="btn btn-ghost"   type="button" onclick="location.href='./garage.html'">View all builds</button>
+              <button class="btn btn-primary" type="button" onclick="location.href='./events.html'" style="border-radius:14px;letter-spacing:.2em;font-size:12px;">View Upcoming Events ↗</button>
+              <button class="btn btn-ghost"   type="button" onclick="location.href='./garage.html'" style="border-radius:14px;letter-spacing:.2em;font-size:12px;">View all builds</button>
             </div>
 
             <div class="hero-meta">
-              <div class="hero-meta-pill">Live in: <strong>Kingston · Montego Bay · Ocho Rios</strong></div>
+              <div class="hero-meta-pill">
+                <span class="hero-live-row"><span class="hero-live-line"></span><span class="hero-live-dot"></span>Live in:</span>
+                <strong>Kingston · Montego Bay · Ocho Rios</strong>
+              </div>
             </div>
 
             <div class="hero-stats">
-              <div class="hero-stat-pill">120+ Builds</div>
-              <div class="hero-stat-pill">20+ Promoters</div>
-              <div class="hero-stat-pill">1 Island</div>
+              <div class="hero-stat-pill"><strong>120+</strong><span>Builds</span></div>
+              <div class="hero-stat-pill"><strong>20+</strong><span>Promoters</span></div>
+              <div class="hero-stat-pill"><strong>1</strong><span>Island</span></div>
             </div>
           </section>
         </div>
@@ -774,11 +805,12 @@
         console.warn('builds view unavailable, falling back:', error.message);
         ({data,error} = await supabase
           .from('builds')
-          .select('id,title,thumb_url,model_url,parish,build_type,created_at')
+          .select('id,title,thumb_url,model_url,parish,build_type,created_at,likes_count')
           .eq('is_public',true)
+          .order('likes_count',{ascending:false})
           .order('created_at',{ascending:false})
           .limit(3));
-        if(!error && data) data = data.map(b=>({...b,like_count:0,owner_handle:null,trophy_labels:[],model_url:b.model_url||null}));
+        if(!error && data) data = data.map(b=>({...b,like_count:b.likes_count||0,owner_handle:null,trophy_labels:[],model_url:b.model_url||null}));
       }
 
       if(error){
@@ -1083,69 +1115,58 @@
     });
   </script>
 
-  <!-- CHARACTER SCRAMBLE — hero title (v2: preserves gradient via innerHTML) -->
+  <!-- CHARACTER SCRAMBLE v3 — neon green line2, slower, no textContent strip -->
   <script>
   (function(){
     var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%*-=+';
 
-    // Scramble el using innerHTML so highlight gradient class is preserved.
-    // resolvedClass: CSS class applied to EACH settled character span.
-    function scrambleEl(el, targetText, resolvedClass, startDelay){
+    // For line1 ("Jamaica") — white fade via CSS, so we just output plain chars
+    // For line2 ("motorsport grid") — neon green via inline color on each settled char
+    function scrambleEl(el, targetText, neonColor, startDelay){
       el.style.opacity = '0';
-
       setTimeout(function(){
         el.style.opacity = '1';
 
-        var chars    = targetText.split('');
-        var total    = chars.length;
-        var settled  = new Array(total).fill(false);
+        var chars   = targetText.split('');
+        var settled = new Array(chars.length).fill(false);
 
-        // Each char settles left-to-right with slight randomness
+        // Slower still: each character takes noticeably longer to resolve
         var settleAt = chars.map(function(_, i){
-          return Math.floor(10 + i * 2.4 + Math.random() * 5);
+          return Math.floor(28 + i * 6.5 + Math.random() * 12);
         });
 
         var frame = 0;
-        var raf;
 
         function tick(){
           frame++;
 
           var html = chars.map(function(c, i){
-            if(c === ' ') return '<span style="display:inline-block;width:.35em"> </span>';
+            if(c === ' ') return '<span style="display:inline-block;width:.32em"> </span>';
 
-            var glyphClass = (resolvedClass && settled[i]) ? resolvedClass : '';
-            var style = '';
-
-            if(settled[i]){
-              // Settled — show real character with class for gradient
-              return '<span class="' + glyphClass + '">' + c + '</span>';
-            } else if(frame >= settleAt[i]){
+            if(settled[i] || frame >= settleAt[i]){
               settled[i] = true;
-              return '<span class="' + (resolvedClass || '') + '">' + c + '</span>';
-            } else {
-              // Glitching — random char, dimmer colour
-              var rnd = CHARS[Math.floor(Math.random() * CHARS.length)];
-              return '<span style="color:rgba(255,255,255,0.35)">' + rnd + '</span>';
+              // Settled character — apply neon color if provided, else inherit
+              var col = neonColor
+                ? 'color:' + neonColor + ';text-shadow:0 0 20px ' + neonColor + '66'
+                : '';
+              return '<span style="' + col + '">' + c + '</span>';
             }
+
+            // Still glitching — dim random character
+            var rnd = CHARS[Math.floor(Math.random() * CHARS.length)];
+            return '<span style="color:rgba(255,255,255,0.2)">' + rnd + '</span>';
           }).join('');
 
           el.innerHTML = html;
 
+          // Keep ticking until all settled
           if(!settled.every(Boolean)){
-            raf = requestAnimationFrame(tick);
-          } else {
-            // All settled — restore clean HTML
-            if(resolvedClass){
-              el.className = resolvedClass;
-              el.textContent = targetText;
-            } else {
-              el.textContent = targetText;
-            }
+            requestAnimationFrame(tick);
           }
+          // Done — leave innerHTML as-is (don't use textContent which strips color)
         }
 
-        raf = requestAnimationFrame(tick);
+        requestAnimationFrame(tick);
       }, startDelay);
     }
 
@@ -1154,12 +1175,11 @@
       var l2 = document.getElementById('scrambleLine2');
       if(!l1 || !l2) return;
 
-      // "Jamaica" — no gradient, plain white
-      scrambleEl(l1, 'Jamaica', null, 400);
+      // Line 1: "Jamaica" — null color → inherits the CSS gradient fade
+      scrambleEl(l1, 'Jamaica', null, 350);
 
-      // "motorsport grid" — highlight class = green/yellow gradient
-      // Starts 200ms after line1 so they overlap nicely
-      scrambleEl(l2, 'motorsport grid', 'highlight', 600);
+      // Line 2: "motorsport grid" — neon green with glow
+      scrambleEl(l2, 'motorsport grid', '#3dff9f', 500);
     }
 
     if(document.readyState === 'loading'){

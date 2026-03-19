@@ -92,7 +92,7 @@ export function initHeroDrift(heroEl, titleEl) {
         const centre = box.getCenter(new THREE.Vector3());
         const size   = box.getSize(new THREE.Vector3());
         carGroup.position.sub(centre);
-        carGroup.scale.setScalar(5.5 / Math.max(size.x, size.y, size.z));
+        carGroup.scale.setScalar(4.8 / Math.max(size.x, size.y, size.z));
         carGroup.traverse((child) => {
           if (child.isMesh) {
             child.castShadow    = true;
@@ -132,10 +132,10 @@ export function initHeroDrift(heroEl, titleEl) {
   }
 
   // ── Drift path ────────────────────────────────────────────
-  const PATH_RX = 6.8;   // horizontal radius
-  const PATH_RZ = 3.2;   // depth radius
-  const PATH_Y  = -1.2;  // height (car sits just below text centreline)
-  const SPEED   = 0.011; // radians per frame (~1 full orbit per ~9 seconds)
+  const PATH_RX = 8.5;   // horizontal radius — wide enough to orbit the full text block
+  const PATH_RZ = 4.0;   // depth radius — deeper ellipse gives better drift angle
+  const PATH_Y  = 0.0;   // height — centred on text block mid-point
+  const SPEED   = 0.009; // slightly slower at larger radius — feels natural
 
   let t     = 0;
   let frame = 0;
@@ -146,9 +146,9 @@ export function initHeroDrift(heroEl, titleEl) {
   // z = positive = coming toward camera.
   // We fade opacity DOWN as car approaches front (z>0) so it gracefully
   // dips behind/through the text without any snap.
-  const FADE_START_Z = 0.5; // world-space z threshold where fade begins
-  const FADE_END_Z   = 2.2; // world-space z where opacity bottoms out
-  const FADE_MIN_OP  = 0.25; // don't go fully invisible — keep a ghost visible
+  const FADE_START_Z = 1.2; // larger orbit means car gets closer before fading
+  const FADE_END_Z   = 3.5; // wider fade zone for smoother transition
+  const FADE_MIN_OP  = 0.18; // ghostly as it passes behind text
 
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
