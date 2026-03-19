@@ -300,16 +300,16 @@
     .section{ position:relative; padding:36px 0 48px; z-index:1; }
 
     .ticker-wrap{
+      position:absolute;
+      bottom:0; left:0; right:0;   /* flush to the very bottom of the hero */
       width:100%;
       overflow:hidden;
-      background: rgba(229,9,20,0.07);
-      border-top:1px solid rgba(229,9,20,0.22);
-      border-bottom:1px solid rgba(229,9,20,0.22);
-      /* Tall enough so uppercase + letter-spacing text is never clipped */
-      height:42px;
+      background: rgba(229,9,20,0.09);
+      border-top:1px solid rgba(229,9,20,0.28);
+      height:44px;
       display:flex;
       align-items:center;
-      position:relative; z-index:4;
+      z-index:10;  /* above hero::after dissolve (z-index:3) and canvas (z-index:1/3) */
     }
     .ticker-content{
       display:inline-flex;
@@ -339,8 +339,6 @@
       flex-shrink:0;
       line-height:1;
     }
-    .skid-divider{ width:100%; height:48px; margin:0; position:relative; z-index:5; opacity:1; }
-    .skid-divider svg{ width:100%; height:100%; display:block; overflow:visible; }
 
     /* Atmospheric dissolve between hero and content — no hard line */
     .hero::after{
@@ -420,40 +418,153 @@
     .btn-outline-ghost:hover{ border-color:rgba(255,255,255,0.2); color:var(--text-main); background:rgba(255,255,255,0.03); }
 
     /* ── BUILD CARDS ── */
+    /* ── HIGHLIGHTS GRID (sightings/highlights) ── */
     .cards-grid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:18px; }
     @media (max-width:900px){ .cards-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
     @media (max-width:640px){ .cards-grid{ grid-template-columns: minmax(0,1fr); } }
 
+    /* ── BUILD CARDS — helmet-grid style ── */
+    /* Grid: first card is noticeably taller (featured), rest are standard */
+    .builds-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto;
+      gap:14px;
+      align-items:start;
+    }
+    @media(max-width:900px){ .builds-grid{ grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:560px){ .builds-grid{ grid-template-columns: 1fr; } }
+
+    /* First card is the featured one — spans more height */
+    .builds-grid .build-card:first-child{
+      grid-row: span 1;
+    }
+    .builds-grid .build-card:first-child .build-stage{
+      height: 380px;  /* tall featured card */
+    }
+    .builds-grid .build-card:not(:first-child) .build-stage{
+      height: 260px;  /* standard height */
+    }
+
     .build-card{
-      border-radius: var(--radius-md);
-      border:1px solid var(--border-subtle);
-      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
-      padding:10px 10px 14px;
-      box-shadow: var(--shadow-soft);
-      display:flex; flex-direction:column; gap:6px;
-      overflow:visible;  /* allow 3D model-viewer to breathe outside card bounds */
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,0.07);
+      background: #0d0d10;
+      overflow:hidden;
       position:relative;
-      transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
       cursor:pointer;
+      transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1),
+                  border-color 0.3s ease,
+                  box-shadow 0.3s ease;
     }
-    .build-card:hover{ transform:translateY(-6px); border-color: rgba(255,217,59,0.65); box-shadow:0 0 40px rgba(255,217,59,0.08), 0 28px 56px rgba(0,0,0,0.9); }
-    .build-image{
-      position:relative; border-radius:14px;
-      overflow:visible;  /* critical — let model-viewer extend beyond the box */
-      height:220px;
-      background: radial-gradient(circle at top, #1a1a1a, #080808);
-      /* clip background/border only, not the 3D canvas */
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    .build-card:hover{
+      transform: translateY(-8px) scale(1.01);
+      border-color: rgba(255,217,59,0.5);
+      box-shadow: 0 0 0 1px rgba(255,217,59,0.15),
+                  0 32px 64px rgba(0,0,0,0.9),
+                  0 0 60px rgba(255,217,59,0.06);
     }
-    /* model-viewer gets extra height so the car is fully visible */
-    .build-image model-viewer{
-      width:calc(100% + 0px); height:260px;
-      margin-top:-20px;  /* push up so car rises above the card edge */
-      border-radius:14px;
+
+    /* The stage holds the 3D model AND the photo overlay */
+    .build-stage{
+      position:relative;
+      width:100%;
+      background: radial-gradient(ellipse at 50% 30%, #1c1c22, #080808);
+      overflow:hidden;
+    }
+
+    /* 3D model-viewer fills the stage exactly */
+    .build-stage model-viewer{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
       --poster-color: transparent;
       --progress-bar-color: transparent;
-      background: transparent;
     }
+
+    /* Photo overlay — hidden by default, fades in on hover */
+    .build-photo-overlay{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:0;
+      transition: opacity 0.4s ease;
+      z-index:2;
+    }
+    .build-card:hover .build-photo-overlay{
+      opacity:1;
+    }
+
+    /* "View Build →" label appears on hover over the photo */
+    .build-view-label{
+      position:absolute;
+      bottom:14px; right:14px;
+      z-index:4;
+      font-size:11px; text-transform:uppercase; letter-spacing:.2em;
+      color:#fff; font-weight:700;
+      padding:6px 14px;
+      border-radius:999px;
+      background: rgba(0,0,0,0.65);
+      border:1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(8px);
+      opacity:0;
+      transform: translateY(6px);
+      transition: opacity 0.3s ease 0.08s, transform 0.3s ease 0.08s;
+      pointer-events:none;
+    }
+    .build-card:hover .build-view-label{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    /* Bottom label bar — always visible, like helmet "Season 2025" */
+    .build-label-bar{
+      position:absolute;
+      bottom:0; left:0; right:0;
+      z-index:3;
+      padding:12px 14px 14px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap:8px;
+    }
+    .build-label-name{
+      font-size:13px; font-weight:700; color:#fff;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      max-width:75%;
+    }
+    .build-label-type{
+      font-size:10px; text-transform:uppercase; letter-spacing:.2em;
+      color:#FFD93B; font-weight:700; white-space:nowrap;
+      text-shadow: 0 0 12px rgba(255,217,59,0.6);
+      flex-shrink:0;
+    }
+
+    /* Like button — bottom left, always visible */
+    .build-like-btn{
+      position:absolute; top:12px; left:12px; z-index:5;
+      border-radius:999px; border:1px solid rgba(255,255,255,0.18);
+      background:rgba(0,0,0,0.5); padding:4px 10px; font-size:11px;
+      cursor:pointer; backdrop-filter:blur(6px);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .build-like-btn:hover{ border-color:rgba(255,75,100,0.6); background:rgba(255,75,100,0.12); }
+
+    /* 3D chip — top right */
+    .build-3d-chip{
+      position:absolute; top:12px; right:12px; z-index:5;
+      font-size:9px; text-transform:uppercase; letter-spacing:.18em;
+      padding:3px 9px; border-radius:999px;
+      background:rgba(18,139,2,0.2); border:1px solid rgba(18,139,2,0.5);
+      color:#3dff9f; font-weight:700;
+      opacity:1; transition: opacity 0.3s ease;
+    }
+    /* Hide 3D chip when photo overlay is showing */
+    .build-card:hover .build-3d-chip{ opacity:0; }
+
     .build-image img{ width:100%; height:100%; object-fit:cover; display:block; }
     .build-owner{
       position:absolute; left:10px; bottom:10px; z-index:3;
@@ -475,11 +586,6 @@
       font-size:10px; text-transform:uppercase; letter-spacing:0.16em;
       padding:3px 8px; border-radius:999px;
       background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
-    }
-    .build-like-btn{
-      border-radius:999px; border:1px solid rgba(255,255,255,0.18);
-      background:rgba(0,0,0,0.4); padding:4px 10px; font-size:11px;
-      cursor:pointer; position:absolute; bottom:10px; left:10px; z-index:3;
     }
 
     /* ── SIGHTINGS ── */
@@ -674,37 +780,20 @@
           </section>
         </div>
       </div>
-    </main>
-    <div class="hero-dissolve-glow" aria-hidden="true"></div>
-
-    <!-- Tyre skid marks — motorsport texture between hero and content -->
-    <div class="skid-divider" aria-hidden="true">
-      <svg viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Main tyre tracks — two parallel rubber marks -->  
-        <path d="M0 22 Q240 12 480 24 Q720 36 960 20 Q1200 6 1440 22" stroke="rgba(255,255,255,0.12)" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M0 30 Q240 20 480 32 Q720 44 960 28 Q1200 14 1440 30" stroke="rgba(255,255,255,0.08)" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- Accent skid flash marks -->
-        <path d="M120 16 Q280 10 440 18" stroke="rgba(255,255,255,0.09)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M800 28 Q960 18 1120 26" stroke="rgba(255,255,255,0.07)" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- Subtle heat shimmer lines -->
-        <path d="M0 38 Q360 34 720 40 Q1080 46 1440 38" stroke="rgba(18,139,2,0.06)" stroke-width="2" fill="none"/>
-      </svg>
-    </div>
-
-    <!-- Live event ticker -->
-    <div class="ticker-wrap" aria-label="Upcoming events ticker">
-      <div class="ticker-content" id="tickerContent">
-        <span class="ticker-item">🏁 ROK RACERS JA</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">Jamaica's #1 Motorsport Community</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">Kingston · Montego Bay · Ocho Rios</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">Drop your build. See who's outside tonight</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">🏁 ROK RACERS JA</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">Jamaica's #1 Motorsport Community</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">Kingston · Montego Bay · Ocho Rios</span><span class="ticker-sep">·</span>
-        <span class="ticker-item">Drop your build. See who's outside tonight</span><span class="ticker-sep">·</span>
+      <!-- Live event ticker — pinned to bottom edge of hero -->
+      <div class="ticker-wrap" aria-label="Upcoming events ticker">
+        <div class="ticker-content" id="tickerContent">
+          <span class="ticker-item">🏁 ROK RACERS JA</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">Jamaica's #1 Motorsport Community</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">Kingston · Montego Bay · Ocho Rios</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">Drop your build. See who's outside tonight</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">🏁 ROK RACERS JA</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">Jamaica's #1 Motorsport Community</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">Kingston · Montego Bay · Ocho Rios</span><span class="ticker-sep">·</span>
+          <span class="ticker-item">Drop your build. See who's outside tonight</span><span class="ticker-sep">·</span>
+        </div>
       </div>
-    </div>
-
+    </main>
     <!-- EVENTS — 5 most recent -->
     <section class="section">
       <div class="container">
@@ -736,7 +825,7 @@
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./garage.html'">View all builds</button>
         </div>
-        <div id="top-builds-grid" class="cards-grid" aria-live="polite">
+        <div id="top-builds-grid" class="builds-grid" aria-live="polite">
           <article class="build-card"><div class="build-body"><div class="build-title">Warming up the dyno…</div></div></article>
         </div>
       </div>
@@ -937,50 +1026,59 @@
         likedSet = new Set((liked||[]).map(r=>r.build_id));
       }
 
-      grid.innerHTML = data.map(b => {
-        const isLiked = likedSet.has(b.id);
-        const heart   = isLiked ? '♥' : '♡';
-        const owner   = b.owner_handle ? '@'+b.owner_handle : 'Build owner';
-        const type    = b.build_type || 'Build';
+      grid.innerHTML = data.map((b, idx) => {
+        const isLiked  = likedSet.has(b.id);
+        const heart    = isLiked ? '♥' : '♡';
+        const type     = b.build_type || 'Build';
+        const glbSrc   = b.model_url || b.glb_url || null;
+        const photoSrc = b.thumb_url || b.cover_url || FALLBACK_MEDIA_IMG;
 
-        // GLB-first: live 3D viewer if glb_url exists, otherwise photo thumbnail
-        const glbSrc = b.model_url || b.glb_url || null;
-        const mediaHtml = glbSrc
+        // camera settings vary by card index so featured card shows differently
+        const isFeatured = idx === 0;
+        const camOrbit   = isFeatured ? '0deg 68deg 3.2m' : '20deg 75deg 2.4m';
+        const camFov     = isFeatured ? '28deg' : '36deg';
+
+        // 3D stage: model-viewer as background, photo crossfades on hover
+        const stageHtml = glbSrc
           ? `<model-viewer
                src="${esc(glbSrc)}"
-               ${b.thumb_url?`poster="${esc(b.thumb_url)}"`:''}
+               poster="${esc(photoSrc)}"
                alt="${esc(b.title||'Build')}"
                camera-controls
                auto-rotate
-               auto-rotate-delay="600"
-               rotation-per-second="20deg"
-               camera-orbit="0deg 72deg 2.8m"
-               field-of-view="32deg"
-               min-camera-orbit="auto auto 1.5m"
-               max-camera-orbit="auto auto 6m"
-               exposure="1.3"
-               shadow-intensity="0.8"
+               auto-rotate-delay="800"
+               rotation-per-second="18deg"
+               camera-orbit="${camOrbit}"
+               field-of-view="${camFov}"
+               min-field-of-view="20deg"
+               max-field-of-view="45deg"
+               min-camera-orbit="auto auto 1m"
+               max-camera-orbit="auto auto 8m"
+               exposure="1.4"
+               shadow-intensity="1"
+               shadow-softness="0.8"
                environment-image="neutral"
                interaction-prompt="none"
+               style="width:100%;height:100%;"
              ></model-viewer>
-             <div class="build-chip">3D · ${esc(type)}</div>`
-          : `<img class="blur-up" src="${esc(b.thumb_url||FALLBACK_MEDIA_IMG)}" alt="${esc(b.title||'Build')}"
-               loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
-             <div class="build-chip">${esc(type)}</div>`;
+             <img class="build-photo-overlay" src="${esc(photoSrc)}" alt="${esc(b.title||'Build')}" loading="lazy">
+             <div class="build-3d-chip">3D</div>`
+          : `<img src="${esc(photoSrc)}" alt="${esc(b.title||'Build')}"
+               style="width:100%;height:100%;object-fit:cover;display:block;"
+               loading="lazy">`;
 
         return `
           <article class="build-card" data-build="${b.id}">
-            <div class="build-image">
-              ${mediaHtml}
-              <div class="build-owner">${esc(owner)}</div>
-            </div>
-            <div class="build-body"><div class="build-title">${esc(b.title||'Untitled build')}</div></div>
-            <div class="build-footer">
-              <div class="build-stats"><div class="build-likes">❤ <span class="likes">${b.like_count||0}</span></div></div>
-              <div class="build-parish">${esc(b.parish||'')}</div>
+            <div class="build-stage">
+              ${stageHtml}
+              <div class="build-label-bar">
+                <div class="build-label-name">${esc(b.title||'Untitled build')}</div>
+                <div class="build-label-type">${esc(type)}</div>
+              </div>
+              <div class="build-view-label">View Build →</div>
             </div>
             <button class="build-like-btn" data-like aria-pressed="${isLiked?'true':'false'}"
-              title="${currentUser?(isLiked?'Remove boost':'Boost'):'Sign in to boost'}" type="button">${heart}</button>
+              title="${currentUser?(isLiked?'Remove boost':'Boost'):'Sign in to boost'}" type="button">${heart} <span class="likes">${b.like_count||0}</span></button>
           </article>`;
       }).join('');
 

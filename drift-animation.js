@@ -73,6 +73,47 @@ export function initHeroDrift(heroEl, titleEl) {
   ground.receiveShadow = true;
   scene.add(ground);
 
+  // ── Tyre skid marks on ground ─────────────────────────────
+  // Random curved arcs baked into the scene — look like real rubber marks.
+  // Using thin PlaneGeometry strips rotated to follow curved paths.
+  function addSkidMark(x1, z1, x2, z2, width, opacity) {
+    const dx = x2 - x1, dz = z2 - z1;
+    const len = Math.sqrt(dx*dx + dz*dz);
+    const cx = (x1+x2)/2, cz = (z1+z2)/2;
+    const angle = Math.atan2(dx, dz);
+
+    const mark = new THREE.Mesh(
+      new THREE.PlaneGeometry(width, len),
+      new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: opacity,
+        depthWrite: false,
+      })
+    );
+    mark.rotation.x = -Math.PI / 2;
+    mark.rotation.z = angle;
+    mark.position.set(cx, 0.01, cz); // slightly above ground to avoid z-fighting
+    scene.add(mark);
+  }
+
+  // Lay down random skid arcs that roughly follow the drift orbit
+  // These are static — they look like marks left from previous laps
+  addSkidMark(-7,  1,  -4, -2,  0.18, 0.55);
+  addSkidMark(-4, -2,   1, -3,  0.14, 0.45);
+  addSkidMark( 1, -3,   5, -1,  0.16, 0.50);
+  addSkidMark( 5, -1,   7,  2,  0.13, 0.40);
+  addSkidMark( 7,  2,   4,  3,  0.15, 0.45);
+  addSkidMark( 4,  3,  -1,  3,  0.12, 0.35);
+  addSkidMark(-1,  3,  -7,  1,  0.14, 0.42);
+  // Second pass — slightly offset for double-track look
+  addSkidMark(-7,  2,  -4, -1,  0.10, 0.30);
+  addSkidMark( 1, -4,   5, -2,  0.10, 0.28);
+  addSkidMark( 5,  3,  -1,  4,  0.09, 0.25);
+  // Accent scorch marks — short, darker
+  addSkidMark(-5, -1,  -3, -3,  0.22, 0.65);
+  addSkidMark( 6,  0,   4,  2,  0.20, 0.60);
+
   // ── Car GLB ───────────────────────────────────────────────
   let carGroup = null;
   // Try multiple paths to find car.glb regardless of deployment structure
