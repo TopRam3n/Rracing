@@ -268,55 +268,6 @@
       backdrop-filter: blur(4px);
     }
 
-    /* ── HERO STAGGER SLIDE-UP ─────────────────────────────────────────
-       Each hero element starts invisible + 28px below, then slides into
-       place. Pure CSS — plays once on load, respects prefers-reduced-motion.
-       Delays are staggered so elements assemble one after the other while
-       the drift car is already orbiting.
-    ── */
-    @keyframes heroSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(28px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Base state: hidden until animation runs */
-    .hero-kicker,
-    .hero-title,
-    .hero-sub,
-    .hero-actions,
-    .hero-meta,
-    .hero-stats {
-      opacity: 0;
-      animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    /* Stagger delays — each element 160ms after the previous */
-    .hero-kicker  { animation-delay: 0.15s; }
-    .hero-title   { animation-delay: 0.30s; }
-    .hero-sub     { animation-delay: 0.52s; }
-    .hero-actions { animation-delay: 0.68s; }
-    .hero-meta    { animation-delay: 0.82s; }
-    .hero-stats   { animation-delay: 0.92s; }
-
-    /* Honour reduced-motion — skip animation entirely */
-    @media (prefers-reduced-motion: reduce) {
-      .hero-kicker,
-      .hero-title,
-      .hero-sub,
-      .hero-actions,
-      .hero-meta,
-      .hero-stats {
-        opacity: 1;
-        animation: none;
-        transform: none;
-      }
-    }
 
     /* ── SECTIONS ── */
     .section{ position:relative; padding:36px 0 48px; z-index:1; }
@@ -590,8 +541,8 @@
             </div>
 
             <h1 class="hero-title">
-              Jamaica<br>
-              <span class="highlight">motorsport grid</span>
+              <span id="scrambleLine1">Jamaica</span><br>
+              <span id="scrambleLine2" class="highlight">motorsport grid</span>
             </h1>
 
             <p class="hero-sub">
@@ -1120,6 +1071,93 @@
         ()=>{ setTimeout(()=>loadFrontEvents(),2000); }
       ).subscribe();
     });
+  </script>
+
+  <!-- CHARACTER SCRAMBLE — hero title animation -->
+  <script>
+  (function(){
+    // Characters to cycle through — motorsport flavour
+    var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%*-=+';
+
+    // Scramble a single DOM element to its target text.
+    // resolvedClass: CSS class re-applied once text lands (e.g. "highlight")
+    function scrambleEl(el, targetText, resolvedClass, startDelay, onDone){
+      // Hide initially so nothing flashes before scramble starts
+      el.style.opacity = '0';
+
+      setTimeout(function(){
+        el.style.opacity = '1';
+
+        var chars  = targetText.split('');
+        var total  = chars.length;
+        var settled = new Array(total).fill(false);
+
+        // How many frames before each character settles.
+        // Characters settle left-to-right, slightly staggered.
+        var settleAt = chars.map(function(_, i){
+          return Math.floor(8 + i * 2.2 + Math.random() * 4);
+        });
+
+        var frame = 0;
+        var raf;
+
+        function tick(){
+          frame++;
+
+          var output = chars.map(function(c, i){
+            if(c === ' ')  return ' ';
+            if(settled[i]) return c;
+
+            if(frame >= settleAt[i]){
+              settled[i] = true;
+              return c;
+            }
+            // Random glitch character
+            return CHARS[Math.floor(Math.random() * CHARS.length)];
+          }).join('');
+
+          // Re-apply highlight class to the second line's text
+          if(resolvedClass){
+            el.className = resolvedClass + ' scramble-resolving';
+          }
+          el.textContent = output;
+
+          var allDone = settled.every(Boolean);
+          if(!allDone){
+            raf = requestAnimationFrame(tick);
+          } else {
+            // Final settled state
+            el.textContent = targetText;
+            if(resolvedClass) el.className = resolvedClass;
+            if(onDone) onDone();
+          }
+        }
+
+        raf = requestAnimationFrame(tick);
+      }, startDelay);
+    }
+
+    // Wait for DOM + fonts before running
+    function runScramble(){
+      var l1 = document.getElementById('scrambleLine1');
+      var l2 = document.getElementById('scrambleLine2');
+      if(!l1 || !l2) return;
+
+      // Line 1: "Jamaica" — starts at 400ms (loader is fading by then)
+      scrambleEl(l1, 'Jamaica', null, 400, function(){
+        // Line 2 starts scrambling 80ms after line 1 begins to settle
+      });
+
+      // Line 2: "motorsport grid" — starts 180ms after line 1 to stagger them
+      scrambleEl(l2, 'motorsport grid', 'highlight', 580, null);
+    }
+
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', runScramble);
+    } else {
+      runScramble();
+    }
+  })();
   </script>
 
   <!-- LOADING SCREEN SCRIPT -->
