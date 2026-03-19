@@ -44,8 +44,8 @@ export function initHeroDrift(heroEl, titleEl) {
   // ── Camera ────────────────────────────────────────────────
   // Slightly elevated so the ground plane reads with perspective
   const camera = new THREE.PerspectiveCamera(38, W() / H(), 0.1, 200);
-  camera.position.set(0, 7, 22);
-  camera.lookAt(0, 0.5, 0);
+  camera.position.set(0, 4, 16);
+  camera.lookAt(0, 0, 0);
 
   // ── Lights ────────────────────────────────────────────────
   scene.add(new THREE.AmbientLight(0xffffff, 0.55));
@@ -127,7 +127,7 @@ export function initHeroDrift(heroEl, titleEl) {
       const maxDim = Math.max(size.x, size.y, size.z);
 
       carGroup.position.sub(centre);          // centre on origin
-      carGroup.scale.setScalar(2.4 / maxDim); // normalise to ~2.4 units long
+      carGroup.scale.setScalar(2.7 / maxDim); // slightly larger for stronger hero presence
 
       carGroup.traverse((child) => {
         if (child.isMesh) {
@@ -176,8 +176,9 @@ export function initHeroDrift(heroEl, titleEl) {
 
   // ── Drift path ─────────────────────────────────────────────
   // Ellipse around the text block. Tweak RX / RZ to taste.
-  const PATH_RX = 5.8;  // horizontal radius (left/right spread)
-  const PATH_RZ = 3.4;  // depth radius     (front/back spread)
+  const PATH_RX = 5.0;  // horizontal radius (left/right spread)
+  const PATH_RZ = 2.8;  // depth radius     (front/back spread)
+  const PATH_Y_OFFSET = -1.2; // drop the orbit so it sits under the hero text
   const SPEED   = 0.011; // radians per frame — increase to go faster
 
   let t     = 0;
@@ -214,12 +215,12 @@ export function initHeroDrift(heroEl, titleEl) {
     const driftAngle = Math.cos(t) * 0.38; // ~22° max drift
 
     if (carGroup) {
-      carGroup.position.set(x, 0, z);
+      carGroup.position.set(x, PATH_Y_OFFSET, z);
       carGroup.rotation.y = travelAngle + driftAngle;
     }
 
     // Accent light follows car
-    accentLight.position.set(x, 2, z);
+    accentLight.position.set(x, 2 + PATH_Y_OFFSET, z);
 
     // Smoke from rear of car every 3 frames
     if (frame % 3 === 0) {
