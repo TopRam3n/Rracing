@@ -418,6 +418,78 @@
     .btn-outline-ghost:hover{ border-color:rgba(255,255,255,0.2); color:var(--text-main); background:rgba(255,255,255,0.03); }
 
     /* ── BUILD CARDS ── */
+
+    /* ── HIGHLIGHTS FAN SPREAD ── */
+    .fan-grid{
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      gap:-10px; /* cards overlap */
+      padding:32px 20px 40px;
+      position:relative;
+    }
+    .fan-card{
+      position:relative;
+      width:220px;
+      flex-shrink:0;
+      border-radius:20px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.08);
+      background:#0d0d10;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+      cursor:pointer;
+      transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1),
+                  box-shadow 0.35s ease,
+                  border-color 0.35s ease,
+                  z-index 0s;
+      /* Default: each card gets a tilt via nth-child */
+    }
+    /* Tilt each card in the fan */
+    .fan-card:nth-child(1){ transform: rotate(-6deg) translateY(12px); z-index:1; margin-right:-30px; }
+    .fan-card:nth-child(2){ transform: rotate(-2deg) translateY(6px);  z-index:2; margin-right:-30px; }
+    .fan-card:nth-child(3){ transform: rotate(0deg)  translateY(0px);  z-index:3; } /* centre */
+    .fan-card:nth-child(4){ transform: rotate(2deg)  translateY(6px);  z-index:2; margin-left:-30px; }
+    .fan-card:nth-child(5){ transform: rotate(6deg)  translateY(12px); z-index:1; margin-left:-30px; }
+    /* On hover: card straightens, rises, comes to front */
+    .fan-card:hover{
+      transform: rotate(0deg) translateY(-16px) scale(1.04) !important;
+      z-index:10 !important;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.9), 0 0 40px rgba(255,217,59,0.1);
+      border-color: rgba(255,217,59,0.4);
+    }
+    .fan-card-img{
+      width:100%;
+      aspect-ratio:3/4;
+      object-fit:cover;
+      display:block;
+    }
+    .fan-card-body{
+      padding:12px 14px 14px;
+      background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+      position:absolute;
+      bottom:0; left:0; right:0;
+    }
+    .fan-card-title{
+      font-size:13px; font-weight:700; color:#fff; margin-bottom:3px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .fan-card-meta{
+      font-size:10px; text-transform:uppercase; letter-spacing:.16em; color:rgba(255,255,255,0.5);
+    }
+    @media(max-width:900px){
+      .fan-grid{ gap:8px; padding:20px 10px 30px; }
+      .fan-card{ width:160px; }
+      .fan-card:nth-child(1){ margin-right:-20px; }
+      .fan-card:nth-child(2){ margin-right:-20px; }
+      .fan-card:nth-child(4){ margin-left:-20px; }
+      .fan-card:nth-child(5){ margin-left:-20px; }
+    }
+    @media(max-width:600px){
+      .fan-card:nth-child(1),.fan-card:nth-child(5){ display:none; }
+      .fan-card:nth-child(2){ margin-right:-10px; }
+      .fan-card:nth-child(4){ margin-left:-10px; }
+    }
+
     /* ── HIGHLIGHTS GRID (sightings/highlights) ── */
     .cards-grid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:18px; }
     @media (max-width:900px){ .cards-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
@@ -473,12 +545,12 @@
       overflow:hidden;
     }
 
-    /* 3D model-viewer fills the stage exactly */
+    /* model-viewer fills the stage — MUST use width/height not inset */
     .build-stage model-viewer{
-      position:absolute;
-      inset:0;
+      display:block;
       width:100%;
       height:100%;
+      min-height:inherit; /* inherits from .build-stage height */
       --poster-color: transparent;
       --progress-bar-color: transparent;
     }
@@ -486,7 +558,7 @@
     /* Photo overlay — hidden by default, fades in on hover */
     .build-photo-overlay{
       position:absolute;
-      inset:0;
+      top:0; left:0; right:0; bottom:0;
       width:100%;
       height:100%;
       object-fit:cover;
@@ -820,8 +892,8 @@
       <div class="container">
         <div class="section-header">
           <div>
-            <h2 class="section-title">Top Builds in the Garage</h2>
-            <p class="section-sub">The island's most-liked builds — street, track, and show specials. Drop your own and see where it lands.</p>
+            <h2 class="section-title">Paddock Club</h2>
+            <p class="section-sub">The island's most-liked builds. Street, track, and show specials — drop yours and see where it lands.</p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./garage.html'">View all builds</button>
         </div>
@@ -883,7 +955,7 @@
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./highlights.html'">View All Highlights</button>
         </div>
-        <div id="highlightsGrid" class="cards-grid" aria-live="polite">
+        <div id="highlightsGrid" class="fan-grid" aria-live="polite">
           <article class="sighting-main"><p style="color:var(--text-muted);font-size:13px;">Loading highlights…</p></article>
         </div>
       </div>
@@ -1059,7 +1131,7 @@
                shadow-softness="0.8"
                environment-image="neutral"
                interaction-prompt="none"
-               style="width:100%;height:100%;"
+               style="display:block;width:100%;height:${stageH};"
              ></model-viewer>
              <img class="build-photo-overlay" src="${esc(photoSrc)}" alt="${esc(b.title||'Build')}" loading="lazy">
              <div class="build-3d-chip">3D</div>`
@@ -1067,18 +1139,19 @@
                style="width:100%;height:100%;object-fit:cover;display:block;"
                loading="lazy">`;
 
+        const stageH = isFeatured ? '380px' : '260px';
         return `
           <article class="build-card" data-build="${b.id}">
-            <div class="build-stage">
+            <div class="build-stage" style="height:${stageH}">
               ${stageHtml}
               <div class="build-label-bar">
                 <div class="build-label-name">${esc(b.title||'Untitled build')}</div>
                 <div class="build-label-type">${esc(type)}</div>
               </div>
               <div class="build-view-label">View Build →</div>
+              <button class="build-like-btn" data-like aria-pressed="${isLiked?'true':'false'}"
+                title="${currentUser?(isLiked?'Remove boost':'Boost'):'Sign in to boost'}" type="button">${heart} <span class="likes">${b.like_count||0}</span></button>
             </div>
-            <button class="build-like-btn" data-like aria-pressed="${isLiked?'true':'false'}"
-              title="${currentUser?(isLiked?'Remove boost':'Boost'):'Sign in to boost'}" type="button">${heart} <span class="likes">${b.like_count||0}</span></button>
           </article>`;
       }).join('');
 
