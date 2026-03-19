@@ -948,15 +948,15 @@
     <!-- HIGHLIGHTS -->
     <section class="section">
       <div class="container">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Highlights & Stories</h2>
-            <p class="section-sub">Features, recaps and drops from the paddock — a quick taste of what's happening beyond the grid.</p>
-          </div>
-          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./highlights.html'">View All Highlights</button>
+        <div style="text-align:center;margin-bottom:32px;">
+          <h2 class="section-title" style="justify-content:center;">Highlights & Stories</h2>
+          <p class="section-sub" style="max-width:480px;margin:8px auto 0;">Features, recaps and drops from the paddock — a quick taste of what's happening beyond the grid.</p>
+          <a class="btn btn-ghost btn-pill-sm" href="./highlights.html" style="margin-top:16px;display:inline-flex;">View All Highlights</a>
         </div>
         <div id="highlightsGrid" class="fan-grid" aria-live="polite">
-          <article class="sighting-main"><p style="color:var(--text-muted);font-size:13px;">Loading highlights…</p></article>
+          <article class="fan-card" style="opacity:0.4;pointer-events:none">
+            <div class="fan-card-img" style="background:#1a1a1a;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.2);font-size:13px;">Loading…</div>
+          </article>
         </div>
       </div>
     </section>
@@ -1107,6 +1107,7 @@
 
         // camera settings vary by card index so featured card shows differently
         const isFeatured = idx === 0;
+        const stageH     = isFeatured ? '380px' : '260px';  // declared BEFORE stageHtml
         const camOrbit   = isFeatured ? '0deg 68deg 3.2m' : '20deg 75deg 2.4m';
         const camFov     = isFeatured ? '28deg' : '36deg';
 
@@ -1139,7 +1140,6 @@
                style="width:100%;height:100%;object-fit:cover;display:block;"
                loading="lazy">`;
 
-        const stageH = isFeatured ? '380px' : '260px';
         return `
           <article class="build-card" data-build="${b.id}">
             <div class="build-stage" style="height:${stageH}">
@@ -1275,15 +1275,15 @@
       let data, error;
       ({data,error} = await supabase
         .from('sightings_with_like_count')
-        .select('id,title,caption,location,parish,image_url,video_url,created_at,like_count,comment_count,author_handle,category')
+        .select('*')
         .order('created_at',{ascending:false}).limit(5));
 
       if(error){
         ({data,error} = await supabase
           .from('sightings')
-          .select('id,title,caption,location,parish,image_url,video_url,created_at,author_handle,category')
+          .select('*')
           .order('created_at',{ascending:false}).limit(5));
-        if(!error&&data) data=data.map(s=>({...s,like_count:0,comment_count:0}));
+        if(!error&&data) data=data.map(s=>({...s,like_count:s.like_count||s.likes_count||0,comment_count:s.comment_count||0}));
       }
 
       if(error||!data?.length){
@@ -1333,15 +1333,15 @@
       let data, error;
       ({data,error} = await supabase
         .from('highlights_with_like_count')
-        .select('id,title,category,image_url,video_url,body,created_at,like_count')
+        .select('*')
         .order('created_at',{ascending:false}).limit(5));
 
       if(error){
         ({data,error} = await supabase
           .from('highlights')
-          .select('id,title,category,image_url,video_url,body,created_at')
+          .select('*')
           .order('created_at',{ascending:false}).limit(5));
-        if(!error&&data) data=data.map(h=>({...h,like_count:0}));
+        if(!error&&data) data=data.map(h=>({...h,like_count:h.like_count||h.likes_count||0}));
       }
 
       if(error||!data?.length){
@@ -1349,17 +1349,17 @@
         return;
       }
 
-      grid.innerHTML = data.map(h=>{
-        const dateStr = h.created_at?new Date(h.created_at).toLocaleDateString():'';
-        const teaser  = (h.body||'').slice(0,140);
-        const more    = (h.body&&h.body.length>140)?'…':'';
+      grid.innerHTML = data.slice(0,5).map(h=>{
+        const dateStr = h.created_at?new Date(h.created_at).toLocaleDateString('en-JM',{month:'short',day:'numeric'}):'';
+        const img = h.image_url||h.cover_url||FALLBACK_MEDIA_IMG;
+        const cat = h.category||'Story';
         return `
-          <article class="sighting-main" onclick="location.href='./highlight.html?id=${h.id}'" style="cursor:pointer">
-            ${renderMedia({imageUrl:h.image_url||FALLBACK_MEDIA_IMG,videoUrl:h.video_url,alt:h.title||'Highlight',height:160})}
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;margin:10px 0 6px;">${esc(h.title||'Highlight')}</div>
-            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${esc(h.category||'')}${h.category&&dateStr?' · ':''}${esc(dateStr)}</p>
-            <p style="font-size:12px;color:var(--text-muted);line-height:1.5;">${esc(teaser)}${more}</p>
-            <p style="margin-top:8px;font-size:11px;color:var(--text-muted);">♥ ${h.like_count||0}</p>
+          <article class="fan-card" onclick="location.href='./highlight.html?id=${h.id}'" role="button" tabindex="0">
+            <img class="fan-card-img" src="${esc(img)}" alt="${esc(h.title||'Highlight')}" loading="lazy">
+            <div class="fan-card-body">
+              <div class="fan-card-title">${esc(h.title||'Highlight')}</div>
+              <div class="fan-card-meta">${esc(cat)}${dateStr?' · '+esc(dateStr):''} · ♥ ${h.like_count||0}</div>
+            </div>
           </article>`;
       }).join('');
     }
