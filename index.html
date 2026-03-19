@@ -8,37 +8,44 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- ✅ Shared Supabase client (single init, no duplicates) -->
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
-
-  <!-- ✅ Shared auth UI (injects modal, wires nav, exposes authUI) -->
   <script src="auth-ui.js"></script>
 
-  <!-- ✅ Three.js for advanced 3D effects and drift animation -->
+  <!-- Drift animation (Three.js car orbiting hero text) -->
+  <!--
+    NOTE: <script type="module"> is ALWAYS deferred by the browser.
+    That means DOMContentLoaded has already fired before this module runs,
+    so window.addEventListener("DOMContentLoaded", ...) would never fire.
+    We use a readyState guard instead — same pattern as auth-ui.js v3.
+  -->
   <script type="module">
     import { initHeroDrift } from "./drift-animation.js";
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const heroEl = document.querySelector(".hero");
+    function startDrift() {
+      const heroEl      = document.querySelector(".hero");
       const textBlockEl = document.querySelector(".hero .hero-left");
       initHeroDrift(heroEl, textBlockEl);
-    });
-  </script>
+    }
 
-  <!-- ✅ Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="design-system.css">
+    // Module scripts are deferred — DOM is always ready when this runs.
+    // But guard for the edge case where it somehow runs during parsing.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", startDrift);
+    } else {
+      startDrift();
+    }
+  </script>
 
   <style>
     :root {
       --bg-main: #050508;
       --bg-alt: #111111;
       --bg-card: #141414;
-
       --accent-main: #128b02;
       --accent-secondary: #FFD93B;
       --accent-cyan: #FFD93B;
-
       --text-main: #ffffff;
       --text-muted: #bdbdbd;
       --border-subtle: rgba(255, 255, 255, 0.06);
@@ -72,6 +79,7 @@
       pointer-events:none; z-index:0;
     }
 
+    /* ── NAV ── */
     .nav-wrapper {
       position: sticky; top: 0; z-index: 40;
       backdrop-filter: blur(16px);
@@ -84,24 +92,24 @@
       border-bottom-color: rgba(255,255,255,0.10);
       box-shadow: 0 18px 40px rgba(0,0,0,0.7);
     }
-    .nav { height:var(--nav-height); display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:nowrap; }
-    .nav-links { flex-shrink:0; }
-    .nav-cta { flex-shrink:0; }
-    .logo { display:flex; align-items:center; gap:10px; letter-spacing:.04em; flex-shrink:0; flex-wrap:nowrap; min-width:0; }
-    .logo-mark { flex-shrink:0; }
+    .nav {
+      height: var(--nav-height);
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 20px; flex-wrap:nowrap;
+    }
+    .logo { display:flex; align-items:center; gap:10px; letter-spacing:.04em; flex-shrink:0; }
     .logo-mark{
       width:36px; height:36px; border-radius:999px;
       border:1px solid rgba(24, 158, 6, 0.7);
       box-shadow:0 0 18px rgba(24, 158, 6, 0.32);
       overflow:hidden; background:#000;
-      display:flex; align-items:center; justify-content:center;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
     }
     .logo-mark img{ width:100%; height:100%; object-fit:cover; }
     .logo-text-main{ font-family:"Bebas Neue"; font-size:22px; text-transform:uppercase; white-space:nowrap; }
     .logo-text-sub{ font-size:11px; color:var(--accent-cyan); text-transform:uppercase; white-space:nowrap; }
-
     .nav-links{
-      display:flex; gap:18px; align-items:center;
+      display:flex; gap:18px; align-items:center; flex-shrink:0;
       font-size:13px; text-transform:uppercase; letter-spacing:0.15em;
       color: var(--text-muted);
     }
@@ -109,12 +117,10 @@
     .nav-links a::after{
       content:""; position:absolute; left:0; bottom:0; width:0; height:2px;
       background:linear-gradient(to right, var(--accent-main), var(--accent-secondary));
-      transition: width var(--transition-fast);
-      border-radius:999px;
+      transition: width var(--transition-fast); border-radius:999px;
     }
     .nav-links a:hover{ color:var(--text-main); }
     .nav-links a:hover::after{ width:100%; }
-
     .nav-cta{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
     .btn{
       border-radius:999px; padding:8px 16px;
@@ -122,9 +128,8 @@
       border:1px solid transparent; background:transparent;
       cursor:pointer; display:inline-flex; align-items:center; gap:6px;
       transition: background var(--transition-fast), color var(--transition-fast),
-        border-color var(--transition-fast), transform var(--transition-fast),
-        box-shadow var(--transition-fast);
-      color:#fff;
+        border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+      color:#fff; font-family:inherit;
     }
     .btn-primary{
       background: radial-gradient(circle at top left, #39ff96, var(--accent-main));
@@ -132,157 +137,142 @@
       border-color: rgba(24, 201, 100, 0.85);
     }
     .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 0 32px rgba(24,201,100,0.75); }
-    .btn-ghost{
-      border-color: rgba(255,255,255,0.12);
-      color: var(--text-muted);
-    }
-    .btn-ghost:hover{
-      color: var(--text-main);
-      border-color: rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.02);
-    }
+    .btn-ghost{ border-color: rgba(255,255,255,0.12); color: var(--text-muted); }
+    .btn-ghost:hover{ color: var(--text-main); border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.02); }
     .btn-pill-sm{ padding:6px 14px; font-size:11px; letter-spacing:0.16em; }
-
     .profile-menu{ position:relative; display:flex; align-items:center; }
     .profile-chip{
-      width:32px; height:32px; border-radius:50%;
-      background:var(--bg-card);
+      width:32px; height:32px; border-radius:50%; background:var(--bg-card);
       display:flex; align-items:center; justify-content:center;
-      font-weight:600; cursor:pointer;
-      border:1px solid rgba(255,255,255,0.18);
+      font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.18);
       transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-      font-size:13px;
-      user-select:none;
+      font-size:13px; user-select:none;
     }
-    .profile-chip:hover{
-      border-color:rgba(255,255,255,0.32);
-      box-shadow:0 0 16px rgba(255,217,59,0.6);
-      transform:translateY(-1px);
-    }
+    .profile-chip:hover{ border-color:rgba(255,255,255,0.32); box-shadow:0 0 16px rgba(255,217,59,0.6); transform:translateY(-1px); }
     .dropdown{
       position:absolute; right:0; top:44px;
-      background:rgba(10,10,14,0.96);
-      border:1px solid var(--border-subtle);
-      box-shadow:0 20px 40px rgba(0,0,0,.65);
-      border-radius:16px;
-      display:none;
-      flex-direction:column;
-      min-width:240px;
-      z-index:999;
-      backdrop-filter: blur(16px);
-      overflow:hidden;
+      background:rgba(10,10,14,0.96); border:1px solid var(--border-subtle);
+      box-shadow:0 20px 40px rgba(0,0,0,.65); border-radius:16px;
+      display:none; flex-direction:column; min-width:240px; z-index:999;
+      backdrop-filter: blur(16px); overflow:hidden;
     }
     .dropdown.open{ display:flex; }
-
-    .dd-head{
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,0.08);
-      display:flex; flex-direction:column; gap:2px;
-    }
+    .dd-head{ padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:2px; }
     .dd-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--text-muted); }
     .dd-email{ font-size:13px; color:#fff; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
     .dropdown a, .dropdown button{
-      padding:10px 14px; text-align:left;
-      border:none; background:transparent; color:var(--text-main);
-      font-size:13px; width:100%; cursor:pointer;
-      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 14px; text-align:left; border:none; background:transparent; color:var(--text-main);
+      font-size:13px; width:100%; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-family:inherit;
     }
     .dropdown a:hover, .dropdown button:hover{ background:rgba(255,255,255,0.06); }
     .dd-sep{ height:1px; background:rgba(255,255,255,0.08); margin:6px 0; }
     .dd-badge{
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      padding:3px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.16);
-      color:var(--text-muted);
-      background:rgba(0,0,0,0.25);
-      white-space:nowrap;
+      font-size:10px; text-transform:uppercase; letter-spacing:.14em; padding:3px 8px;
+      border-radius:999px; border:1px solid rgba(255,255,255,0.16);
+      color:var(--text-muted); background:rgba(0,0,0,0.25); white-space:nowrap;
     }
-
     @media (max-width: 768px){
       .nav-links{ display:none; }
       .nav-cta{ gap:6px; }
       .logo-text-sub{ display:none; }
     }
 
+    /* ── HERO ──
+       Full-viewport canvas stage. The drift animation fills the background.
+       hero-left is centred on top of it with z-index:2.
+       Enough top padding so text doesn't kiss the nav.
+    */
     .hero{
-      position:relative;
+      position: relative;
       min-height: calc(100vh - var(--nav-height));
-      display:flex; align-items:flex-start;
-      justify-content:center;
-      padding: 0;
-      z-index:1;
-      overflow:hidden;
-      width:100%;
-      isolation:isolate;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 0 80px;   /* generous breathing room from nav + bottom */
+      z-index: 1;
+      overflow: hidden;
+      isolation: isolate;
     }
     .hero-grid{
-      display:flex;
-      justify-content:center;
-      align-items:center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
     }
+    /* Text block — sits above the Three.js canvas (z-index:2 vs canvas z-index:1/3) */
     .hero-left{
-      position:relative;
-      z-index:2;
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      max-width:680px;
-      align-items:center;
-      text-align:center;
-      width:100%;
-      margin:0 auto;
-      padding-top: 48px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 720px;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      margin: 0 auto;
+
+      /* frosted backdrop so text stays legible when car passes behind */
+      background: rgba(5, 5, 8, 0.45);
+      backdrop-filter: blur(4px);
+      border-radius: 32px;
+      padding: 48px 56px;
+      border: 1px solid rgba(255,255,255,0.05);
     }
+    @media (max-width: 700px){
+      .hero-left{ padding: 36px 28px; }
+      .hero{ padding: 60px 0; }
+    }
+
     .hero-kicker{ display:flex; gap:10px; align-items:center; justify-content:center; }
-    .hero-kicker-line{ width:26px; height:1px; background:linear-gradient(to right,var(--accent-main),var(--accent-cyan)); }
-    .hero-kicker span{ font-size:11px; text-transform:uppercase; letter-spacing:0.18em; color:var(--accent-cyan); }
+    .hero-kicker-line{
+      width: 32px; height: 2px; border-radius:999px;
+      background: linear-gradient(to right, var(--accent-main), var(--accent-cyan));
+    }
+    .hero-kicker span{ font-size:11px; text-transform:uppercase; letter-spacing:0.22em; color:var(--accent-cyan); }
+
+    /* ↑↑ BIGGER TITLE — was clamp(40px,7vw,62px) */
     .hero-title{
-      font-family:"Bebas Neue";
-      font-size: clamp(40px, 7vw, 62px);
-      line-height:0.9;
-      text-transform:uppercase;
+      font-family: "Bebas Neue";
+      font-size: clamp(72px, 11vw, 120px);
+      line-height: 0.88;
+      text-transform: uppercase;
+      letter-spacing: 3px;
     }
     .hero-title span.highlight{
       background: linear-gradient(120deg, #3dff9f, #18C964, #ffdf40);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      text-shadow: 0 0 18px rgba(24,201,100,0.4);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
     }
-    .hero-sub{ font-size:14px; color:var(--text-muted); max-width:620px; }
-    .hero-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; justify-content:center; }
+    .hero-sub{
+      font-size: 16px; color: var(--text-muted);
+      max-width: 520px; line-height: 1.6;
+      margin: 0 auto;
+    }
+    .hero-actions{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
     .hero-meta{
-      display:flex; gap:20px; margin-top:10px; flex-wrap:wrap; justify-content:center;
+      display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
       font-size:11px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-muted);
     }
     .hero-meta-pill{
-      padding:4px 10px; border-radius:999px;
+      padding:4px 12px; border-radius:999px;
       background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .hero-stats{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .hero-stats{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
     .hero-stat-pill{
-      padding:4px 10px; border-radius:999px;
+      padding:5px 14px; border-radius:999px;
       background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      font-size:11px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size:12px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-muted);
     }
 
-    @media (max-width:900px){
-      .hero{ padding-top:4px; }
-    }
-    @media (max-width:600px){
-      .hero-meta{ flex-direction:column; align-items:flex-start; }
-      .hero-meta{ align-items:center; }
-    }
+    /* ── SECTIONS ── */
+    .section{ position:relative; padding:36px 0 48px; z-index:1; }
+    .section-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:10px; flex-wrap:wrap; }
+    .section-title{ font-family:"Bebas Neue"; font-size:28px; text-transform:uppercase; letter-spacing:0.12em; }
+    .section-sub{ font-size:13px; color:var(--text-muted); max-width:480px; line-height:1.5; margin-top:4px; }
 
-    .section{ position:relative; padding:42px 0; z-index:1; }
-    .section-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:10px; }
-    .section-title{ font-size:16px; text-transform:uppercase; letter-spacing:0.18em; }
-    .section-sub{ font-size:12px; color:var(--text-muted); max-width:420px; }
-
+    /* ── EVENTS STRIP ── */
     .events-strip{
       display:flex; gap:14px;
       overflow-x:auto; padding-bottom:6px;
@@ -291,7 +281,6 @@
     .events-strip::-webkit-scrollbar{ height:4px; }
     .events-strip::-webkit-scrollbar-track{ background:transparent; }
     .events-strip::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.16); border-radius:999px; }
-
     .event-card{
       flex: 0 0 min(280px, 78vw);
       border-radius: var(--radius-md);
@@ -301,55 +290,38 @@
       box-shadow: 0 16px 30px rgba(0,0,0,0.7);
       display:flex; flex-direction:column; gap:8px;
       scroll-snap-align:start;
-      transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med), background 0.25s ease-out;
+      transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
       cursor:pointer;
     }
     .event-card:hover{
-      transform: translateY(-4px) translateZ(0);
+      transform: translateY(-4px);
       border-color: rgba(24,201,100,0.55);
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
-      background: radial-gradient(circle at top left, rgba(24,201,100,0.22), rgba(5,5,8,1));
     }
-
     .event-tag{
       position:absolute; bottom:10px; left:10px;
       font-size:10px; text-transform:uppercase; letter-spacing:0.18em;
       padding:4px 10px; border-radius:999px;
-      background: rgba(0,0,0,0.65);
-      border: 1px solid rgba(255,255,255,0.24);
+      background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.24);
     }
-
     .event-body{ display:flex; flex-direction:column; gap:6px; }
     .event-title{ font-size:15px; font-weight:600; }
     .event-meta{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); gap:10px; }
     .event-status{
       font-size:10px; text-transform:uppercase; letter-spacing:0.18em;
       padding:3px 10px; border-radius:999px;
-      border:1px solid rgba(255,217,59,0.6);
-      color:var(--accent-secondary);
-      background: rgba(41,31,0,0.96);
-      white-space:nowrap;
+      border:1px solid rgba(255,217,59,0.6); color:var(--accent-secondary);
+      background: rgba(41,31,0,0.96); white-space:nowrap;
     }
     .event-actions{ display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
     .btn-xs{ padding:6px 10px; font-size:10px; letter-spacing:0.16em; }
-    .btn-outline-light{
-      border-color: rgba(255,255,255,0.28);
-      color: var(--text-main);
-      background: rgba(0,0,0,0.3);
-    }
-    .btn-outline-light:hover{ background: rgba(255,255,255,0.06); }
-    .btn-outline-ghost{
-      border-color: rgba(255,255,255,0.12);
-      color: var(--text-muted);
-      background: transparent;
-    }
-    .btn-outline-ghost:hover{
-      border-color: rgba(255,255,255,0.2);
-      color: var(--text-main);
-      background: rgba(255,255,255,0.03);
-    }
+    .btn-outline-light{ border-color:rgba(255,255,255,0.28); color:var(--text-main); background:rgba(0,0,0,0.3); }
+    .btn-outline-light:hover{ background:rgba(255,255,255,0.06); }
+    .btn-outline-ghost{ border-color:rgba(255,255,255,0.12); color:var(--text-muted); background:transparent; }
+    .btn-outline-ghost:hover{ border-color:rgba(255,255,255,0.2); color:var(--text-main); background:rgba(255,255,255,0.03); }
 
-    .cards-grid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:16px; }
+    /* ── BUILD CARDS ── */
+    .cards-grid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:18px; }
     @media (max-width:900px){ .cards-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
     @media (max-width:640px){ .cards-grid{ grid-template-columns: minmax(0,1fr); } }
 
@@ -364,31 +336,29 @@
       transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
       cursor:pointer;
     }
-    .build-card:hover{ transform:translateY(-3px); border-color: rgba(255,217,59,0.7); box-shadow:0 20px 40px rgba(0,0,0,0.85); }
+    .build-card:hover{ transform:translateY(-4px); border-color: rgba(255,217,59,0.7); box-shadow:0 24px 48px rgba(0,0,0,0.88); }
     .build-image{
       position:relative; border-radius:14px;
-      overflow:hidden; height:135px;
-      background: linear-gradient(135deg, #181818, #292929);
+      overflow:hidden; height:190px;
+      background: radial-gradient(circle at top, #222, #0a0a0a);
     }
-    .build-image::before{
-      content:""; position:absolute; inset:-30%;
-      background:
-        radial-gradient(circle at 0 0, rgba(255,217,59,0.25), transparent 60%),
-        radial-gradient(circle at 100% 100%, rgba(24,201,100,0.40), transparent 60%);
-      mix-blend-mode:screen; opacity:0.9;
+    /* GLB model-viewer inside build card */
+    .build-image model-viewer{
+      width:100%; height:100%;
+      --poster-color: transparent;
+      --progress-bar-color: transparent;
     }
+    .build-image img{ width:100%; height:100%; object-fit:cover; display:block; }
     .build-owner{
-      position:absolute; left:10px; bottom:10px;
+      position:absolute; left:10px; bottom:10px; z-index:3;
       font-size:11px; padding:3px 9px; border-radius:999px;
-      background: rgba(0,0,0,0.72);
-      border: 1px solid rgba(255,255,255,0.24);
+      background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.24);
     }
     .build-chip{
-      position:absolute; right:10px; top:10px;
+      position:absolute; right:10px; top:10px; z-index:3;
       font-size:10px; text-transform:uppercase; letter-spacing:0.16em;
       padding:3px 9px; border-radius:999px;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2);
     }
     .build-body{ display:flex; flex-direction:column; gap:4px; margin-top:6px; }
     .build-title{ font-size:14px; font-weight:600; }
@@ -398,204 +368,107 @@
     .build-parish{
       font-size:10px; text-transform:uppercase; letter-spacing:0.16em;
       padding:3px 8px; border-radius:999px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
     }
     .build-like-btn{
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.18);
-      background:rgba(0,0,0,0.4);
-      padding:4px 10px;
-      font-size:11px;
-      cursor:pointer;
-      position:absolute;
-      bottom:10px;
-      left:10px;
+      border-radius:999px; border:1px solid rgba(255,255,255,0.18);
+      background:rgba(0,0,0,0.4); padding:4px 10px; font-size:11px;
+      cursor:pointer; position:absolute; bottom:10px; left:10px; z-index:3;
     }
 
+    /* ── SIGHTINGS ── */
     .sightings-grid{ display:grid; grid-template-columns: 1.35fr 1fr; gap:16px; }
     @media (max-width:900px){ .sightings-grid{ grid-template-columns:1fr; } }
     .sighting-main, .sighting-side-card{
       border-radius: var(--radius-md);
       border:1px solid var(--border-subtle);
       background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
-      padding:12px;
-      box-shadow: var(--shadow-soft);
-      position:relative;
-      overflow:hidden;
+      padding:12px; box-shadow: var(--shadow-soft); position:relative; overflow:hidden;
     }
     .sighting-media{
-      position:relative;
-      border-radius:14px;
-      height:160px;
-      overflow:hidden;
-      background: linear-gradient(135deg, #171717, #2a2a2a);
-      margin-bottom:10px;
+      position:relative; border-radius:14px; height:160px; overflow:hidden;
+      background: linear-gradient(135deg, #171717, #2a2a2a); margin-bottom:10px;
     }
     .sighting-badge{
       position:absolute; left:10px; bottom:10px;
       font-size:10px; padding:4px 10px; border-radius:999px;
-      background: rgba(0,0,0,0.75);
-      border: 1px solid rgba(255,255,255,0.22);
-      text-transform:uppercase; letter-spacing:0.18em;
-      z-index: 5;
+      background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.22);
+      text-transform:uppercase; letter-spacing:0.18em; z-index: 5;
     }
-    .sighting-meta-top{
-      display:flex; justify-content:space-between; align-items:center;
-      margin-bottom:4px; font-size:11px; color:var(--text-muted);
-    }
+    .sighting-meta-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:11px; color:var(--text-muted); }
     .sighting-title{ font-size:13px; margin-bottom:4px; }
     .sighting-caption{ font-size:12px; color:var(--text-muted); margin-bottom:8px; }
     .sighting-footer{ display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); }
     .pill-soft{
-      padding:3px 8px; border-radius:999px;
-      border:1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.4);
-      text-transform:uppercase; letter-spacing:0.14em; font-size:10px;
+      padding:3px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.4); text-transform:uppercase; letter-spacing:0.14em; font-size:10px;
     }
     .sighting-side-list{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
-    .sighting-side-item{
-      display:flex; justify-content:space-between; align-items:baseline;
-      gap:10px; font-size:11px; color:var(--text-muted);
-      cursor:pointer;
-    }
+    .sighting-side-item{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:11px; color:var(--text-muted); cursor:pointer; }
     .sighting-side-item span.label{ color:var(--text-main); font-size:12px; }
     .sighting-cta{ margin-top:10px; display:flex; justify-content:flex-end; }
 
+    /* ── SUBSCRIBE / FOOTER ── */
     .subscribe-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     .subscribe-input{
-      flex:1; min-width:220px;
-      background: rgba(5,5,10,0.9);
-      border:1px solid rgba(255,255,255,0.10);
-      color:#fff;
-      padding:10px 14px;
-      border-radius:999px;
-      outline:none;
-      font-size:14px;
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+      flex:1; min-width:220px; background: rgba(5,5,10,0.9);
+      border:1px solid rgba(255,255,255,0.10); color:#fff; padding:10px 14px;
+      border-radius:999px; outline:none; font-size:14px;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
-    .subscribe-input:focus-visible{
-      border-color: var(--accent-secondary);
-      box-shadow: 0 0 0 1px rgba(255,217,59,0.5);
-      background: rgba(5,5,10,1);
-    }
-
-    .footer{
-      margin-top:20px;
-      padding:24px 0 30px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      z-index:1;
-    }
-    .footer-main{
-      display:flex; justify-content:space-between;
-      gap:18px; align-items:center;
-      flex-wrap:wrap;
-    }
+    .subscribe-input:focus-visible{ border-color: var(--accent-secondary); box-shadow: 0 0 0 1px rgba(255,217,59,0.5); }
+    .footer{ margin-top:20px; padding:24px 0 30px; border-top: 1px solid rgba(255,255,255,0.06); z-index:1; }
+    .footer-main{ display:flex; justify-content:space-between; gap:18px; align-items:center; flex-wrap:wrap; }
     .footer-left{ font-size:12px; color:var(--text-muted); }
-    .footer-right{
-      display:flex; gap:12px;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:0.16em;
-    }
+    .footer-right{ display:flex; gap:12px; font-size:12px; text-transform:uppercase; letter-spacing:0.16em; }
     .footer-link{ cursor:pointer; color:var(--text-muted); }
     .footer-link:hover{ color:var(--text-main); }
-    .footer-tagline{
-      margin-top:4px;
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.16em;
-      color:var(--accent-cyan);
-    }
+    .footer-tagline{ margin-top:4px; font-size:11px; text-transform:uppercase; letter-spacing:0.16em; color:var(--accent-cyan); }
+    @media (max-width:600px){ .section-header{ flex-direction:column; align-items:flex-start; } }
 
-    @media (max-width:600px){
-      .section-header{ flex-direction:column; align-items:flex-start; }
-    }
-
-    /* =========================
-       ✅ PREMIUM MEDIA (DROP-IN)
-       ========================= */
+    /* ── MEDIA HELPERS ── */
     .media-wrap{
-      position:relative;
-      border-radius:16px;
-      overflow:hidden;
-      background: linear-gradient(135deg, #171717, #262626);
-      isolation:isolate;
+      position:relative; border-radius:16px; overflow:hidden;
+      background: linear-gradient(135deg, #171717, #262626); isolation:isolate;
     }
-    .media-wrap img,
-    .media-wrap video{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
+    .media-wrap img, .media-wrap video{ width:100%; height:100%; object-fit:cover; display:block; }
     .media-overlay{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
+      position:absolute; inset:0; pointer-events:none;
       background:
         radial-gradient(circle at 10% 10%, rgba(255,217,59,0.22), transparent 60%),
         radial-gradient(circle at 80% 80%, rgba(24,201,100,0.32), transparent 60%);
-      mix-blend-mode: screen;
-      opacity: 0.9;
-      z-index: 2;
+      mix-blend-mode: screen; opacity: 0.9; z-index: 2;
     }
     .play-badge{
-      position:absolute;
-      right:10px;
-      bottom:10px;
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:.16em;
-      padding:4px 10px;
-      border-radius:999px;
-      background: rgba(0,0,0,0.72);
-      border: 1px solid rgba(255,255,255,0.22);
-      z-index: 4;
+      position:absolute; right:10px; bottom:10px; font-size:10px;
+      text-transform:uppercase; letter-spacing:.16em; padding:4px 10px;
+      border-radius:999px; background:rgba(0,0,0,0.72); border:1px solid rgba(255,255,255,0.22); z-index:4;
     }
     .blur-up{
-      filter: blur(18px);
-      transform: scale(1.06);
-      opacity: 0.92;
+      filter: blur(18px); transform: scale(1.06); opacity: 0.92;
       transition: filter 520ms ease, transform 520ms ease, opacity 520ms ease;
-      will-change: filter, transform, opacity;
     }
-    .blur-up.is-loaded{
-      filter: blur(0);
-      transform: scale(1);
-      opacity: 1;
-    }
-    .hover-play{
-      cursor:pointer;
-    }
+    .blur-up.is-loaded{ filter: blur(0); transform: scale(1); opacity: 1; }
+    .hover-play{ cursor:pointer; }
     .hover-play::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: rgba(0,0,0,0.00);
-      transition: background 180ms ease;
-      z-index: 3;
-      pointer-events:none;
+      content:""; position:absolute; inset:0; background:rgba(0,0,0,0);
+      transition: background 180ms ease; z-index:3; pointer-events:none;
     }
-    .hover-play:hover::after{
-      background: rgba(0,0,0,0.06);
-    }
+    .hover-play:hover::after{ background:rgba(0,0,0,0.06); }
   </style>
 </head>
 
 <body>
   <!-- LOADING SCREEN -->
   <div id="loader" style="
-    position: fixed; inset: 0; z-index: 9999;
-    background: #090909;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    opacity: 1; transition: opacity 0.5s ease;
+    position:fixed;inset:0;z-index:9999;background:#090909;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    opacity:1;transition:opacity 0.5s ease;
   ">
-    <img src="Assets/racing.gif" alt="Loading" style="width: 220px; max-width: 80vw; height: auto; margin-bottom: 16px;" />
-    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 0.3em; color: rgba(255,255,255,0.35); text-transform: uppercase;">Starting engine…</div>
-    <div style="margin-top: 20px; width: 160px; height: 2px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;">
-      <div id="loader-bar" style="height: 100%; width: 0%; background: #dc1e1e; border-radius: 2px; transition: width 0.1s linear;"></div>
+    <img src="Assets/racing.gif" alt="Loading" style="width:220px;max-width:80vw;height:auto;margin-bottom:16px;" />
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.3em;color:rgba(255,255,255,0.35);text-transform:uppercase;">Starting engine…</div>
+    <div style="margin-top:20px;width:160px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+      <div id="loader-bar" style="height:100%;width:0%;background:#dc1e1e;border-radius:2px;transition:width 0.1s linear;"></div>
     </div>
   </div>
 
@@ -603,122 +476,106 @@
 
     <!-- NAV -->
     <div class="nav-wrapper" id="navWrapper">
-  <div class="container nav">
-
-    <a href="./index.html" class="logo">
-      <div class="logo-mark">
-        <img src="Assets/logo.png" alt="ROK Racers JA logo">
-      </div>
-      <div>
-        <div class="logo-text-main">ROK RACERS JA</div>
-        <div class="logo-text-sub">Motorsport Community</div>
-      </div>
-    </a>
-
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="./events.html">Events</a>
-      <a href="./garage.html">Garage</a>
-      <a href="./teams.html">Community</a>
-      <a href="./live.html">Live</a>
-      <a href="./highlights.html">Feed</a>
-      <a href="./marketplace.html">Marketplace</a>
-      <a href="./store.html">Store</a>
-    </nav>
-
-    <div class="nav-cta">
-      <!-- auth-ui.js looks for these IDs and wires them up -->
-      <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
-      <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
-
-      <div id="profileMenu" class="profile-menu" style="display:none">
-        <div id="profileChip"
-             class="profile-chip"
-             aria-haspopup="true"
-             aria-expanded="false"
-             title="Account menu">
-          <span id="profileInitials">U</span>
-        </div>
-
-        <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-          <div class="dd-head">
-            <div class="dd-title">Signed in as</div>
-            <div class="dd-email" id="ddEmail">—</div>
+      <div class="container nav">
+        <a href="./index.html" class="logo">
+          <div class="logo-mark">
+            <img src="Assets/logo.png" alt="ROK Racers JA logo">
           </div>
+          <div>
+            <div class="logo-text-main">ROK RACERS JA</div>
+            <div class="logo-text-sub">Motorsport Community</div>
+          </div>
+        </a>
 
-          <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
-          <div class="dd-sep"></div>
-          <a href="/garage.html?view=my">My Garage</a>
-          <a href="./tickets.html">My Tickets</a>
-          <a href="./likes-build.html">Liked Builds</a>
-          <a href="./likes-sightings.html">Liked Sightings</a>
-          <a href="./teams.html">My Teams</a>
-          <a id="myEventsLink" href="./admin-events.html" style="display:none">
-            My Events <span class="dd-badge">Promoter</span>
-          </a>
-          <div class="dd-sep"></div>
-          <button id="signoutBtn" type="button">Sign out</button>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="./events.html">Events</a>
+          <a href="./garage.html">Garage</a>
+          <a href="./teams.html">Community</a>
+          <a href="./live.html">Live</a>
+          <a href="./highlights.html">Feed</a>
+          <a href="./marketplace.html">Marketplace</a>
+          <a href="./store.html">Store</a>
+        </nav>
+
+        <!-- auth-ui.js v3 supports both loginBtn and navSignInBtn IDs -->
+        <div class="nav-cta">
+          <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
+          <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+          <div id="profileMenu" class="profile-menu" style="display:none">
+            <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+              <span id="profileInitials">U</span>
+            </div>
+            <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+              <div class="dd-head">
+                <div class="dd-title">Signed in as</div>
+                <div class="dd-email" id="ddEmail">—</div>
+              </div>
+              <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+              <div class="dd-sep"></div>
+              <a href="./garage.html?view=my">My Garage</a>
+              <a href="./tickets.html">My Tickets</a>
+              <a href="./likes-build.html">Liked Builds</a>
+              <a href="./likes-sightings.html">Liked Sightings</a>
+              <a href="./teams.html">My Teams</a>
+              <a id="myEventsLink" href="./admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+              <div class="dd-sep"></div>
+              <button id="signoutBtn" type="button">Sign out</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-  </div>
-</div>
-
-    <!-- HERO -->
+    <!-- HERO — drift animation canvas is injected here by drift-animation.js -->
     <main class="hero">
       <div class="container" style="width:100%;display:flex;justify-content:center;">
-      <div class="hero-grid">
-        <section class="hero-left">
-          <div class="hero-kicker">
-            <div class="hero-kicker-line"></div>
-            <span>Jamaica · Motorsport · Night Shift</span>
-          </div>
-
-          <h1 class="hero-title">
-            Jamaica<br>
-            <span class="highlight">motorsport grid</span><br>
-          </h1>
-
-          <p class="hero-sub">
-            ROK Racers JA is the home for Jamaican car culture — track days, street meets, garages and builds.
-            Discover events, flex your build, and see who's really outside tonight.
-          </p>
-
-          <div class="hero-actions">
-            <button class="btn btn-primary" type="button" onclick="location.href='./events.html'">View Upcoming Events</button>
-            <button class="btn btn-ghost" type="button" onclick="location.href='./garage.html'">View all builds</button>
-          </div>
-
-          <div class="hero-meta">
-            <div class="hero-meta-pill">
-              Live in: <strong>Kingston · Montego Bay · Ocho Rios</strong>
+        <div class="hero-grid">
+          <section class="hero-left">
+            <div class="hero-kicker">
+              <div class="hero-kicker-line"></div>
+              <span>Jamaica · Motorsport · Night Shift</span>
             </div>
-          </div>
 
-          <div class="hero-stats">
-            <div class="hero-stat-pill">120+ Builds</div>
-            <div class="hero-stat-pill">20+ Promoters</div>
-            <div class="hero-stat-pill">1 Island</div>
-          </div>
-        </section>
+            <h1 class="hero-title">
+              Jamaica<br>
+              <span class="highlight">motorsport grid</span>
+            </h1>
 
-      </div>
+            <p class="hero-sub">
+              ROK Racers JA is the home for Jamaican car culture — track days, street meets, garages and builds.
+              Discover events, flex your build, and see who's really outside tonight.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-primary" type="button" onclick="location.href='./events.html'">View Upcoming Events</button>
+              <button class="btn btn-ghost"   type="button" onclick="location.href='./garage.html'">View all builds</button>
+            </div>
+
+            <div class="hero-meta">
+              <div class="hero-meta-pill">Live in: <strong>Kingston · Montego Bay · Ocho Rios</strong></div>
+            </div>
+
+            <div class="hero-stats">
+              <div class="hero-stat-pill">120+ Builds</div>
+              <div class="hero-stat-pill">20+ Promoters</div>
+              <div class="hero-stat-pill">1 Island</div>
+            </div>
+          </section>
+        </div>
       </div>
     </main>
 
-    <!-- EVENTS -->
+    <!-- EVENTS — 5 most recent -->
     <section class="section">
       <div class="container">
         <div class="section-header">
           <div>
             <h2 class="section-title">Upcoming Runs & Track Days</h2>
-            <p class="section-sub">
-              Lock in your next night out. From Vernamfield runs to Kingston gas station link-ups, this is where the grid forms.
-            </p>
+            <p class="section-sub">Lock in your next night out. From Vernamfield runs to Kingston gas station link-ups, this is where the grid forms.</p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./events.html'">View All Events</button>
         </div>
-
         <div id="eventsStrip" class="events-strip" aria-live="polite">
           <article class="event-card">
             <div class="event-body">
@@ -730,29 +587,18 @@
       </div>
     </section>
 
-    <!-- TOP BUILDS -->
+    <!-- TOP 3 BUILDS — GLB first, photo fallback -->
     <section class="section">
       <div class="container">
         <div class="section-header">
           <div>
             <h2 class="section-title">Top Builds in the Garage</h2>
-            <p class="section-sub">
-              The island's most-liked builds — street, track, and show specials. Drop your own and see where it lands.
-            </p>
+            <p class="section-sub">The island's most-liked builds — street, track, and show specials. Drop your own and see where it lands.</p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./garage.html'">View all builds</button>
         </div>
-
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./build-new.html'">Start My First Build</button>
-        </div>
-
         <div id="top-builds-grid" class="cards-grid" aria-live="polite">
-          <article class="build-card">
-            <div class="build-body">
-              <div class="build-title">Warming up the dyno…</div>
-            </div>
-          </article>
+          <article class="build-card"><div class="build-body"><div class="build-title">Warming up the dyno…</div></div></article>
         </div>
       </div>
     </section>
@@ -763,13 +609,10 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Sightings Across the Island</h2>
-            <p class="section-sub">
-              Gas station link-ups, toll runs, late-night pulls — see what's been spotted in real time.
-            </p>
+            <p class="section-sub">Gas station link-ups, toll runs, late-night pulls — see what's been spotted in real time.</p>
           </div>
-          <button class="btn btn-ghost btn-pill-sm" type="button" id="uploadSightingBtn" onclick="location.href='./sightings-new.html'"> Upload a Sighting </button>
+          <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./sightings-new.html'">Upload a Sighting</button>
         </div>
-
         <div class="sightings-grid">
           <article id="sightingMain" class="sighting-main">
             <div class="sighting-media" id="sightingMainMedia">
@@ -786,20 +629,14 @@
               <span>View Thread →</span>
             </div>
           </article>
-
           <aside class="sighting-side-card">
             <div class="sighting-meta-top">
               <span>Island feed</span>
-              <span style="font-size:11px; color:var(--accent-cyan);">Live · Updated</span>
+              <span style="font-size:11px;color:var(--accent-cyan);">Live · Updated</span>
             </div>
-
             <div id="sightingSideList" class="sighting-side-list">
-              <div class="sighting-side-item">
-                <span class="label">Loading more sightings…</span>
-                <span>…</span>
-              </div>
+              <div class="sighting-side-item"><span class="label">Loading more sightings…</span><span>…</span></div>
             </div>
-
             <div class="sighting-cta">
               <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./sightings.html'">View All Sightings</button>
             </div>
@@ -814,15 +651,12 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Highlights & Stories</h2>
-            <p class="section-sub">
-              Features, recaps and drops from the paddock — a quick taste of what's happening beyond the grid.
-            </p>
+            <p class="section-sub">Features, recaps and drops from the paddock — a quick taste of what's happening beyond the grid.</p>
           </div>
           <button class="btn btn-ghost btn-pill-sm" type="button" onclick="location.href='./highlights.html'">View All Highlights</button>
         </div>
-
         <div id="highlightsGrid" class="cards-grid" aria-live="polite">
-          <article class="sighting-main"><p class="section-sub">Loading highlights…</p></article>
+          <article class="sighting-main"><p style="color:var(--text-muted);font-size:13px;">Loading highlights…</p></article>
         </div>
       </div>
     </section>
@@ -833,22 +667,15 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Join the mailing list</h2>
-            <p class="section-sub">
-              Weekly drops: upcoming meets, top sightings, and community picks — straight from the island's grid.
-            </p>
+            <p class="section-sub">Weekly drops: upcoming meets, top sightings, and community picks — straight from the island's grid.</p>
           </div>
         </div>
-
         <form class="subscribe-row" onsubmit="return subscribe(event)" aria-label="Newsletter signup">
           <label class="sr-only" for="newsletterEmail">Email address</label>
-          <input id="newsletterEmail" name="email" type="email" required autocomplete="email"
-                 placeholder="you@email.com" class="subscribe-input" />
+          <input id="newsletterEmail" name="email" type="email" required autocomplete="email" placeholder="you@email.com" class="subscribe-input" />
           <button type="submit" class="btn btn-primary btn-pill-sm">Subscribe</button>
         </form>
-
-        <p id="subscribeMsg" class="section-sub" style="margin-top:10px; display:none;">
-          Thanks! We'll send updates soon.
-        </p>
+        <p id="subscribeMsg" class="section-sub" style="margin-top:10px;display:none;">Thanks! We'll send updates soon.</p>
       </div>
     </section>
 
@@ -868,401 +695,359 @@
     </footer>
   </div>
 
-  <!-- ✅ NO inline auth modal — auth-ui.js injects it -->
-
   <script>
-    // ===== Nav solid on scroll =====
+    // ── Nav scroll solid ──────────────────────────────────────────────────
     const navWrapper = document.getElementById('navWrapper');
     function updateNavSolid(){ navWrapper.classList.toggle('nav-solid', window.scrollY > 40); }
     updateNavSolid();
     window.addEventListener('scroll', updateNavSolid, { passive:true });
 
-    // ===== Subscribe =====
+    // ── Subscribe ─────────────────────────────────────────────────────────
     function subscribe(e){
       e.preventDefault();
-      const email = document.getElementById('newsletterEmail').value;
       document.getElementById('subscribeMsg').style.display = 'block';
       e.target.reset();
-      console.log('Captured email:', email);
       return false;
     }
     window.subscribe = subscribe;
 
-    // =========================
-    // ✅ PREMIUM MEDIA HELPERS
-    // =========================
-    const FALLBACK_MEDIA_IMG = "/Assets/logo.png";
+    // ── Media helpers ─────────────────────────────────────────────────────
+    const FALLBACK_MEDIA_IMG = "Assets/logo.png";
 
     function esc(s){
-      return String(s || '').replace(/[&<>"']/g, m => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-      }[m]));
+      return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    function renderMedia({ imageUrl, videoUrl, alt = "media", height = 140, badge = "", forceFallbackImage = true }){
-      const h = Number(height) || 140;
-      if (videoUrl){
-        return `
-          <div class="media-wrap hover-play" style="height:${h}px">
-            <video class="hover-video" src="${esc(videoUrl)}" muted playsinline preload="metadata" poster="${esc(FALLBACK_MEDIA_IMG)}"></video>
-            <div class="media-overlay"></div>
-            ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
-            <div class="play-badge">Video</div>
-          </div>`;
-      }
-      const finalImg = (imageUrl && String(imageUrl).trim()) ? imageUrl : (forceFallbackImage ? FALLBACK_MEDIA_IMG : "");
-      if (finalImg){
-        return `
-          <div class="media-wrap" style="height:${h}px">
-            <img class="blur-up" src="${esc(finalImg)}" alt="${esc(alt)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
-            <div class="media-overlay"></div>
-            ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
-          </div>`;
-      }
-      return `
-        <div class="media-wrap" style="height:${h}px">
+    function renderMedia({ imageUrl, videoUrl, alt="media", height=140, badge="" }){
+      const h = Number(height)||140;
+      if(videoUrl){
+        return `<div class="media-wrap hover-play" style="height:${h}px">
+          <video class="hover-video" src="${esc(videoUrl)}" muted playsinline preload="metadata" poster="${esc(FALLBACK_MEDIA_IMG)}"></video>
           <div class="media-overlay"></div>
-          ${badge ? `<div class="event-tag">${esc(badge)}</div>` : ``}
+          ${badge?`<div class="event-tag">${esc(badge)}</div>`:''}
+          <div class="play-badge">Video</div>
         </div>`;
+      }
+      const img = (imageUrl && String(imageUrl).trim()) ? imageUrl : FALLBACK_MEDIA_IMG;
+      return `<div class="media-wrap" style="height:${h}px">
+        <img class="blur-up" src="${esc(img)}" alt="${esc(alt)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+        <div class="media-overlay"></div>
+        ${badge?`<div class="event-tag">${esc(badge)}</div>`:''}
+      </div>`;
     }
 
-    // ✅ Video autoplay on hover
-    function bindHoverAutoplay(root = document){
-      root.addEventListener('mouseenter', async (e)=>{
-        const wrap = e.target.closest?.('.hover-play');
-        if (!wrap) return;
-        const v = wrap.querySelector('video.hover-video');
-        if (!v) return;
-        try{ v.loop = true; v.muted = true; if (v.readyState < 2) v.load(); await v.play(); } catch {}
-      }, true);
-
-      root.addEventListener('mouseleave', (e)=>{
-        const wrap = e.target.closest?.('.hover-play');
-        if (!wrap) return;
-        const v = wrap.querySelector('video.hover-video');
-        if (!v) return;
-        try{ v.pause(); v.currentTime = 0; } catch {}
-      }, true);
-
-      root.addEventListener('click', async (e)=>{
-        const wrap = e.target.closest?.('.hover-play');
-        if (!wrap) return;
-        const v = wrap.querySelector('video.hover-video');
-        if (!v) return;
-        e.preventDefault(); e.stopPropagation();
-        try{
-          if (v.paused){ v.loop = true; v.muted = true; if (v.readyState < 2) v.load(); await v.play(); }
-          else { v.pause(); v.currentTime = 0; }
-        } catch {}
-      }, true);
+    // Video hover autoplay
+    function bindHoverAutoplay(root=document){
+      root.addEventListener('mouseenter',async(e)=>{
+        const w=e.target.closest?.('.hover-play'); if(!w) return;
+        const v=w.querySelector('video.hover-video'); if(!v) return;
+        try{v.loop=true;v.muted=true;if(v.readyState<2)v.load();await v.play();}catch{}
+      },true);
+      root.addEventListener('mouseleave',(e)=>{
+        const w=e.target.closest?.('.hover-play'); if(!w) return;
+        const v=w.querySelector('video.hover-video'); if(!v) return;
+        try{v.pause();v.currentTime=0;}catch{}
+      },true);
     }
 
-    // ===== Top 5 builds =====
+    // ── TOP 3 BUILDS — GLB first, photo fallback ──────────────────────────
     async function loadTopBuilds(){
       const grid = document.getElementById('top-builds-grid');
-      if (!grid) return;
+      if(!grid) return;
       grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Warming up the dyno…</div></div></article>`;
 
-      // Try enriched view; fall back to raw builds table if view not deployed yet
       let data, error;
-      ({ data, error } = await supabase
-        .from('public_builds_with_like_count_and_trophies')
-        .select('id,title,like_count,thumb_url,parish,owner_handle,build_type,trophy_labels')
-        .order('like_count', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(5));
 
-      if (error){
-        console.warn('builds view unavailable, falling back to raw table:', error.message);
-        ({ data, error } = await supabase
+      // Try enriched view first (has glb_url, like_count, owner_handle)
+      ({data,error} = await supabase
+        .from('public_builds_with_like_count_and_trophies')
+        .select('id,title,like_count,thumb_url,glb_url,parish,owner_handle,build_type,trophy_labels')
+        .order('like_count',{ascending:false})
+        .order('created_at',{ascending:false})
+        .limit(3));
+
+      if(error){
+        console.warn('builds view unavailable, falling back:', error.message);
+        ({data,error} = await supabase
           .from('builds')
-          .select('id,title,thumb_url,parish,build_type,created_at')
-          .eq('is_public', true)
-          .order('created_at', { ascending: false })
-          .limit(5));
-        if (!error && data) data = data.map(b => ({ ...b, like_count: 0, owner_handle: null, trophy_labels: [] }));
+          .select('id,title,thumb_url,glb_url,parish,build_type,created_at')
+          .eq('is_public',true)
+          .order('created_at',{ascending:false})
+          .limit(3));
+        if(!error && data) data = data.map(b=>({...b,like_count:0,owner_handle:null,trophy_labels:[]}));
       }
 
-      if (error){
-        console.error('builds load failed:', error);
+      if(error){
         grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">Couldn't load builds right now.</div></div></article>`;
         return;
       }
-      if (!data?.length){
-        grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">No public builds on the grid yet.</div></div></article>`;
+      if(!data?.length){
+        grid.innerHTML = `<article class="build-card"><div class="build-body"><div class="build-title">No public builds yet.</div></div></article>`;
         return;
       }
 
-      // ✅ Use authUI.getUser() — never call supabase.auth.getUser() directly
       const currentUser = authUI.getUser();
       let likedSet = new Set();
-      if (currentUser?.id){
-        const { data: liked } = await supabase
-          .from('build_likes')
-          .select('build_id')
-          .in('build_id', data.map(b => b.id))
+      if(currentUser?.id){
+        const {data:liked} = await supabase
+          .from('build_likes').select('build_id')
+          .in('build_id', data.map(b=>b.id))
           .eq('user_id', currentUser.id);
-        likedSet = new Set((liked || []).map(r => r.build_id));
+        likedSet = new Set((liked||[]).map(r=>r.build_id));
       }
 
       grid.innerHTML = data.map(b => {
         const isLiked = likedSet.has(b.id);
-        const heart = isLiked ? '♥' : '♡';
-        const img = b.thumb_url
-          ? `<img class="blur-up" src="${esc(b.thumb_url)}" alt="${esc(b.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;">`
-          : `<img class="blur-up" src="${FALLBACK_MEDIA_IMG}" alt="Build" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')" style="width:100%;height:100%;object-fit:cover;opacity:.92;">`;
-        const owner = b.owner_handle ? '@' + b.owner_handle : 'Build owner';
-        const type  = b.build_type || 'Build';
+        const heart   = isLiked ? '♥' : '♡';
+        const owner   = b.owner_handle ? '@'+b.owner_handle : 'Build owner';
+        const type    = b.build_type || 'Build';
+
+        // GLB-first: live 3D viewer if glb_url exists, otherwise photo thumbnail
+        const mediaHtml = b.glb_url
+          ? `<model-viewer
+               src="${esc(b.glb_url)}"
+               ${b.thumb_url?`poster="${esc(b.thumb_url)}"`:''}
+               alt="${esc(b.title||'Build')}"
+               camera-controls
+               auto-rotate
+               auto-rotate-delay="800"
+               rotation-per-second="25deg"
+               exposure="1.1"
+               shadow-intensity="0.6"
+               environment-image="neutral"
+               interaction-prompt="none"
+             ></model-viewer>
+             <div class="build-chip">3D · ${esc(type)}</div>`
+          : `<img class="blur-up" src="${esc(b.thumb_url||FALLBACK_MEDIA_IMG)}" alt="${esc(b.title||'Build')}"
+               loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+             <div class="build-chip">${esc(type)}</div>`;
+
         return `
           <article class="build-card" data-build="${b.id}">
             <div class="build-image">
-              ${img}
+              ${mediaHtml}
               <div class="build-owner">${esc(owner)}</div>
-              <div class="build-chip">${esc(type)}</div>
             </div>
-            <div class="build-body"><div class="build-title">${esc(b.title || 'Untitled build')}</div></div>
+            <div class="build-body"><div class="build-title">${esc(b.title||'Untitled build')}</div></div>
             <div class="build-footer">
-              <div class="build-stats"><div class="build-likes">❤ <span class="likes">${b.like_count || 0}</span></div></div>
-              <div class="build-parish">${esc(b.parish || '')}</div>
+              <div class="build-stats"><div class="build-likes">❤ <span class="likes">${b.like_count||0}</span></div></div>
+              <div class="build-parish">${esc(b.parish||'')}</div>
             </div>
-            <button class="build-like-btn" data-like aria-pressed="${isLiked ? 'true' : 'false'}"
-              title="${currentUser ? (isLiked ? 'Remove boost' : 'Boost') : 'Sign in to boost'}" type="button">${heart}</button>
+            <button class="build-like-btn" data-like aria-pressed="${isLiked?'true':'false'}"
+              title="${currentUser?(isLiked?'Remove boost':'Boost'):'Sign in to boost'}" type="button">${heart}</button>
           </article>`;
       }).join('');
 
-      grid.onclick = async (e) => {
+      grid.onclick = async(e) => {
         const btn  = e.target.closest('[data-like]');
         const card = e.target.closest('.build-card');
-        if (!card) return;
+        if(!card) return;
         const buildId = card.dataset.build;
-        if (btn){
+        if(btn){
           const likesEl = card.querySelector('.likes');
           const loggedIn = await authUI.requireLogin();
-          if (!loggedIn) return;
+          if(!loggedIn) return;
           const user = authUI.getUser();
-          const { data: existing } = await supabase
-            .from('build_likes').select('build_id')
-            .eq('build_id', buildId).eq('user_id', user.id).maybeSingle();
-          if (existing){
-            await supabase.from('build_likes').delete().eq('build_id', buildId).eq('user_id', user.id);
-            btn.textContent = '♡'; btn.setAttribute('aria-pressed','false');
-            likesEl.textContent = Math.max(0, (parseInt(likesEl.textContent)||0) - 1);
+          const {data:existing} = await supabase.from('build_likes').select('build_id')
+            .eq('build_id',buildId).eq('user_id',user.id).maybeSingle();
+          if(existing){
+            await supabase.from('build_likes').delete().eq('build_id',buildId).eq('user_id',user.id);
+            btn.textContent='♡'; btn.setAttribute('aria-pressed','false');
+            likesEl.textContent = Math.max(0,(parseInt(likesEl.textContent)||0)-1);
           } else {
-            await supabase.from('build_likes').insert({ build_id: buildId, user_id: user.id });
-            btn.textContent = '♥'; btn.setAttribute('aria-pressed','true');
-            likesEl.textContent = (parseInt(likesEl.textContent)||0) + 1;
+            await supabase.from('build_likes').insert({build_id:buildId,user_id:user.id});
+            btn.textContent='♥'; btn.setAttribute('aria-pressed','true');
+            likesEl.textContent = (parseInt(likesEl.textContent)||0)+1;
           }
           return;
         }
-        location.href = `/build.html?id=${buildId}`;
+        // If user clicked on the model-viewer itself, don't navigate
+        if(e.target.closest('model-viewer')) return;
+        location.href = `./build.html?id=${buildId}`;
       };
     }
 
-    // ===== Events (5 most recent) =====
+    // ── EVENTS (5 most recent) ────────────────────────────────────────────
     async function loadFrontEvents(){
       const strip = document.getElementById('eventsStrip');
-      if (!strip) return;
+      if(!strip) return;
 
-      const { data: events, error } = await supabase
+      const {data:events,error} = await supabase
         .from('events')
-        .select('id,title,starts_at,ends_at,location,promoter_handle,created_at,cover_url,parish')
-        .order('created_at', { ascending: false })
+        .select('id,title,starts_at,location,promoter_handle,created_at,cover_url,parish')
+        .order('starts_at',{ascending:true})
+        .gte('starts_at', new Date().toISOString())  // upcoming only
         .limit(5);
 
-      if (error){
-        console.error('events load failed:', error);
-        strip.innerHTML = `<article class="event-card"><div class="event-body"><div class="event-title">Couldn't load events right now.</div></div></article>`;
-        return;
+      // fallback: if no upcoming, show 5 most recent regardless
+      let finalEvents = events;
+      if(error || !events?.length){
+        const {data:recent} = await supabase
+          .from('events')
+          .select('id,title,starts_at,location,promoter_handle,created_at,cover_url,parish')
+          .order('created_at',{ascending:false})
+          .limit(5);
+        finalEvents = recent;
       }
-      if (!events?.length){
+
+      if(!finalEvents?.length){
         strip.innerHTML = `<article class="event-card"><div class="event-body"><div class="event-title">No events posted yet.</div><div class="event-meta"><span>Be the first promoter to post.</span></div></div></article>`;
         return;
       }
 
-      // RSVP counts — gracefully skip if view not deployed yet
       let countsMap = new Map();
-      try {
-        const ids = events.map(ev => ev.id);
-        const { data: counts, error: cErr } = await supabase
-          .from('event_rsvp_counts').select('event_id,yes_count,maybe_count,no_count').in('event_id', ids);
-        if (!cErr && counts) countsMap = new Map(counts.map(c => [c.event_id, c]));
-      } catch { /* view not yet deployed */ }
+      try{
+        const ids = finalEvents.map(ev=>ev.id);
+        const {data:counts,error:cErr} = await supabase
+          .from('event_rsvp_counts').select('event_id,yes_count,maybe_count').in('event_id',ids);
+        if(!cErr && counts) countsMap = new Map(counts.map(c=>[c.event_id,c]));
+      }catch{}
 
-      function renderEvent(e){
+      strip.innerHTML = finalEvents.map(e => {
         const d = e.starts_at ? new Date(e.starts_at) : null;
-        const whenLabel = d ? d.toLocaleString('en-US',{ weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : 'TBA';
-        const promoter  = e.promoter_handle ? '@' + e.promoter_handle : '';
-        const counts    = countsMap.get(e.id) || { yes_count:0, maybe_count:0 };
-        const cover     = e.cover_url || FALLBACK_MEDIA_IMG;
+        const when = d ? d.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'TBA';
+        const promoter = e.promoter_handle ? '@'+e.promoter_handle : '';
+        const counts = countsMap.get(e.id)||{yes_count:0,maybe_count:0};
         return `
           <article class="event-card" data-id="${e.id}">
-            ${renderMedia({ imageUrl: cover, alt: e.title || 'Event cover', height: 140, badge: 'Event' })}
+            ${renderMedia({imageUrl:e.cover_url||FALLBACK_MEDIA_IMG,alt:e.title||'Event',height:140,badge:'Event'})}
             <div class="event-body">
-              <div class="event-title">${esc(e.title || 'Event')}</div>
-              <div class="event-meta"><span>${esc(whenLabel)}</span><span class="event-status">RSVP Open</span></div>
-              <div class="event-meta"><span>${esc(e.location || '')}</span><span>${esc(promoter)}</span></div>
+              <div class="event-title">${esc(e.title||'Event')}</div>
+              <div class="event-meta"><span>${esc(when)}</span><span class="event-status">RSVP Open</span></div>
+              <div class="event-meta"><span>${esc(e.location||'')}</span><span>${esc(promoter)}</span></div>
               <div class="event-meta" style="font-size:10px;margin-top:4px;">
                 <span>✅ ${counts.yes_count} going</span><span>🤔 ${counts.maybe_count} maybe</span>
               </div>
               <div class="event-actions">
                 <button class="btn btn-outline-light btn-xs" type="button" data-action="view">View Details</button>
-                <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">RSVP + Attach Build</button>
+                <button class="btn btn-outline-ghost btn-xs" type="button" data-action="rsvp">RSVP</button>
               </div>
             </div>
           </article>`;
-      }
-
-      strip.innerHTML = events.map(renderEvent).join('');
+      }).join('');
 
       strip.onclick = function(ev){
-        const actionBtn = ev.target.closest?.('[data-action]');
-        const card      = ev.target.closest('.event-card');
-        if (!card) return;
+        const actionBtn = ev.target.closest('[data-action]');
+        const card = ev.target.closest('.event-card');
+        if(!card) return;
         const id = card.dataset.id;
-        if (actionBtn){
+        if(actionBtn){
           const action = actionBtn.dataset.action;
-          if (action === 'view') location.href = `/event.html?id=${id}`;
-          if (action === 'rsvp') authUI.requireLogin().then(ok => { if (ok) location.href = `/event.html?id=${id}#rsvp`; });
+          if(action==='view') location.href=`./event.html?id=${id}`;
+          if(action==='rsvp') authUI.requireLogin().then(ok=>{if(ok)location.href=`./event.html?id=${id}#rsvp`;});
           return;
         }
-        location.href = `/event.html?id=${id}`;
+        location.href=`./event.html?id=${id}`;
       };
     }
 
-    // ===== Sightings (5 most recent: 1 featured + 4 side) =====
+    // ── SIGHTINGS ─────────────────────────────────────────────────────────
     async function loadFrontSightings(){
       const main      = document.getElementById('sightingMain');
       const sideList  = document.getElementById('sightingSideList');
       const mainMedia = document.getElementById('sightingMainMedia');
-      if (!main || !sideList || !mainMedia) return;
+      if(!main||!sideList||!mainMedia) return;
 
       const mainCaptionEl = main.querySelector('.sighting-caption');
       const mainTitleEl   = main.querySelector('.sighting-title');
       const mainMetaTop   = main.querySelector('.sighting-meta-top');
       const mainFooter    = main.querySelector('.sighting-footer');
 
-      // Try enriched view; fall back to raw sightings table
       let data, error;
-      ({ data, error } = await supabase
+      ({data,error} = await supabase
         .from('sightings_with_like_count')
         .select('id,title,caption,location,parish,image_url,video_url,created_at,like_count,comment_count,author_handle,category')
-        .order('created_at', { ascending: false })
-        .limit(5));
+        .order('created_at',{ascending:false}).limit(5));
 
-      if (error){
-        console.warn('sightings view unavailable, falling back:', error.message);
-        ({ data, error } = await supabase
+      if(error){
+        ({data,error} = await supabase
           .from('sightings')
           .select('id,title,caption,location,parish,image_url,video_url,created_at,author_handle,category')
-          .order('created_at', { ascending: false })
-          .limit(5));
-        if (!error && data) data = data.map(s => ({ ...s, like_count: 0, comment_count: 0 }));
+          .order('created_at',{ascending:false}).limit(5));
+        if(!error&&data) data=data.map(s=>({...s,like_count:0,comment_count:0}));
       }
 
-      if (error || !data?.length){
-        mainTitleEl.textContent   = error ? "Couldn't load sightings right now." : "Be the first to drop a sighting.";
-        mainCaptionEl.textContent = error ? "Refresh in a bit." : "Catch a link-up, a pull or a clean park-up and upload it here.";
-        mainMedia.innerHTML = renderMedia({ imageUrl: FALLBACK_MEDIA_IMG, alt:'Sighting', height:160 }) + `<div class="sighting-badge">Jamaica</div>`;
-        sideList.innerHTML = `<div class="sighting-side-item"><span class="label">Feed is quiet</span><span>Waiting for first drop</span></div>`;
+      if(error||!data?.length){
+        mainTitleEl.textContent   = error?"Couldn't load sightings.":"Be the first to drop a sighting.";
+        mainCaptionEl.textContent = "Catch a link-up, a pull or a clean park-up and upload it here.";
+        mainMedia.innerHTML = renderMedia({imageUrl:FALLBACK_MEDIA_IMG,alt:'Sighting',height:160})+`<div class="sighting-badge">Jamaica</div>`;
+        sideList.innerHTML = `<div class="sighting-side-item"><span class="label">Feed is quiet</span><span>—</span></div>`;
         return;
       }
 
       const first = data[0];
       const rest  = data.slice(1);
-      const locLine = [first.parish, first.location].filter(Boolean).join(' · ');
+      const locLine = [first.parish,first.location].filter(Boolean).join(' · ');
       const timeAgo = first.created_at ? new Date(first.created_at).toLocaleDateString() : '';
 
-      mainMedia.innerHTML = renderMedia({
-        imageUrl: first.image_url || FALLBACK_MEDIA_IMG,
-        videoUrl: first.video_url,
-        alt: first.title || 'Sighting',
-        height: 160
-      }) + `<div class="sighting-badge">${esc(locLine || 'Jamaica')}</div>`;
+      mainMedia.innerHTML = renderMedia({imageUrl:first.image_url||FALLBACK_MEDIA_IMG,videoUrl:first.video_url,alt:first.title||'Sighting',height:160})
+        +`<div class="sighting-badge">${esc(locLine||'Jamaica')}</div>`;
 
       const labelSpan = mainMetaTop.querySelector('span');
-      if (labelSpan) labelSpan.textContent = (first.author_handle ? '@'+first.author_handle : 'Sighting') + (timeAgo ? ' · ' + timeAgo : '');
+      if(labelSpan) labelSpan.textContent = (first.author_handle?'@'+first.author_handle:'Sighting')+(timeAgo?' · '+timeAgo:'');
       const pill = mainMetaTop.querySelector('.pill-soft');
-      if (pill) pill.textContent = first.category || 'Sighting';
-      mainTitleEl.textContent   = first.title || 'Sighting';
-      mainCaptionEl.textContent = first.caption || '';
+      if(pill) pill.textContent = first.category||'Sighting';
+      mainTitleEl.textContent   = first.title||'Sighting';
+      mainCaptionEl.textContent = first.caption||'';
       const statSpan = mainFooter.querySelector('span');
-      if (statSpan) statSpan.textContent = `❤ ${first.like_count || 0} · 💬 ${first.comment_count || 0}`;
-      main.onclick = () => { location.href = '/sighting.html?id=' + first.id; };
+      if(statSpan) statSpan.textContent = `❤ ${first.like_count||0} · 💬 ${first.comment_count||0}`;
+      main.onclick = ()=>{ location.href='./sighting.html?id='+first.id; };
 
-      if (!rest.length){
-        sideList.innerHTML = `<div class="sighting-side-item"><span class="label">No more sightings</span><span>—</span></div>`;
-        return;
-      }
-      sideList.innerHTML = rest.map(s => {
-        const loc    = [s.parish, s.location].filter(Boolean).join(' · ');
-        const when   = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
-        const handle = s.author_handle ? '@'+s.author_handle : '';
-        return `<div class="sighting-side-item" onclick="location.href='./sighting.html?id=${s.id}'">
-          <span class="label">${esc(loc || 'Jamaica')}</span>
-          <span>${esc(handle)}${handle && when ? ' · ' : ''}${esc(when)}</span>
-        </div>`;
-      }).join('');
+      sideList.innerHTML = rest.length
+        ? rest.map(s=>{
+            const loc=[s.parish,s.location].filter(Boolean).join(' · ');
+            const when=s.created_at?new Date(s.created_at).toLocaleDateString():'';
+            const handle=s.author_handle?'@'+s.author_handle:'';
+            return `<div class="sighting-side-item" onclick="location.href='./sighting.html?id=${s.id}'">
+              <span class="label">${esc(loc||'Jamaica')}</span>
+              <span>${esc(handle)}${handle&&when?' · ':''}${esc(when)}</span>
+            </div>`;
+          }).join('')
+        : `<div class="sighting-side-item"><span class="label">No more sightings</span><span>—</span></div>`;
     }
 
-    // ===== Highlights (5 most recent) =====
+    // ── HIGHLIGHTS (5 most recent) ────────────────────────────────────────
     async function loadFrontHighlights(){
       const grid = document.getElementById('highlightsGrid');
-      if (!grid) return;
+      if(!grid) return;
 
-      // Try enriched view; fall back to raw highlights table
       let data, error;
-      ({ data, error } = await supabase
+      ({data,error} = await supabase
         .from('highlights_with_like_count')
         .select('id,title,category,image_url,video_url,body,created_at,like_count')
-        .order('created_at', { ascending: false })
-        .limit(5));
+        .order('created_at',{ascending:false}).limit(5));
 
-      if (error){
-        console.warn('highlights view unavailable, falling back:', error.message);
-        ({ data, error } = await supabase
+      if(error){
+        ({data,error} = await supabase
           .from('highlights')
           .select('id,title,category,image_url,video_url,body,created_at')
-          .order('created_at', { ascending: false })
-          .limit(5));
-        if (!error && data) data = data.map(h => ({ ...h, like_count: 0 }));
+          .order('created_at',{ascending:false}).limit(5));
+        if(!error&&data) data=data.map(h=>({...h,like_count:0}));
       }
 
-      if (error){
-        console.error('highlights load failed:', error);
-        grid.innerHTML = `<article class="sighting-main"><p class="section-sub">Couldn't load highlights right now.</p></article>`;
-        return;
-      }
-      if (!data?.length){
-        grid.innerHTML = `<article class="sighting-main"><p class="section-sub">The paddock is quiet — new stories will land here soon.</p></article>`;
+      if(error||!data?.length){
+        grid.innerHTML = `<article class="sighting-main"><p style="color:var(--text-muted);font-size:13px;">${error?"Couldn't load highlights.":"The paddock is quiet — new stories will land here soon."}</p></article>`;
         return;
       }
 
-      grid.innerHTML = data.map(h => {
-        const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
-        const teaser  = (h.body || '').slice(0, 140);
-        const more    = (h.body && h.body.length > 140) ? '…' : '';
-        const media   = renderMedia({
-          imageUrl: h.image_url || FALLBACK_MEDIA_IMG,
-          videoUrl: h.video_url,
-          alt: h.title || 'Highlight',
-          height: 160,
-          badge: ''
-        });
+      grid.innerHTML = data.map(h=>{
+        const dateStr = h.created_at?new Date(h.created_at).toLocaleDateString():'';
+        const teaser  = (h.body||'').slice(0,140);
+        const more    = (h.body&&h.body.length>140)?'…':'';
         return `
           <article class="sighting-main" onclick="location.href='./highlight.html?id=${h.id}'" style="cursor:pointer">
-            ${media}
-            <div class="section-title" style="font-size:14px;letter-spacing:.14em;margin:10px 0 6px;">${esc(h.title || 'Highlight')}</div>
-            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${esc(h.category || '')}${h.category && dateStr ? ' · ' : ''}${esc(dateStr)}</p>
-            <p class="section-sub" style="max-width:none;">${esc(teaser)}${more}</p>
-            <p style="margin-top:8px;font-size:11px;color:var(--text-muted);">♥ ${h.like_count || 0}</p>
+            ${renderMedia({imageUrl:h.image_url||FALLBACK_MEDIA_IMG,videoUrl:h.video_url,alt:h.title||'Highlight',height:160})}
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;margin:10px 0 6px;">${esc(h.title||'Highlight')}</div>
+            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${esc(h.category||'')}${h.category&&dateStr?' · ':''}${esc(dateStr)}</p>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.5;">${esc(teaser)}${more}</p>
+            <p style="margin-top:8px;font-size:11px;color:var(--text-muted);">♥ ${h.like_count||0}</p>
           </article>`;
       }).join('');
     }
 
-    // ===== Boot — all four feeds load in parallel =====
+    // ── BOOT ─────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', async () => {
       bindHoverAutoplay(document);
-      // ✅ auth-ui.js handles auth state — no updateAuthUI() needed here
       await Promise.all([
         loadFrontEvents(),
         loadTopBuilds(),
@@ -1270,59 +1055,42 @@
         loadFrontHighlights()
       ]);
 
-      // ✅ Real-time updates for new sightings
+      // Real-time: reload sightings on new insert
       supabase.channel('public:sightings').on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'sightings', filter: 'is_public=eq.true' },
-        async () => {
-          console.log('✨ New sighting detected, reloading...');
-          // Auto-refresh sightings carousel every 30s if new posts
-          setTimeout(() => loadFrontSightings(), 2000);
-        }
+        {event:'INSERT',schema:'public',table:'sightings',filter:'is_public=eq.true'},
+        ()=>{ setTimeout(()=>loadFrontSightings(),2000); }
       ).subscribe();
 
-      // ✅ Real-time updates for new events
       supabase.channel('public:events').on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'events' },
-        async () => {
-          console.log('📅 New event posted, reloading...');
-          setTimeout(() => loadFrontEvents(), 2000);
-        }
+        {event:'INSERT',schema:'public',table:'events'},
+        ()=>{ setTimeout(()=>loadFrontEvents(),2000); }
       ).subscribe();
     });
   </script>
 
   <!-- LOADING SCREEN SCRIPT -->
   <script>
-  (function() {
+  (function(){
     const loader = document.getElementById('loader');
-    const bar = document.getElementById('loader-bar');
+    const bar    = document.getElementById('loader-bar');
     let progress = 0;
-
-    // Animate the progress bar with randomized increments
-    const interval = setInterval(() => {
-      progress = Math.min(progress + Math.random() * 18, 90);
-      bar.style.width = progress + '%';
+    const interval = setInterval(()=>{
+      progress = Math.min(progress + Math.random()*18, 90);
+      bar.style.width = progress+'%';
     }, 120);
-
-    // Hide once page is ready (min 1.2s so the animation isn't a flash)
-    const minTime = new Promise(r => setTimeout(r, 1200));
-    const pageReady = new Promise(r => {
-      if (document.readyState === 'complete') r();
-      else window.addEventListener('load', r);
-    });
-
-    Promise.all([minTime, pageReady]).then(() => {
+    const minTime  = new Promise(r=>setTimeout(r,1200));
+    const pageReady = new Promise(r=>{ if(document.readyState==='complete') r(); else window.addEventListener('load',r); });
+    Promise.all([minTime,pageReady]).then(()=>{
       clearInterval(interval);
-      bar.style.width = '100%';
-      setTimeout(() => {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.remove(), 500);
-      }, 300);
+      bar.style.width='100%';
+      setTimeout(()=>{
+        loader.style.opacity='0';
+        setTimeout(()=>loader.remove(),500);
+      },300);
     });
   })();
   </script>
 </body>
 </html>
-
