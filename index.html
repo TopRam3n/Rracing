@@ -200,27 +200,24 @@
       width: 100%;
     }
     /* Text block — sits above the Three.js canvas (z-index:2 vs canvas z-index:1/3) */
+    /* Text floats transparently over the Three.js drift canvas.
+       No background, no border — the car orbits bare text.
+       text-shadow keeps copy legible as the car passes behind. */
     .hero-left{
       position: relative;
       z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 20px;
-      max-width: 720px;
+      max-width: 680px;
       align-items: center;
       text-align: center;
       width: 100%;
       margin: 0 auto;
-
-      /* frosted backdrop so text stays legible when car passes behind */
-      background: rgba(5, 5, 8, 0.45);
-      backdrop-filter: blur(4px);
-      border-radius: 32px;
-      padding: 48px 56px;
-      border: 1px solid rgba(255,255,255,0.05);
+      padding: 0 24px;
     }
     @media (max-width: 700px){
-      .hero-left{ padding: 36px 28px; }
+      .hero-left{ padding: 0 16px; }
       .hero{ padding: 60px 0; }
     }
 
@@ -229,7 +226,7 @@
       width: 32px; height: 2px; border-radius:999px;
       background: linear-gradient(to right, var(--accent-main), var(--accent-cyan));
     }
-    .hero-kicker span{ font-size:11px; text-transform:uppercase; letter-spacing:0.22em; color:var(--accent-cyan); }
+    .hero-kicker span{ font-size:11px; text-transform:uppercase; letter-spacing:0.22em; color:var(--accent-cyan); filter:drop-shadow(0 0 8px rgba(0,0,0,1)); }
 
     /* ↑↑ BIGGER TITLE — was clamp(40px,7vw,62px) */
     .hero-title{
@@ -238,6 +235,7 @@
       line-height: 0.88;
       text-transform: uppercase;
       letter-spacing: 3px;
+      text-shadow: 0 0 40px rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 0 80px rgba(0,0,0,0.9);
     }
     .hero-title span.highlight{
       background: linear-gradient(120deg, #3dff9f, #18C964, #ffdf40);
@@ -247,23 +245,77 @@
       font-size: 16px; color: var(--text-muted);
       max-width: 520px; line-height: 1.6;
       margin: 0 auto;
+      text-shadow: 0 0 20px rgba(0,0,0,1), 0 1px 4px rgba(0,0,0,1);
     }
     .hero-actions{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
     .hero-meta{
       display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
       font-size:11px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-muted);
+      filter: drop-shadow(0 1px 8px rgba(0,0,0,0.9));
     }
     .hero-meta-pill{
       padding:4px 12px; border-radius:999px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(4px);
     }
     .hero-stats{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
     .hero-stat-pill{
       padding:5px 14px; border-radius:999px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.14);
       font-size:12px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-muted);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── HERO STAGGER SLIDE-UP ─────────────────────────────────────────
+       Each hero element starts invisible + 28px below, then slides into
+       place. Pure CSS — plays once on load, respects prefers-reduced-motion.
+       Delays are staggered so elements assemble one after the other while
+       the drift car is already orbiting.
+    ── */
+    @keyframes heroSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Base state: hidden until animation runs */
+    .hero-kicker,
+    .hero-title,
+    .hero-sub,
+    .hero-actions,
+    .hero-meta,
+    .hero-stats {
+      opacity: 0;
+      animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Stagger delays — each element 160ms after the previous */
+    .hero-kicker  { animation-delay: 0.15s; }
+    .hero-title   { animation-delay: 0.30s; }
+    .hero-sub     { animation-delay: 0.52s; }
+    .hero-actions { animation-delay: 0.68s; }
+    .hero-meta    { animation-delay: 0.82s; }
+    .hero-stats   { animation-delay: 0.92s; }
+
+    /* Honour reduced-motion — skip animation entirely */
+    @media (prefers-reduced-motion: reduce) {
+      .hero-kicker,
+      .hero-title,
+      .hero-sub,
+      .hero-actions,
+      .hero-meta,
+      .hero-stats {
+        opacity: 1;
+        animation: none;
+        transform: none;
+      }
     }
 
     /* ── SECTIONS ── */

@@ -105,7 +105,7 @@ export function initHeroDrift(heroEl, titleEl) {
   // ── Car GLB ───────────────────────────────────────────────
   // Try Assets/car.glb first (matches your folder structure), fallback to car.glb
   let carGroup = null;
-  const GLB_PATHS = ["Assets/car.glb", "car.glb", "/Assets/car.glb"];
+  const GLB_PATHS = ["car.glb", "car.glb", "car.glb"];
 
   function tryLoadGLB(paths, index = 0) {
     if (index >= paths.length) {
