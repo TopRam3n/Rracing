@@ -188,7 +188,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 80px 0 80px;   /* generous breathing room from nav + bottom */
+      padding: 24px 0 64px;   /* tight to nav — drift canvas fills the space */
       z-index: 1;
       overflow: hidden;
       isolation: isolate;
@@ -298,6 +298,53 @@
 
     /* ── SECTIONS ── */
     .section{ position:relative; padding:36px 0 48px; z-index:1; }
+
+    .ticker-wrap{
+      width:100%; overflow:hidden;
+      background: rgba(229,9,20,0.08);
+      border-top:1px solid rgba(229,9,20,0.2);
+      border-bottom:1px solid rgba(229,9,20,0.2);
+      padding:8px 0; position:relative; z-index:4;
+    }
+    .ticker-content{
+      display:inline-flex; gap:0;
+      white-space:nowrap;
+      animation: tickerScroll 28s linear infinite;
+    }
+    .ticker-content:hover{ animation-play-state:paused; }
+    @keyframes tickerScroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .ticker-item{
+      font-size:11px; text-transform:uppercase; letter-spacing:.2em;
+      color:rgba(255,255,255,0.7); padding:0 24px; font-weight:600;
+    }
+    .ticker-sep{ font-size:11px; color:rgba(229,9,20,0.7); padding:0 4px; line-height:1.4; }
+    .skid-divider{ width:100%; height:32px; margin:-8px 0 0; position:relative; z-index:4; opacity:0.9; }
+    .skid-divider svg{ width:100%; height:100%; display:block; }
+
+    /* Atmospheric dissolve between hero and content — no hard line */
+    .hero::after{
+      content:"";
+      position:absolute;
+      bottom:0; left:0; right:0;
+      height:160px;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        rgba(5,5,8,0.4) 40%,
+        rgba(5,5,8,0.85) 70%,
+        var(--bg-main, #050508) 100%
+      );
+      pointer-events:none;
+      z-index:3;
+    }
+    /* Speed blur radial glow at dissolve point */
+    .hero-dissolve-glow{
+      position:absolute;
+      bottom:-40px; left:50%; transform:translateX(-50%);
+      width:600px; height:120px;
+      background: radial-gradient(ellipse at center, rgba(18,139,2,0.12) 0%, transparent 70%);
+      pointer-events:none;
+      z-index:2;
+    }
     .section-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:10px; flex-wrap:wrap; }
     .section-title{ font-family:"Bebas Neue"; font-size:28px; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px; }
     .section-title::before{ content:""; display:block; width:3px; height:26px; border-radius:999px; background:linear-gradient(to bottom, var(--accent-main), transparent); flex-shrink:0; }
@@ -359,25 +406,32 @@
     .build-card{
       border-radius: var(--radius-md);
       border:1px solid var(--border-subtle);
-      background: radial-gradient(circle at top, rgba(255,255,255,0.08), rgba(10,10,10,0.96));
-      padding:10px;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(10,10,10,0.98));
+      padding:10px 10px 14px;
       box-shadow: var(--shadow-soft);
       display:flex; flex-direction:column; gap:6px;
-      overflow:hidden; position:relative;
+      overflow:visible;  /* allow 3D model-viewer to breathe outside card bounds */
+      position:relative;
       transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
       cursor:pointer;
     }
-    .build-card:hover{ transform:translateY(-4px); border-color: rgba(255,217,59,0.7); box-shadow:0 24px 48px rgba(0,0,0,0.88); }
+    .build-card:hover{ transform:translateY(-6px); border-color: rgba(255,217,59,0.65); box-shadow:0 0 40px rgba(255,217,59,0.08), 0 28px 56px rgba(0,0,0,0.9); }
     .build-image{
       position:relative; border-radius:14px;
-      overflow:hidden; height:190px;
-      background: radial-gradient(circle at top, #222, #0a0a0a);
+      overflow:visible;  /* critical — let model-viewer extend beyond the box */
+      height:220px;
+      background: radial-gradient(circle at top, #1a1a1a, #080808);
+      /* clip background/border only, not the 3D canvas */
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
     }
-    /* GLB model-viewer inside build card */
+    /* model-viewer gets extra height so the car is fully visible */
     .build-image model-viewer{
-      width:100%; height:100%;
+      width:calc(100% + 0px); height:260px;
+      margin-top:-20px;  /* push up so car rises above the card edge */
+      border-radius:14px;
       --poster-color: transparent;
       --progress-bar-color: transparent;
+      background: transparent;
     }
     .build-image img{ width:100%; height:100%; object-fit:cover; display:block; }
     .build-owner{
@@ -559,6 +613,7 @@
     </div>
 
     <!-- HERO — drift animation canvas is injected here by drift-animation.js -->
+    <!-- hero-dissolve-glow sits below the text, creates atmospheric bleed into content -->
     <main class="hero">
       <div class="container" style="width:100%;display:flex;justify-content:center;">
         <div class="hero-grid">
@@ -591,14 +646,39 @@
             </div>
 
             <div class="hero-stats">
-              <div class="hero-stat-pill"><strong>120+</strong><span>Builds</span></div>
-              <div class="hero-stat-pill"><strong>20+</strong><span>Promoters</span></div>
-              <div class="hero-stat-pill"><strong>1</strong><span>Island</span></div>
+              <div class="hero-stat-pill"><strong id="statBuilds" data-target="120">0</strong><span>Builds</span></div>
+              <div class="hero-stat-pill"><strong id="statPromoters" data-target="20">0</strong><span>Promoters</span></div>
+              <div class="hero-stat-pill"><strong id="statIsland" data-target="1">0</strong><span>Island</span></div>
             </div>
           </section>
         </div>
       </div>
     </main>
+    <div class="hero-dissolve-glow" aria-hidden="true"></div>
+
+    <!-- Tyre skid marks — motorsport texture between hero and content -->
+    <div class="skid-divider" aria-hidden="true">
+      <svg viewBox="0 0 1200 32" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 18 Q200 10 400 20 Q600 30 800 16 Q1000 4 1200 18" stroke="rgba(255,255,255,0.045)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M0 24 Q200 16 400 26 Q600 36 800 22 Q1000 10 1200 24" stroke="rgba(255,255,255,0.028)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M100 12 Q300 6 500 14" stroke="rgba(255,255,255,0.022)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M700 22 Q900 14 1100 20" stroke="rgba(255,255,255,0.022)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <!-- Live event ticker -->
+    <div class="ticker-wrap" aria-label="Upcoming events ticker">
+      <div class="ticker-content" id="tickerContent">
+        <span class="ticker-item">🏁 ROK RACERS JA</span>
+        <span class="ticker-sep">·</span>
+        <span class="ticker-item">Loading upcoming events…</span>
+        <span class="ticker-sep">·</span>
+        <span class="ticker-item">🏁 ROK RACERS JA</span>
+        <span class="ticker-sep">·</span>
+        <span class="ticker-item">Jamaica's motorsport community</span>
+        <span class="ticker-sep">·</span>
+      </div>
+    </div>
 
     <!-- EVENTS — 5 most recent -->
     <section class="section">
@@ -941,6 +1021,7 @@
         if(!cErr && counts) countsMap = new Map(counts.map(c=>[c.event_id,c]));
       }catch{}
 
+      populateTicker(finalEvents);
       strip.innerHTML = finalEvents.map(e => {
         const d = e.starts_at ? new Date(e.starts_at) : null;
         const when = d ? d.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'TBA';
@@ -1083,6 +1164,47 @@
       }).join('');
     }
 
+    // ── STAT COUNTER ANIMATION ───────────────────────────────────────────
+    function animateCounter(el, target, duration){
+      if(!el) return;
+      const suffix = el.parentElement?.querySelector('span')?.textContent?.includes('Island') ? '' : '+';
+      let start = null;
+      function step(ts){
+        if(!start) start = ts;
+        const progress = Math.min((ts - start) / duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(eased * target) + (progress < 1 ? '' : suffix);
+        if(progress < 1) requestAnimationFrame(step);
+        else el.textContent = target + suffix;
+      }
+      requestAnimationFrame(step);
+    }
+
+    function runStatCounters(){
+      document.querySelectorAll('[data-target]').forEach(el => {
+        const target = parseInt(el.dataset.target, 10);
+        // Delay slightly so it starts after scramble settles
+        setTimeout(() => animateCounter(el, target, 1400), 1200);
+      });
+    }
+
+    // ── TICKER — populate with real event names ───────────────────────
+    function populateTicker(events){
+      const ticker = document.getElementById('tickerContent');
+      if(!ticker) return;
+      if(!events || !events.length){
+        // Keep default placeholder text
+        return;
+      }
+      // Build ticker items from events, doubled for seamless loop
+      const items = events.map(e => {
+        const d = e.starts_at ? new Date(e.starts_at).toLocaleDateString('en-JM',{month:'short',day:'numeric'}) : '';
+        return `<span class="ticker-item">🏁 ${e.title}${d?' · '+d:''}</span><span class="ticker-sep">·</span>`;
+      }).join('');
+      ticker.innerHTML = items + items; // doubled for seamless infinite loop
+    }
+
     // ── BOOT ─────────────────────────────────────────────────────────────
     // Each loader is wrapped independently — one failing can never block others.
     function safeFn(fn, label) {
@@ -1091,6 +1213,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       bindHoverAutoplay(document);
+      runStatCounters();
 
       // Fire all four feeds in parallel — each isolated
       safeFn(loadFrontEvents,     'events');
