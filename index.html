@@ -307,19 +307,21 @@
       padding:8px 0; position:relative; z-index:4;
     }
     .ticker-content{
-      display:inline-flex; gap:0;
+      display:inline-flex; align-items:center; gap:0;
       white-space:nowrap;
-      animation: tickerScroll 28s linear infinite;
+      /* translateX(-50%) scrolls exactly one copy width — content must be doubled in HTML */
+      animation: tickerScroll 32s linear infinite;
     }
     .ticker-content:hover{ animation-play-state:paused; }
-    @keyframes tickerScroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @keyframes tickerScroll{ 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
     .ticker-item{
       font-size:11px; text-transform:uppercase; letter-spacing:.2em;
-      color:rgba(255,255,255,0.7); padding:0 24px; font-weight:600;
+      color:rgba(255,255,255,0.75); padding:0 32px; font-weight:600;
+      flex-shrink:0;
     }
-    .ticker-sep{ font-size:11px; color:rgba(229,9,20,0.7); padding:0 4px; line-height:1.4; }
-    .skid-divider{ width:100%; height:32px; margin:-8px 0 0; position:relative; z-index:4; opacity:0.9; }
-    .skid-divider svg{ width:100%; height:100%; display:block; }
+    .ticker-sep{ font-size:14px; color:rgba(229,9,20,0.8); padding:0 8px; flex-shrink:0; }
+    .skid-divider{ width:100%; height:48px; margin:0; position:relative; z-index:5; opacity:1; }
+    .skid-divider svg{ width:100%; height:100%; display:block; overflow:visible; }
 
     /* Atmospheric dissolve between hero and content — no hard line */
     .hero::after{
@@ -658,25 +660,29 @@
 
     <!-- Tyre skid marks — motorsport texture between hero and content -->
     <div class="skid-divider" aria-hidden="true">
-      <svg viewBox="0 0 1200 32" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 18 Q200 10 400 20 Q600 30 800 16 Q1000 4 1200 18" stroke="rgba(255,255,255,0.045)" stroke-width="8" fill="none" stroke-linecap="round"/>
-        <path d="M0 24 Q200 16 400 26 Q600 36 800 22 Q1000 10 1200 24" stroke="rgba(255,255,255,0.028)" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M100 12 Q300 6 500 14" stroke="rgba(255,255,255,0.022)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M700 22 Q900 14 1100 20" stroke="rgba(255,255,255,0.022)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <svg viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Main tyre tracks — two parallel rubber marks -->  
+        <path d="M0 22 Q240 12 480 24 Q720 36 960 20 Q1200 6 1440 22" stroke="rgba(255,255,255,0.12)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M0 30 Q240 20 480 32 Q720 44 960 28 Q1200 14 1440 30" stroke="rgba(255,255,255,0.08)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- Accent skid flash marks -->
+        <path d="M120 16 Q280 10 440 18" stroke="rgba(255,255,255,0.09)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M800 28 Q960 18 1120 26" stroke="rgba(255,255,255,0.07)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Subtle heat shimmer lines -->
+        <path d="M0 38 Q360 34 720 40 Q1080 46 1440 38" stroke="rgba(18,139,2,0.06)" stroke-width="2" fill="none"/>
       </svg>
     </div>
 
     <!-- Live event ticker -->
     <div class="ticker-wrap" aria-label="Upcoming events ticker">
       <div class="ticker-content" id="tickerContent">
-        <span class="ticker-item">🏁 ROK RACERS JA</span>
-        <span class="ticker-sep">·</span>
-        <span class="ticker-item">Loading upcoming events…</span>
-        <span class="ticker-sep">·</span>
-        <span class="ticker-item">🏁 ROK RACERS JA</span>
-        <span class="ticker-sep">·</span>
-        <span class="ticker-item">Jamaica's motorsport community</span>
-        <span class="ticker-sep">·</span>
+        <span class="ticker-item">🏁 ROK RACERS JA</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">Jamaica's #1 Motorsport Community</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">Kingston · Montego Bay · Ocho Rios</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">Drop your build. See who's outside tonight</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🏁 ROK RACERS JA</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">Jamaica's #1 Motorsport Community</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">Kingston · Montego Bay · Ocho Rios</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">Drop your build. See who's outside tonight</span><span class="ticker-sep">·</span>
       </div>
     </div>
 
@@ -927,10 +933,14 @@
                alt="${esc(b.title||'Build')}"
                camera-controls
                auto-rotate
-               auto-rotate-delay="800"
-               rotation-per-second="25deg"
-               exposure="1.1"
-               shadow-intensity="0.6"
+               auto-rotate-delay="600"
+               rotation-per-second="20deg"
+               camera-orbit="0deg 72deg 2.8m"
+               field-of-view="32deg"
+               min-camera-orbit="auto auto 1.5m"
+               max-camera-orbit="auto auto 6m"
+               exposure="1.3"
+               shadow-intensity="0.8"
                environment-image="neutral"
                interaction-prompt="none"
              ></model-viewer>
