@@ -353,6 +353,20 @@
       if (els.dropdown)    els.dropdown.classList.remove("open");
     }
 
+    // ── data-role-requires: show element only when signed-in user has a matching role ──
+    // Usage: <element data-role-requires="driver,promoter,admin">
+    // Hidden by default (set style="display:none" on the element).
+    // auth-ui.js reveals it once role is confirmed.
+    document.querySelectorAll("[data-role-requires]").forEach((el) => {
+      const allowed = el.getAttribute("data-role-requires")
+        .split(",").map((r) => r.trim().toLowerCase()).filter(Boolean);
+      const userRole = (state.role || "").toLowerCase();
+      const visible =
+        state.user &&
+        (allowed.includes(userRole) || (state.isAdmin && allowed.includes("admin")));
+      el.style.display = visible ? "" : "none";
+    });
+
     // ── Click binding — only once per element, using _boundElIds Set ──
     // This avoids the old navBound=true bug where a single bool meant
     // if elements were null on first call, they NEVER got bound.
@@ -463,6 +477,25 @@
 
       if (state.user) {
         await loadRole(state.user.id);
+
+        // ── Onboarding redirect ──────────────────────────────────────
+        // After sign-in or sign-up, check whether the user has completed
+        // onboarding. If not, send them to onboarding.html.
+        // Skip if they're already on the onboarding page.
+        if (!window.location.pathname.includes('onboarding')) {
+          try {
+            const { data: profileCheck } = await supabase
+              .from('profiles')
+              .select('onboarded')
+              .eq('id', state.user.id)
+              .maybeSingle();
+            if (!profileCheck?.onboarded) {
+              window.location.href = './onboarding.html';
+              return;
+            }
+          } catch {}
+        }
+
         while (state.loginResolvers.length) {
           state.loginResolvers.shift()(true);
         }

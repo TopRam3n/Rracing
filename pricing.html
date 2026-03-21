@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pro Plans — ROK Racers JA</title>
+  <link rel="icon" href="Assets/og.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth-ui.js"></script>
+  <style>
+    :root{--bg:#050508;--green:#128b02;--yellow:#FFD93B;--fg:#fff;--muted:#bdbdbd;--line:rgba(255,255,255,0.07);--nav:76px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);color:var(--fg);font-family:"Rajdhani",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .container{width:min(1100px,100% - 32px);margin:0 auto}
+    body::after{content:"";position:fixed;inset-inline:0;bottom:-120px;height:220px;background:radial-gradient(circle at bottom,rgba(18,139,2,.18),transparent 60%);pointer-events:none;z-index:0}
+    /* NAV */
+    .nav-wrapper{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);background:linear-gradient(to bottom,rgba(5,5,8,.9),rgba(5,5,8,.6));border-bottom:1px solid var(--line)}
+    .nav{height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .logo{display:flex;align-items:center;gap:8px}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(18,139,2,.7);overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+    .logo-mark img{width:100%;height:100%;object-fit:cover}
+    .logo-text{font-family:"Bebas Neue";font-size:20px;text-transform:uppercase}
+    .btn{border-radius:999px;padding:8px 16px;font-size:13px;text-transform:uppercase;letter-spacing:.15em;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:#fff}
+    .btn-ghost{border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.25)}
+    /* PAGE */
+    .page{padding:64px 0 80px;position:relative;z-index:1}
+    .page-kicker{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--muted)}
+    .kicker-line{width:28px;height:2px;border-radius:999px;background:linear-gradient(to right,var(--green),var(--yellow))}
+    h1{font-family:"Bebas Neue";font-size:clamp(48px,7vw,80px);letter-spacing:3px;text-transform:uppercase;line-height:.9;margin-bottom:14px}
+    h1 span{background:linear-gradient(135deg,var(--green),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .page-sub{font-size:16px;color:var(--muted);max-width:520px;line-height:1.55;margin-bottom:52px}
+    /* PLANS GRID */
+    .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-bottom:60px}
+    .plan{border-radius:24px;border:1px solid var(--line);background:#0d0d10;padding:28px;display:flex;flex-direction:column;gap:18px;position:relative;transition:border-color .25s,box-shadow .25s}
+    .plan:hover{border-color:rgba(255,255,255,.14);box-shadow:0 24px 64px rgba(0,0,0,.7)}
+    .plan.featured{border-color:rgba(255,217,59,.3);background:linear-gradient(135deg,rgba(255,217,59,.04),rgba(18,139,2,.04))}
+    .plan.featured::before{content:"Most Popular";position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 16px;border-radius:999px;background:var(--yellow);color:#000;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;white-space:nowrap}
+    .plan-name{font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;text-transform:uppercase}
+    .plan-price{display:flex;align-items:flex-end;gap:6px}
+    .plan-amount{font-family:"Bebas Neue";font-size:52px;letter-spacing:0;line-height:1;color:var(--yellow)}
+    .plan-period{font-size:13px;color:var(--muted);margin-bottom:8px}
+    .plan-desc{font-size:13px;color:var(--muted);line-height:1.5}
+    .plan-features{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+    .feature{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.4}
+    .feature-check{color:#3dff9f;font-size:14px;flex-shrink:0;margin-top:1px}
+    .feature-cross{color:rgba(255,255,255,.2);font-size:14px;flex-shrink:0;margin-top:1px}
+    .feature.dim{color:var(--muted)}
+    .plan-cta{margin-top:auto;padding-top:18px}
+    .cta-btn{width:100%;padding:13px;border-radius:14px;font-size:12px;text-transform:uppercase;letter-spacing:.2em;font-weight:700;border:1px solid;cursor:pointer;font-family:inherit;transition:box-shadow .2s,transform .2s}
+    .cta-btn.primary{background:linear-gradient(to right,#39ff96,var(--green));border-color:rgba(18,139,2,.8);color:#000;box-shadow:0 0 24px rgba(18,139,2,.3)}
+    .cta-btn.primary:hover{box-shadow:0 0 40px rgba(18,139,2,.55);transform:translateY(-1px)}
+    .cta-btn.yellow{background:linear-gradient(135deg,rgba(255,217,59,.12),rgba(255,217,59,.06));border-color:rgba(255,217,59,.5);color:var(--yellow)}
+    .cta-btn.yellow:hover{background:linear-gradient(135deg,rgba(255,217,59,.2),rgba(255,217,59,.1));box-shadow:0 0 32px rgba(255,217,59,.2)}
+    .cta-btn.ghost{background:transparent;border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .cta-btn.ghost:hover{border-color:rgba(255,255,255,.25);color:var(--fg)}
+    /* FAQ */
+    .faq-section{max-width:680px;margin:0 auto}
+    .faq-title{font-family:"Bebas Neue";font-size:36px;letter-spacing:2px;margin-bottom:24px;text-align:center}
+    .faq-item{border-bottom:1px solid var(--line);padding:18px 0}
+    .faq-q{font-size:15px;font-weight:700;margin-bottom:8px}
+    .faq-a{font-size:14px;color:var(--muted);line-height:1.55}
+    /* Contact strip */
+    .contact-strip{margin-top:56px;padding:28px 32px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.02);text-align:center}
+    .contact-strip h3{font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;margin-bottom:8px}
+    .contact-strip p{font-size:14px;color:var(--muted);margin-bottom:18px}
+    .contact-strip a{color:#3dff9f;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="nav-wrapper">
+    <div class="container nav">
+      <a href="./index.html" class="logo">
+        <div class="logo-mark"><img src="Assets/logo.png" alt="ROK"></div>
+        <div class="logo-text">ROK RACERS JA</div>
+      </a>
+      <a href="./index.html" class="btn btn-ghost" style="padding:6px 14px;font-size:11px">← Back</a>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="container">
+      <div class="page-kicker"><div class="kicker-line"></div>Membership Plans</div>
+      <h1>Level Up<br><span>Your Grid</span></h1>
+      <p class="page-sub">Free gets you in. Pro puts you on the map — QR codes for your build, priority visibility, and features the grid can see.</p>
+
+      <div class="plans">
+        <!-- FREE -->
+        <div class="plan">
+          <div>
+            <div class="plan-name">Free</div>
+            <div class="plan-price"><div class="plan-amount" style="color:var(--muted)">$0</div></div>
+            <div class="plan-desc">Everything you need to explore the scene.</div>
+          </div>
+          <div class="plan-features">
+            <div class="feature"><span class="feature-check">✓</span>Browse all builds, events, sightings</div>
+            <div class="feature"><span class="feature-check">✓</span>Like and comment on content</div>
+            <div class="feature"><span class="feature-check">✓</span>Join teams and apply to events</div>
+            <div class="feature"><span class="feature-check">✓</span>Upload sightings (spotter / driver)</div>
+            <div class="feature"><span class="feature-check">✓</span>2 builds in your garage</div>
+            <div class="feature dim"><span class="feature-cross">✕</span>Build QR code cards</div>
+            <div class="feature dim"><span class="feature-cross">✕</span>Priority placement</div>
+          </div>
+          <div class="plan-cta">
+            <button class="cta-btn ghost" onclick="authUI.requireLogin()">Get Started Free</button>
+          </div>
+        </div>
+
+        <!-- PRO -->
+        <div class="plan featured">
+          <div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">
+              <div class="plan-amount">$5</div>
+              <div class="plan-period">USD / month</div>
+            </div>
+            <div class="plan-desc">For drivers and spotters who want to stand out on the grid.</div>
+          </div>
+          <div class="plan-features">
+            <div class="feature"><span class="feature-check">✓</span>Everything in Free</div>
+            <div class="feature"><span class="feature-check">✓</span><strong>Build QR code cards</strong> — print-ready, scannable</div>
+            <div class="feature"><span class="feature-check">✓</span>Up to 10 builds in your garage</div>
+            <div class="feature"><span class="feature-check">✓</span>Pro badge on your profile</div>
+            <div class="feature"><span class="feature-check">✓</span>Priority in sightings feed</div>
+            <div class="feature"><span class="feature-check">✓</span>Submit unlimited trophy claims</div>
+          </div>
+          <div class="plan-cta">
+            <button class="cta-btn yellow" id="proBtn" onclick="upgradeToPro()">Upgrade to Pro — $5/mo</button>
+          </div>
+        </div>
+
+        <!-- ELITE -->
+        <div class="plan">
+          <div>
+            <div class="plan-name">Elite</div>
+            <div class="plan-price">
+              <div class="plan-amount">$15</div>
+              <div class="plan-period">USD / month</div>
+            </div>
+            <div class="plan-desc">For promoters, teams, and serious competitors on the scene.</div>
+          </div>
+          <div class="plan-features">
+            <div class="feature"><span class="feature-check">✓</span>Everything in Pro</div>
+            <div class="feature"><span class="feature-check">✓</span>Unlimited builds</div>
+            <div class="feature"><span class="feature-check">✓</span>Create and manage events</div>
+            <div class="feature"><span class="feature-check">✓</span>Go live from events</div>
+            <div class="feature"><span class="feature-check">✓</span>Elite badge + featured placement</div>
+            <div class="feature"><span class="feature-check">✓</span>Team management tools</div>
+          </div>
+          <div class="plan-cta">
+            <button class="cta-btn primary" onclick="upgradeToElite()">Go Elite — $15/mo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="faq-section">
+        <div class="faq-title">Common Questions</div>
+        <div class="faq-item">
+          <div class="faq-q">How do I pay?</div>
+          <div class="faq-a">Right now upgrades are handled manually — tap the upgrade button and you'll be directed to contact us via Instagram or email. We're integrating Stripe payments soon.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What's a Build QR Card?</div>
+          <div class="faq-a">A print-ready card with a unique QR code for your build. Stick it on your dash, under the hood, or hand it out at meets. Anyone who scans it lands on your full build page with specs and 3D model.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Can I cancel?</div>
+          <div class="faq-a">Yes, contact us anytime. Your Pro features stay active until the end of your billing period.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">I'm a promoter — which plan?</div>
+          <div class="faq-a">Elite is built for you. It includes event creation, go-live access, and team management. Promoter accounts can also be granted manually if you've already requested a team page.</div>
+        </div>
+      </div>
+
+      <div class="contact-strip">
+        <h3>Questions?</h3>
+        <p>DM us on Instagram or drop an email — we'll sort you out.</p>
+        <a href="https://instagram.com/rrxngclub" target="_blank" rel="noopener">@rrxngclub on Instagram →</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+window.upgradeToPro = async function() {
+  const user = (typeof authUI !== 'undefined') ? authUI.getUser() : null;
+  if (!user) { authUI.requireLogin(); return; }
+  // Until Stripe is wired: route to Instagram DM
+  const msg = encodeURIComponent(`Hi! I want to upgrade to ROK Racers JA Pro. My email: ${user.email}`);
+  window.open(`https://instagram.com/rrxngclub`, '_blank');
+  document.getElementById('proBtn').textContent = 'DM us on IG to complete ↗';
+};
+
+window.upgradeToElite = async function() {
+  const user = (typeof authUI !== 'undefined') ? authUI.getUser() : null;
+  if (!user) { authUI.requireLogin(); return; }
+  window.open(`https://instagram.com/rrxngclub`, '_blank');
+};
+</script>
+</body>
+</html>

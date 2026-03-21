@@ -5,29 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Boosted Builds — ROK Racers JA</title>
 <meta name="description" content="See all the builds you've boosted on ROK Racers JA." />
-<link rel="icon" href="../../Assets/og.png" />
+<link rel="icon" href="Assets/og.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY , {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-</script>
+<script src="supabase-client.js"></script>
 
 <!-- shared auth/nav behaviour -->
 <script src="auth-ui.js"></script>
 
 <!-- Design System (centralized tokens + components) -->
-<link rel="stylesheet" href="../../styles/design-system.css">
+<link rel="stylesheet" href="./design-system.css">
 
 <style>
   :root{
@@ -149,6 +139,7 @@
     transform:translateY(-1px);
   }
   .dropdown{
+    display:none;
     position:absolute;
     right:0;
     top:40px;
@@ -156,11 +147,11 @@
     border:1px solid var(--line);
     box-shadow:0 20px 40px rgba(0,0,0,.6);
     border-radius:16px;
-    display:flex;
     flex-direction:column;
     min-width:190px;
     z-index:60;
   }
+  .dropdown.open{display:flex}
   .dropdown a,
   .dropdown button{
     padding:10px 16px;
@@ -325,7 +316,7 @@
   <nav class="nav" role="navigation" aria-label="Primary">
     <div class="container nav-inner">
       <a class="brand" href="./index.html" aria-label="ROK Racers JA home">
-        <img src="../../Assets/logo.png" alt="" class="logo">
+        <img src="Assets/logo.png" alt="" class="logo">
         <div class="title">
           <h1>ROK RACERS JA</h1>
           <small>Boosted builds</small>
@@ -342,13 +333,13 @@
           <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
             <span id="navProfileInitials">U</span>
           </div>
-          <div id="navProfileDropdown" class="dropdown" style="display:none">
+          <div id="navProfileDropdown" class="dropdown">
             <a href="./garage.html">My Garage</a>
             <a href="./tickets.html">My Tickets</a>
             <a href="./likes-builds.html">Liked Builds</a>
             <a href="./likes-sightings.html">Liked Sightings</a>
             <a href="./teams.html">My Teams</a>
-            <a href="../Users/activity.html">Activity</a>
+            <a href="./activity.html">Activity</a>
             <button id="signoutBtn" type="button">Sign out</button>
           </div>
         </div>

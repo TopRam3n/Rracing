@@ -5,18 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Sightings — ROK Racers JA</title>
   <meta name="description" content="Island sightings: cars caught on the road. Photos and 15s clips."/>
-  <link rel="icon" href="../../Assets/og.png"/>
+  <link rel="icon" href="Assets/og.png"/>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
-
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root{
@@ -89,12 +86,14 @@
       transform:translateY(-1px);
     }
     .dropdown{
+      display:none;
       position:absolute;right:0;top:40px;
       background:var(--bg1);border:1px solid var(--line);
       box-shadow:0 20px 40px rgba(0,0,0,.6);
-      border-radius:16px;display:flex;flex-direction:column;
+      border-radius:16px;flex-direction:column;
       min-width:190px;z-index:999;
     }
+    .dropdown.open{display:flex}
     .dropdown a,.dropdown button{
       padding:10px 16px;text-align:left;border:none;
       background:transparent;color:var(--fg);font-size:13px;
@@ -231,102 +230,55 @@
       pointer-events:none;
       transform:rotate(-10deg);
     }
-
-    /* Search suggestions */
-    .search-suggestions{
-      margin-top:8px; padding:10px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:rgba(20,20,24,.95);
-      display:flex; gap:6px; flex-wrap:wrap;
-    }
-    .suggestion-chip{
-      padding:6px 12px;
-      border-radius:999px;
-      border:1px solid rgba(24,158,6,.35);
-      background:rgba(24,158,6,.08);
-      color:rgba(24,158,6,.9);
-      font-size:12px;
-      cursor:pointer;
-      transition:all .15s ease;
-    }
-    .suggestion-chip:hover{
-      border-color:rgba(24,158,6,.7);
-      background:rgba(24,158,6,.18);
-      color:#fff;
-    }
-    .suggestion-label{
-      font-size:11px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.1em;
-      word-break:break-word;
-      flex:0 0 100%;
-    }
   </style>
 </head>
 <body>
- <div class="nav-wrapper" id="navWrapper">
-  <div class="container nav">
+  <nav class="nav" role="navigation" aria-label="Primary">
+    <div class="container nav-inner">
+      <a href="/" class="brand" aria-label="ROK Racers JA home">
+        <img src="Assets/logo.png" alt="" class="logo">
+        <div>
+          <h1>ROK RACERS JA</h1>
+          <small class="sub">Sightings</small>
+        </div>
+      </a>
 
-    <a href="./index.html" class="logo">
-      <div class="logo-mark">
-        <img src="Assets/logo.png" alt="ROK Racers JA logo">
-      </div>
-      <div>
-        <div class="logo-text-main">ROK RACERS JA</div>
-        <div class="logo-text-sub">Motorsport Community</div>
-      </div>
-    </a>
-
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="./events.html">Events</a>
-      <a href="./garage.html">Garage</a>
-      <a href="./teams.html">Community</a>
-      <a href="./live.html">Live</a>
-      <a href="./marketplace.html">Marketplace</a>
-      <a href="./store.html">Store</a>
-    </nav>
-
-    <div class="nav-cta">
-      <!-- auth-ui.js looks for these IDs and wires them up -->
-      <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
-      <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
-
-      <div id="profileMenu" class="profile-menu" style="display:none">
-        <div id="profileChip"
-             class="profile-chip"
-             aria-haspopup="true"
-             aria-expanded="false"
-             title="Account menu">
-          <span id="profileInitials">U</span>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+        <div class="menu" role="menubar" aria-label="Main menu">
+          <a class="btn" role="menuitem" href="./events.html">Events</a>
+          <a class="btn" role="menuitem" href="./garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="./teams.html">Community</a>
+          <a class="btn" role="menuitem" href="./live.html">Live</a>
+          <a class="btn" role="menuitem" href="./highlights.html">Feed</a>
+          <a class="btn" role="menuitem" href="./marketplace.html">Marketplace</a>
+          <a class="btn" role="menuitem" href="./store.html">Store</a>
         </div>
 
-        <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-          <div class="dd-head">
-            <div class="dd-title">Signed in as</div>
-            <div class="dd-email" id="ddEmail">—</div>
-          </div>
+        <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, navSignOutBtn -->
+        <div class="nav-auth">
+          <button id="navSignInBtn" class="btn">Log in</button>
+          <button id="navJoinBtn" class="btn primary">Join the grid</button>
 
-          <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
-          <div class="dd-sep"></div>
-          <a href="/garage.html?view=my">My Garage</a>
-          <a href="./tickets.html">My Tickets</a>
-          <a href="./likes-build.html">Liked Builds</a>
-          <a href="./likes-sightings.html">Liked Sightings</a>
-          <a href="./teams.html">My Teams</a>
-          <a id="myEventsLink" href="./admin-events.html" style="display:none">
-            My Events <span class="dd-badge">Promoter</span>
-          </a>
-          <div class="dd-sep"></div>
-          <button id="signoutBtn" type="button">Sign out</button>
+          <div id="navProfileWrap" class="profile-menu" style="display:none">
+            <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
+              <span id="navProfileInitials">U</span>
+            </div>
+            <div id="navProfileDropdown" class="dropdown">
+              <a href="/garage.html">My Garage</a>
+              <a href="/tickets.html">My Tickets</a>
+              <a href="/likes-builds.html">Liked Builds</a>
+              <a href="/likes-sightings.html">Liked Sightings</a>
+              <a href="/bookmarks-sightings.html">Saved Sightings</a>
+              <a href="/teams.html">My Teams</a>
+              <a href="/activity.html">Activity</a>
+              <button id="navSignOutBtn" type="button">Sign out</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-  </div>
-</div>
-
+  </nav>
 
   <main class="container">
     <section class="section">
@@ -338,32 +290,41 @@
           </div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <span id="countBadge" class="badge">0 posts</span>
-            <a id="uploadBtn" href="./sightings-new.html" class="btn primary" style="display:none">Upload</a>
+            <a id="uploadBtn" href="./sightings-new.html" class="btn primary" data-role-requires="spotter,driver,promoter,admin" style="display:none">+ Sighting</a>
           </div>
         </div>
 
         <div class="filters" role="region" aria-label="Sighting filters">
-          <input id="q" placeholder="Search sightings: parish, car, location, vibe…" aria-label="Search" style="flex:1"/>
-          
-          <!-- Type & Sort inline (replacing dropdowns) -->
-          <div style="display:flex; gap:8px; align-items:center;">
-            <select id="type" aria-label="Type" style="flex:0 0 auto;">
-              <option value="">All types</option>
-              <option value="image">📷 Photos</option>
-              <option value="video">🎬 Videos</option>
-            </select>
-            <select id="sort" aria-label="Sort" style="flex:0 0 auto;">
-              <option value="new">Newest</option>
-              <option value="top">Most liked</option>
-            </select>
-          </div>
-
+          <input id="q" placeholder="Search caption/description…" aria-label="Search"/>
+          <select id="parish" aria-label="Parish">
+            <option value="">All parishes</option>
+            <option value="Kingston">Kingston</option>
+            <option value="St. Andrew">St. Andrew</option>
+            <option value="St. Catherine">St. Catherine</option>
+            <option value="St. Thomas">St. Thomas</option>
+            <option value="Portland">Portland</option>
+            <option value="St. Mary">St. Mary</option>
+            <option value="St. Ann">St. Ann</option>
+            <option value="Trelawny">Trelawny</option>
+            <option value="St. James">St. James</option>
+            <option value="Hanover">Hanover</option>
+            <option value="Westmoreland">Westmoreland</option>
+            <option value="St. Elizabeth">St. Elizabeth</option>
+            <option value="Manchester">Manchester</option>
+            <option value="Clarendon">Clarendon</option>
+          </select>
+          <select id="type" aria-label="Type">
+            <option value="">All types</option>
+            <option value="image">Photos</option>
+            <option value="video">Videos</option>
+          </select>
+          <select id="sort" aria-label="Sort">
+            <option value="new">Newest</option>
+            <option value="top">Most liked</option>
+          </select>
           <button id="apply" class="btn">Apply</button>
-          <span class="badge">💡 Tip: type parish or location to filter</span>
+          <span class="badge">Tip: click a card to open</span>
         </div>
-
-        <!-- Keyword suggestions chip (hidden by default) -->
-        <div id="searchSuggestions" class="search-suggestions" style="display:none;"></div>
 
         <div class="spark"></div>
       </div>
@@ -377,15 +338,41 @@
   </main>
 
   <script>
-    const $ = (id)=>document.getElementById(id);
+    
+  // ── ROLE GATE ─────────────────────────────────────────────────────
+  // Checks profiles.role against allowed roles
+  // Returns true if user has permission, false otherwise
+  async function hasRole(...allowedRoles) {
+    const user = (typeof authUI !== 'undefined') ? authUI.getUser() : null;
+    if (!user) return false;
+    const { data } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    const role = data?.role || 'viewer';
+    return allowedRoles.includes(role);
+  }
+
+  // Show/hide elements by role
+  async function applyRoleGates() {
+    const user = (typeof authUI !== 'undefined') ? authUI.getUser() : null;
+    if (!user) { return; }
+    const { data } = await supabase.from('profiles').select('role,plan').eq('id', user.id).maybeSingle();
+    const role = data?.role || 'viewer';
+    const plan = data?.plan || 'free';
+    // Show elements with data-role-requires matching user's role
+    document.querySelectorAll('[data-role-requires]').forEach(el => {
+      const required = el.dataset.roleRequires.split(',').map(r => r.trim());
+      el.style.display = required.includes(role) ? '' : 'none';
+    });
+    return { role, plan };
+  }
+
+  const $ = (id)=>document.getElementById(id);
     const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
     let bookmarksById = new Set();
     let likesById = new Set();
 
     async function syncAuth(){
-      const user = authUI.getUser();
-      $('uploadBtn').style.display = user ? 'inline-flex' : 'none';
+      applyRoleGates();
 
       bookmarksById = new Set();
       likesById = new Set();
@@ -493,6 +480,7 @@
 
     async function applyFilters(){
       const q = ($('q').value || '').trim().toLowerCase();
+      const parish = $('parish').value || '';
       const type = $('type').value || '';
       const sort = $('sort').value || 'new';
 
@@ -512,20 +500,15 @@
 
       let rows = data || [];
 
-      // Enhanced keyword search (includes location, parish, title, description)
       if(q){
-        rows = rows.filter(r =>{
-          const searchableText = [
-            r.title || '',
-            r.description || '',
-            r.location || '',
-            r.parish || '',
-            r.social_handle || ''
-          ].join(' ').toLowerCase();
-          return searchableText.includes(q);
-        });
+        rows = rows.filter(r =>
+          (r.title || '').toLowerCase().includes(q) ||
+          (r.description || '').toLowerCase().includes(q)
+        );
       }
-
+      if(parish){
+        rows = rows.filter(r => (r.parish || '') === parish);
+      }
       if(type){
         rows = rows.filter(r => (r.image_type || '').toLowerCase() === type);
       }
@@ -539,36 +522,6 @@
 
       $('countBadge').textContent = `${rows.length} post${rows.length===1?'':'s'}`;
       renderGrid(rows, likeCounts);
-
-      // Show keyword suggestions
-      if(q.length > 0){
-        const parishes = ['Kingston', 'St. Andrew', 'St. Catherine', 'St. Thomas', 'Portland', 'St. Mary', 'St. Ann', 'Trelawny', 'St. James', 'Hanover', 'Westmoreland', 'St. Elizabeth', 'Manchester', 'Clarendon'];
-        const matchedParishes = parishes.filter(p => p.toLowerCase().includes(q));
-        
-        let suggestionHtml = '';
-        if(matchedParishes.length > 0){
-          suggestionHtml += `<div class="suggestion-label">Parishes</div>`;
-          suggestionHtml += matchedParishes.map(p => 
-            `<div class="suggestion-chip" data-filter="${p}">${p}</div>`
-          ).join('');
-        }
-        
-        if(suggestionHtml){
-          const suggDiv = $('searchSuggestions');
-          suggDiv.innerHTML = suggestionHtml;
-          suggDiv.style.display = 'flex';
-          
-          // Wire suggestion chips
-          suggDiv.querySelectorAll('.suggestion-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-              $('q').value = chip.dataset.filter;
-              applyFilters();
-            });
-          });
-        }
-      } else {
-        $('searchSuggestions').style.display = 'none';
-      }
 
       // Wire action buttons (stop link navigation)
       document.querySelectorAll('.likeBtn').forEach(btn=>{
@@ -663,5 +616,3 @@
   </script>
 </body>
 </html>
-
-

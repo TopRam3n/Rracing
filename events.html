@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>All Events — ROK Racers JA</title>
   <meta name="description" content="See all upcoming and past car events across Jamaica." />
-  <link rel="icon" href="../../Assets/og.png" />
+  <link rel="icon" href="Assets/og.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,9 +15,6 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
-
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root{
@@ -480,213 +477,107 @@
       margin: -12px -12px 10px;
     }
     .toast.info{ border-color: rgba(255,255,255,0.14); }
+  
+    /* ── MAP VIEW ── */
+    .view-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.07);overflow-x:auto;scrollbar-width:none}
+    .view-tabs::-webkit-scrollbar{display:none}
+    .view-tab{padding:9px 18px;font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:rgba(255,255,255,.45);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;font-family:inherit;transition:color .18s,border-color .18s;white-space:nowrap}
+    .view-tab:hover{color:#fff}
+    .view-tab.active{color:#FFD93B;border-bottom-color:#FFD93B}
+    .view-panel{display:none}
+    .view-panel.active{display:block}
+    #eventMap{height:480px;border-radius:20px;border:1px solid rgba(255,255,255,.07);overflow:hidden;background:#0a0f0a}
+    .leaflet-popup-content-wrapper{background:#141414;border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.7);color:#fff;font-family:"Rajdhani",sans-serif}
+    .leaflet-popup-tip{background:#141414}
+    .leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.4}
+    .map-popup-title{font-size:15px;font-weight:700;margin-bottom:4px;color:#fff}
+    .map-popup-meta{font-size:12px;color:#bdbdbd;margin-bottom:8px}
+    .map-popup-btn{display:inline-block;padding:5px 14px;border-radius:999px;background:linear-gradient(to right,#39ff96,#128b02);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:.16em;font-weight:700;text-decoration:none}
+    .map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.5)}
+    .legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
 
-    /* View Toggle */
-    .view-toggle{
-      display: flex; gap: 8px; margin: 16px 0 12px;
-      flex-wrap: wrap;
+  
+    /* ── SUBSCRIPTION BANNER ── */
+    .subscribe-banner{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      padding:18px 22px;
+      margin-bottom:28px;
+      border-radius:18px;
+      border:1px solid rgba(18,139,2,0.25);
+      background:linear-gradient(to right,rgba(18,139,2,0.06),rgba(255,217,59,0.03));
     }
-    .view-btn{
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.3);
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      transition: all 0.2s ease;
-      font-weight: 500;
+    .subscribe-banner-text strong{display:block;font-size:15px;font-weight:700;margin-bottom:2px}
+    .subscribe-banner-text span{font-size:13px;color:rgba(255,255,255,.55)}
+    .subscribe-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .subscribe-form input{
+      background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+      color:#fff;padding:9px 14px;border-radius:12px;font-family:inherit;font-size:13px;
+      outline:none;min-width:220px;transition:border-color .18s
     }
-    .view-btn:hover{
-      border-color: rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.05);
-      color: var(--text-main);
-    }
-    .view-btn.active{
-      background: linear-gradient(135deg, rgba(24,158,6,0.8), rgba(24,158,6,0.5));
-      border-color: rgba(24,158,6,0.6);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(24,158,6,0.35);
-    }
+    .subscribe-form input:focus{border-color:rgba(18,139,2,.6)}
+    .subscribe-msg{font-size:12px;margin-top:6px;min-height:14px}
+    .subscribe-msg.ok{color:#9affc5}
+    .subscribe-msg.err{color:#ff9a9a}
 
-    /* List View */
-    .list-wrap{
-      display: grid; gap: 14px; margin-top: 10px;
-    }
-    .event-list{
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.2);
-      overflow: hidden;
-    }
-    .date-group-header{
-      padding: 12px 16px;
-      background: rgba(24,158,6,0.1);
-      border-bottom: 1px solid rgba(24,158,6,0.2);
-      font-family: "Bebas Neue";
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #fff;
-    }
-    .event-list-item{
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      cursor: pointer;
-      transition: background 0.15s ease;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .event-list-item:last-child{
-      border-bottom: none;
-    }
-    .event-list-item:hover{
-      background: rgba(24,158,6,0.08);
-    }
-    .event-list-item-info{
-      flex: 1;
-    }
-    .event-list-item-title{
-      font-weight: 600;
-      font-size: 14px;
-      margin-bottom: 4px;
-      color: #fff;
-    }
-    .event-list-item-meta{
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 3px;
-    }
-    .event-list-item-location{
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-    .event-list-item-rsvp{
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(24,158,6,0.15);
-      color: rgba(24,158,6,0.8);
-      white-space: nowrap;
-      text-align: right;
-    }
-
-    /* Map View */
-    .map-wrap{
-      margin-top: 16px;
-    }
-    .parish-map{
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.3);
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-      max-height: 800px;
-      overflow-y: auto;
-    }
-    .parish-grid{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-    }
-    .parish-pin{
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(24,158,6,0.25);
-      background: rgba(24,158,6,0.05);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      position: relative;
-    }
-    .parish-pin:hover{
-      border-color: rgba(24,158,6,0.6);
-      background: rgba(24,158,6,0.12);
-      transform: translateY(-1px);
-    }
-    .parish-pin-name{
-      font-weight: 600;
-      font-size: 13px;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-    .parish-pin-count{
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-    .parish-pin-count strong{
-      color: rgba(24,158,6,0.8);
-    }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body>
   <!-- NAV -->
   <div class="nav-wrapper" id="navWrapper">
-  <div class="container nav">
-
-    <a href="./index.html" class="logo">
-      <div class="logo-mark">
-        <img src="Assets/logo.png" alt="ROK Racers JA logo">
-      </div>
-      <div>
-        <div class="logo-text-main">ROK RACERS JA</div>
-        <div class="logo-text-sub">Motorsport Community</div>
-      </div>
-    </a>
-
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="./events.html">Events</a>
-      <a href="./garage.html">Garage</a>
-      <a href="./teams.html">Community</a>
-      <a href="./live.html">Live</a>
-      <a href="./highlights.html">Feed</a>
-      <a href="./marketplace.html">Marketplace</a>
-      <a href="./store.html">Store</a>
-    </nav>
-
-    <div class="nav-cta">
-      <!-- auth-ui.js looks for these IDs and wires them up -->
-      <button id="loginBtn"  class="btn btn-ghost   btn-pill-sm" type="button">Log In</button>
-      <button id="joinBtn"   class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
-
-      <div id="profileMenu" class="profile-menu" style="display:none">
-        <div id="profileChip"
-             class="profile-chip"
-             aria-haspopup="true"
-             aria-expanded="false"
-             title="Account menu">
-          <span id="profileInitials">U</span>
+    <div class="container nav">
+      <a href="/index.html" class="logo" aria-label="ROK Racers JA home">
+        <div class="logo-mark">
+          <img src="Assets/logo.png" alt="ROK Racers JA logo">
         </div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Events</div>
+        </div>
+      </a>
 
-        <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
-          <div class="dd-head">
-            <div class="dd-title">Signed in as</div>
-            <div class="dd-email" id="ddEmail">—</div>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="./events.html">Events</a>
+        <a href="./garage.html">Garage</a>
+        <a href="./teams.html">Community</a>
+        <a href="./live.html">Live</a>
+        <a href="./highlights.html">Feed</a>
+        <a href="./marketplace.html">Marketplace</a>
+        <a href="./store.html">Store</a>
+      </nav>
+
+      <!-- ✅ auth-ui.js wires these by ID -->
+      <div class="nav-cta">
+        <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+        <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="profileInitials">U</span>
           </div>
 
-          <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
-          <div class="dd-sep"></div>
-          <a href="/garage.html?view=my">My Garage</a>
-          <a href="./tickets.html">My Tickets</a>
-          <a href="./likes-build.html">Liked Builds</a>
-          <a href="./likes-sightings.html">Liked Sightings</a>
-          <a href="./teams.html">My Teams</a>
-          <a id="myEventsLink" href="./admin-events.html" style="display:none">
-            My Events <span class="dd-badge">Promoter</span>
-          </a>
-          <div class="dd-sep"></div>
-          <button id="signoutBtn" type="button">Sign out</button>
+          <div id="dropdown" class="dropdown" role="menu" aria-label="Account menu">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <div class="dd-sep"></div>
+            <button id="signoutBtn" type="button">Sign out</button>
+          </div>
         </div>
       </div>
     </div>
-
   </div>
-</div>
 
   <main class="container page">
     <h1 class="page-title">All Events</h1>
@@ -695,9 +586,45 @@
     </p>
 
     <div>
-      <button id="addEventBtn" class="btn btn-primary btn-pill-sm" type="button">+ Create Event</button>
+      <button id="addEventBtn" class="btn btn-primary btn-pill-sm" type="button" data-role-requires="promoter,admin" style="display:none">+ Create Event</button>
     </div>
 
+    
+
+    <!-- SUBSCRIPTION BANNER -->
+    <div class="subscribe-banner" id="subscribeBanner">
+      <div class="subscribe-banner-text">
+        <strong>📬 Monthly Events Digest</strong>
+        <span>Get upcoming runs, track days, and meets sent to your inbox every month.</span>
+      </div>
+      <div>
+        <div class="subscribe-form">
+          <input id="subEmail" type="email" placeholder="your@email.com"/>
+          <button class="btn btn-primary btn-pill-sm" onclick="subscribeEvents()" id="subBtn">Subscribe</button>
+        </div>
+        <div class="subscribe-msg" id="subMsg"></div>
+      </div>
+    </div>
+
+    <!-- VIEW TABS -->
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" data-view="map">🗺 Island View</button>
+      <button class="view-tab" data-view="list">List</button>
+      <button class="view-tab" data-view="calendar">Calendar</button>
+    </div>
+
+    <!-- MAP PANEL -->
+    <div class="view-panel active" id="view-map">
+      <div id="eventMap"></div>
+      <div class="map-legend">
+        <span><span class="legend-dot" style="background:#128b02"></span>Upcoming</span>
+        <span><span class="legend-dot" style="background:#FFD93B"></span>This week</span>
+        <span><span class="legend-dot" style="background:#e50914"></span>Today / Live</span>
+      </div>
+    </div>
+
+    <!-- LIST PANEL -->
+    <div class="view-panel" id="view-list">
     <div class="filters" role="region" aria-label="Event filters">
       <input id="q" placeholder="Search title, location, parish, host…" aria-label="Search"/>
 
@@ -737,23 +664,9 @@
       <span class="hint" id="resultsHint"></span>
     </div>
 
-    <!-- VIEW TOGGLE -->
-    <div class="view-toggle" role="group" aria-label="Display mode">
-      <button class="view-btn active" data-view="calendar" type="button" title="Calendar view">📅 Calendar</button>
-      <button class="view-btn" data-view="list" type="button" title="List view">📋 List</button>
-      <button class="view-btn" data-view="map" type="button" title="Parish map">🗺️ Map</button>
-    </div>
-
-    <!-- CALENDAR VIEW -->
     <div id="calendarWrap" class="calendar-wrap" aria-live="polite">
       <div class="empty-card">Loading events…</div>
     </div>
-
-    <!-- LIST VIEW -->
-    <div id="listWrap" class="list-wrap" style="display:none;" aria-live="polite"></div>
-
-    <!-- MAP VIEW -->
-    <div id="mapWrap" class="map-wrap" style="display:none;" aria-live="polite"></div>
   </main>
 
   <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
@@ -953,7 +866,6 @@
     let cached   = [];
     let filtered = [];
     let teamsIndex = new Map();
-    let currentView = 'calendar';
 
     /* ========= Permissions ========= */
     async function getCanManageEvent(e){
@@ -1038,15 +950,8 @@
         return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
       });
 
-      if (!rows.length && !q && !hostTeamId && hostFilter !== 'team') {
-        rows = cached
-          .filter(r => r.starts_at && isUpcoming(r.starts_at))
-          .sort((a,b) => new Date(a.starts_at) - new Date(b.starts_at))
-          .slice(0, 24);
-      }
-
       filtered = rows;
-      renderAllViews(filtered);
+      renderCalendar(filtered);
 
       const hint = document.getElementById('resultsHint');
       if (hint){
@@ -1054,152 +959,6 @@
           ? `${filtered.length} event${filtered.length===1?'':'s'} · ${monthLabel(viewYear, viewMonth)}`
           : `No matches · ${monthLabel(viewYear, viewMonth)}`;
       }
-    }
-
-    /* ========= Multi-view rendering ========= */
-    function renderAllViews(rows){
-      renderCalendarView(rows);
-      renderListView(rows);
-      renderMapView(rows);
-    }
-
-    function renderCalendarView(rows){
-      const wrap = document.getElementById('calendarWrap');
-      const key = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
-      wrap.innerHTML = renderMonth(key, rows || []);
-    }
-
-    function renderListView(rows){
-      const wrap = document.getElementById('listWrap');
-      if (!rows || !rows.length){
-        wrap.innerHTML = `<div class="empty-card">No events in this month.</div>`;
-        return;
-      }
-
-      const byDate = new Map();
-      rows.forEach(e => {
-        if (!e.starts_at) return;
-        const d = new Date(e.starts_at);
-        const dateKey = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-        if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-        byDate.get(dateKey).push(e);
-      });
-
-      const sortedDates = Array.from(byDate.keys()).sort((a,b) => new Date(a) - new Date(b));
-
-      let html = `<div class="event-list">`;
-      sortedDates.forEach(dateKey => {
-        const events = byDate.get(dateKey);
-        html += `<div class="date-group-header">${escapeHTML(dateKey)}</div>`;
-        events.forEach(e => {
-          const d = new Date(e.starts_at);
-          const time = fmtShortTime(d);
-          const host = e.team_id ? teamsIndex.get(e.team_id) : null;
-          const loc = [e.parish, e.location].filter(Boolean).join(' · ');
-          const yes = e.counts?.yes_count || 0;
-          const maybe = e.counts?.maybe_count || 0;
-          const total = yes + maybe;
-          const rsvpDisplay = total >= 20 ? `${total} RSVPs` : '';
-
-          html += `
-            <div class="event-list-item" data-event="${escapeHTML(e.id)}" role="button" aria-label="View event details">
-              <div class="event-list-item-info">
-                <div class="event-list-item-title">${escapeHTML(e.title || 'Event')}</div>
-                <div class="event-list-item-meta">🕐 ${escapeHTML(time)}${host ? ` · Hosted by ${escapeHTML(host.name)}` : ''}</div>
-                ${loc ? `<div class="event-list-item-location">📍 ${escapeHTML(loc)}</div>` : ''}
-              </div>
-              ${rsvpDisplay ? `<div class="event-list-item-rsvp">${escapeHTML(rsvpDisplay)}</div>` : ''}
-            </div>`;
-        });
-      });
-      html += `</div>`;
-      wrap.innerHTML = html;
-
-      // Attach click handlers
-      wrap.querySelectorAll('.event-list-item').forEach(el => {
-        el.addEventListener('click', () => {
-          const eventId = el.dataset.event;
-          const event = cached.find(e => e.id === eventId);
-          if (event) openDetails(event);
-        });
-      });
-    }
-
-    function renderMapView(rows){
-      const wrap = document.getElementById('mapWrap');
-      if (!rows || !rows.length){
-        wrap.innerHTML = `<div class="empty-card">No events in this month.</div>`;
-        return;
-      }
-
-      // Jamaica parishes geographically arranged
-      const jamaicaParishes = [
-        'Hanover', 'Saint James', 'Trelawny', 'Saint Ann',
-        'Westmoreland', 'Saint Elizabeth', 'Manchester', 'Saint Mary',
-        'Saint Andrew', 'Kingston', 'Saint Thomas',
-        'Portland', 'Clarendon', 'Saint Catherine'
-      ];
-
-      const byParish = new Map();
-      rows.forEach(e => {
-        const parish = e.parish || 'Other';
-        if (!byParish.has(parish)) byParish.set(parish, []);
-        byParish.get(parish).push(e);
-      });
-
-      // Create map with geographic arrangement
-      let html = `
-        <div class="parish-map" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 8px;">
-      `;
-
-      jamaicaParishes.forEach(parish => {
-        const events = byParish.get(parish) || [];
-        const yes = events.reduce((sum, e) => sum + (e.counts?.yes_count || 0), 0);
-        const maybe = events.reduce((sum, e) => sum + (e.counts?.maybe_count || 0), 0);
-        const total = yes + maybe;
-        const eventCount = events.length;
-        const hasEvents = eventCount > 0;
-
-        html += `
-          <div class="parish-pin" 
-               data-parish="${escapeHTML(parish)}" 
-               style="padding: 12px; border-radius: 8px; cursor: pointer; 
-                      background: ${hasEvents ? 'rgba(24, 158, 6, 0.15)' : 'rgba(255,255,255,0.05)'}; 
-                      border: 1px solid ${hasEvents ? 'rgba(24, 158, 6, 0.4)' : 'rgba(255,255,255,0.1)'}; 
-                      transition: all 0.2s ease;"
-               role="button" 
-               aria-label="${escapeHTML(parish)} - ${eventCount} event${eventCount !== 1 ? 's' : ''}">
-            <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px; color: var(--text-main);">${escapeHTML(parish)}</div>
-            ${eventCount > 0 ? `<div style="font-size: 13px; color: var(--accent-main); font-weight: 600;">📅 ${eventCount}</div>` : ''}
-            ${total > 0 ? `<div style="font-size: 11px; color: var(--text-muted);">👥 ${total}</div>` : ''}
-          </div>`;
-      });
-
-      html += `</div>`;
-      wrap.innerHTML = html;
-
-      // Attach click handlers to show filtered list
-      wrap.querySelectorAll('.parish-pin').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          el.style.background = el.dataset.parish in Object.fromEntries(byParish) ? 
-            'rgba(24, 158, 6, 0.25)' : 'rgba(255,255,255,0.08)';
-          el.style.transform = 'scale(1.02)';
-        });
-        el.addEventListener('mouseleave', () => {
-          const parish = el.dataset.parish;
-          const hasEvents = byParish.has(parish) && byParish.get(parish).length > 0;
-          el.style.background = hasEvents ? 'rgba(24, 158, 6, 0.15)' : 'rgba(255,255,255,0.05)';
-          el.style.transform = 'scale(1)';
-        });
-        el.addEventListener('click', () => {
-          const parish = el.dataset.parish;
-          document.getElementById('q').value = parish;
-          toast('info', 'Filter', `Showing events in ${parish}`);
-          // Trigger search/filter update
-          const searchEvent = new Event('input', { bubbles: true });
-          document.getElementById('q').dispatchEvent(searchEvent);
-        });
-      });
     }
 
     /* ========= Calendar renderer ========= */
@@ -1303,11 +1062,11 @@
 
       document.getElementById('detailsDesc').textContent = e.description || "No description yet.";
 
-      document.getElementById('detailsGo').onclick = () => location.href = `/event.html?id=${encodeURIComponent(e.id)}`;
+      document.getElementById('detailsGo').onclick = () => location.href = `./event.html?id=${encodeURIComponent(e.id)}`;
       document.getElementById('detailsRSVP').onclick = () => {
         // ✅ Use authUI.requireLogin
         authUI.requireLogin({ message: "Please log in to RSVP." }).then(ok => {
-          if (ok) location.href = `/event.html?id=${encodeURIComponent(e.id)}#rsvp`;
+          if (ok) location.href = `./event.html?id=${encodeURIComponent(e.id)}#rsvp`;
         });
       };
 
@@ -1369,29 +1128,6 @@
     });
     document.getElementById('month').addEventListener('change', (e)=>{
       viewMonth = Number(e.target.value); setMonthUI(); applyFilters(); updateMonthLabel();
-    });
-
-    /* ========= View toggle ========= */
-    document.querySelectorAll('.view-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const view = btn.dataset.view;
-        currentView = view;
-
-        // Update active button
-        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Show/hide views
-        const calWrap = document.getElementById('calendarWrap');
-        const listWrap = document.getElementById('listWrap');
-        const mapWrap = document.getElementById('mapWrap');
-
-        calWrap.style.display = view === 'calendar' ? 'grid' : 'none';
-        listWrap.style.display = view === 'list' ? 'block' : 'none';
-        mapWrap.style.display = view === 'map' ? 'block' : 'none';
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
     });
 
     /* ========= Create/Edit modal ========= */
@@ -1574,6 +1310,156 @@
     });
 
     /* ========= Boot ========= */
+    
+    // ── JAMAICA MAP ────────────────────────────────────────────────────
+    const PARISH_COORDS = {
+      'Kingston':      [17.9971, -76.7936],
+      'St. Andrew':    [18.0731, -76.7832],
+      'St. Catherine': [17.9867, -76.9559],
+      'St. Thomas':    [17.9089, -76.5399],
+      'Portland':      [18.1780, -76.4480],
+      'St. Mary':      [18.2667, -76.9333],
+      'St. Ann':       [18.4343, -77.2000],
+      'Trelawny':      [18.3520, -77.6128],
+      'St. James':     [18.4762, -77.9203],
+      'Hanover':       [18.4133, -78.1267],
+      'Westmoreland':  [18.2982, -78.1405],
+      'St. Elizabeth': [17.9826, -77.7383],
+      'Manchester':    [18.0426, -77.5134],
+      'Clarendon':     [17.9682, -77.2411],
+    };
+    const KNOWN_VENUES = {
+      'Vernamfield': [17.8645, -77.1942],
+      'Caymanas Park': [17.9958, -76.9019],
+      'Fairview': [18.4789, -77.9156],
+      'Kingston Harbour': [17.9765, -76.7890],
+    };
+
+    let map = null;
+    let mapMarkers = [];
+    let mapInitialized = false;
+
+    function getEventCoords(ev) {
+      // Try matching known venue names
+      const loc = (ev.location || '').toLowerCase();
+      for (const [venue, coords] of Object.entries(KNOWN_VENUES)) {
+        if (loc.includes(venue.toLowerCase())) return coords;
+      }
+      // Fall back to parish
+      if (ev.parish && PARISH_COORDS[ev.parish]) {
+        // Jitter slightly so multiple events in same parish don't stack exactly
+        const base = PARISH_COORDS[ev.parish];
+        return [base[0] + (Math.random()-0.5)*0.04, base[1] + (Math.random()-0.5)*0.06];
+      }
+      return null;
+    }
+
+    function getMarkerColor(ev) {
+      const now = Date.now();
+      const start = ev.starts_at ? new Date(ev.starts_at).getTime() : 0;
+      const msDay = 86400000;
+      if (start < now + msDay && start > now - msDay) return '#e50914'; // today
+      if (start < now + 7*msDay) return '#FFD93B'; // this week
+      return '#128b02'; // upcoming
+    }
+
+    function makeMarkerIcon(color) {
+      return L.divIcon({
+        html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,.6);box-shadow:0 0 8px ${color}80;"></div>`,
+        className: '',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+        popupAnchor: [0, -10],
+      });
+    }
+
+    function initMap(events) {
+      if (mapInitialized) {
+        // Just update markers
+        mapMarkers.forEach(m => m.remove());
+        mapMarkers = [];
+      } else {
+        map = L.map('eventMap', {
+          center: [18.1096, -77.2975], // Center of Jamaica
+          zoom: 9,
+          zoomControl: true,
+          attributionControl: false,
+        });
+
+        // Dark tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          attribution: '&copy; CartoDB',
+        }).addTo(map);
+
+        mapInitialized = true;
+      }
+
+      const now = Date.now();
+      const upcoming = events.filter(e => !e.starts_at || new Date(e.starts_at).getTime() > now - 86400000*1);
+
+      upcoming.forEach(ev => {
+        const coords = getEventCoords(ev);
+        if (!coords) return;
+        const color = getMarkerColor(ev);
+        const d = ev.starts_at ? new Date(ev.starts_at).toLocaleDateString('en-JM',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'Date TBA';
+        const popup = L.popup({ maxWidth: 220 }).setContent(`
+          <div class="map-popup-title">${ev.title || 'Event'}</div>
+          <div class="map-popup-meta">${d}<br>${ev.location || ev.parish || ''}</div>
+          <a class="map-popup-btn" href="./event.html?id=${ev.id}">View Event →</a>
+        `);
+        const marker = L.marker(coords, { icon: makeMarkerIcon(color) })
+          .addTo(map)
+          .bindPopup(popup);
+        mapMarkers.push(marker);
+      });
+    }
+
+    // Tab switching
+    document.querySelectorAll('.view-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        const panel = document.getElementById('view-' + tab.dataset.view);
+        if (panel) panel.classList.add('active');
+        if (tab.dataset.view === 'map' && typeof cached !== 'undefined' && cached.length) {
+          setTimeout(() => initMap(cached || []), 50);
+        }
+        if (tab.dataset.view === 'map' && map) {
+          setTimeout(() => map.invalidateSize(), 50);
+        }
+      });
+    });
+
+    // Hook into existing loadEvents to also init map
+    const _origRender = typeof renderEvents !== 'undefined' ? renderEvents : null;
+
+    
+    // ── EVENT SUBSCRIPTION ──────────────────────────────────────────────
+    authUI.onChange(() => {
+      const user = typeof authUI !== 'undefined' ? authUI.getUser() : null;
+      if (user?.email && $('subEmail')) $('subEmail').value = user.email;
+    });
+    window.subscribeEvents = async function() {
+      const msg = $('subMsg');
+      if (!msg) return;
+      const email = ($('subEmail')?.value || '').trim();
+      if (!email || !email.includes('@')) {
+        msg.textContent = 'Enter a valid email address.';
+        msg.className = 'subscribe-msg err'; return;
+      }
+      $('subBtn').disabled = true;
+      $('subBtn').textContent = '…';
+      const user = typeof authUI !== 'undefined' ? authUI.getUser() : null;
+      const { error } = await supabase.from('event_subscriptions').upsert({
+        email, user_id: user?.id || null, active: true,
+      }, { onConflict: 'email' });
+      $('subBtn').disabled = false; $('subBtn').textContent = 'Subscribe';
+      if (error) { msg.textContent = 'Error: ' + error.message; msg.className = 'subscribe-msg err'; }
+      else { msg.textContent = '✓ Subscribed! You\'ll get the monthly digest.'; msg.className = 'subscribe-msg ok'; }
+    };
+
     window.addEventListener('DOMContentLoaded', async ()=>{
       await loadHostTeamsForFilter();
       cached = await fetchAll();
@@ -1587,5 +1473,3 @@
   </script>
 </body>
 </html>
-
-

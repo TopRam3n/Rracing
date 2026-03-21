@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>New Highlight — ROK Racers JA</title>
   <meta name="description" content="Publish a highlight to the ROK Racers JA timeline."/>
-  <link rel="icon" href="../../Assets/og.png"/>
+  <link rel="icon" href="Assets/og.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,9 +13,6 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
-
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root{
@@ -143,7 +140,7 @@
   <!-- NAV — matches index.html exactly -->
   <div class="nav-wrapper" id="navWrapper">
     <div class="container nav">
-      <a href="./index.html" class="logo">
+      <a href="/index.html" class="logo">
         <div class="logo-mark">
           <img src="Assets/logo.png" alt="ROK Racers JA logo">
         </div>
@@ -176,14 +173,14 @@
               <div class="dd-title">Signed in as</div>
               <div class="dd-email" id="ddEmail">—</div>
             </div>
-            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
-            <a href="./garage.html">My Garage</a>
-            <a href="./tickets.html">My Tickets</a>
-            <a href="./likes-builds.html">Liked Builds</a>
-            <a href="./likes-sightings.html">Liked Sightings</a>
-            <a href="./teams.html">My Teams</a>
-            <a id="myEventsLink" href="./admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
             <div class="dd-sep"></div>
             <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
@@ -197,13 +194,13 @@
       <div class="page-header">
         <h2>New Highlight</h2>
         <p>Publish a story, recap, or drop to the community timeline. Admins and promoters only.</p>
-        <div class="admin-only-note">🔒 Admin / Promoter access required</div>
+        <div class="admin-only-note">🔒 Driver / Promoter / Admin access required</div>
       </div>
 
       <!-- Access wall shown to non-admin users -->
       <div id="accessWall" class="access-wall" style="display:none">
         <h3>Access Required</h3>
-        <p>Publishing highlights is limited to admins and promoters.<br>Sign in if you have access, or reach out to be verified.</p>
+        <p>Publishing highlights is limited to drivers, promoters, and admins.<br>Sign in if you have access, or reach out to be verified.</p>
         <button id="wallSignInBtn" class="btn btn-primary">Sign In</button>
       </div>
 
@@ -250,6 +247,17 @@
           <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
         </div>
 
+        
+        <div class="form-row" style="margin-top:0">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">— OR —</label>
+          <label for="hYoutubeUrl">YouTube video URL (replaces file upload)</label>
+          <input id="hYoutubeUrl" type="url" placeholder="https://youtube.com/watch?v=… or youtu.be/…"/>
+          <div class="form-hint">Paste a YouTube link to embed instead of uploading a file. Good for race highlights, event recaps, full runs.</div>
+          <div id="ytPreview" style="display:none;margin-top:10px;border-radius:12px;overflow:hidden;aspect-ratio:16/9">
+            <iframe id="ytFrame" width="100%" height="100%" style="border:none;display:block" allowfullscreen></iframe>
+          </div>
+        </div>
+
         <div class="form-row">
           <label for="hLinkUrl">Optional link URL</label>
           <input id="hLinkUrl" type="url" placeholder="https://…">
@@ -258,7 +266,7 @@
 
         <div class="form-footer">
           <button id="publishBtn" class="btn btn-primary">Publish Highlight</button>
-          <a href="./highlights.html" class="btn btn-ghost">Cancel</a>
+          <a href="/highlights.html" class="btn btn-ghost">Cancel</a>
           <span id="formMsg" class="form-msg"></span>
         </div>
       </div>
@@ -292,13 +300,26 @@
         return;
       }
 
-      // Check admin or promoter
+      // Check admin, promoter, or driver
       const isAdmin = !!authUI.isAdmin?.();
       const isPromoter = !!authUI.isPromoter?.();
 
+      // Check driver role via profile query
+      let isDriver = false;
+      if (!isAdmin && !isPromoter) {
+        try {
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+          isDriver = prof?.role === 'driver';
+        } catch {}
+      }
+
       // Also check admin_users table as fallback
       let tableAdmin = false;
-      if (!isAdmin && !isPromoter) {
+      if (!isAdmin && !isPromoter && !isDriver) {
         try {
           const { data } = await supabase
             .from('admin_users')
@@ -310,7 +331,7 @@
       }
 
       $('loadingState').style.display = 'none';
-      if (isAdmin || isPromoter || tableAdmin) {
+      if (isAdmin || isPromoter || isDriver || tableAdmin) {
         $('formWrap').style.display = 'block';
       } else {
         $('accessWall').style.display = 'block';
@@ -428,6 +449,8 @@
       const body = $('hBody').value.trim();
       const category = $('hCategory').value || 'News';
       const link_url = $('hLinkUrl').value.trim() || null;
+      const ytUrl = $('hYoutubeUrl').value.trim() || null;
+      const ytId = ytUrl ? extractYTId(ytUrl) : null;
 
       if (!title) { formMsg.textContent = 'Title is required.'; formMsg.className = 'form-msg err'; return; }
       if (!body) { formMsg.textContent = 'Story is required.'; formMsg.className = 'form-msg err'; return; }
@@ -449,7 +472,7 @@
             image_url: cover?.url || null,
             image_type: cover?.type || null,
             link_url,
-            created_by: user.id,
+            user_id: user.id,
           })
           .select('id')
           .maybeSingle();
@@ -459,7 +482,7 @@
         formMsg.textContent = '✓ Published! Redirecting…';
         formMsg.className = 'form-msg ok';
         setTimeout(() => {
-          window.location.href = `/highlight.html?id=${data.id}`;
+          window.location.href = `./highlight.html?id=${data.id}`;
         }, 700);
       } catch (err) {
         console.error(err);
@@ -475,5 +498,3 @@
   </script>
 </body>
 </html>
-
-

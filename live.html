@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Live — ROK Racers JA</title>
   <meta name="description" content="Watch live motorsport streams from Jamaican teams and events. Real-time, straight from the grid."/>
-  <link rel="icon" href="../../Assets/og.png"/>
+  <link rel="icon" href="Assets/og.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,8 +14,6 @@
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
 
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root{
@@ -387,6 +385,11 @@
               <button class="btn btn-red btn-sm" id="goLiveSignInBtn" style="width:100%">Sign in to go live</button>
             </div>
 
+            <div id="goLiveAccessNudge" style="display:none;margin-top:12px;padding:12px;background:rgba(255,217,59,.05);border:1px solid rgba(255,217,59,.18);border-radius:12px">
+              <div style="font-size:13px;color:#FFD93B;margin-bottom:8px">Want to go live? You need Promoter access.</div>
+              <a href="./onboarding.html?force=1" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">Request Promoter Access →</a>
+            </div>
+
             <div id="goLiveFormWrap" style="display:none;margin-top:12px">
               <div class="go-live-form open" id="goLiveForm">
                 <div>
@@ -643,15 +646,41 @@
     // ── Go Live ───────────────────────────────────────────────────────────────
     let myActiveStreamId = null;
 
-    function syncGoLivePanel() {
+    async function syncGoLivePanel() {
       const user = authUI.getUser();
       if (!user) {
         $('goLiveSignInNudge').style.display = 'block';
+        $('goLiveAccessNudge').style.display = 'none';
         $('goLiveFormWrap').style.display = 'none';
-      } else {
-        $('goLiveSignInNudge').style.display = 'none';
+        return;
+      }
+
+      // Check promoter or admin role
+      const isAdmin = !!authUI.isAdmin?.();
+      const isPromoter = !!authUI.isPromoter?.();
+      let hasAccess = isAdmin || isPromoter;
+
+      if (!hasAccess) {
+        // Double-check via profiles table in case auth-ui hasn't loaded role yet
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+          const role = data?.role || 'viewer';
+          hasAccess = role === 'promoter' || role === 'admin';
+        } catch {}
+      }
+
+      $('goLiveSignInNudge').style.display = 'none';
+      if (hasAccess) {
+        $('goLiveAccessNudge').style.display = 'none';
         $('goLiveFormWrap').style.display = 'block';
         checkMyStream(user.id);
+      } else {
+        $('goLiveAccessNudge').style.display = 'block';
+        $('goLiveFormWrap').style.display = 'none';
       }
     }
 

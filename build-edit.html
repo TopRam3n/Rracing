@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Build Editor — ROK Racers JA</title>
 <meta name="description" content="Create or edit your build in the ROK Racers JA garage." />
-<link rel="icon" href="../../Assets/og.png" />
+<link rel="icon" href="Assets/og.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,8 +15,6 @@
 <script src="supabase-client.js"></script>
 <script src="auth-ui.js"></script>
 
-<!-- Design System (centralized tokens + components) -->
-<link rel="stylesheet" href="../../styles/design-system.css">
 
 <style>
   :root{
@@ -118,14 +116,16 @@
     transform:translateY(-1px);
   }
   .dropdown{
+    display:none;
     position:absolute;right:0;top:40px;
     background:#121212;
     border:1px solid var(--line);
     box-shadow:0 20px 40px rgba(0,0,0,.6);
     border-radius:16px;
-    display:flex;flex-direction:column;
+    flex-direction:column;
     min-width:190px;z-index:60;
   }
+  .dropdown.open{display:flex}
   .dropdown a,.dropdown button{
     padding:10px 16px;text-align:left;border:none;
     background:transparent;color:var(--fg);font-size:13px;
@@ -257,12 +257,13 @@
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
         <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="/src/Features/about.html">About</a>
-          <a class="btn" role="menuitem" href="/src/Features/events.html">Events</a>
-          <a class="btn" role="menuitem" href="/src/Features/garage.html">Garage</a>
-          <a class="btn" role="menuitem" href="/src/Features/teams.html">Community</a>
-          <a class="btn" role="menuitem" href="/src/Features/marketplace.html">Marketplace</a>
-          <a class="btn" role="menuitem" href="/src/Features/store.html">Store</a>
+          <a class="btn" role="menuitem" href="./events.html">Events</a>
+          <a class="btn" role="menuitem" href="./garage.html">Garage</a>
+          <a class="btn" role="menuitem" href="./teams.html">Community</a>
+          <a class="btn" role="menuitem" href="./live.html">Live</a>
+          <a class="btn" role="menuitem" href="./highlights.html">Feed</a>
+          <a class="btn" role="menuitem" href="./marketplace.html">Marketplace</a>
+          <a class="btn" role="menuitem" href="./store.html">Store</a>
         </div>
 
         <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
@@ -275,7 +276,7 @@
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
+            <div id="navProfileDropdown" class="dropdown">
               <a href="/garage.html?view=my">My Garage</a>
               <a href="/src/Features/tickets.html">My Tickets</a>
               <a href="/src/Features/likes-builds.html">Liked Builds</a>
@@ -863,7 +864,7 @@
       }
 
       setSaveState('Saved');
-      location.href = `/build.html?id=${encodeURIComponent(id)}`;
+      location.href = `./build.html?id=${encodeURIComponent(id)}`;
     }catch(err){
       console.error(err);
       alert('Could not save build. Check console / RLS rules and try again.');
@@ -893,9 +894,9 @@
 
   cancelBtn.addEventListener('click', ()=>{
     if(buildId){
-      location.href = `/build.html?id=${encodeURIComponent(buildId)}`;
+      location.href = `./build.html?id=${encodeURIComponent(buildId)}`;
     }else{
-      location.href = '/garage.html';
+      location.href = './garage.html';
     }
   });
 

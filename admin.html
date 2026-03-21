@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin — ROK Racers JA</title>
+  <link rel="icon" href="Assets/og.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth-ui.js"></script>
+  <style>
+    :root{
+      --bg:#050508;--bg-card:#141414;--bg-card2:#1a1a1f;
+      --green:#128b02;--yellow:#FFD93B;--red:#e50914;
+      --fg:#fff;--muted:#bdbdbd;--line:rgba(255,255,255,0.06);
+      --shadow:0 18px 40px rgba(0,0,0,0.7);
+      --tf:0.18s ease-out;--nav:76px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);color:var(--fg);font-family:"Rajdhani",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1300px,100% - 32px);margin:0 auto}
+
+    /* NAV */
+    .nav-wrapper{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);background:linear-gradient(to bottom,rgba(5,5,8,.9),rgba(5,5,8,.6));border-bottom:1px solid var(--line);transition:background .35s,box-shadow .35s}
+    .nav-wrapper.nav-solid{background:rgba(5,5,8,.98);box-shadow:var(--shadow)}
+    .nav{height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .logo{display:flex;align-items:center;gap:8px}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(18,139,2,.7);overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+    .logo-mark img{width:100%;height:100%;object-fit:cover}
+    .logo-text{font-family:"Bebas Neue";font-size:20px;text-transform:uppercase}
+    .admin-badge{font-size:10px;text-transform:uppercase;letter-spacing:.2em;padding:3px 10px;border-radius:999px;background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:#ff8080}
+    .nav-cta{display:flex;gap:8px;align-items:center}
+    .btn{border-radius:999px;padding:8px 16px;font-size:13px;text-transform:uppercase;letter-spacing:.15em;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:#fff;transition:background var(--tf),border-color var(--tf),transform var(--tf)}
+    .btn-primary{background:radial-gradient(circle at top left,#39ff96,var(--green));border-color:rgba(18,139,2,.85);box-shadow:0 0 20px rgba(18,139,2,.4)}
+    .btn-ghost{border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.25)}
+    .btn-danger{border-color:rgba(229,9,20,.5);color:#ff8080;background:rgba(229,9,20,.08)}
+    .btn-danger:hover{background:rgba(229,9,20,.16)}
+    .btn-success{border-color:rgba(18,139,2,.5);color:#9affc5;background:rgba(18,139,2,.08)}
+    .btn-success:hover{background:rgba(18,139,2,.16)}
+    .btn-sm{padding:5px 12px;font-size:11px;letter-spacing:.14em}
+    .btn[disabled]{opacity:.45;pointer-events:none}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{width:32px;height:32px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.18);font-size:13px;user-select:none}
+    .dropdown{position:absolute;right:0;top:44px;background:rgba(10,10,14,.96);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;display:none;flex-direction:column;min-width:220px;z-index:999;backdrop-filter:blur(16px);overflow:hidden}
+    .dropdown.open{display:flex}
+    .dd-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
+    .dd-title{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+    .dd-email{font-size:13px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dropdown a,.dropdown button{padding:10px 14px;text-align:left;border:none;background:transparent;color:var(--fg);font-size:13px;width:100%;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit}
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06)}
+    .dd-sep{height:1px;background:rgba(255,255,255,.08);margin:4px 0}
+
+    /* LAYOUT */
+    .page{padding:32px 0 72px;position:relative;z-index:1}
+    .page-title{font-family:"Bebas Neue";font-size:clamp(36px,5vw,54px);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+    .page-sub{font-size:13px;color:var(--muted);margin-bottom:32px}
+
+    /* TABS */
+    .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:28px;overflow-x:auto;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{padding:10px 18px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:color var(--tf),border-color var(--tf);white-space:nowrap;background:transparent;border-top:none;border-left:none;border-right:none;font-family:inherit}
+    .tab:hover{color:var(--fg)}
+    .tab.active{color:var(--fg);border-bottom-color:var(--yellow)}
+    .tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:999px;background:var(--red);font-size:10px;font-weight:700;padding:0 5px;margin-left:6px;color:#fff}
+    .panel{display:none}
+    .panel.active{display:block}
+
+    /* STAT CARDS */
+    .stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:28px}
+    .stat-card{padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--bg-card);text-align:center}
+    .stat-n{font-family:"Bebas Neue";font-size:36px;letter-spacing:1px;line-height:1}
+    .stat-l{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-top:4px}
+    .stat-card.green .stat-n{color:#3dff9f}
+    .stat-card.yellow .stat-n{color:var(--yellow)}
+    .stat-card.red .stat-n{color:#ff8080}
+    .stat-card.blue .stat-n{color:#6ab0ff}
+
+    /* REQUEST / ITEM CARDS */
+    .item-list{display:flex;flex-direction:column;gap:12px}
+    .item-card{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:16px;
+      align-items:start;
+      padding:16px 18px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:var(--bg-card);
+    }
+    .item-card:hover{border-color:rgba(255,255,255,.12)}
+    .item-main{display:flex;flex-direction:column;gap:5px;min-width:0}
+    .item-title{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .item-meta{font-size:12px;color:var(--muted);line-height:1.4}
+    .item-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+    .tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);background:rgba(255,255,255,.02)}
+    .tag.pending{border-color:rgba(255,217,59,.35);color:var(--yellow);background:rgba(255,217,59,.06)}
+    .tag.approved{border-color:rgba(18,139,2,.4);color:#9affc5;background:rgba(18,139,2,.06)}
+    .tag.rejected{border-color:rgba(229,9,20,.35);color:#ff8080;background:rgba(229,9,20,.05)}
+    .tag.verified{border-color:rgba(100,180,255,.4);color:#a0d0ff;background:rgba(100,180,255,.06)}
+    .empty-state{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.01)}
+    .empty-state strong{display:block;font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;color:rgba(255,255,255,.25);margin-bottom:6px}
+    .skel{border-radius:16px;background:linear-gradient(90deg,#141414 25%,#1e1e1e 50%,#141414 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;height:80px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ROLE EDITOR */
+    .role-select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#fff;padding:6px 10px;border-radius:10px;font-family:inherit;font-size:13px;outline:none;cursor:pointer}
+    .role-select:focus{border-color:rgba(255,217,59,.5)}
+    .role-select option{background:#1a1a1a}
+
+    /* TROPHY CARD */
+    .trophy-img{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:var(--bg-card2);flex-shrink:0}
+    .trophy-placeholder{width:64px;height:64px;border-radius:12px;border:1px solid var(--line);background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .item-card.trophy{grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+
+    /* MODAL */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:999;padding:20px}
+    .modal-backdrop.open{display:flex}
+    .modal{width:min(520px,96vw);background:rgba(12,12,16,.97);border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 40px 120px rgba(0,0,0,.85);overflow:hidden;backdrop-filter:blur(20px)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+    .modal-title{font-family:"Bebas Neue";font-size:26px;letter-spacing:2px;text-transform:uppercase}
+    .modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto}
+    .modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+    .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:5px}
+    .field input,.field textarea,.field select{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:#fff;padding:10px 12px;border-radius:12px;font-family:inherit;font-size:13px;outline:none}
+    .field input:focus,.field textarea:focus,.field select:focus{border-color:rgba(18,139,2,.6)}
+    .field textarea{min-height:70px;resize:vertical}
+    .msg{font-size:12px;color:var(--muted);min-height:14px}
+    .msg.ok{color:#9affc5}
+    .msg.err{color:#ff9a9a}
+
+    /* ACCESS GATE */
+    #accessGate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px}
+    #accessGate .lock{font-size:48px}
+    #accessGate h2{font-family:"Bebas Neue";font-size:40px;letter-spacing:2px}
+    #accessGate p{color:var(--muted);max-width:320px;font-size:14px}
+  </style>
+</head>
+<body>
+
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="./index.html" class="logo">
+        <div class="logo-mark"><img src="Assets/logo.png" alt="ROK"></div>
+        <div class="logo-text">ROK RACERS JA</div>
+      </a>
+      <div class="admin-badge">Admin Panel</div>
+      <div class="nav-cta">
+        <a href="./index.html" class="btn btn-ghost btn-sm">← Back to site</a>
+        <div class="profile-menu">
+          <div id="profileChip" class="profile-chip"><span id="profileInitials">A</span></div>
+          <div id="dropdown" class="dropdown">
+            <div class="dd-head">
+              <div class="dd-title">Admin</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+            <div class="dd-sep"></div>
+            <button id="signoutBtn" type="button">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="container">
+
+      <!-- Access gate — shown until admin verified -->
+      <div id="accessGate">
+        <div class="lock">🔒</div>
+        <h2>Admin Access Only</h2>
+        <p>Sign in with your admin account to access this panel.</p>
+        <button class="btn btn-primary" onclick="authUI.requireLogin()">Sign In</button>
+      </div>
+
+      <!-- Admin content — hidden until admin confirmed -->
+      <div id="adminContent" style="display:none">
+        <div class="page-title">Command Centre</div>
+        <p class="page-sub">Approve teams · Verify trophies · Manage roles · Moderate content</p>
+
+        <!-- Stat overview -->
+        <div class="stat-row" id="statRow">
+          <div class="stat-card yellow"><div class="stat-n" id="sTeamReqs">—</div><div class="stat-l">Team Requests</div></div>
+          <div class="stat-card red"><div class="stat-n" id="sTrophies">—</div><div class="stat-l">Trophy Claims</div></div>
+          <div class="stat-card blue"><div class="stat-n" id="sUsers">—</div><div class="stat-l">Total Users</div></div>
+          <div class="stat-card green"><div class="stat-n" id="sTeams">—</div><div class="stat-l">Active Teams</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-tab="teamreqs">Team Requests <span class="tab-badge" id="badgeTeamReqs">0</span></button>
+          <button class="tab" data-tab="trophies">Trophy Claims <span class="tab-badge" id="badgeTrophies">0</span></button>
+          <button class="tab" data-tab="roles">User Roles</button>
+          <button class="tab" data-tab="teams">Manage Teams</button>
+          <button class="tab" data-tab="applications">Applications</button>
+          <button class="tab" data-tab="jmmc">JMMC Licenses <span class="tab-badge" id="badgeJmmc">0</span></button>
+        </div>
+
+        <!-- ── PANEL: TEAM REQUESTS ── -->
+        <div class="panel active" id="panel-teamreqs">
+          <div class="item-list" id="teamReqsList">
+            <div class="skel"></div><div class="skel"></div>
+          </div>
+        </div>
+
+        <!-- ── PANEL: TROPHY CLAIMS ── -->
+        <div class="panel" id="panel-trophies">
+          <div class="item-list" id="trophyClaimsList">
+            <div class="skel"></div><div class="skel"></div>
+          </div>
+        </div>
+
+        <!-- ── PANEL: USER ROLES ── -->
+        <div class="panel" id="panel-roles">
+          <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input id="userSearchQ" placeholder="Search by email or handle…" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:#fff;padding:9px 13px;border-radius:12px;font-family:inherit;font-size:13px;outline:none;min-width:240px;flex:1"/>
+            <button class="btn btn-ghost btn-sm" onclick="searchUsers()">Search</button>
+          </div>
+          <div class="item-list" id="userRolesList">
+            <div class="empty-state"><strong>Search above</strong>Find a user by email or handle to update their role.</div>
+          </div>
+        </div>
+
+        <!-- ── PANEL: MANAGE TEAMS ── -->
+        <div class="panel" id="panel-teams">
+          <div style="margin-bottom:16px">
+            <button class="btn btn-primary btn-sm" onclick="openCreateTeam()">+ Create Team</button>
+          </div>
+          <div class="item-list" id="teamsList">
+            <div class="skel"></div><div class="skel"></div>
+          </div>
+        </div>
+
+        <!-- ── PANEL: JMMC LICENSES ── -->
+        <div class="panel" id="panel-jmmc">
+          <div class="item-list" id="jmmcList">
+            <div class="skel"></div><div class="skel"></div>
+          </div>
+        </div>
+
+        <!-- ── PANEL: APPLICATIONS ── -->
+        <div class="panel" id="panel-applications">
+          <div class="item-list" id="applicationsList">
+            <div class="skel"></div><div class="skel"></div>
+          </div>
+        </div>
+
+      </div><!-- /adminContent -->
+    </div>
+  </div>
+
+  <!-- CREATE/EDIT TEAM MODAL -->
+  <div class="modal-backdrop" id="teamModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="teamModalTitle">Create Team</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('teamModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="teamModalId"/>
+        <div class="field"><label>Team name *</label><input id="tmName" placeholder="e.g. Kingston Drift Kings"/></div>
+        <div class="field"><label>Parish</label>
+          <select id="tmParish">
+            <option value="">Select parish</option>
+            <option>Kingston</option><option>St. Andrew</option><option>St. Catherine</option>
+            <option>St. Thomas</option><option>Portland</option><option>St. Mary</option>
+            <option>St. Ann</option><option>Trelawny</option><option>St. James</option>
+            <option>Hanover</option><option>Westmoreland</option><option>St. Elizabeth</option>
+            <option>Manchester</option><option>Clarendon</option>
+          </select>
+        </div>
+        <div class="field"><label>Discipline</label>
+          <select id="tmDiscipline">
+            <option value="">Select discipline</option>
+            <option>Drift</option><option>Drag</option><option>Track</option><option>Stance</option>
+            <option>Street</option><option>Bikes</option><option>Off-road</option><option>Classic</option>
+          </select>
+        </div>
+        <div class="field"><label>Bio</label><textarea id="tmBio" placeholder="Short description of the team…"></textarea></div>
+        <div class="field"><label>Logo URL (optional)</label><input id="tmLogo" placeholder="https://…"/></div>
+        <div class="field"><label>Cover image URL (optional)</label><input id="tmCover" placeholder="https://…"/></div>
+        <div class="field"><label>Instagram handle (optional)</label><input id="tmIG" placeholder="@teamhandle"/></div>
+        <div class="field" style="display:flex;align-items:center;gap:10px">
+          <input type="checkbox" id="tmPromoter" style="width:auto;min-width:auto"/>
+          <label for="tmPromoter" style="margin:0;text-transform:none;font-size:13px;color:var(--fg)">This team has promoter privileges (can create events, go live)</label>
+        </div>
+        <div class="msg" id="teamModalMsg"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal('teamModal')">Cancel</button>
+        <button class="btn btn-primary" id="teamModalSave" onclick="saveTeam()">Save Team</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REJECT REASON MODAL -->
+  <div class="modal-backdrop" id="rejectModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Reject Request</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('rejectModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rejectId"/>
+        <input type="hidden" id="rejectType"/>
+        <div class="field"><label>Reason (optional — shown to user)</label>
+          <textarea id="rejectReason" placeholder="e.g. Not enough info provided. Feel free to reapply with more details."></textarea>
+        </div>
+        <div class="msg" id="rejectMsg"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal('rejectModal')">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmReject()">Reject</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+window.addEventListener('scroll', () => $('navWrapper').classList.toggle('nav-solid', window.scrollY > 40), {passive:true});
+
+// ── Dropdown ──────────────────────────────────────────────────────────
+$('profileChip').addEventListener('click', () => $('dropdown').classList.toggle('open'));
+document.addEventListener('click', e => { if (!e.target.closest('.profile-menu')) $('dropdown').classList.remove('open'); });
+$('signoutBtn').addEventListener('click', () => authUI.signOut?.());
+
+// ── Modals ─────────────────────────────────────────────────────────────
+window.openModal  = id => $(id).classList.add('open');
+window.closeModal = id => $(id).classList.remove('open');
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+// ── Tabs ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab)?.classList.add('active');
+    // Lazy-load panel content
+    if (tab.dataset.tab === 'teams') loadTeams();
+    if (tab.dataset.tab === 'applications') loadApplications();
+    if (tab.dataset.tab === 'jmmc') loadJMMC();
+  });
+});
+
+// ── Auth gate ──────────────────────────────────────────────────────────
+async function checkAdmin() {
+  const user = authUI.getUser?.();
+  if (!user) { $('accessGate').style.display = 'flex'; $('adminContent').style.display = 'none'; return false; }
+
+  // Check admin flag on profile
+  const { data: profile } = await supabase.from('profiles').select('role,plan').eq('id', user.id).maybeSingle();
+  const isAdmin = profile?.role === 'admin';
+
+  if (!isAdmin) {
+    $('accessGate').style.display = 'flex';
+    $('accessGate').querySelector('p').textContent = 'Your account does not have admin access.';
+    $('adminContent').style.display = 'none';
+    return false;
+  }
+
+  $('accessGate').style.display = 'none';
+  $('adminContent').style.display = 'block';
+  $('profileInitials').textContent = (user.email?.[0] || 'A').toUpperCase();
+  $('ddEmail').textContent = user.email || '—';
+  return true;
+}
+
+// ── Load stats ─────────────────────────────────────────────────────────
+async function loadStats() {
+  const [teamReqs, trophies, users, teams, jmmc] = await Promise.all([
+    supabase.from('team_requests').select('*', {count:'exact',head:true}).eq('status','pending'),
+    supabase.from('trophies').select('*', {count:'exact',head:true}).eq('verified',false),
+    supabase.from('profiles').select('*', {count:'exact',head:true}),
+    supabase.from('teams').select('*', {count:'exact',head:true}),
+    supabase.from('jmmc_license_applications').select('*', {count:'exact',head:true}).eq('status','pending'),
+  ]);
+  const tr = teamReqs.count || 0;
+  const tp = trophies.count || 0;
+  $('sTeamReqs').textContent  = tr;
+  $('sTrophies').textContent  = tp;
+  $('sUsers').textContent     = users.count || 0;
+  $('sTeams').textContent     = teams.count || 0;
+  const jc = jmmc?.count || 0;
+  if (jc > 0) { $('badgeJmmc').textContent = jc; } else { $('badgeJmmc').style.display = 'none'; }
+  $('badgeTeamReqs').textContent = tr;
+  $('badgeTrophies').textContent = tp;
+  if (!tr) $('badgeTeamReqs').style.display = 'none';
+  if (!tp) $('badgeTrophies').style.display = 'none';
+}
+
+// ── TEAM REQUESTS ──────────────────────────────────────────────────────
+async function loadTeamRequests() {
+  const list = $('teamReqsList');
+  const { data, error } = await supabase
+    .from('team_requests')
+    .select('id,team_name,parish,contact,notes,status,created_at,user_id')
+    .order('created_at', {ascending:false});
+
+  if (error || !data?.length) {
+    list.innerHTML = `<div class="empty-state"><strong>All Clear</strong>No team requests at the moment.</div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(r => `
+    <div class="item-card" id="tr-${r.id}">
+      <div class="item-main">
+        <div class="item-title">${esc(r.team_name)}</div>
+        <div class="item-meta">
+          ${r.parish ? `📍 ${esc(r.parish)} &nbsp;` : ''}
+          📞 ${esc(r.contact)}<br>
+          ${r.notes ? `<span style="color:rgba(255,255,255,.6)">${esc(r.notes)}</span><br>` : ''}
+          <span style="opacity:.5">${new Date(r.created_at).toLocaleDateString('en-JM',{day:'numeric',month:'short',year:'numeric'})}</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <span class="tag ${r.status}">${r.status}</span>
+        ${r.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" onclick="approveTeamRequest('${r.id}','${esc(r.team_name)}','${esc(r.parish||'')}','${esc(r.contact||'')}','${r.user_id||''}')">Approve + Create</button>
+          <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','teamreq')">Reject</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approveTeamRequest(reqId, teamName, parish, contact, userId) {
+  // 1. Create the team
+  const { data: team, error: teamErr } = await supabase.from('teams').insert({
+    name: teamName,
+    parish: parish || null,
+    instagram_handle: contact || null,
+    is_promoter: true,
+    created_by: userId || null,
+  }).select('id').single();
+
+  if (teamErr) { rokToast('Failed to create team: ' + teamErr.message, 'bad'); return; }
+
+  // 2. Add requester as admin of the team
+  if (userId) {
+    await supabase.from('team_members').insert({ team_id: team.id, user_id: userId, role: 'admin' });
+    // 3. Upgrade their role to promoter
+    await supabase.from('profiles').update({ role: 'promoter' }).eq('id', userId);
+  }
+
+  // 4. Mark request approved
+  await supabase.from('team_requests').update({ status: 'approved' }).eq('id', reqId);
+
+  rokToast(`✓ Team "${teamName}" created and approved!`, 'ok');
+  $(`tr-${reqId}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions', innerHTML:'<span class="tag approved">Approved</span>'}));
+  await loadStats();
+}
+
+// ── TROPHY CLAIMS ──────────────────────────────────────────────────────
+async function loadTrophyClaims() {
+  const list = $('trophyClaimsList');
+  const { data, error } = await supabase
+    .from('trophies')
+    .select('id,title,event_name,position,build_id,driver_id,awarded_at,verified,badge_image_url,builds(title,make,model,year),profiles(handle,display_name)')
+    .order('created_at', {ascending:false});
+
+  if (error || !data?.length) {
+    list.innerHTML = `<div class="empty-state"><strong>No Trophy Claims</strong>Drivers haven't submitted any trophies yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(t => {
+    const car = [t.builds?.year,t.builds?.make,t.builds?.model,t.builds?.title].filter(Boolean).join(' ');
+    const driver = t.profiles?.handle ? '@'+t.profiles.handle : t.profiles?.display_name || 'Unknown driver';
+    return `
+      <div class="item-card trophy" id="tp-${t.id}">
+        <div class="${t.badge_image_url ? 'trophy-img' : 'trophy-placeholder'}">${t.badge_image_url ? `<img src="${esc(t.badge_image_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : '🏆'}</div>
+        <div class="item-main">
+          <div class="item-title">${esc(t.title||'Trophy')}${t.position ? ` — ${esc(t.position)}` : ''}</div>
+          <div class="item-meta">
+            ${t.event_name ? `🏁 ${esc(t.event_name)}<br>` : ''}
+            🚗 ${car || 'No car linked'} &nbsp; 👤 ${esc(driver)}<br>
+            ${t.awarded_at ? `📅 ${new Date(t.awarded_at).toLocaleDateString('en-JM',{day:'numeric',month:'short',year:'numeric'})}` : ''}
+          </div>
+        </div>
+        <div class="item-actions">
+          <span class="tag ${t.verified ? 'verified' : 'pending'}">${t.verified ? 'Verified' : 'Pending'}</span>
+          ${!t.verified ? `
+            <button class="btn btn-success btn-sm" onclick="verifyTrophy('${t.id}')">Verify ✓</button>
+            <button class="btn btn-danger btn-sm" onclick="openReject('${t.id}','trophy')">Reject</button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function verifyTrophy(id) {
+  const user = authUI.getUser();
+  const { error } = await supabase.from('trophies').update({ verified: true, verified_by: user?.id, verified_at: new Date().toISOString() }).eq('id', id);
+  if (error) { rokToast('Error: ' + error.message, 'bad'); return; }
+  rokToast('Trophy verified! 🏆', 'ok');
+  const card = $(`tp-${id}`);
+  if (card) card.querySelector('.item-actions').innerHTML = '<span class="tag verified">Verified</span>';
+  await loadStats();
+}
+
+// ── USER ROLES ─────────────────────────────────────────────────────────
+const ROLES = ['viewer','spotter','driver','promoter','seller','admin'];
+
+window.searchUsers = async function() {
+  const q = ($('userSearchQ').value || '').trim();
+  if (!q) return;
+  const list = $('userRolesList');
+  list.innerHTML = '<div class="skel"></div><div class="skel"></div>';
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id,handle,display_name,role,plan,email')
+    .or(`handle.ilike.%${q}%,email.ilike.%${q}%,display_name.ilike.%${q}%`)
+    .limit(20);
+
+  if (error || !data?.length) {
+    list.innerHTML = `<div class="empty-state"><strong>No results</strong>Try a different email or handle.</div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(u => `
+    <div class="item-card" id="user-${u.id}">
+      <div class="item-main">
+        <div class="item-title">${esc(u.display_name || u.handle || 'User')}</div>
+        <div class="item-meta">${esc(u.email||'')} &nbsp; ${u.handle ? '@'+esc(u.handle) : ''}</div>
+      </div>
+      <div class="item-actions" style="gap:10px">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px">Role</div>
+          <select class="role-select" onchange="updateRole('${u.id}', this.value)">
+            ${ROLES.map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px">Plan</div>
+          <select class="role-select" onchange="updatePlan('${u.id}', this.value)">
+            ${['free','pro','elite'].map(p => `<option value="${p}" ${p===(u.plan||'free')?'selected':''}>${p}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+};
+
+window.updateRole = async function(userId, role) {
+  const { error } = await supabase.from('profiles').update({ role }).eq('id', userId);
+  if (error) rokToast('Failed: ' + error.message, 'bad');
+  else rokToast(`Role updated to ${role} ✓`, 'ok');
+};
+window.updatePlan = async function(userId, plan) {
+  const { error } = await supabase.from('profiles').update({ plan }).eq('id', userId);
+  if (error) rokToast('Failed: ' + error.message, 'bad');
+  else rokToast(`Plan updated to ${plan} ✓`, 'ok');
+};
+
+// ── MANAGE TEAMS ───────────────────────────────────────────────────────
+async function loadTeams() {
+  const list = $('teamsList');
+  const { data, error } = await supabase
+    .from('teams')
+    .select('id,name,parish,discipline,is_promoter,logo_url')
+    .order('name');
+
+  if (error || !data?.length) {
+    list.innerHTML = `<div class="empty-state"><strong>No Teams</strong>Create the first team above.</div>`;
+    return;
+  }
+  list.innerHTML = data.map(t => `
+    <div class="item-card">
+      <div class="item-main">
+        <div class="item-title">${esc(t.name)}</div>
+        <div class="item-meta">${t.parish||''} ${t.discipline ? '· '+t.discipline : ''} ${t.is_promoter ? '· <span style="color:#9affc5">Promoter</span>' : ''}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openEditTeam(${JSON.stringify(t).replace(/'/g,'&#39;')})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTeam('${t.id}','${esc(t.name)}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.openCreateTeam = function() {
+  $('teamModalTitle').textContent = 'Create Team';
+  $('teamModalId').value = '';
+  ['tmName','tmBio','tmLogo','tmCover','tmIG'].forEach(id => $(id).value = '');
+  $('tmParish').value = '';
+  $('tmDiscipline').value = '';
+  $('tmPromoter').checked = false;
+  $('teamModalMsg').textContent = '';
+  openModal('teamModal');
+};
+
+window.openEditTeam = function(t) {
+  $('teamModalTitle').textContent = 'Edit Team';
+  $('teamModalId').value = t.id;
+  $('tmName').value = t.name || '';
+  $('tmParish').value = t.parish || '';
+  $('tmDiscipline').value = t.discipline || '';
+  $('tmBio').value = t.bio || '';
+  $('tmLogo').value = t.logo_url || '';
+  $('tmCover').value = t.cover_url || '';
+  $('tmIG').value = t.instagram_handle || '';
+  $('tmPromoter').checked = !!t.is_promoter;
+  $('teamModalMsg').textContent = '';
+  openModal('teamModal');
+};
+
+window.saveTeam = async function() {
+  const id = $('teamModalId').value;
+  const name = $('tmName').value.trim();
+  if (!name) { $('teamModalMsg').textContent = 'Team name is required.'; $('teamModalMsg').className = 'msg err'; return; }
+
+  const payload = {
+    name,
+    parish: $('tmParish').value || null,
+    discipline: $('tmDiscipline').value || null,
+    bio: $('tmBio').value.trim() || null,
+    logo_url: $('tmLogo').value.trim() || null,
+    cover_url: $('tmCover').value.trim() || null,
+    instagram_handle: $('tmIG').value.trim() || null,
+    is_promoter: $('tmPromoter').checked,
+  };
+
+  $('teamModalSave').disabled = true;
+  const { error } = id
+    ? await supabase.from('teams').update(payload).eq('id', id)
+    : await supabase.from('teams').insert(payload);
+
+  $('teamModalSave').disabled = false;
+  if (error) { $('teamModalMsg').textContent = error.message; $('teamModalMsg').className = 'msg err'; return; }
+
+  rokToast(id ? 'Team updated ✓' : 'Team created ✓', 'ok');
+  closeModal('teamModal');
+  loadTeams();
+  loadStats();
+};
+
+window.deleteTeam = async function(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  const { error } = await supabase.from('teams').delete().eq('id', id);
+  if (error) { rokToast('Error: ' + error.message, 'bad'); return; }
+  rokToast('Team deleted.', 'ok');
+  loadTeams();
+  loadStats();
+};
+
+// ── JMMC LICENSE APPLICATIONS ─────────────────────────────────────────
+async function loadJMMC() {
+  const list = $('jmmcList');
+  const { data, error } = await supabase
+    .from('jmmc_license_applications')
+    .select('id,first_name,last_name,email,phone,date_of_birth,parish,category,vehicle,experience,status,created_at,instagram')
+    .order('created_at', {ascending:false});
+
+  if (error || !data?.length) {
+    list.innerHTML = `<div class="empty-state"><strong>No Applications</strong>No JMMC license applications yet.</div>`;
+    return;
+  }
+
+  const catLabels = {drag_junior:'Drag Junior',drag_amateur:'Drag Amateur',drag_pro:'Drag Pro',circuit_novice:'Circuit Novice',circuit_national:'Circuit National',circuit_international:'Circuit International',offroad:'Off-Road',hillclimb:'Hill Climb',karting:'Karting'};
+
+  list.innerHTML = data.map(a => `
+    <div class="item-card" id="jmmc-${a.id}">
+      <div class="item-main">
+        <div class="item-title">${esc(a.first_name)} ${esc(a.last_name)}</div>
+        <div class="item-meta">
+          📧 ${esc(a.email)} &nbsp; 📞 ${esc(a.phone)}<br>
+          🏁 ${esc(catLabels[a.category]||a.category)} &nbsp; 📍 ${esc(a.parish)}<br>
+          ${a.vehicle ? `🚗 ${esc(a.vehicle)}<br>` : ''}
+          ${a.instagram ? `📸 ${esc(a.instagram)}<br>` : ''}
+          ${a.experience ? `<span style="color:rgba(255,255,255,.55)">${esc(a.experience.slice(0,120))}${a.experience.length>120?'…':''}</span><br>` : ''}
+          <span style="opacity:.45">${new Date(a.created_at).toLocaleDateString('en-JM',{day:'numeric',month:'short',year:'numeric'})}</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <span class="tag ${a.status}">${a.status}</span>
+        ${a.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" onclick="approveJMMC('${a.id}','${esc(a.email)}')">Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectJMMC('${a.id}')">Reject</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+window.approveJMMC = async function(id, email) {
+  await supabase.from('jmmc_license_applications').update({ status:'approved' }).eq('id', id);
+  rokToast(`Application approved — contact ${email} to complete license issuance.`, 'ok');
+  $(`jmmc-${id}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions',innerHTML:'<span class="tag approved">Approved</span>'}));
+};
+window.rejectJMMC = async function(id) {
+  await supabase.from('jmmc_license_applications').update({ status:'rejected' }).eq('id', id);
+  rokToast('Application rejected.', 'ok');
+  $(`jmmc-${id}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions',innerHTML:'<span class="tag rejected">Rejected</span>'}));
+};
+
+// ── APPLICATIONS ───────────────────────────────────────────────────────
+async function loadApplications() {
+  const list = $('applicationsList');
+  const { data, error } = await supabase
+    .from('team_applications')
+    .select('id,handle,message,build_url,status,created_at,team_id,user_id,teams:team_id(name)')
+    .order('created_at', {ascending:false})
+    .limit(50);
+
+  if (error || !data?.length) {
+    list.innerHTML = `<div class="empty-state"><strong>No Applications</strong>No team applications yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(a => `
+    <div class="item-card" id="app-${a.id}">
+      <div class="item-main">
+        <div class="item-title">${esc(a.handle||'Applicant')} → <span style="color:var(--yellow)">${esc(a.teams?.name||'Team')}</span></div>
+        <div class="item-meta">
+          ${a.message ? esc(a.message)+'<br>' : ''}
+          ${a.build_url ? `<a href="${esc(a.build_url)}" target="_blank" style="color:#6ab0ff">View build →</a>` : ''}
+          <span style="opacity:.5">${new Date(a.created_at).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <span class="tag ${a.status}">${a.status}</span>
+        ${a.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" onclick="approveApplication('${a.id}','${a.team_id}','${a.user_id||''}')">Accept</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectApplication('${a.id}')">Decline</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+window.approveApplication = async function(appId, teamId, userId) {
+  if (userId) await supabase.from('team_members').upsert({ team_id:teamId, user_id:userId, role:'member' }, {onConflict:'team_id,user_id'});
+  await supabase.from('team_applications').update({ status:'approved' }).eq('id', appId);
+  rokToast('Application accepted ✓', 'ok');
+  $(`app-${appId}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions',innerHTML:'<span class="tag approved">Accepted</span>'}));
+};
+
+window.rejectApplication = async function(appId) {
+  await supabase.from('team_applications').update({ status:'rejected' }).eq('id', appId);
+  rokToast('Application declined.', 'ok');
+  $(`app-${appId}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions',innerHTML:'<span class="tag rejected">Declined</span>'}));
+};
+
+// ── REJECT MODAL ───────────────────────────────────────────────────────
+window.openReject = function(id, type) {
+  $('rejectId').value = id;
+  $('rejectType').value = type;
+  $('rejectReason').value = '';
+  $('rejectMsg').textContent = '';
+  openModal('rejectModal');
+};
+
+window.confirmReject = async function() {
+  const id = $('rejectId').value;
+  const type = $('rejectType').value;
+  const reason = $('rejectReason').value.trim() || null;
+
+  if (type === 'teamreq') {
+    await supabase.from('team_requests').update({ status:'rejected', rejection_reason:reason }).eq('id', id);
+    $(`tr-${id}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions',innerHTML:'<span class="tag rejected">Rejected</span>'}));
+  } else if (type === 'trophy') {
+    await supabase.from('trophies').update({ verified:false, rejection_reason:reason }).eq('id', id);
+    $(`tp-${id}`)?.querySelector('.item-actions')?.replaceWith(Object.assign(document.createElement('div'), {className:'item-actions',innerHTML:'<span class="tag rejected">Rejected</span>'}));
+  }
+
+  rokToast('Rejected.', 'ok');
+  closeModal('rejectModal');
+  await loadStats();
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────
+authUI.onChange(async () => {
+  const ok = await checkAdmin();
+  if (ok) {
+    await loadStats();
+    await loadTeamRequests();
+    await loadTrophyClaims();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await checkAdmin();
+  if (ok) {
+    await loadStats();
+    await loadTeamRequests();
+    await loadTrophyClaims();
+  }
+});
+</script>
+</body>
+</html>

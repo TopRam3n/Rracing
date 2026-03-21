@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>New Sighting — ROK Racers JA</title>
   <meta name="description" content="Post a car sighting to the ROK Racers JA community."/>
-  <link rel="icon" href="../../Assets/og.png"/>
+  <link rel="icon" href="Assets/og.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,8 +14,6 @@
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
 
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root{
@@ -265,7 +263,8 @@
         <a href="./events.html">Events</a>
         <a href="./garage.html">Garage</a>
         <a href="./teams.html">Community</a>
-        <a href="./sightings.html">Sightings</a>
+        <a href="./live.html">Live</a>
+        <a href="./highlights.html">Feed</a>
         <a href="./marketplace.html">Marketplace</a>
         <a href="./store.html">Store</a>
       </nav>
@@ -435,7 +434,26 @@
       }
     }
 
-    authUI.onChange(() => syncState());
+    // ── Role gate: redirect viewers (not spotter/driver/promoter/admin) ──
+    async function checkRoleAccess() {
+      const user = authUI.getUser();
+      if (!user) return; // unauthenticated — syncState handles the warn
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        const role = data?.role || 'viewer';
+        const allowed = ['spotter', 'driver', 'promoter', 'admin'];
+        if (!allowed.includes(role)) {
+          rokToast?.('You need a spotter or driver role to post sightings.', 'info');
+          window.location.href = './sightings.html';
+        }
+      } catch {}
+    }
+
+    authUI.onChange(() => { syncState(); checkRoleAccess(); });
 
     // File select → validate + preview
     mediaInput.addEventListener('change', async () => {
@@ -564,7 +582,7 @@
         formMsg.textContent = '✓ Posted! Redirecting…';
         formMsg.className = 'form-msg ok';
         setTimeout(() => {
-          window.location.href = `/sighting.html?id=${data.id}`;
+          window.location.href = `./sighting.html?id=${data.id}`;
         }, 600);
       } catch (err) {
         console.error(err);
@@ -576,7 +594,7 @@
       }
     });
 
-    window.addEventListener('DOMContentLoaded', syncState);
+    window.addEventListener('DOMContentLoaded', () => { syncState(); checkRoleAccess(); });
   </script>
 </body>
 </html>

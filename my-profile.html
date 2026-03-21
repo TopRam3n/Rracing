@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>My Profile — ROK Racers JA</title>
-  <link rel="icon" href="../../Assets/og.png" />
+  <link rel="icon" href="Assets/og.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
@@ -103,12 +103,14 @@
     }
     .profile-chip span{font-size:16px}
     .dropdown{
+      display:none;
       position:absolute;right:0;top:48px;
       background:var(--bg1);border:1px solid var(--line);
       box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;display:flex;flex-direction:column;
+      border-radius:14px;flex-direction:column;
       min-width:190px;z-index:999;
     }
+    .dropdown.open{display:flex}
     .dropdown a,.dropdown button{
       padding:10px 16px;border:none;background:transparent;color:var(--fg);
       text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
@@ -138,27 +140,30 @@
 
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <div class="menu">
-          <a class="btn" href="../Pages/events.html">Events</a>
-          <a class="btn" href="../Pages/garage.html">Garage</a>
-          <a class="btn" href="../Pages/sightings.html">Sightings</a>
-          <a class="btn" href="../Pages/highlights.html">Highlights</a>
+          <a class="btn" href="./events.html">Events</a>
+          <a class="btn" href="./garage.html">Garage</a>
+          <a class="btn" href="./teams.html">Community</a>
+          <a class="btn" href="./live.html">Live</a>
+          <a class="btn" href="./highlights.html">Feed</a>
+          <a class="btn" href="./marketplace.html">Marketplace</a>
+          <a class="btn" href="./store.html">Store</a>
         </div>
         <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
              navProfileInitials, navProfileDropdown, navSignOutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Sign in</button>
+          <button id="navJoinBtn" class="btn btn-primary" style="display:none">Join</button>
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="./profile.html">My Profile</a>
-              <a href="../Pages/garage.html">My Garage</a>
-              <a href="../Pages/tickets.html">My Tickets</a>
-              <a href="../Pages/likes-builds.html">Liked Builds</a>
-              <a href="../Pages/likes-sightings.html">Liked Sightings</a>
-              <a href="../Pages/likes-highlights.html">Liked Highlights</a>
-              <a href="../Pages/teams.html">My Teams</a>
+            <div id="navProfileDropdown" class="dropdown">
+              <a href="./my-profile.html">My Profile</a>
+              <a href="./garage.html">My Garage</a>
+              <a href="./tickets.html">My Tickets</a>
+              <a href="./likes-build.html">Liked Builds</a>
+              <a href="./likes-sightings.html">Liked Sightings</a>
+              <a href="./teams.html">My Teams</a>
               <a href="./activity.html">Activity</a>
               <a href="./admin-events.html">Admin Events</a>
               <button id="navSignOutBtn" type="button">Sign out</button>
@@ -182,7 +187,7 @@
             <div id="profileEmail" class="sub"></div>
           </div>
         </div>
-        <button id="newBuildBtn" class="btn small" type="button" onclick="location.href='../Pages/create-build.html'">
+        <button id="newBuildBtn" class="btn small" type="button" onclick="location.href='./build-new.html'">
           + New build
         </button>
       </div>
@@ -293,6 +298,22 @@
       window.__currentUser = user;
       $('authMessage').textContent = '';
 
+      // Onboarding banner
+      try {
+        const { data: prof } = await supabase.from('profiles').select('onboarded,full_name').eq('id', user.id).maybeSingle();
+        if (prof && !prof.onboarded) {
+          let banner = document.getElementById('onboardingBanner');
+          if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'onboardingBanner';
+            banner.style.cssText = 'background:rgba(255,217,59,.07);border:1px solid rgba(255,217,59,.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#FFD93B;display:flex;justify-content:space-between;align-items:center;gap:12px';
+            banner.innerHTML = '<span>Complete your profile to unlock all features.</span><a href="./onboarding.html" class="btn btn-sm" style="background:#FFD93B;color:#000;white-space:nowrap">Finish setup →</a>';
+            const main = document.querySelector('main .section');
+            if (main) main.insertBefore(banner, main.firstChild);
+          }
+        }
+      } catch {}
+
       const base = user.user_metadata?.full_name || user.email || 'Driver';
       $('profileTitle').textContent = base;
       $('profileEmail').textContent = user.email || '';
@@ -320,7 +341,7 @@
       const t = active[0].teams;
       pill.style.display = 'inline-flex';
       pill.textContent = `My team: ${t.name || 'Team'}`;
-      pill.onclick = ()=> location.href = `/team.html?id=${encodeURIComponent(t.id)}`;
+      pill.onclick = ()=> location.href = `./team.html?id=${encodeURIComponent(t.id)}`;
       pill.style.cursor = 'pointer';
     }
 
@@ -357,7 +378,7 @@
 
         return `
           <article class="card">
-            <a href="/build.html?id=${encodeURIComponent(b.id)}">
+            <a href="./build.html?id=${encodeURIComponent(b.id)}">
               ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -456,7 +477,7 @@
               </div>
               <div class="row" style="margin-top:8px">
                 <span class="sub">Booked on ${escapeHTML(booked)}</span>
-                <a class="btn small" href="/event.html?id=${encodeURIComponent(event.id)}">View event</a>
+                <a class="btn small" href="./event.html?id=${encodeURIComponent(event.id)}">View event</a>
               </div>
             </div>
           </article>`;
@@ -511,7 +532,7 @@
 
         return `
           <article class="card">
-            <a href="/build.html?id=${encodeURIComponent(b.id)}">
+            <a href="./build.html?id=${encodeURIComponent(b.id)}">
               ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -567,7 +588,7 @@
 
         return `
           <article class="card">
-            <a href="/sighting.html?id=${encodeURIComponent(s.id)}">
+            <a href="./sighting.html?id=${encodeURIComponent(s.id)}">
               ${s.image_url ? `<img src="${escapeHTML(s.image_url)}" alt="${escapeHTML(s.title || 'Car sighting')}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -623,7 +644,7 @@
 
         return `
           <article class="card">
-            <a href="/highlight.html?id=${encodeURIComponent(h.id)}">
+            <a href="./highlight.html?id=${encodeURIComponent(h.id)}">
               ${h.cover_url ? `<img src="${escapeHTML(h.cover_url)}" alt="${escapeHTML(h.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">

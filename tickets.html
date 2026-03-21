@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>My Tickets — ROK Racers JA</title>
 <meta name="description" content="See all the events you've RSVP'd to on ROK Racers JA." />
-<link rel="icon" href="../../Assets/og.png" />
+<link rel="icon" href="Assets/og.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
 <script src="auth-ui.js"></script>
 
 <!-- Design System (centralized tokens + components) -->
-<link rel="stylesheet" href="../../styles/design-system.css">
+<link rel="stylesheet" href="./design-system.css">
 
 <style>
   :root {
@@ -564,7 +564,8 @@
         <a href="./events.html">Events</a>
         <a href="./garage.html">Garage</a>
         <a href="./teams.html">Community</a>
-        <a href="./about.html">About</a>
+        <a href="./live.html">Live</a>
+        <a href="./highlights.html">Feed</a>
         <a href="./marketplace.html">Marketplace</a>
         <a href="./store.html">Store</a>
       </nav>
@@ -644,7 +645,7 @@
   updateNavSolid();
   window.addEventListener('scroll', updateNavSolid, { passive:true });
 
-  const FALLBACK_COVER = "/Assets/logo.png";
+  const FALLBACK_COVER = "Assets/logo.png";
 
   const pageState = {
     allTickets: [],

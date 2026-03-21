@@ -4,24 +4,13 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>My Profile — ROK Racers JA</title>
-  <link rel="icon" href="../../Assets/og.png" />
+  <link rel="icon" href="Assets/og.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  </script>
-
+  <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
 
   <style>
@@ -104,6 +93,7 @@
       font-size:28px;font-weight:600;
     }
 
+    /* nav-auth: auth-ui.js renders these */
     .nav-auth{display:flex;align-items:center;gap:10px}
     .profile-menu{position:relative;display:flex;align-items:center}
     .profile-chip{
@@ -113,12 +103,14 @@
     }
     .profile-chip span{font-size:16px}
     .dropdown{
+      display:none;
       position:absolute;right:0;top:48px;
       background:var(--bg1);border:1px solid var(--line);
       box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;display:flex;flex-direction:column;
+      border-radius:14px;flex-direction:column;
       min-width:190px;z-index:999;
     }
+    .dropdown.open{display:flex}
     .dropdown a,.dropdown button{
       padding:10px 16px;border:none;background:transparent;color:var(--fg);
       text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
@@ -138,7 +130,7 @@
 <body>
   <nav class="nav" role="navigation">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html" aria-label="ROK Racers JA home">
+      <a class="brand" href="/" aria-label="ROK Racers JA home">
         <img src="Assets/logo.png" class="logo-img" alt="">
         <div class="title">
           <h1>ROK RACERS JA</h1>
@@ -148,25 +140,30 @@
 
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <div class="menu">
-          <a class="btn" href="../Pages/events.html">Events</a>
-          <a class="btn" href="../Pages/garage.html">Garage</a>
-          <a class="btn" href="../Pages/sightings.html">Sightings</a>
-          <a class="btn" href="../Pages/highlights.html">Highlights</a>
+          <a class="btn" href="./events.html">Events</a>
+          <a class="btn" href="./garage.html">Garage</a>
+          <a class="btn" href="./teams.html">Community</a>
+          <a class="btn" href="./live.html">Live</a>
+          <a class="btn" href="./highlights.html">Feed</a>
+          <a class="btn" href="./marketplace.html">Marketplace</a>
+          <a class="btn" href="./store.html">Store</a>
         </div>
+        <!-- auth-ui.js wires: navSignInBtn, navJoinBtn, navProfileWrap, navProfileChip,
+             navProfileInitials, navProfileDropdown, navSignOutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Sign in</button>
+          <button id="navJoinBtn" class="btn btn-primary" style="display:none">Join</button>
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="./profile.html">My Profile</a>
-              <a href="../Pages/garage.html">My Garage</a>
-              <a href="../Pages/tickets.html">My Tickets</a>
-              <a href="../Pages/likes-builds.html">Liked Builds</a>
-              <a href="../Pages/likes-sightings.html">Liked Sightings</a>
-              <a href="../Pages/likes-highlights.html">Liked Highlights</a>
-              <a href="../Pages/teams.html">My Teams</a>
+            <div id="navProfileDropdown" class="dropdown">
+              <a href="./my-profile.html">My Profile</a>
+              <a href="./garage.html">My Garage</a>
+              <a href="./tickets.html">My Tickets</a>
+              <a href="./likes-build.html">Liked Builds</a>
+              <a href="./likes-sightings.html">Liked Sightings</a>
+              <a href="./teams.html">My Teams</a>
               <a href="./activity.html">Activity</a>
               <a href="./admin-events.html">Admin Events</a>
               <button id="navSignOutBtn" type="button">Sign out</button>
@@ -190,7 +187,7 @@
             <div id="profileEmail" class="sub"></div>
           </div>
         </div>
-        <button id="newBuildBtn" class="btn small" type="button" onclick="location.href='../Pages/create-build.html'">
+        <button id="newBuildBtn" class="btn small" type="button" onclick="location.href='./build-new.html'">
           + New build
         </button>
       </div>
@@ -239,76 +236,6 @@
       return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    async function requireLoginUnified(cb){
-      if(window.authUI?.requireLogin){
-        try{
-          const ok = await window.authUI.requireLogin(cb);
-          return !!ok;
-        }catch(e){
-          console.warn('authUI.requireLogin failed, falling back', e);
-        }
-      }
-      const { data:{ user } } = await supabase.auth.getUser();
-      if(!user){
-        const email = prompt("Enter your email to sign in:");
-        if(!email) return false;
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options:{ emailRedirectTo: location.href }
-        });
-        if(error){ alert("Sign-in error: " + error.message); return false; }
-        alert("Magic link sent. Check your email, then reload.");
-        return false;
-      }
-      cb?.(user);
-      return true;
-    }
-
-    async function initNav(){
-      const { data:{ user } } = await supabase.auth.getUser();
-
-      const signInBtn = $('navSignInBtn');
-      const wrap = $('navProfileWrap');
-
-      if(signInBtn) signInBtn.style.display = user ? 'none' : 'inline-flex';
-      if(wrap) wrap.style.display = user ? 'flex' : 'none';
-
-      if(user){
-        const base = user.user_metadata?.full_name || user.email || 'Driver';
-        const initial = base.trim().charAt(0).toUpperCase();
-        const ni = $('navProfileInitials');
-        if(ni) ni.textContent = initial;
-      }
-
-      const chip = $('navProfileChip');
-      const dropdown = $('navProfileDropdown');
-
-      if(chip && dropdown){
-        chip.onclick = ()=>{
-          const open = dropdown.style.display === 'flex';
-          dropdown.style.display = open ? 'none' : 'flex';
-          chip.setAttribute('aria-expanded', open ? 'false' : 'true');
-        };
-        document.addEventListener('click', (e)=>{
-          if(!dropdown || dropdown.style.display !== 'flex') return;
-          const inside = chip.contains(e.target) || dropdown.contains(e.target);
-          if(!inside){
-            dropdown.style.display = 'none';
-            chip.setAttribute('aria-expanded','false');
-          }
-        });
-      }
-
-      $('navSignOutBtn')?.addEventListener('click', async ()=>{
-        await supabase.auth.signOut();
-        location.reload();
-      });
-
-      $('navSignInBtn')?.addEventListener('click', async ()=>{
-        await requireLoginUnified();
-      });
-    }
-
     // ---- Tabs + lazy load ----
     const loaded = {
       garage:false,
@@ -355,13 +282,14 @@
     });
 
     async function ensureAuthedProfile(){
-      const ok = await requireLoginUnified();
+      // Delegate to auth-ui.js — opens login modal if not signed in
+      const ok = await authUI.requireLogin();
       if(!ok){
         $('authMessage').textContent = 'Sign in to view your profile.';
         return null;
       }
 
-      const { data:{ user } } = await supabase.auth.getUser();
+      const user = authUI.getUser();
       if(!user){
         $('authMessage').textContent = 'Sign in to view your profile.';
         return null;
@@ -375,7 +303,6 @@
       $('profileEmail').textContent = user.email || '';
       $('profileAvatar').textContent = base.trim().charAt(0).toUpperCase();
 
-      // Optional: show active team label (if team_members exists)
       await loadMyTeamPill(user);
 
       return user;
@@ -385,7 +312,6 @@
       const pill = $('myTeamPill');
       if(!pill) return;
 
-      // Show first active team only (label), keep it simple
       const { data, error } = await supabase
         .from('team_members')
         .select('role, teams:team_id(id,name,is_promoter)')
@@ -399,7 +325,7 @@
       const t = active[0].teams;
       pill.style.display = 'inline-flex';
       pill.textContent = `My team: ${t.name || 'Team'}`;
-      pill.onclick = ()=> location.href = `/team.html?id=${encodeURIComponent(t.id)}`;
+      pill.onclick = ()=> location.href = `./team.html?id=${encodeURIComponent(t.id)}`;
       pill.style.cursor = 'pointer';
     }
 
@@ -417,11 +343,11 @@
       const grid = $(gridId);
       if(error){
         console.error(error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load builds.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load builds.</div></article>`;
         return;
       }
       if(!data || !data.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet. Hit “New build” to start your garage.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">No builds yet. Hit "New build" to start your garage.</div></article>`;
         return;
       }
 
@@ -464,12 +390,12 @@
       const grid = $(gridId);
       if(rsvpRes.error){
         console.error(rsvpRes.error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load tickets.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load tickets.</div></article>`;
         return;
       }
       const rsvps = rsvpRes.data || [];
       if(!rsvps.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">No tickets yet — RSVP “Yes” to an event and it’ll show up here.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">No tickets yet — RSVP "Yes" to an event and it'll show up here.</div></article>`;
         return;
       }
 
@@ -481,7 +407,7 @@
 
       if(evRes.error){
         console.error(evRes.error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load events for your tickets.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load events for your tickets.</div></article>`;
         return;
       }
 
@@ -568,13 +494,13 @@
       const grid = $(gridId);
       if(error){
         console.error(error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load liked builds.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load liked builds.</div></article>`;
         return;
       }
 
       const rows = (data || []).filter(r=>r.builds);
       if(!rows.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">You haven’t liked any builds yet.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">You haven't liked any builds yet.</div></article>`;
         return;
       }
 
@@ -628,13 +554,13 @@
       const grid = $(gridId);
       if(error){
         console.error(error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load liked sightings.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load liked sightings.</div></article>`;
         return;
       }
 
       const rows = (data || []).filter(r=>r.sightings);
       if(!rows.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">You haven’t liked any sightings yet.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">You haven't liked any sightings yet.</div></article>`;
         return;
       }
 
@@ -685,13 +611,13 @@
       const grid = $(gridId);
       if(error){
         console.error(error);
-        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn’t load liked highlights.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">Couldn't load liked highlights.</div></article>`;
         return;
       }
 
       const rows = (data || []).filter(r=>r.highlights);
       if(!rows.length){
-        grid.innerHTML = `<article class="card"><div class="pad sub">You haven’t liked any highlights yet.</div></article>`;
+        grid.innerHTML = `<article class="card"><div class="pad sub">You haven't liked any highlights yet.</div></article>`;
         return;
       }
 
@@ -718,14 +644,11 @@
     }
 
     window.addEventListener('DOMContentLoaded', async ()=>{
-      await initNav();
-
       // seed skeleton for first tab so it feels instant
       showSkeleton('garageGrid', 6, 'cols-3');
 
       const user = await ensureAuthedProfile();
       if(!user){
-        // hide content grids if not authed
         $('garageGrid').innerHTML = `<article class="card"><div class="pad sub">Sign in to view your profile.</div></article>`;
         $('ticketsGrid').innerHTML = '';
         $('likedBuildsGrid').innerHTML = '';
@@ -738,13 +661,38 @@
       loaded.garage = true;
       await loadGarage(user);
 
-      // keep nav in sync
-      supabase.auth.onAuthStateChange(async ()=>{
-        await initNav();
+      // auth-ui.js owns onAuthStateChange — subscribe via onChange instead
+      
+  // ── ONBOARDING REDIRECT ────────────────────────────────────────────
+  async function checkOnboardingStatus() {
+    const user = (typeof authUI !== 'undefined') ? authUI.getUser() : null;
+    if (!user) return;
+    const { data } = await supabase.from('profiles').select('onboarded,role,display_name').eq('id', user.id).maybeSingle();
+    if (!data?.onboarded) {
+      // Show onboarding banner
+      const banner = document.getElementById('onboardingBanner');
+      if (banner) banner.style.display = 'flex';
+    }
+    // Show driver profile link if role is driver
+    if (data?.role === 'driver') {
+      const driverLink = document.getElementById('driverProfileLink');
+      if (driverLink) driverLink.style.display = 'flex';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', checkOnboardingStatus);
+  authUI.onChange(async ()=>{
+        // If user signs out, clear profile state
+        const u = authUI.getUser();
+        if(!u){
+          window.__currentUser = null;
+          $('profileTitle').textContent = 'My profile';
+          $('profileEmail').textContent = '';
+          $('profileAvatar').textContent = 'U';
+          $('garageGrid').innerHTML = `<article class="card"><div class="pad sub">Sign in to view your profile.</div></article>`;
+        }
       });
     });
   </script>
 </body>
 </html>
-
-

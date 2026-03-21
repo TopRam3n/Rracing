@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Sighting — ROK Racers JA</title>
-  <link rel="icon" href="../../Assets/og.png" />
+  <link rel="icon" href="Assets/og.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <script src="auth-ui.js"></script>
 
   <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
+  <link rel="stylesheet" href="./design-system.css">
 
   <style>
     :root{
@@ -100,12 +100,14 @@
     }
     .profile-chip span{font-size:16px}
     .dropdown{
+      display:none;
       position:absolute;right:0;top:48px;
       background:var(--bg1);border:1px solid var(--line);
       box-shadow:0 20px 40px rgba(0,0,0,.45);
-      border-radius:14px;display:flex;flex-direction:column;
+      border-radius:14px;flex-direction:column;
       min-width:190px;z-index:999;
     }
+    .dropdown.open{display:flex}
     .dropdown a,.dropdown button{
       padding:10px 16px;border:none;background:transparent;color:var(--fg);
       text-align:left;width:100%;cursor:pointer;font-family:inherit;font-size:15px;
@@ -117,7 +119,7 @@
   <nav class="nav" role="navigation">
     <div class="container nav-inner">
       <a class="brand" href="./index.html" aria-label="ROK Racers JA home">
-        <img src="../../Assets/logo.png" class="logo-img" alt="">
+        <img src="Assets/logo.png" class="logo-img" alt="">
         <div class="title">
           <h1>ROK RACERS JA</h1>
           <small>Sighting</small>
@@ -128,24 +130,29 @@
         <div class="menu">
           <a class="btn" href="./events.html">Events</a>
           <a class="btn" href="./garage.html">Garage</a>
-          <a class="btn" href="./sightings.html">Sightings</a>
+          <a class="btn" href="./teams.html">Community</a>
+          <a class="btn" href="./live.html">Live</a>
+          <a class="btn" href="./highlights.html">Feed</a>
+          <a class="btn" href="./marketplace.html">Marketplace</a>
+          <a class="btn" href="./store.html">Store</a>
         </div>
         <!-- auth-ui.js wires: navSignInBtn, navProfileWrap, navProfileChip,
              navProfileInitials, navProfileDropdown, navSignOutBtn -->
         <div class="nav-auth">
           <button id="navSignInBtn" class="btn">Sign in</button>
+          <button id="navJoinBtn" class="btn btn-primary" style="display:none">Join</button>
           <div id="navProfileWrap" class="profile-menu" style="display:none">
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
+            <div id="navProfileDropdown" class="dropdown">
               <a href="./garage.html">My Garage</a>
               <a href="./tickets.html">My Tickets</a>
               <a href="./likes-builds.html">Liked Builds</a>
               <a href="./likes-sightings.html">Liked Sightings</a>
               <a href="./bookmarks-sightings.html">Saved Sightings</a>
               <a href="./teams.html">My Teams</a>
-              <a href="../Users/activity.html">Activity</a>
+              <a href="./activity.html">Activity</a>
               <button id="navSignOutBtn" type="button">Sign out</button>
             </div>
           </div>

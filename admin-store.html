@@ -128,7 +128,7 @@
     <div class="topbar">
       <div class="pill" id="who">Checking auth…</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a class="btn btn-ghost btn-sm" href="../Pages/store.html">Open Store</a>
+        <a class="btn btn-ghost btn-sm" href="./store.html">Open Store</a>
         <button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">Refresh</button>
         <button class="btn btn-danger btn-sm" id="signoutBtn" type="button">Sign out</button>
       </div>
@@ -311,7 +311,7 @@
           <div style="max-width:520px">
             <h1 style="font-family:'Bebas Neue';letter-spacing:2px;font-size:44px;margin:0 0 8px;text-transform:uppercase">Admin Store</h1>
             <p style="color:#bdbdbd;margin:0 0 14px">Sign in first, then reopen this page.</p>
-            <a href="../Pages/index.html" style="color:#FFD93B;text-decoration:none">Go to homepage</a>
+            <a href="./index.html" style="color:#FFD93B;text-decoration:none">Go to homepage</a>
           </div>
         </div>`;
       return false;
@@ -510,7 +510,7 @@
   refreshBtn.addEventListener('click', loadProducts);
   signoutBtn.addEventListener('click', async ()=>{
     await supabase.auth.signOut();
-    location.href = '/index.html';
+    location.href = './index.html';
   });
   closeEdit.addEventListener('click', closeEditModal);
   editWrap.addEventListener('click', (e)=>{ if(e.target === editWrap) closeEditModal(); });

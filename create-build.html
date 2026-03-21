@@ -5,30 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Create Build — ROK Racers JA</title>
 <meta name="description" content="Create a build in the ROK Racers JA garage." />
-<link rel="icon" href="../../Assets/og.png" />
+<link rel="icon" href="Assets/og.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-</script>
+<script src="supabase-client.js"></script>
 
 <!-- Shared auth UI (nav + requireLogin if you exposed it there) -->
 <script src="auth-ui.js"></script>
 
 <!-- Design System (centralized tokens + components) -->
-<link rel="stylesheet" href="../../styles/design-system.css">
+<link rel="stylesheet" href="./design-system.css">
 
 <style>
   :root{
@@ -108,12 +98,14 @@
     transform:translateY(-1px);
   }
   .dropdown{
+    display:none;
     position:absolute;right:0;top:40px;
     background:var(--bg1);border:1px solid var(--line);
     box-shadow:0 20px 40px rgba(0,0,0,.6);
-    border-radius:16px;display:flex;flex-direction:column;
+    border-radius:16px;flex-direction:column;
     min-width:190px;z-index:999;
   }
+  .dropdown.open{display:flex}
   .dropdown a,.dropdown button{
     padding:10px 16px;text-align:left;border:none;
     background:transparent;color:var(--fg);font-size:13px;
@@ -236,10 +228,11 @@
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
         <div class="menu" role="menubar" aria-label="Main menu">
-          <a class="btn" role="menuitem" href="./about.html">About</a>
           <a class="btn" role="menuitem" href="./events.html">Events</a>
           <a class="btn" role="menuitem" href="./garage.html">Garage</a>
           <a class="btn" role="menuitem" href="./teams.html">Community</a>
+          <a class="btn" role="menuitem" href="./live.html">Live</a>
+          <a class="btn" role="menuitem" href="./highlights.html">Feed</a>
           <a class="btn" role="menuitem" href="./marketplace.html">Marketplace</a>
           <a class="btn" role="menuitem" href="./store.html">Store</a>
         </div>
@@ -252,13 +245,13 @@
             <div id="navProfileChip" class="profile-chip" aria-haspopup="true" aria-expanded="false">
               <span id="navProfileInitials">U</span>
             </div>
-            <div id="navProfileDropdown" class="dropdown" style="display:none">
-              <a href="/garage.html?view=my">My Garage</a>
+            <div id="navProfileDropdown" class="dropdown">
+              <a href="./garage.html?view=my">My Garage</a>
               <a href="./tickets.html">My Tickets</a>
-              <a href="./likes-builds.html">Liked Builds</a>
+              <a href="./likes-build.html">Liked Builds</a>
               <a href="./likes-sightings.html">Liked Sightings</a>
               <a href="./teams.html">My Teams</a>
-              <a href="../Users/activity.html">Activity</a>
+              <a href="./activity.html">Activity</a>
               <button id="signoutBtn" type="button">Sign out</button>
             </div>
           </div>
@@ -627,7 +620,7 @@
 
       formMsg.textContent = 'Build saved! Redirecting…';
       setStatus('Saved');
-      window.location.href = `/build.html?id=${encodeURIComponent(data.id)}`;
+      window.location.href = `./build.html?id=${encodeURIComponent(data.id)}`;
     }catch(err){
       console.error(err);
       formMsg.textContent = 'Couldn’t save build: ' + (err?.message || 'Unknown error');

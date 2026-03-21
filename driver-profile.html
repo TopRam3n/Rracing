@@ -4,317 +4,573 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Driver Profile — ROK Racers JA</title>
-  <meta name="description" content="Driver profile and statistics." />
-  <link rel="icon" href="../../Assets/og.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <link rel="icon" href="Assets/og.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
-  <link rel="stylesheet" href="../../styles/design-system.css">
-
   <style>
-    :root {
-      --bg-main: #050508;
-      --bg-card: #141414;
-      --accent-main: #128b02;
-      --text-main: #ffffff;
-      --text-muted: #bdbdbd;
-      --border-subtle: rgba(255,255,255,0.08);
-      --shadow-soft: 0 18px 40px rgba(0,0,0,0.7);
-    }
-    *{ box-sizing:border-box; margin:0; padding:0; }
-    html,body{
-      min-height:100%;
-      background:radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);
-      color:var(--text-main);
-      font-family:"Rajdhani",system-ui,sans-serif;
-    }
-    .container{ width:min(1280px,100% - 32px); margin:0 auto; padding:26px 0 56px; }
-    @media(min-width:1280px){ .container{ width:min(1280px,100% - 64px); } }
+    :root{--bg:#050508;--bg-card:#141414;--green:#128b02;--yellow:#FFD93B;--red:#e50914;--fg:#fff;--muted:#bdbdbd;--line:rgba(255,255,255,0.06);--shadow:0 18px 40px rgba(0,0,0,0.7);--tf:0.18s ease-out;--nav:76px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);color:var(--fg);font-family:"Rajdhani",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{width:min(1200px,100% - 32px);margin:0 auto}
+    body::after{content:"";position:fixed;inset-inline:0;bottom:-120px;height:220px;background:radial-gradient(circle at bottom,rgba(18,139,2,.18),transparent 60%);pointer-events:none;z-index:0}
 
-    /* Nav */
-    .nav-wrapper{
-      position:sticky; top:0; z-index:40;
-      backdrop-filter:blur(16px);
-      background:linear-gradient(to bottom,rgba(5,5,8,0.92),rgba(5,5,8,0.62));
-      border-bottom:1px solid rgba(255,255,255,0.04);
-    }
-    .nav{
-      height:76px;
-      display:flex; align-items:center; justify-content:space-between; gap:20px;
-      padding:0 24px;
-    }
-    .logo{ display:flex; align-items:center; gap:10px; letter-spacing:0.04em; }
-    .page-title{
-      font-family:"Bebas Neue";
-      font-size:clamp(36px,6vw,48px);
-      letter-spacing:2px; text-transform:uppercase; line-height:0.95;
-      margin-bottom:8px;
-    }
-    .sub{ color:var(--text-muted); font-size:13px; }
+    /* NAV */
+    .nav-wrapper{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);background:linear-gradient(to bottom,rgba(5,5,8,.9),rgba(5,5,8,.6));border-bottom:1px solid var(--line);transition:background .35s,box-shadow .35s}
+    .nav-wrapper.nav-solid{background:rgba(5,5,8,.98);box-shadow:var(--shadow)}
+    .nav{height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .logo{display:flex;align-items:center;gap:8px}
+    .logo-mark{width:36px;height:36px;border-radius:999px;border:1px solid rgba(18,139,2,.7);overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+    .logo-mark img{width:100%;height:100%;object-fit:cover}
+    .logo-text-main{font-family:"Bebas Neue";font-size:22px;text-transform:uppercase}
+    .logo-text-sub{font-size:11px;color:var(--yellow);text-transform:uppercase}
+    .nav-links{display:flex;gap:18px;align-items:center;font-size:13px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+    .nav-links a{position:relative;padding-bottom:4px}
+    .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:linear-gradient(to right,var(--green),var(--yellow));transition:width var(--tf);border-radius:999px}
+    .nav-links a:hover{color:var(--fg)}
+    .nav-links a:hover::after{width:100%}
+    .nav-cta{display:flex;gap:8px;align-items:center}
+    .btn{border-radius:999px;padding:8px 16px;font-size:13px;text-transform:uppercase;letter-spacing:.15em;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:#fff;transition:background var(--tf),border-color var(--tf),transform var(--tf)}
+    .btn-primary{background:radial-gradient(circle at top left,#39ff96,var(--green));border-color:rgba(18,139,2,.85);box-shadow:0 0 20px rgba(18,139,2,.4)}
+    .btn-ghost{border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.25)}
+    .btn-pill-sm{padding:6px 14px;font-size:11px;letter-spacing:.16em}
+    .profile-menu{position:relative;display:flex;align-items:center}
+    .profile-chip{width:32px;height:32px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.18);font-size:13px;user-select:none}
+    .dropdown{position:absolute;right:0;top:44px;background:rgba(10,10,14,.96);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;display:none;flex-direction:column;min-width:240px;z-index:999;backdrop-filter:blur(16px);overflow:hidden}
+    .dropdown.open{display:flex}
+    .dd-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
+    .dd-title{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+    .dd-email{font-size:13px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dropdown a,.dropdown button{padding:10px 14px;text-align:left;border:none;background:transparent;color:var(--fg);font-size:13px;width:100%;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit}
+    .dropdown a:hover,.dropdown button:hover{background:rgba(255,255,255,.06)}
+    .dd-sep{height:1px;background:rgba(255,255,255,.08);margin:4px 0}
+    .dd-badge{font-size:10px;text-transform:uppercase;letter-spacing:.14em;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:rgba(0,0,0,.25)}
+    @media(max-width:768px){.nav-links{display:none}.logo-text-sub{display:none}}
 
-    /* Profile header */
+    /* PAGE */
+    .page{padding:0 0 72px;position:relative;z-index:1}
+
+    /* HERO BANNER */
+    .profile-banner{
+      height:220px;
+      background:linear-gradient(135deg,#0f1f0f,#1a1a2e);
+      position:relative;overflow:hidden;
+    }
+    .profile-banner-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3}
+    .profile-banner-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(5,5,8,.95) 100%)}
+
+    /* PROFILE HEADER */
     .profile-header{
-      display:grid; gap:16px; margin-bottom:32px;
-      padding:24px; border-radius:18px;
-      border:1px solid var(--border-subtle);
-      background:radial-gradient(circle at top,rgba(255,255,255,0.05),rgba(10,10,10,0.96));
-      box-shadow:var(--shadow-soft);
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:20px;
+      align-items:flex-end;
+      padding:0 0 24px;
+      margin-top:-60px;
+      position:relative;z-index:2;
     }
-    .profile-top{
-      display:flex; gap:20px; align-items:flex-start;
+    @media(max-width:640px){.profile-header{grid-template-columns:1fr;margin-top:-40px}}
+    .avatar{
+      width:100px;height:100px;
+      border-radius:999px;
+      border:3px solid rgba(255,255,255,.15);
+      background:var(--bg-card);
+      overflow:hidden;
+      box-shadow:0 8px 32px rgba(0,0,0,.6);
+      flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-family:"Bebas Neue";font-size:36px;color:rgba(255,255,255,.3);
     }
-    .profile-avatar{
-      width:120px; height:120px; border-radius:12px;
-      background:linear-gradient(135deg,#128b02,#0a5c00);
-      display:flex; align-items:center; justify-content:center;
-      font-size:40px; font-weight:700; flex-shrink:0;
-    }
-    .profile-info{ flex:1; }
-    .profile-name{
-      font-family:"Bebas Neue";
-      font-size:32px; letter-spacing:1.5px; margin-bottom:4px;
-    }
-    .profile-meta{
-      display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;
-    }
-    .profile-badge{
-      padding:4px 10px; border-radius:6px;
-      border:1px solid rgba(24,158,6,0.3);
-      background:rgba(24,158,6,0.08);
-      font-size:11px; color:rgba(24,158,6,0.8);
-      text-transform:uppercase; letter-spacing:0.08em;
-    }
-    .profile-bio{
-      font-size:13px; color:var(--text-muted); line-height:1.6; max-width:600px;
-    }
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .profile-name{font-family:"Bebas Neue";font-size:clamp(36px,5vw,56px);letter-spacing:2px;text-transform:uppercase;line-height:.95}
+    .profile-handle{font-size:14px;color:var(--muted);margin-top:4px}
+    .profile-bio{font-size:14px;color:rgba(255,255,255,.7);margin-top:8px;max-width:480px;line-height:1.5}
+    .profile-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .meta-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);background:rgba(255,255,255,.02)}
+    .meta-pill.green{border-color:rgba(18,139,2,.4);color:#9affc5;background:rgba(18,139,2,.06)}
+    .meta-pill.yellow{border-color:rgba(255,217,59,.35);color:var(--yellow);background:rgba(255,217,59,.05)}
+    .profile-actions{display:flex;gap:8px;align-self:flex-start;margin-top:8px}
 
-    /* Stats grid */
-    .stats-grid{
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-      gap:12px; margin-top:16px;
+    /* SECTION */
+    .section{margin-top:36px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+    .section-title{font-family:"Bebas Neue";font-size:clamp(22px,3vw,30px);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+    .section-title::before{content:"";display:block;width:3px;height:24px;border-radius:999px;background:linear-gradient(to bottom,var(--green),transparent);flex-shrink:0}
+
+    /* TROPHY SHELF */
+    .trophy-shelf{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+      gap:12px;
     }
-    .stat-card{
-      padding:16px; border-radius:12px;
-      border:1px solid rgba(24,158,6,0.2);
-      background:rgba(24,158,6,0.05);
+    .trophy-card{
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--bg-card);
+      padding:16px;
       text-align:center;
+      transition:transform var(--tf),border-color var(--tf);
+      position:relative;
     }
-    .stat-value{
-      font-family:"Bebas Neue";
-      font-size:28px; letter-spacing:1px; color:#fff; margin-bottom:4px;
-    }
-    .stat-label{
-      font-size:11px; text-transform:uppercase;
-      letter-spacing:0.1em; color:var(--text-muted);
-    }
+    .trophy-card:hover{transform:translateY(-3px);border-color:rgba(255,217,59,.3)}
+    .trophy-card.unverified{opacity:.55;border-style:dashed}
+    .trophy-img{width:56px;height:56px;border-radius:12px;object-fit:cover;margin:0 auto 10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:28px}
+    .trophy-title{font-size:13px;font-weight:700;margin-bottom:3px;line-height:1.2}
+    .trophy-event{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+    .trophy-pos{font-family:"Bebas Neue";font-size:20px;letter-spacing:1px;color:var(--yellow);margin-top:6px}
+    .trophy-badge{position:absolute;top:8px;right:8px;font-size:9px;text-transform:uppercase;letter-spacing:.12em;padding:2px 7px;border-radius:999px}
+    .trophy-badge.verified{background:rgba(18,139,2,.15);border:1px solid rgba(18,139,2,.4);color:#9affc5}
+    .trophy-badge.pending{background:rgba(255,217,59,.08);border:1px solid rgba(255,217,59,.3);color:var(--yellow)}
+    .trophy-badge.rejected{background:rgba(229,9,20,.08);border:1px solid rgba(229,9,20,.3);color:#ff8080}
 
-    /* Accolades */
-    .section-title{
-      font-family:"Bebas Neue";
-      font-size:24px; letter-spacing:1.2px;
-      text-transform:uppercase; margin:24px 0 16px;
-    }
-    .accolades-grid{
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-      gap:12px;
-    }
-    .accolade-badge{
-      padding:12px; border-radius:10px;
-      border:1px solid rgba(255,217,59,0.3);
-      background:rgba(255,217,59,0.08);
-      text-align:center; font-size:12px;
-    }
-    .accolade-emoji{ font-size:24px; margin-bottom:6px; display:block; }
-    .accolade-name{ color:#fff; font-weight:600; margin-bottom:2px; }
-    .accolade-by{ font-size:10px; color:var(--text-muted); }
-
-    /* Builds */
+    /* BUILDS GRID */
     .builds-grid{
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-      gap:12px;
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:14px;
     }
     .build-card{
-      border-radius:10px; border:1px solid var(--border-subtle);
-      background:linear-gradient(135deg,rgba(20,20,24,0.8),rgba(10,10,10,0.95));
-      overflow:hidden; transition:transform 0.2s ease;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:#0d0d10;
+      overflow:hidden;
       cursor:pointer;
+      transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s;
+      position:relative;
     }
-    .build-card:hover{ transform:translateY(-3px); }
-    .build-thumb{
-      width:100%; height:140px;
-      background:linear-gradient(135deg,#171717,#262626);
-      display:flex; align-items:center; justify-content:center;
-      font-size:32px; overflow:hidden;
-    }
-    .build-thumb img{ width:100%; height:100%; object-fit:cover; }
-    .build-info{ padding:12px; }
-    .build-title{ font-weight:600; font-size:12px; line-height:1.3; margin-bottom:4px; }
-    .build-meta{ font-size:10px; color:var(--text-muted); }
+    .build-card:hover{transform:translateY(-5px);border-color:rgba(255,217,59,.45);box-shadow:0 0 40px rgba(255,217,59,.07),0 24px 56px rgba(0,0,0,.9)}
+    .build-stage{position:relative;width:100%;height:200px;background:radial-gradient(ellipse at 50% 30%,#1c1c22,#080808);overflow:hidden}
+    .build-stage model-viewer{display:block;width:100%;height:200px;--poster-color:transparent;--progress-bar-color:transparent;background:transparent}
+    .build-stage img{width:100%;height:100%;object-fit:cover;display:block}
+    .build-photo-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s;z-index:2;pointer-events:none}
+    .build-card:hover .build-photo-overlay{opacity:1}
+    .build-label-bar{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:10px 12px 12px;background:linear-gradient(to top,rgba(0,0,0,.88),transparent);display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+    .build-label-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:75%}
+    .build-label-type{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--yellow);font-weight:700;flex-shrink:0}
+    .build-trophies{display:flex;gap:4px;padding:8px 12px;flex-wrap:wrap}
+    .mini-trophy{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10px;border:1px solid rgba(255,217,59,.3);color:var(--yellow);background:rgba(255,217,59,.05)}
 
-    .empty-state{
-      padding:40px 20px; text-align:center; color:var(--text-muted);
-      border-radius:12px; border:1px dashed var(--border-subtle);
-    }
+    /* CLAIM TROPHY MODAL */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}
+    .modal-backdrop.open{display:flex}
+    .modal{width:min(520px,96vw);background:rgba(12,12,16,.97);border:1px solid rgba(255,255,255,.1);border-radius:22px;box-shadow:0 40px 120px rgba(0,0,0,.85);overflow:hidden;backdrop-filter:blur(20px)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+    .modal-title{font-family:"Bebas Neue";font-size:26px;letter-spacing:2px}
+    .modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto}
+    .modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+    .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:5px}
+    .field input,.field textarea,.field select{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:#fff;padding:10px 12px;border-radius:12px;font-family:inherit;font-size:13px;outline:none}
+    .field input:focus,.field textarea:focus,.field select:focus{border-color:rgba(18,139,2,.6)}
+    .msg{font-size:12px;color:var(--muted);min-height:14px}
+    .msg.ok{color:#9affc5}
+    .msg.err{color:#ff9a9a}
+    .skel{border-radius:16px;background:linear-gradient(90deg,#141414 25%,#1e1e1e 50%,#141414 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .empty{padding:32px 20px;text-align:center;color:var(--muted);font-size:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.01)}
+    .empty strong{display:block;font-family:"Bebas Neue";font-size:26px;letter-spacing:1px;color:rgba(255,255,255,.2);margin-bottom:6px}
+
+    /* TEAM CHIPS */
+    .team-chips{display:flex;flex-wrap:wrap;gap:10px}
+    .team-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:14px;cursor:pointer;transition:border-color var(--tf)}
+    .team-chip:hover{border-color:rgba(255,217,59,.3)}
+    .team-chip img{width:32px;height:32px;border-radius:8px;object-fit:cover}
+    .team-chip-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:16px}
+    .team-chip-name{font-size:13px;font-weight:600}
+    .team-chip-role{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
   </style>
 </head>
-
 <body>
-  <!-- NAV -->
-  <div class="nav-wrapper" id="navWrapper"></div>
-
-  <main class="container">
-    <div id="profileContent">
-      <div style="text-align:center; padding:40px;">
-        <div class="sub">Loading profile…</div>
+  <div class="nav-wrapper" id="navWrapper">
+    <div class="container nav">
+      <a href="./index.html" class="logo">
+        <div class="logo-mark"><img src="Assets/logo.png" alt="ROK"></div>
+        <div>
+          <div class="logo-text-main">ROK RACERS JA</div>
+          <div class="logo-text-sub">Driver Profile</div>
+        </div>
+      </a>
+      <nav class="nav-links">
+        <a href="./events.html">Events</a>
+        <a href="./garage.html">Garage</a>
+        <a href="./teams.html">Community</a>
+        <a href="./live.html">Live</a>
+        <a href="./highlights.html">Feed</a>
+        <a href="./marketplace.html">Marketplace</a>
+        <a href="./store.html">Store</a>
+      </nav>
+      <div class="nav-cta">
+        <button id="loginBtn" class="btn btn-ghost btn-pill-sm" type="button">Log In</button>
+        <button id="joinBtn" class="btn btn-primary btn-pill-sm" type="button">Join the Grid</button>
+        <div id="profileMenu" class="profile-menu" style="display:none">
+          <div id="profileChip" class="profile-chip" aria-haspopup="true"><span id="profileInitials">U</span></div>
+          <div id="dropdown" class="dropdown">
+            <div class="dd-head">
+              <div class="dd-title">Signed in as</div>
+              <div class="dd-email" id="ddEmail">—</div>
+            </div>
+            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <div class="dd-sep"></div>
+            <a href="./garage.html?view=my">My Garage</a>
+            <a href="./driver-profile.html?me=1">My Driver Profile</a>
+            <div class="dd-sep"></div>
+            <button id="signoutBtn" type="button">Sign out</button>
+          </div>
+        </div>
       </div>
     </div>
-  </main>
+  </div>
+
+  <div class="page">
+    <!-- BANNER -->
+    <div class="profile-banner" id="profileBanner">
+      <div id="bannerImg"></div>
+      <div class="profile-banner-overlay"></div>
+    </div>
+
+    <div class="container">
+      <!-- HEADER -->
+      <div class="profile-header">
+        <div class="avatar" id="avatarEl">?</div>
+        <div>
+          <div class="profile-name" id="profileName">Loading…</div>
+          <div class="profile-handle" id="profileHandle"></div>
+          <div class="profile-bio" id="profileBio"></div>
+          <div class="profile-meta" id="profileMeta"></div>
+        </div>
+        <div class="profile-actions" id="profileActions"></div>
+      </div>
+
+      <!-- TROPHIES -->
+      <div class="section" id="trophySection">
+        <div class="section-head">
+          <div class="section-title">Trophy Shelf</div>
+          <div id="trophyActions"></div>
+        </div>
+        <div class="trophy-shelf" id="trophyShelf">
+          <div class="skel" style="height:160px"></div>
+          <div class="skel" style="height:160px"></div>
+          <div class="skel" style="height:160px"></div>
+        </div>
+      </div>
+
+      <!-- BUILDS -->
+      <div class="section" id="buildsSection">
+        <div class="section-head">
+          <div class="section-title">On the Grid</div>
+          <a href="./garage.html" class="btn btn-ghost btn-pill-sm" id="garageLink">View Garage →</a>
+        </div>
+        <div class="builds-grid" id="buildsGrid">
+          <div class="skel" style="height:240px"></div>
+          <div class="skel" style="height:240px"></div>
+        </div>
+      </div>
+
+      <!-- TEAMS -->
+      <div class="section" id="teamsSection">
+        <div class="section-head">
+          <div class="section-title">Running With</div>
+        </div>
+        <div class="team-chips" id="teamChips">
+          <div class="skel" style="height:56px;width:180px"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CLAIM TROPHY MODAL -->
+  <div class="modal-backdrop" id="trophyModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Claim a Trophy</div>
+        <button class="btn btn-ghost btn-pill-sm" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);line-height:1.5">Submit your achievement for admin verification. Once verified it appears on your profile and build as a gold badge.</p>
+        <div class="field"><label>Achievement title *</label><input id="trophyTitle" placeholder="e.g. 1st Place Drift — Vernamfield 2024"/></div>
+        <div class="field"><label>Event name *</label><input id="trophyEvent" placeholder="e.g. JA Motorsport Open 2024"/></div>
+        <div class="field"><label>Position / Award</label><input id="trophyPos" placeholder="e.g. 1st · 2nd · Best Livery…"/></div>
+        <div class="field"><label>Which build? *</label>
+          <select id="trophyBuild">
+            <option value="">Select a build…</option>
+          </select>
+        </div>
+        <div class="field"><label>Date awarded (optional)</label><input type="date" id="trophyDate"/></div>
+        <div class="field"><label>Badge image URL (optional)</label><input id="trophyBadgeImg" placeholder="https://… trophy photo or icon"/></div>
+        <div class="msg" id="trophyMsg"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitTrophy()">Submit for Verification</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-const $ = (id) => document.getElementById(id);
-const navWrapper = $('navWrapper');
+const $ = id => document.getElementById(id);
+const esc = s => String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const FALLBACK = 'Assets/logo.png';
 
-// Nav solid on scroll
-function updateNavSolid(){
-  navWrapper?.classList.toggle('nav-solid', window.scrollY > 40);
-}
-updateNavSolid();
-window.addEventListener('scroll', updateNavSolid, { passive:true });
+window.addEventListener('scroll', () => $('navWrapper').classList.toggle('nav-solid', window.scrollY > 40), {passive:true});
 
-async function loadProfile() {
-  const params = new URLSearchParams(location.search);
-  const userId = params.get('id');
-  if (!userId) {
-    $('profileContent').innerHTML = `<div class="empty-state">No user specified.</div>`;
+// Resolve which profile to load
+const params = new URLSearchParams(location.search);
+const handleParam = params.get('handle');
+const meParam = params.has('me');
+let profileUserId = null;
+let isOwnProfile = false;
+let myBuilds = [];
+
+async function init() {
+  let profile;
+
+  if (meParam) {
+    const me = authUI.getUser?.();
+    if (!me) { authUI.requireLogin(); return; }
+    const { data } = await supabase.from('profiles').select('*').eq('id', me.id).maybeSingle();
+    profile = data;
+    isOwnProfile = true;
+  } else if (handleParam) {
+    const { data } = await supabase.from('profiles').select('*').ilike('handle', handleParam).maybeSingle();
+    profile = data;
+    const me = authUI.getUser?.();
+    isOwnProfile = !!(me && profile && me.id === profile.id);
+  } else {
+    const me = authUI.getUser?.();
+    if (!me) { authUI.requireLogin(); return; }
+    const { data } = await supabase.from('profiles').select('*').eq('id', me.id).maybeSingle();
+    profile = data;
+    isOwnProfile = true;
+  }
+
+  if (!profile) {
+    $('profileName').textContent = 'Profile not found';
     return;
   }
 
-  try {
-    // Fetch driver profile
-    const { data: profile } = await supabase
-      .from('driver_profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+  profileUserId = profile.id;
+  renderHeader(profile);
+  await Promise.all([loadTrophies(profile.id), loadBuilds(profile.id), loadTeams(profile.id)]);
+}
 
-    if (!profile) {
-      $('profileContent').innerHTML = `<div class="empty-state">Driver profile not found.</div>`;
-      return;
-    }
+function renderHeader(p) {
+  document.title = `${p.display_name || p.handle || 'Driver'} — ROK Racers JA`;
 
-    // Fetch accolades
-    const { data: accolades } = await supabase
-      .from('accolades')
-      .select('*')
-      .eq('driver_id', userId);
+  // Avatar
+  const av = $('avatarEl');
+  if (p.avatar_url) { av.innerHTML = `<img src="${esc(p.avatar_url)}" alt="">`; }
+  else { av.textContent = (p.display_name || p.handle || 'D')[0].toUpperCase(); }
 
-    // Fetch stats
-    const { data: stats } = await supabase
-      .from('driver_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+  $('profileName').textContent = p.display_name || p.handle || 'Driver';
+  $('profileHandle').textContent = p.handle ? '@' + p.handle : '';
+  if (p.bio) $('profileBio').textContent = p.bio;
 
-    // Fetch builds (if linked_build_id exists)
-    let builds = [];
-    if (profile.linked_build_id) {
-      const { data: buildData } = await supabase
-        .from('builds')
-        .select('id,title,year,make,model,thumb_url')
-        .eq('id', profile.linked_build_id);
-      builds = buildData || [];
-    }
+  // Meta pills
+  const meta = $('profileMeta');
+  const roleLabels = {viewer:'Viewer',spotter:'Spotter',driver:'Driver',promoter:'Promoter',seller:'Seller',admin:'Admin'};
+  if (p.role) meta.insertAdjacentHTML('beforeend', `<span class="meta-pill green">${esc(roleLabels[p.role]||p.role)}</span>`);
+  if (p.parishes?.length) meta.insertAdjacentHTML('beforeend', `<span class="meta-pill">📍 ${esc(p.parishes.slice(0,2).join(' · '))}</span>`);
+  if (p.instagram) meta.insertAdjacentHTML('beforeend', `<a class="meta-pill yellow" href="https://instagram.com/${p.instagram.replace('@','')}" target="_blank" rel="noopener">IG ${esc(p.instagram)}</a>`);
 
-    // Render profile
-    const initials = profile.handle ? profile.handle.substring(0, 2).toUpperCase() : '👤';
-    const html = `
-      <div class="profile-header">
-        <div class="profile-top">
-          <div class="profile-avatar">${initials}</div>
-          <div class="profile-info">
-            <div class="profile-name">${escapeHTML(profile.handle || 'Driver')}</div>
-            <div class="profile-meta">
-              ${profile.racing_class ? `<div class="profile-badge">${escapeHTML(profile.racing_class)}</div>` : ''}
-              ${profile.discipline ? `<div class="profile-badge">${escapeHTML(profile.discipline)}</div>` : ''}
-              ${profile.car_number ? `<div class="profile-badge">#${profile.car_number}</div>` : ''}
-            </div>
-            ${profile.bio ? `<div class="profile-bio">${escapeHTML(profile.bio)}</div>` : ''}
-          </div>
-        </div>
-
-        ${stats ? `
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-value">${stats.events_entered || 0}</div>
-              <div class="stat-label">Events</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">${stats.wins || 0}</div>
-              <div class="stat-label">Wins</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">${stats.podiums || 0}</div>
-              <div class="stat-label">Podiums</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">${stats.dnfs || 0}</div>
-              <div class="stat-label">DNFs</div>
-            </div>
-          </div>
-        ` : ''}
-      </div>
-
-      ${accolades && accolades.length ? `
-        <h2 class="section-title">🏆 Accolades</h2>
-        <div class="accolades-grid">
-          ${accolades.map(a => `
-            <div class="accolade-badge">
-              <span class="accolade-emoji">${a.emoji || '⭐'}</span>
-              <div class="accolade-name">${escapeHTML(a.title || 'Achievement')}</div>
-              <div class="accolade-by">${escapeHTML(a.issuer || 'Verified')}</div>
-            </div>
-          `).join('')}
-        </div>
-      ` : ''}
-
-      ${builds && builds.length ? `
-        <h2 class="section-title">🚗 Featured Build</h2>
-        <div class="builds-grid">
-          ${builds.map(b => `
-            <a href="/build.html?id=${encodeURIComponent(b.id)}" class="build-card">
-              <div class="build-thumb">
-                ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="Build" loading="lazy">` : '🚙'}
-              </div>
-              <div class="build-info">
-                <div class="build-title">${escapeHTML(b.title || 'Build')}</div>
-                <div class="build-meta">${[b.year, b.make, b.model].filter(Boolean).join(' ')}</div>
-              </div>
-            </a>
-          `).join('')}
-        </div>
-      ` : ''}
+  // Actions
+  const actions = $('profileActions');
+  if (isOwnProfile) {
+    actions.innerHTML = `
+      <a href="./onboarding.html?force=1" class="btn btn-ghost btn-pill-sm">Edit Profile</a>
+      <a href="./garage.html?view=my" class="btn btn-ghost btn-pill-sm">My Garage</a>
     `;
-
-    $('profileContent').innerHTML = html;
-  } catch (err) {
-    console.error('Profile load error:', err);
-    $('profileContent').innerHTML = `<div class="empty-state">Error loading profile.</div>`;
   }
 }
 
-function escapeHTML(s) {
-  return (s || '').replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[m]));
+async function loadTrophies(userId) {
+  const shelf = $('trophyShelf');
+  const trophyActs = $('trophyActions');
+
+  if (isOwnProfile) {
+    trophyActs.innerHTML = `<button class="btn btn-primary btn-pill-sm" onclick="openTrophyModal()">+ Claim Trophy</button>`;
+  }
+
+  const { data, error } = await supabase
+    .from('trophies')
+    .select('id,title,event_name,position,awarded_at,verified,badge_image_url,rejection_reason,build_id,builds(title,make,model,year)')
+    .eq('driver_id', userId)
+    .order('awarded_at', {ascending:false});
+
+  if (error || !data?.length) {
+    shelf.innerHTML = `<div class="empty" style="grid-column:1/-1"><strong>No Trophies Yet</strong>${isOwnProfile ? 'Submit your first achievement — wins, podiums, special awards.' : 'No trophies on the shelf yet.'}</div>`;
+    return;
+  }
+
+  shelf.innerHTML = data.map(t => {
+    const statusClass = t.verified ? 'verified' : (t.rejection_reason ? 'rejected' : 'pending');
+    const statusLabel = t.verified ? 'Verified' : (t.rejection_reason ? 'Rejected' : 'Pending');
+    const car = [t.builds?.year,t.builds?.make,t.builds?.model].filter(Boolean).join(' ');
+    return `
+      <div class="trophy-card ${!t.verified ? 'unverified' : ''}">
+        <span class="trophy-badge ${statusClass}">${statusLabel}</span>
+        <div class="trophy-img">
+          ${t.badge_image_url ? `<img src="${esc(t.badge_image_url)}" alt="" style="width:56px;height:56px;border-radius:12px;object-fit:cover">` : '🏆'}
+        </div>
+        <div class="trophy-title">${esc(t.title||'Trophy')}</div>
+        <div class="trophy-event">${esc(t.event_name||'')}</div>
+        ${t.position ? `<div class="trophy-pos">${esc(t.position)}</div>` : ''}
+        ${car ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">${esc(car)}</div>` : ''}
+        ${t.rejection_reason ? `<div style="font-size:10px;color:#ff8080;margin-top:6px">Reason: ${esc(t.rejection_reason)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
-document.addEventListener('DOMContentLoaded', loadProfile);
+async function loadBuilds(userId) {
+  const grid = $('buildsGrid');
+  const { data, error } = await supabase
+    .from('builds')
+    .select('id,title,make,model,year,build_type,thumb_url,model_url,is_public')
+    .eq('user_id', userId)
+    .eq('is_public', true)
+    .order('created_at', {ascending:false});
+
+  if (isOwnProfile) $('garageLink').href = './garage.html?view=my';
+
+  if (error || !data?.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><strong>No Builds Yet</strong>${isOwnProfile ? 'Drop your first build to show the grid what you\'re running.' : 'No public builds yet.'}</div>`;
+    return;
+  }
+
+  myBuilds = data;
+
+  // Populate trophy build select
+  const sel = $('trophyBuild');
+  data.forEach(b => {
+    const car = [b.year,b.make,b.model,b.title].filter(Boolean).join(' ');
+    const opt = document.createElement('option');
+    opt.value = b.id;
+    opt.textContent = car || 'Untitled build';
+    sel.appendChild(opt);
+  });
+
+  // Load trophies per build for mini badges
+  const buildIds = data.map(b => b.id);
+  const { data: bTrophies } = await supabase
+    .from('trophies')
+    .select('build_id,title,verified')
+    .in('build_id', buildIds)
+    .eq('verified', true);
+  const trophyMap = {};
+  (bTrophies || []).forEach(t => {
+    if (!trophyMap[t.build_id]) trophyMap[t.build_id] = [];
+    trophyMap[t.build_id].push(t);
+  });
+
+  grid.innerHTML = data.map(b => {
+    const typeMap = {owned:'Owned',dream:'Dream',for_sale:'For Sale'};
+    const type = typeMap[b.build_type] || b.build_type || 'Build';
+    const photo = b.thumb_url || FALLBACK;
+    const glb = b.model_url || '';
+    const buildTrophies = trophyMap[b.id] || [];
+
+    return `
+      <div class="build-card" onclick="location.href='./build.html?id=${b.id}'">
+        <div class="build-stage" style="height:200px">
+          ${glb
+            ? `<model-viewer src="${esc(glb)}" poster="${esc(photo)}" camera-orbit="0deg 72deg 4.5m" field-of-view="42deg" auto-rotate auto-rotate-delay="800" rotation-per-second="18deg" exposure="1.3" shadow-intensity="0.9" environment-image="neutral" interaction-prompt="none" style="display:block;width:100%;height:200px;" camera-controls></model-viewer>
+               <img class="build-photo-overlay" src="${esc(photo)}" alt="" loading="lazy">`
+            : `<img src="${esc(photo)}" alt="${esc(b.title||'Build')}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">`
+          }
+          <div class="build-label-bar">
+            <div class="build-label-name">${esc(b.title || [b.year,b.make,b.model].filter(Boolean).join(' ') || 'Untitled')}</div>
+            <div class="build-label-type">${esc(type)}</div>
+          </div>
+        </div>
+        ${buildTrophies.length ? `
+          <div class="build-trophies">
+            ${buildTrophies.slice(0,3).map(t => `<span class="mini-trophy">🏆 ${esc(t.title)}</span>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadTeams(userId) {
+  const chips = $('teamChips');
+  const { data } = await supabase
+    .from('team_members')
+    .select('role,teams:team_id(id,name,logo_url,parish)')
+    .eq('user_id', userId)
+    .neq('role', 'pending');
+
+  const active = (data||[]).filter(m => m.teams);
+  if (!active.length) {
+    chips.innerHTML = `<div class="empty" style="width:100%;padding:20px"><strong>No Teams</strong>${isOwnProfile ? '<a href="./teams.html" style="color:var(--green)">Browse teams →</a>' : 'Not in any teams yet.'}</div>`;
+    return;
+  }
+
+  chips.innerHTML = active.map(m => {
+    const t = m.teams;
+    const logo = t.logo_url
+      ? `<img src="${esc(t.logo_url)}" alt="">`
+      : `<div class="team-chip-icon">🏁</div>`;
+    return `
+      <a class="team-chip" href="./team.html?id=${esc(t.id)}">
+        ${logo}
+        <div>
+          <div class="team-chip-name">${esc(t.name)}</div>
+          <div class="team-chip-role">${esc(m.role)} ${t.parish ? '· '+esc(t.parish) : ''}</div>
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+// Trophy modal
+window.openTrophyModal = function() { $('trophyModal').classList.add('open'); };
+window.closeModal = function() { $('trophyModal').classList.remove('open'); };
+$('trophyModal').addEventListener('click', e => { if(e.target === $('trophyModal')) closeModal(); });
+
+window.submitTrophy = async function() {
+  const msg = $('trophyMsg');
+  msg.textContent = ''; msg.className = 'msg';
+  const user = authUI.getUser?.();
+  if (!user) { authUI.requireLogin(); return; }
+
+  const title = $('trophyTitle').value.trim();
+  const event = $('trophyEvent').value.trim();
+  const buildId = $('trophyBuild').value;
+  if (!title || !event || !buildId) {
+    msg.textContent = 'Title, event, and build are required.';
+    msg.className = 'msg err';
+    return;
+  }
+
+  const btn = document.querySelector('#trophyModal .btn-primary');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  const { error } = await supabase.from('trophies').insert({
+    driver_id: user.id,
+    build_id: buildId,
+    title,
+    event_name: event,
+    position: $('trophyPos').value.trim() || null,
+    awarded_at: $('trophyDate').value || null,
+    badge_image_url: $('trophyBadgeImg').value.trim() || null,
+    verified: false,
+  });
+
+  btn.disabled = false; btn.textContent = 'Submit for Verification';
+  if (error) { msg.textContent = error.message; msg.className = 'msg err'; return; }
+  msg.textContent = '✓ Submitted! Admin will verify your trophy shortly.';
+  msg.className = 'msg ok';
+  setTimeout(() => { closeModal(); loadTrophies(user.id); }, 2000);
+};
+
+authUI.onChange(init);
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
-
-

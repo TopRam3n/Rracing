@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Community — ROK Racers JA</title>
   <meta name="description" content="Find crews, clubs, and event teams across Jamaica. Join the grid."/>
-  <link rel="icon" href="../../Assets/og.png"/>
+  <link rel="icon" href="Assets/og.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,9 +13,6 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="auth-ui.js"></script>
-
-  <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
 
   <style>
     :root{
@@ -289,6 +286,31 @@
     .promo-icon{font-size:28px;flex-shrink:0;margin-top:2px}
     .promo-tile h4{font-family:"Bebas Neue";font-size:22px;letter-spacing:1.5px;margin-bottom:4px}
     .promo-tile p{font-size:13px;color:var(--text-muted);line-height:1.45}
+  
+    /* ── JMMC LICENSE MODAL SPECIFICS ── */
+    .jmmc-header{
+      background:linear-gradient(135deg,rgba(229,9,20,0.12),rgba(229,9,20,0.04));
+      border-bottom:1px solid rgba(229,9,20,0.2);
+      padding:16px 20px;
+      display:flex;align-items:center;gap:14px;
+    }
+    .jmmc-logo-box{
+      width:48px;height:48px;border-radius:12px;
+      background:rgba(229,9,20,0.15);border:1px solid rgba(229,9,20,0.35);
+      display:flex;align-items:center;justify-content:center;
+      font-size:24px;flex-shrink:0;
+    }
+    .jmmc-title{font-family:"Bebas Neue";font-size:26px;letter-spacing:2px;color:#fff}
+    .jmmc-sub{font-size:12px;color:rgba(255,200,200,0.7);text-transform:uppercase;letter-spacing:.12em}
+    .license-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:480px){.license-grid{grid-template-columns:1fr}}
+    .info-box{
+      padding:12px 14px;border-radius:12px;
+      background:rgba(229,9,20,0.04);border:1px solid rgba(229,9,20,0.15);
+      font-size:12px;color:var(--text-muted);line-height:1.5;
+    }
+    .info-box strong{display:block;font-size:13px;color:#fff;margin-bottom:3px}
+
   </style>
 </head>
 <body>
@@ -296,7 +318,7 @@
   <!-- NAV — exact match to index.html -->
   <div class="nav-wrapper" id="navWrapper">
     <div class="container nav">
-      <a href="./index.html" class="logo">
+      <a href="/index.html" class="logo">
         <div class="logo-mark">
           <img src="Assets/logo.png" alt="ROK Racers JA logo">
         </div>
@@ -329,14 +351,14 @@
               <div class="dd-title">Signed in as</div>
               <div class="dd-email" id="ddEmail">—</div>
             </div>
-            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
-            <a href="./garage.html">My Garage</a>
-            <a href="./tickets.html">My Tickets</a>
-            <a href="./likes-builds.html">Liked Builds</a>
-            <a href="./likes-sightings.html">Liked Sightings</a>
-            <a href="./teams.html">My Teams</a>
-            <a id="myEventsLink" href="./admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <a href="/garage.html">My Garage</a>
+            <a href="/tickets.html">My Tickets</a>
+            <a href="/likes-builds.html">Liked Builds</a>
+            <a href="/likes-sightings.html">Liked Sightings</a>
+            <a href="/teams.html">My Teams</a>
+            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
             <div class="dd-sep"></div>
             <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
@@ -359,6 +381,7 @@
         <div class="hero-actions">
           <a href="#directory" class="btn btn-primary">Explore Teams</a>
           <button id="requestTeamBtn" class="btn btn-ghost">+ Request a Team</button>
+          <button id="jmmcBtn" class="btn btn-ghost" style="border-color:rgba(229,9,20,0.4);color:#ff9a9a;background:rgba(229,9,20,0.04)">🏁 JMMC Race License</button>
         </div>
       </div>
       <div class="hero-stats">
@@ -840,7 +863,7 @@
 
     // ── CREATE TEAM (promoters only) ──────────────────────────────────────
     $('createTeamBtn').onclick = () => {
-      window.location.href = '/admin-team.html';
+      window.location.href = './admin-team.html';
     };
 
     function syncCreateBtn() {
@@ -855,13 +878,181 @@
       await loadMyTeams();
     });
 
+    
+    // ── JMMC LICENSE APPLICATION ──────────────────────────────────────
+    $('jmmcBtn').onclick = () => openModal('jmmcModal');
+    $('jmmcModalClose').onclick = () => closeModal('jmmcModal');
+    $('jmmcCancel').onclick = () => closeModal('jmmcModal');
+
+    $('jmmcSubmit').addEventListener('click', async () => {
+      const msg = $('jmmcMsg');
+      msg.textContent = ''; msg.className = 'modal-msg';
+
+      const first    = $('jmmcFirst').value.trim();
+      const last     = $('jmmcLast').value.trim();
+      const email    = $('jmmcEmail').value.trim();
+      const phone    = $('jmmcPhone').value.trim();
+      const dob      = $('jmmcDOB').value;
+      const parish   = $('jmmcParish').value;
+      const category = $('jmmcCategory').value;
+
+      if (!first || !last || !email || !phone || !dob || !parish || !category) {
+        msg.textContent = 'Please fill in all required fields.';
+        msg.className = 'modal-msg err';
+        return;
+      }
+
+      $('jmmcSubmit').disabled = true;
+      $('jmmcSubmit').textContent = 'Submitting…';
+
+      try {
+        const user = authUI.getUser();
+        const { error } = await supabase.from('jmmc_license_applications').insert({
+          user_id:    user?.id || null,
+          first_name: first,
+          last_name:  last,
+          email,
+          phone,
+          date_of_birth: dob,
+          parish,
+          category,
+          vehicle:    $('jmmcVehicle').value.trim() || null,
+          experience: $('jmmcExperience').value.trim() || null,
+          instagram:  $('jmmcIG').value.trim() || null,
+          status:     'pending',
+        });
+
+        if (error) throw error;
+
+        msg.textContent = '✓ Application submitted! We'll review it and be in touch via email within 5–10 business days.';
+        msg.className = 'modal-msg ok';
+        // Clear form
+        ['jmmcFirst','jmmcLast','jmmcEmail','jmmcPhone','jmmcDOB','jmmcVehicle','jmmcExperience','jmmcIG'].forEach(id => $(id).value = '');
+        $('jmmcParish').value = '';
+        $('jmmcCategory').value = '';
+        setTimeout(() => closeModal('jmmcModal'), 3500);
+
+      } catch (err) {
+        msg.textContent = 'Couldn\'t submit: ' + (err?.message || String(err));
+        msg.className = 'modal-msg err';
+      } finally {
+        $('jmmcSubmit').disabled = false;
+        $('jmmcSubmit').textContent = 'Submit Application';
+      }
+    });
+
     // ── INIT ──────────────────────────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', async () => {
       syncCreateBtn();
       await Promise.all([loadTeams(), loadMyTeams()]);
     });
   </script>
+
+  <!-- JMMC RACE LICENSE MODAL -->
+  <div id="jmmcModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" style="max-width:600px">
+      <div class="jmmc-header">
+        <div class="jmmc-logo-box">🏁</div>
+        <div>
+          <div class="jmmc-title">JMMC Race License</div>
+          <div class="jmmc-sub">Jamaica Motor Racing Club — Official Application</div>
+        </div>
+        <button id="jmmcModalClose" class="btn btn-ghost btn-sm" style="margin-left:auto" aria-label="Close">✕</button>
+      </div>
+      <div class="body" style="padding:20px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto">
+
+        <div class="license-grid">
+          <div class="info-box"><strong>What is this?</strong>An official JMMC race license allows you to compete in sanctioned Jamaican motorsport events — drag, circuit, and off-road disciplines.</div>
+          <div class="info-box"><strong>Who can apply?</strong>Any licensed driver over 16 with a valid Jamaican driver's licence. Junior categories available. Medical clearance required.</div>
+          <div class="info-box"><strong>Cost</strong>License fees vary by category. Details sent after review. Renewal is annual.</div>
+          <div class="info-box"><strong>Processing</strong>Applications reviewed within 5–10 business days. You'll be contacted at the email provided.</div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08)">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label for="jmmcFirst" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">First name *</label>
+            <input id="jmmcFirst" type="text" placeholder="Given name"/>
+          </div>
+          <div>
+            <label for="jmmcLast" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Last name *</label>
+            <input id="jmmcLast" type="text" placeholder="Surname"/>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label for="jmmcEmail" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Email *</label>
+            <input id="jmmcEmail" type="email" placeholder="your@email.com"/>
+          </div>
+          <div>
+            <label for="jmmcPhone" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Phone / WhatsApp *</label>
+            <input id="jmmcPhone" type="tel" placeholder="+1 876 XXX XXXX"/>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label for="jmmcDOB" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Date of birth *</label>
+            <input id="jmmcDOB" type="date"/>
+          </div>
+          <div>
+            <label for="jmmcParish" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Parish *</label>
+            <select id="jmmcParish">
+              <option value="">Select parish…</option>
+              <option>Kingston</option><option>St. Andrew</option><option>St. Catherine</option>
+              <option>St. Thomas</option><option>Portland</option><option>St. Mary</option>
+              <option>St. Ann</option><option>Trelawny</option><option>St. James</option>
+              <option>Hanover</option><option>Westmoreland</option><option>St. Elizabeth</option>
+              <option>Manchester</option><option>Clarendon</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="jmmcCategory" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">License category *</label>
+          <select id="jmmcCategory">
+            <option value="">Select category…</option>
+            <option value="drag_junior">Drag Racing — Junior (16–18)</option>
+            <option value="drag_amateur">Drag Racing — Amateur</option>
+            <option value="drag_pro">Drag Racing — Pro</option>
+            <option value="circuit_novice">Circuit Racing — Novice</option>
+            <option value="circuit_national">Circuit Racing — National</option>
+            <option value="circuit_international">Circuit Racing — International</option>
+            <option value="offroad">Off-Road / Autocross</option>
+            <option value="hillclimb">Hill Climb</option>
+            <option value="karting">Karting</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="jmmcVehicle" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Vehicle (make, model, year)</label>
+          <input id="jmmcVehicle" type="text" placeholder="e.g. 2004 Honda Civic EK9"/>
+        </div>
+
+        <div>
+          <label for="jmmcExperience" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Racing experience (optional)</label>
+          <textarea id="jmmcExperience" style="min-height:70px;resize:vertical" placeholder="Previous events, years of experience, other licenses held…"></textarea>
+        </div>
+
+        <div>
+          <label for="jmmcIG" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:5px">Instagram (optional)</label>
+          <input id="jmmcIG" type="text" placeholder="@your_instagram"/>
+        </div>
+
+        <div style="padding:12px 14px;border-radius:12px;background:rgba(255,217,59,0.04);border:1px solid rgba(255,217,59,0.15);font-size:12px;color:var(--text-muted);line-height:1.5">
+          ⚠️ By submitting you confirm all information is accurate. Medical clearance documentation may be required before your license is issued. ROK Racers JA collects this on behalf of JMMC for processing.
+        </div>
+
+        <div id="jmmcMsg" class="modal-msg"></div>
+      </div>
+      <footer style="display:flex;gap:10px;justify-content:flex-end;padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08)">
+        <button id="jmmcCancel" class="btn btn-ghost">Cancel</button>
+        <button id="jmmcSubmit" class="btn btn-primary">Submit Application</button>
+      </footer>
+    </div>
+  </div>
+
 </body>
 </html>
-
-

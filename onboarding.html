@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Welcome — ROK Racers JA</title>
+  <link rel="icon" href="Assets/og.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth-ui.js"></script>
+  <style>
+    :root{--green:#128b02;--yellow:#FFD93B;--red:#e50914;--fg:#fff;--muted:#bdbdbd;--line:rgba(255,255,255,0.07);--tf:0.2s ease-out}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:radial-gradient(circle at top,#161623 0,#050508 55%,#000 100%);color:var(--fg);font-family:"Rajdhani",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+    .card{width:min(680px,100%);background:rgba(20,20,22,.9);border:1px solid var(--line);border-radius:28px;padding:40px 44px;box-shadow:0 32px 80px rgba(0,0,0,.7)}
+    @media(max-width:640px){.card{padding:28px 22px;border-radius:20px}}
+    .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+    .logo-mark{width:40px;height:40px;border-radius:999px;border:1px solid rgba(18,139,2,.7);overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+    .logo-mark img{width:100%;height:100%;object-fit:cover}
+    .logo-text{font-family:"Bebas Neue";font-size:22px;text-transform:uppercase}
+    .step-indicator{display:flex;gap:6px;margin-bottom:32px}
+    .step-dot{flex:1;height:3px;border-radius:999px;background:rgba(255,255,255,.1);transition:background .3s}
+    .step-dot.done{background:var(--green)}
+    .step-dot.active{background:var(--yellow)}
+    h2{font-family:"Bebas Neue";font-size:clamp(32px,5vw,48px);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;line-height:1}
+    .sub{font-size:15px;color:var(--muted);line-height:1.5;margin-bottom:28px}
+    /* Role cards */
+    .roles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+    .role-card{padding:18px 16px;border-radius:18px;border:2px solid var(--line);background:rgba(255,255,255,.02);cursor:pointer;transition:border-color var(--tf),background var(--tf),transform var(--tf);position:relative;text-align:left}
+    .role-card:hover{border-color:rgba(255,217,59,.3);background:rgba(255,217,59,.03);transform:translateY(-2px)}
+    .role-card.selected{border-color:var(--yellow);background:rgba(255,217,59,.07)}
+    .role-card.selected::after{content:"✓";position:absolute;top:10px;right:12px;font-size:14px;color:var(--yellow);font-weight:700}
+    .role-icon{font-size:28px;margin-bottom:10px;display:block}
+    .role-name{font-family:"Bebas Neue";font-size:22px;letter-spacing:1px;margin-bottom:4px}
+    .role-desc{font-size:12px;color:var(--muted);line-height:1.45}
+    /* Fields */
+    .field{margin-bottom:18px}
+    .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:6px}
+    .field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:#fff;padding:12px 14px;border-radius:14px;font-family:inherit;font-size:14px;outline:none;transition:border-color var(--tf)}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(18,139,2,.7)}
+    .field select option{background:#1a1a1a}
+    /* Parish multi-select pills */
+    .parishes{display:flex;flex-wrap:wrap;gap:8px}
+    .parish-pill{padding:5px 14px;border-radius:999px;border:1px solid var(--line);font-size:12px;cursor:pointer;transition:border-color var(--tf),background var(--tf);color:var(--muted)}
+    .parish-pill.selected{border-color:rgba(18,139,2,.6);background:rgba(18,139,2,.1);color:#9affc5}
+    /* Nav buttons */
+    .btn-row{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:8px}
+    .btn{border-radius:14px;padding:12px 24px;font-size:13px;text-transform:uppercase;letter-spacing:.18em;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:inherit;color:#fff;transition:background var(--tf),transform var(--tf),box-shadow var(--tf)}
+    .btn-primary{background:radial-gradient(circle at top left,#39ff96,var(--green));border-color:rgba(18,139,2,.85);box-shadow:0 0 24px rgba(18,139,2,.4)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(18,139,2,.6)}
+    .btn-ghost{border-color:rgba(255,255,255,.12);color:var(--muted)}
+    .btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.25)}
+    .btn[disabled]{opacity:.4;pointer-events:none}
+    .msg{font-size:13px;color:#ff9a9a;min-height:16px;margin-top:-8px;margin-bottom:8px}
+    /* Step panels */
+    .step{display:none}
+    .step.active{display:block}
+    /* Finish screen */
+    .finish-icon{font-size:64px;text-align:center;margin-bottom:16px}
+    .finish-title{font-family:"Bebas Neue";font-size:52px;letter-spacing:3px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,#3dff9f,var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .finish-sub{text-align:center;color:var(--muted);font-size:15px;margin-bottom:32px}
+    .finish-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="logo-row">
+      <div class="logo-mark"><img src="Assets/logo.png" alt="ROK"></div>
+      <div class="logo-text">ROK RACERS JA</div>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot0"></div>
+      <div class="step-dot" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
+
+    <!-- STEP 0: Role selection -->
+    <div class="step active" id="step0">
+      <h2>What's your role?</h2>
+      <p class="sub">Choose how you're part of the scene. You can update this anytime from your profile settings.</p>
+      <div class="roles-grid" id="rolesGrid">
+        <div class="role-card" data-role="viewer">
+          <span class="role-icon">👁️</span>
+          <div class="role-name">Viewer</div>
+          <div class="role-desc">Browse events, builds, and sightings. Explore the community.</div>
+        </div>
+        <div class="role-card" data-role="spotter">
+          <span class="role-icon">📸</span>
+          <div class="role-name">Spotter</div>
+          <div class="role-desc">Photographer or street spotter. Upload sightings from events and roads.</div>
+        </div>
+        <div class="role-card" data-role="driver">
+          <span class="role-icon">🏎️</span>
+          <div class="role-name">Driver</div>
+          <div class="role-desc">You race, drift, or build. Showcase your car, log your trophies.</div>
+        </div>
+        <div class="role-card" data-role="promoter">
+          <span class="role-icon">📢</span>
+          <div class="role-name">Promoter</div>
+          <div class="role-desc">Run a crew or promote events. Create teams, manage events, go live.</div>
+        </div>
+      </div>
+      <div class="msg" id="roleMsg"></div>
+      <div class="btn-row">
+        <span style="font-size:12px;color:var(--muted)">Step 1 of 4</span>
+        <button class="btn btn-primary" onclick="goStep(1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1: Profile basics -->
+    <div class="step" id="step1">
+      <h2>Your profile</h2>
+      <p class="sub">Set up your public presence on the grid.</p>
+      <div class="field"><label>Display name *</label><input id="displayName" placeholder="How the community sees you" maxlength="48"/></div>
+      <div class="field"><label>Handle (no spaces) *</label><input id="handle" placeholder="your_handle" maxlength="32" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"/></div>
+      <div class="field"><label>Instagram (optional)</label><input id="instagram" placeholder="@your_instagram"/></div>
+      <div class="field"><label>Bio (optional)</label><textarea id="bio" placeholder="Tell the scene about yourself — discipline, build, how long you've been in it…" rows="3"></textarea></div>
+      <div class="msg" id="profileMsg"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(0)">← Back</button>
+        <button class="btn btn-primary" onclick="goStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Location -->
+    <div class="step" id="step2">
+      <h2>Where are you from?</h2>
+      <p class="sub">Select your parish. You can pick multiple if you run across the island.</p>
+      <div class="parishes" id="parishPills"></div>
+      <div style="margin-top:24px"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Team (optional) -->
+    <div class="step" id="step3">
+      <h2>Join a team?</h2>
+      <p class="sub">Optionally associate with a crew or club. You can do this later from the Community page too.</p>
+      <div class="field"><label>Search teams (optional)</label>
+        <input id="teamSearch" placeholder="Type a team name…" oninput="searchTeams(this.value)"/>
+      </div>
+      <div id="teamResults" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
+      <div id="selectedTeamWrap" style="display:none;padding:12px 14px;border-radius:14px;border:1px solid rgba(18,139,2,.4);background:rgba(18,139,2,.06);margin-bottom:20px">
+        <div style="font-size:13px;color:#9affc5">✓ Will apply to: <strong id="selectedTeamName"></strong></div>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;margin-top:6px" onclick="clearTeam()">Remove</button>
+      </div>
+      <div class="msg" id="saveMsg"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-primary" id="finishBtn" onclick="finish()">Finish Setup ↗</button>
+      </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="step" id="stepDone">
+      <div class="finish-icon">🏁</div>
+      <div class="finish-title">You're on the Grid</div>
+      <p class="finish-sub">Welcome to ROK Racers JA. Your profile is set up and ready.<br>The scene is waiting.</p>
+      <div class="finish-actions">
+        <a href="./index.html" class="btn btn-primary">Go to Homepage</a>
+        <a href="./garage.html" class="btn btn-ghost">Browse Builds</a>
+        <a href="./events.html" class="btn btn-ghost">See Events</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const PARISHES = ['Kingston','St. Andrew','St. Catherine','St. Thomas','Portland','St. Mary','St. Ann','Trelawny','St. James','Hanover','Westmoreland','St. Elizabeth','Manchester','Clarendon'];
+const esc = s => String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+let selectedRole = '';
+let selectedParishes = [];
+let selectedTeamId = null;
+let selectedTeamName = '';
+let currentStep = 0;
+
+// Role cards
+document.querySelectorAll('.role-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedRole = card.dataset.role;
+    $('roleMsg').textContent = '';
+  });
+});
+
+// Parish pills
+const pp = $('parishPills');
+PARISHES.forEach(p => {
+  const el = document.createElement('div');
+  el.className = 'parish-pill';
+  el.textContent = p;
+  el.addEventListener('click', () => {
+    const i = selectedParishes.indexOf(p);
+    if (i === -1) { selectedParishes.push(p); el.classList.add('selected'); }
+    else { selectedParishes.splice(i, 1); el.classList.remove('selected'); }
+  });
+  pp.appendChild(el);
+});
+
+// Step navigation
+window.goStep = function(n) {
+  // Validate before advancing
+  if (n > currentStep) {
+    if (currentStep === 0 && !selectedRole) { $('roleMsg').textContent = 'Please pick a role to continue.'; return; }
+    if (currentStep === 1) {
+      if (!$('displayName').value.trim()) { $('profileMsg').textContent = 'Display name is required.'; return; }
+      if (!$('handle').value.trim()) { $('profileMsg').textContent = 'Handle is required.'; return; }
+      $('profileMsg').textContent = '';
+    }
+  }
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  $('step'+n)?.classList.add('active');
+  for (let i = 0; i < 4; i++) {
+    const dot = $('dot'+i);
+    if (!dot) continue;
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  currentStep = n;
+};
+
+// Team search
+let teamSearchTimer;
+window.searchTeams = function(q) {
+  clearTimeout(teamSearchTimer);
+  const res = $('teamResults');
+  if (!q.trim()) { res.innerHTML = ''; return; }
+  teamSearchTimer = setTimeout(async () => {
+    const { data } = await supabase.from('teams').select('id,name,parish').ilike('name','%'+q+'%').limit(6);
+    if (!data?.length) { res.innerHTML = '<div style="font-size:13px;color:var(--muted)">No teams found.</div>'; return; }
+    res.innerHTML = data.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.02)">
+        <div>
+          <div style="font-weight:700;font-size:14px">${esc(t.name)}</div>
+          <div style="font-size:12px;color:var(--muted)">${esc(t.parish||'')}</div>
+        </div>
+        <button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="selectTeam('${t.id}','${esc(t.name)}')">Select</button>
+      </div>
+    `).join('');
+  }, 300);
+};
+
+window.selectTeam = function(id, name) {
+  selectedTeamId = id;
+  selectedTeamName = name;
+  $('selectedTeamName').textContent = name;
+  $('selectedTeamWrap').style.display = 'block';
+  $('teamResults').innerHTML = '';
+  $('teamSearch').value = '';
+};
+
+window.clearTeam = function() {
+  selectedTeamId = null;
+  selectedTeamName = '';
+  $('selectedTeamWrap').style.display = 'none';
+};
+
+// Finish — save everything
+window.finish = async function() {
+  const btn = $('finishBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const user = authUI.getUser?.();
+  if (!user) { authUI.requireLogin(); btn.disabled = false; btn.textContent = 'Finish Setup ↗'; return; }
+
+  const handle = $('handle').value.trim().toLowerCase();
+  const displayName = $('displayName').value.trim();
+
+  // Check handle uniqueness
+  const { data: existing } = await supabase.from('profiles').select('id').eq('handle', handle).neq('id', user.id).maybeSingle();
+  if (existing) { $('saveMsg').textContent = 'That handle is already taken — try another.'; $('saveMsg').className = 'msg'; btn.disabled = false; btn.textContent = 'Finish Setup ↗'; goStep(1); return; }
+
+  const { error } = await supabase.from('profiles').upsert({
+    id: user.id,
+    handle,
+    display_name: displayName,
+    instagram: $('instagram').value.trim() || null,
+    bio: $('bio').value.trim() || null,
+    parishes: selectedParishes.length ? selectedParishes : null,
+    role: selectedRole || 'viewer',
+    onboarded: true,
+  }, { onConflict: 'id' });
+
+  if (error) {
+    $('saveMsg').textContent = 'Couldn\'t save: ' + error.message;
+    btn.disabled = false; btn.textContent = 'Finish Setup ↗';
+    return;
+  }
+
+  // Apply to team if selected
+  if (selectedTeamId) {
+    await supabase.from('team_applications').insert({
+      team_id: selectedTeamId,
+      user_id: user.id,
+      handle,
+      message: 'Applied during onboarding.',
+      status: 'pending',
+    });
+  }
+
+  // Show done screen
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  $('stepDone').classList.add('active');
+  document.querySelectorAll('.step-dot').forEach(d => d.classList.add('done'));
+};
+
+// Gate: redirect if not logged in, skip if already onboarded
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = authUI.getUser?.();
+  if (!user) {
+    // Wait for auth
+    const unsub = authUI.onChange?.(async () => {
+      const u = authUI.getUser?.();
+      if (u) { unsub?.(); await checkOnboarded(u); }
+    });
+    return;
+  }
+  await checkOnboarded(user);
+});
+
+async function checkOnboarded(user) {
+  const { data } = await supabase.from('profiles').select('onboarded,role').eq('id', user.id).maybeSingle();
+  if (data?.onboarded) {
+    // Already done — redirect to homepage unless forced
+    const params = new URLSearchParams(location.search);
+    if (!params.has('force')) location.href = './index.html';
+  }
+}
+</script>
+</body>
+</html>

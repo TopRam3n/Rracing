@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Event — ROK Racers JA</title>
   <meta name="description" content="Event details for the Jamaican car community." />
-  <link rel="icon" href="../../Assets/og.png" />
+  <link rel="icon" href="Assets/og.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
   <script src="auth-ui.js"></script>
 
   <!-- Design System (centralized tokens + components) -->
-  <link rel="stylesheet" href="../../styles/design-system.css">
+  <link rel="stylesheet" href="./design-system.css">
 
   <style>
     :root{
@@ -416,7 +416,8 @@
           <a href="./events.html">Events</a>
           <a href="./garage.html">Garage</a>
           <a href="./teams.html">Community</a>
-          <a href="./about.html">About</a>
+          <a href="./live.html">Live</a>
+          <a href="./highlights.html">Feed</a>
           <a href="./marketplace.html">Marketplace</a>
           <a href="./store.html">Store</a>
         </nav>
@@ -617,7 +618,7 @@
       document.title = `${data.title || 'Event'} — ROK Racers JA`;
 
       const timeLine = `${fmt(data.starts_at)}${data.ends_at ? ` — ${fmt(data.ends_at)}` : ""}`;
-      const cover = data.cover_url ? data.cover_url : "/Assets/logo.png";
+      const cover = data.cover_url ? data.cover_url : "Assets/logo.png";
       const hasPay = !!data.payment_url;
 
       card.innerHTML = `
