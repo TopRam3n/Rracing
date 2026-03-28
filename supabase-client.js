@@ -6,6 +6,11 @@
   if (window.__rokSupabaseReady) return; // prevent double-init
   window.__rokSupabaseReady = true;
 
+  // These values are intentionally public — the anon key is designed to be
+  // embedded in browser code. Supabase security is enforced by Row Level
+  // Security (RLS) policies, not by hiding this key. See .env for reference.
+  // The SUPABASE_SERVICE_ROLE_KEY (the real secret) is only used server-side
+  // in create-checkout-session.js and stripe-webhook.js via process.env.
   const SUPABASE_URL = "https://dtgnvzjtojdqmujzokgh.supabase.co";
   const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Z252emp0b2pkcW11anpva2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMTkwMDAsImV4cCI6MjA3Nzc5NTAwMH0.r8LBQ14sxABB0mIw0exPlmv19W1fx0-iKLyefPhh8d8";
