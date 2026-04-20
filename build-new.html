@@ -466,9 +466,9 @@
             <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
 
-            <a href="/garage.html?view=my">My Garage</a>
+            <a href="./garage.html?view=my">My Garage</a>
             <a href="./tickets.html">My Tickets</a>
-            <a href="./likes-builds.html">Liked Builds</a>
+            <a href="./likes-build.html">Liked Builds</a>
             <a href="./likes-sightings.html">Liked Sightings</a>
             <a href="./teams.html">My Teams</a>
 
@@ -719,11 +719,8 @@
   }
   function safeTrim(s){ return (s || '').toString().trim(); }
 
-  async function getUser(){
-    // Use authUI if ready, otherwise fall back to supabase directly
-    if(window.authUI) return authUI.getUser();
-    const user = authUI.getUser();
-    return user || null;
+  function getUser(){
+    return authUI.getUser();
   }
 
   // IMPORTANT: DO NOT force login on page load — only gate on save
@@ -874,16 +871,15 @@
   }
 
   async function resolveModelUrl(row){
+    // If glb_url is already a full URL, use it directly
+    const direct = safeTrim(row?.glb_url);
+    if(direct && direct.startsWith('http')) return direct;
+    // Try storage_path
     const sp = safeTrim(row?.storage_path);
     if(sp){
-      const { data: urlData } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(sp);
-      if(urlData?.publicUrl) return urlData.publicUrl;
-
-      const signed = await supabase.storage.from(BUCKET_MODELS).createSignedUrl(sp, 60 * 60);
-      if(!signed.error && signed.data?.signedUrl) return signed.data.signedUrl;
+      const { data } = supabase.storage.from(BUCKET_MODELS).getPublicUrl(sp);
+      if(data?.publicUrl) return data.publicUrl;
     }
-
-    const direct = safeTrim(row?.glb_url);
     return direct || null;
   }
 
@@ -922,12 +918,7 @@
         rows = rows.filter(r => inYearRange(year, r.year_from, r.year_to));
       }
 
-      const filtered = [];
-      for(const r of rows){
-        const url = await resolveModelUrl(r);
-        if(url) filtered.push(r);
-      }
-      rows = filtered;
+      rows = rows.filter(r => safeTrim(r?.glb_url) || safeTrim(r?.storage_path));
 
       const sel = $('modelResults');
       if(!rows.length){

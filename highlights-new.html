@@ -140,7 +140,7 @@
   <!-- NAV — matches index.html exactly -->
   <div class="nav-wrapper" id="navWrapper">
     <div class="container nav">
-      <a href="/index.html" class="logo">
+      <a href="./index.html" class="logo">
         <div class="logo-mark">
           <img src="Assets/logo.png" alt="ROK Racers JA logo">
         </div>
@@ -173,14 +173,14 @@
               <div class="dd-title">Signed in as</div>
               <div class="dd-email" id="ddEmail">—</div>
             </div>
-            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
-            <a href="/garage.html">My Garage</a>
-            <a href="/tickets.html">My Tickets</a>
-            <a href="/likes-builds.html">Liked Builds</a>
-            <a href="/likes-sightings.html">Liked Sightings</a>
-            <a href="/teams.html">My Teams</a>
-            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <a href="./garage.html">My Garage</a>
+            <a href="./tickets.html">My Tickets</a>
+            <a href="./likes-build.html">Liked Builds</a>
+            <a href="./likes-sightings.html">Liked Sightings</a>
+            <a href="./teams.html">My Teams</a>
+            <a id="myEventsLink" href="./admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
             <div class="dd-sep"></div>
             <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
@@ -266,7 +266,7 @@
 
         <div class="form-footer">
           <button id="publishBtn" class="btn btn-primary">Publish Highlight</button>
-          <a href="/highlights.html" class="btn btn-ghost">Cancel</a>
+          <a href="./highlights.html" class="btn btn-ghost">Cancel</a>
           <span id="formMsg" class="form-msg"></span>
         </div>
       </div>
@@ -282,6 +282,17 @@
 
     const $ = (id) => document.getElementById(id);
     const navWrapper = $('navWrapper');
+
+    function extractYTId(url) {
+      if (!url) return null;
+      let m = url.match(/youtu\.be\/(?:live\/)?([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      m = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      return null;
+    }
 
     window.addEventListener('scroll', () => {
       navWrapper.classList.toggle('nav-solid', window.scrollY > 10);
@@ -348,14 +359,24 @@
     const mediaInput = $('hMedia');
     const preview = $('preview');
     const mediaErr = $('mediaErr');
+    let _currentBlobUrl = null;
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
     mediaInput.addEventListener('change', () => {
+      if (_currentBlobUrl) { URL.revokeObjectURL(_currentBlobUrl); _currentBlobUrl = null; }
       preview.style.display = 'none';
       preview.innerHTML = '';
       mediaErr.style.display = 'none';
 
       const file = mediaInput.files?.[0];
       if (!file) return;
+
+      if (file.size > MAX_FILE_SIZE) {
+        mediaErr.textContent = 'File is too large. Maximum is 10 MB.';
+        mediaErr.style.display = 'block';
+        mediaInput.value = '';
+        return;
+      }
 
       const isVideo = file.type.startsWith('video/');
       const isImage = file.type.startsWith('image/');
@@ -368,16 +389,17 @@
       }
 
       if (isImage) {
-        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview">`;
+        _currentBlobUrl = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${_currentBlobUrl}" alt="Preview">`;
         preview.style.display = 'flex';
         return;
       }
 
       // Video: check duration
-      const url = URL.createObjectURL(file);
+      _currentBlobUrl = URL.createObjectURL(file);
       const v = document.createElement('video');
       v.preload = 'metadata';
-      v.src = url;
+      v.src = _currentBlobUrl;
       v.muted = true;
       v.playsInline = true;
       v.onloadedmetadata = () => {
@@ -400,6 +422,24 @@
         mediaErr.style.display = 'block';
         mediaInput.value = '';
       };
+    });
+
+    // ── YouTube URL preview ───────────────────────────────────────────────
+    const ytInput = $('hYoutubeUrl');
+    ytInput.addEventListener('input', () => {
+      const url = ytInput.value.trim();
+      const id = extractYTId(url);
+      if (id) {
+        $('ytFrame').src = `https://www.youtube.com/embed/${id}`;
+        $('ytPreview').style.display = 'block';
+        // Clear file upload when YouTube is entered
+        mediaInput.value = '';
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+      } else {
+        $('ytPreview').style.display = 'none';
+        $('ytFrame').src = '';
+      }
     });
 
     // ── Publish ───────────────────────────────────────────────────────────
@@ -463,14 +503,15 @@
         const cover = await uploadCover(user);
 
         formMsg.textContent = 'Saving…';
+        const videoUrl = ytUrl || (cover?.type === 'video' ? cover.url : null);
         const { data, error } = await supabase
           .from('highlights')
           .insert({
             title,
             body,
             category,
-            image_url: cover?.url || null,
-            image_type: cover?.type || null,
+            image_url: (!ytUrl && cover?.type === 'image') ? cover.url : null,
+            video_url: videoUrl || null,
             link_url,
             user_id: user.id,
           })

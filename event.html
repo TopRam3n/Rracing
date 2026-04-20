@@ -591,7 +591,7 @@
           ${team.logo_url ? `<img src="${escapeHTML(team.logo_url)}" alt="" class="team-logo">` : ``}
           <div style="font-weight:900; letter-spacing:.04em">${escapeHTML(team.name)}</div>
           ${team.is_promoter ? `<span class="pill">Promoter</span>` : ``}
-          <a class="btn btn-ghost btn-pill-sm" href="/team.html?id=${team.id}" style="margin-left:auto">View</a>
+          <a class="btn btn-ghost btn-pill-sm" href="./team.html?id=${team.id}" style="margin-left:auto">View</a>
         </div>`;
 
       const tImg = host.querySelector('.team-logo');
@@ -634,7 +634,7 @@
             <div class="chips">
               <span class="chip">🕒 <strong>${escapeHTML(timeLine)}</strong></span>
               ${data.location ? `<span class="chip">📍 <strong>${escapeHTML(data.location)}</strong></span>` : ``}
-              ${data.teams?.id ? `<a class="chip" href="/team.html?id=${data.teams.id}">🏁 <strong>Host: ${escapeHTML(data.teams.name || 'Team')}</strong></a>` : ``}
+              ${data.teams?.id ? `<a class="chip" href="./team.html?id=${data.teams.id}">🏁 <strong>Host: ${escapeHTML(data.teams.name || 'Team')}</strong></a>` : ``}
             </div>
 
             <div id="eventTeamBadge" style="display:none"></div>

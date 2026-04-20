@@ -456,7 +456,10 @@
     authUI.onChange(() => { syncState(); checkRoleAccess(); });
 
     // File select → validate + preview
+    let _currentBlobUrl = null;
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
     mediaInput.addEventListener('change', async () => {
+      if (_currentBlobUrl) { URL.revokeObjectURL(_currentBlobUrl); _currentBlobUrl = null; }
       preview.style.display = 'none';
       preview.innerHTML = '';
       mediaErr.style.display = 'none';
@@ -464,6 +467,13 @@
 
       const file = mediaInput.files?.[0];
       if (!file) return;
+
+      if (file.size > MAX_FILE_SIZE) {
+        mediaErr.textContent = 'File is too large. Maximum is 10 MB.';
+        mediaErr.style.display = 'block';
+        mediaInput.value = '';
+        return;
+      }
 
       const isVideo = file.type.startsWith('video/');
       const isImage = file.type.startsWith('image/');
@@ -476,17 +486,17 @@
       }
 
       if (isImage) {
-        const url = URL.createObjectURL(file);
-        preview.innerHTML = `<img src="${url}" alt="Preview">`;
+        _currentBlobUrl = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${_currentBlobUrl}" alt="Preview">`;
         preview.style.display = 'flex';
         return;
       }
 
       // Video: check duration
-      const url = URL.createObjectURL(file);
+      _currentBlobUrl = URL.createObjectURL(file);
       const v = document.createElement('video');
       v.preload = 'metadata';
-      v.src = url;
+      v.src = _currentBlobUrl;
       v.muted = true;
       v.playsInline = true;
       v.onloadedmetadata = () => {

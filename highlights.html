@@ -149,8 +149,8 @@
       position:relative;min-height:260px;
       background:#0c0c0f;overflow:hidden;
     }
-    .featured-media img,.featured-media video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .5s ease}
-    .featured:hover .featured-media img,.featured:hover .featured-media video{transform:scale(1.07)}
+    .featured-media img,.featured-media video,.featured-media iframe{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .5s ease}
+    .featured:hover .featured-media img,.featured:hover .featured-media video,.featured:hover .featured-media iframe{transform:scale(1.07)}
     .featured-media-overlay{
       position:absolute;inset:0;
       background:linear-gradient(180deg,rgba(0,0,0,.05) 0,rgba(0,0,0,.6) 100%);
@@ -186,8 +186,8 @@
     }
     .card:hover{transform:translateY(-5px) scale(1.005);border-color:rgba(255,217,59,.32);box-shadow:0 22px 56px rgba(0,0,0,.72)}
     .card-media{position:relative;aspect-ratio:16/9;background:#0c0c0f;overflow:hidden}
-    .card-media img,.card-media video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .35s ease;filter:saturate(1.04)}
-    .card:hover .card-media img,.card:hover .card-media video{transform:scale(1.08)}
+    .card-media img,.card-media video,.card-media iframe{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .35s ease;filter:saturate(1.04)}
+    .card:hover .card-media img,.card:hover .card-media video,.card:hover .card-media iframe{transform:scale(1.08)}
     .card-media-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04) 0,rgba(0,0,0,.52) 100%);pointer-events:none}
     .card-cat{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.55);font-size:11px;color:#fff;backdrop-filter:blur(10px)}
     .card-body{padding:14px}
@@ -651,7 +651,7 @@
           image_url:isVideo?null:rawUrl,
           video_url:isVideo?rawUrl:null,
           link_url:($('aLinkUrl').value||'').trim()||null,
-          created_by:user.id,
+          user_id:user.id,
         });
         if(error) throw new Error(error.message);
         setAdminMsg('✓ Published!','ok');

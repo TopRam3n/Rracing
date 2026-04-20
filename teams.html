@@ -318,7 +318,7 @@
   <!-- NAV — exact match to index.html -->
   <div class="nav-wrapper" id="navWrapper">
     <div class="container nav">
-      <a href="/index.html" class="logo">
+      <a href="./index.html" class="logo">
         <div class="logo-mark">
           <img src="Assets/logo.png" alt="ROK Racers JA logo">
         </div>
@@ -351,14 +351,14 @@
               <div class="dd-title">Signed in as</div>
               <div class="dd-email" id="ddEmail">—</div>
             </div>
-            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
-            <a href="/garage.html">My Garage</a>
-            <a href="/tickets.html">My Tickets</a>
-            <a href="/likes-builds.html">Liked Builds</a>
-            <a href="/likes-sightings.html">Liked Sightings</a>
-            <a href="/teams.html">My Teams</a>
-            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <a href="./garage.html">My Garage</a>
+            <a href="./tickets.html">My Tickets</a>
+            <a href="./likes-build.html">Liked Builds</a>
+            <a href="./likes-sightings.html">Liked Sightings</a>
+            <a href="./teams.html">My Teams</a>
+            <a id="myEventsLink" href="./admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
             <div class="dd-sep"></div>
             <button id="navSignOutBtn" type="button">Sign out</button>
           </div>
@@ -734,7 +734,7 @@
             <div class="team-footer">
               <span class="team-members">${memberTxt ? `👥 ${memberTxt}` : ''}</span>
               <div style="display:flex;gap:8px">
-                <a class="btn btn-ghost btn-sm" href="/team.html?id=${esc(t.id)}">View →</a>
+                <a class="btn btn-ghost btn-sm" href="./team.html?id=${esc(t.id)}">View →</a>
                 <button class="btn btn-primary btn-sm apply-btn" data-id="${esc(t.id)}" data-name="${esc(t.name)}">Apply</button>
               </div>
             </div>
@@ -832,7 +832,7 @@
             ? `<img src="${esc(t.logo_url)}" alt="" style="width:36px;height:36px;border-radius:10px;object-fit:cover">`
             : `<div style="width:36px;height:36px;border-radius:10px;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-size:18px">🏁</div>`;
           return `
-            <a class="my-team-chip" href="/team.html?id=${esc(t.id)}">
+            <a class="my-team-chip" href="./team.html?id=${esc(t.id)}">
               ${logo}
               <div>
                 <div class="my-team-chip-name">${esc(t.name)}</div>
@@ -1030,7 +1030,7 @@
 
         if (error) throw error;
 
-        msg.textContent = '✓ Application submitted! Well review it and be in touch via email within 5–10 business days.';
+        msg.textContent = '✓ Application submitted! We\'ll review it and be in touch via email within 5–10 business days.';
         msg.className = 'modal-msg ok';
         // Clear form
         ['jmmcFirst','jmmcLast','jmmcEmail','jmmcPhone','jmmcDOB','jmmcVehicle','jmmcExperience','jmmcIG'].forEach(id => $(id).value = '');

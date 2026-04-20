@@ -352,9 +352,8 @@ async function checkAdmin() {
   const user = authUI.getUser?.();
   if (!user) { $('accessGate').style.display = 'flex'; $('adminContent').style.display = 'none'; return false; }
 
-  // Check admin flag on profile
   const { data: profile } = await supabase.from('profiles').select('role,plan').eq('id', user.id).maybeSingle();
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = !!authUI.isAdmin?.() || profile?.role === 'admin';
 
   if (!isAdmin) {
     $('accessGate').style.display = 'flex';
@@ -392,6 +391,44 @@ async function loadStats() {
   if (!tr) $('badgeTeamReqs').style.display = 'none';
   if (!tp) $('badgeTrophies').style.display = 'none';
 }
+  // ── Cached data for safe event delegation (avoids XSS from inline onclick) ──
+  const _cache = { teamRequests: {}, trophies: {}, users: {}, teams: {}, jmmc: {}, apps: {} };
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if (action === 'approve-team-req') {
+      const r = _cache.teamRequests[id]; if (r) approveTeamRequest(r);
+    } else if (action === 'reject') {
+      openReject(id, btn.dataset.type);
+    } else if (action === 'verify-trophy') {
+      verifyTrophy(id);
+    } else if (action === 'edit-team') {
+      const t = _cache.teams[id]; if (t) window.openEditTeam(t);
+    } else if (action === 'delete-team') {
+      const t = _cache.teams[id]; if (t) window.deleteTeam(id, t.name);
+    } else if (action === 'approve-jmmc') {
+      const a = _cache.jmmc[id]; if (a) window.approveJMMC(id, a.email);
+    } else if (action === 'reject-jmmc') {
+      window.rejectJMMC(id);
+    } else if (action === 'approve-app') {
+      const a = _cache.apps[id]; if (a) window.approveApplication(a.id, a.team_id, a.user_id);
+    } else if (action === 'reject-app') {
+      window.rejectApplication(id);
+    }
+  });
+
+  document.addEventListener('change', function(e) {
+    const sel = e.target.closest('[data-action]');
+    if (!sel) return;
+    if (sel.dataset.action === 'update-role') {
+      updateRole(sel.dataset.id, sel.value);
+    } else if (sel.dataset.action === 'update-plan') {
+      updatePlan(sel.dataset.id, sel.value);
+    }
+  });
 
 // ── TEAM REQUESTS ──────────────────────────────────────────────────────
 async function loadTeamRequests() {
@@ -406,7 +443,9 @@ async function loadTeamRequests() {
     return;
   }
 
-  list.innerHTML = data.map(r => `
+  list.innerHTML = data.map(r => {
+    _cache.teamRequests[r.id] = r;
+    return `
     <div class="item-card" id="tr-${r.id}">
       <div class="item-main">
         <div class="item-title">${esc(r.team_name)}</div>
@@ -420,15 +459,16 @@ async function loadTeamRequests() {
       <div class="item-actions">
         <span class="tag ${r.status}">${r.status}</span>
         ${r.status === 'pending' ? `
-          <button class="btn btn-success btn-sm" onclick="approveTeamRequest('${r.id}','${esc(r.team_name)}','${esc(r.parish||'')}','${esc(r.contact||'')}','${r.user_id||''}')">Approve + Create</button>
-          <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','teamreq')">Reject</button>
+          <button class="btn btn-success btn-sm" data-action="approve-team-req" data-id="${r.id}">Approve + Create</button>
+          <button class="btn btn-danger btn-sm" data-action="reject" data-id="${r.id}" data-type="teamreq">Reject</button>
         ` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
-async function approveTeamRequest(reqId, teamName, parish, contact, userId) {
+async function approveTeamRequest(r) {
+  const reqId = r.id, teamName = r.team_name, parish = r.parish, contact = r.contact, userId = r.user_id;
   // 1. Create the team
   const { data: team, error: teamErr } = await supabase.from('teams').insert({
     name: teamName,
@@ -485,8 +525,8 @@ async function loadTrophyClaims() {
         <div class="item-actions">
           <span class="tag ${t.verified ? 'verified' : 'pending'}">${t.verified ? 'Verified' : 'Pending'}</span>
           ${!t.verified ? `
-            <button class="btn btn-success btn-sm" onclick="verifyTrophy('${t.id}')">Verify ✓</button>
-            <button class="btn btn-danger btn-sm" onclick="openReject('${t.id}','trophy')">Reject</button>
+            <button class="btn btn-success btn-sm" data-action="verify-trophy" data-id="${t.id}">Verify ✓</button>
+            <button class="btn btn-danger btn-sm" data-action="reject" data-id="${t.id}" data-type="trophy">Reject</button>
           ` : ''}
         </div>
       </div>
@@ -508,7 +548,10 @@ async function verifyTrophy(id) {
 const ROLES = ['viewer','spotter','driver','promoter','seller','admin'];
 
 window.searchUsers = async function() {
-  const q = ($('userSearchQ').value || '').trim();
+  const raw = ($('userSearchQ').value || '').trim();
+  if (!raw) return;
+  // Sanitize: strip PostgREST operators to prevent filter injection
+  const q = raw.replace(/[^a-zA-Z0-9@._ -]/g, '');
   if (!q) return;
   const list = $('userRolesList');
   list.innerHTML = '<div class="skel"></div><div class="skel"></div>';
@@ -533,13 +576,13 @@ window.searchUsers = async function() {
       <div class="item-actions" style="gap:10px">
         <div>
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px">Role</div>
-          <select class="role-select" onchange="updateRole('${u.id}', this.value)">
+          <select class="role-select" data-action="update-role" data-id="${u.id}">
             ${ROLES.map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
           </select>
         </div>
         <div>
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px">Plan</div>
-          <select class="role-select" onchange="updatePlan('${u.id}', this.value)">
+          <select class="role-select" data-action="update-plan" data-id="${u.id}">
             ${['free','pro','elite'].map(p => `<option value="${p}" ${p===(u.plan||'free')?'selected':''}>${p}</option>`).join('')}
           </select>
         </div>
@@ -571,18 +614,20 @@ async function loadTeams() {
     list.innerHTML = `<div class="empty-state"><strong>No Teams</strong>Create the first team above.</div>`;
     return;
   }
-  list.innerHTML = data.map(t => `
+  list.innerHTML = data.map(t => {
+    _cache.teams[t.id] = t;
+    return `
     <div class="item-card">
       <div class="item-main">
         <div class="item-title">${esc(t.name)}</div>
         <div class="item-meta">${t.parish||''} ${t.discipline ? '· '+t.discipline : ''} ${t.is_promoter ? '· <span style="color:#9affc5">Promoter</span>' : ''}</div>
       </div>
       <div class="item-actions">
-        <button class="btn btn-ghost btn-sm" onclick="openEditTeam(${JSON.stringify(t).replace(/'/g,'&#39;')})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTeam('${t.id}','${esc(t.name)}')">Delete</button>
+        <button class="btn btn-ghost btn-sm" data-action="edit-team" data-id="${t.id}">Edit</button>
+        <button class="btn btn-danger btn-sm" data-action="delete-team" data-id="${t.id}">Delete</button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 window.openCreateTeam = function() {
@@ -665,7 +710,9 @@ async function loadJMMC() {
 
   const catLabels = {drag_junior:'Drag Junior',drag_amateur:'Drag Amateur',drag_pro:'Drag Pro',circuit_novice:'Circuit Novice',circuit_national:'Circuit National',circuit_international:'Circuit International',offroad:'Off-Road',hillclimb:'Hill Climb',karting:'Karting'};
 
-  list.innerHTML = data.map(a => `
+  list.innerHTML = data.map(a => {
+    _cache.jmmc[a.id] = a;
+    return `
     <div class="item-card" id="jmmc-${a.id}">
       <div class="item-main">
         <div class="item-title">${esc(a.first_name)} ${esc(a.last_name)}</div>
@@ -681,12 +728,12 @@ async function loadJMMC() {
       <div class="item-actions">
         <span class="tag ${a.status}">${a.status}</span>
         ${a.status === 'pending' ? `
-          <button class="btn btn-success btn-sm" onclick="approveJMMC('${a.id}','${esc(a.email)}')">Approve</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectJMMC('${a.id}')">Reject</button>
+          <button class="btn btn-success btn-sm" data-action="approve-jmmc" data-id="${a.id}">Approve</button>
+          <button class="btn btn-danger btn-sm" data-action="reject-jmmc" data-id="${a.id}">Reject</button>
         ` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 window.approveJMMC = async function(id, email) {
@@ -714,7 +761,9 @@ async function loadApplications() {
     return;
   }
 
-  list.innerHTML = data.map(a => `
+  list.innerHTML = data.map(a => {
+    _cache.apps[a.id] = a;
+    return `
     <div class="item-card" id="app-${a.id}">
       <div class="item-main">
         <div class="item-title">${esc(a.handle||'Applicant')} → <span style="color:var(--yellow)">${esc(a.teams?.name||'Team')}</span></div>
@@ -727,12 +776,12 @@ async function loadApplications() {
       <div class="item-actions">
         <span class="tag ${a.status}">${a.status}</span>
         ${a.status === 'pending' ? `
-          <button class="btn btn-success btn-sm" onclick="approveApplication('${a.id}','${a.team_id}','${a.user_id||''}')">Accept</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectApplication('${a.id}')">Decline</button>
+          <button class="btn btn-success btn-sm" data-action="approve-app" data-id="${a.id}">Accept</button>
+          <button class="btn btn-danger btn-sm" data-action="reject-app" data-id="${a.id}">Decline</button>
         ` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 window.approveApplication = async function(appId, teamId, userId) {

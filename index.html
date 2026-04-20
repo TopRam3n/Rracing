@@ -1530,10 +1530,12 @@
     }, 120);
     const minTime  = new Promise(r=>setTimeout(r,1200));
     const pageReady = new Promise(r=>{ if(document.readyState==='complete') r(); else window.addEventListener('load',r); });
-    Promise.all([minTime,pageReady]).then(()=>{
+    const safetyTimeout = new Promise(r=>setTimeout(r,3500));
+    Promise.race([Promise.all([minTime,pageReady]), safetyTimeout]).then(()=>{
       clearInterval(interval);
       bar.style.width='100%';
       setTimeout(()=>{
+        loader.style.pointerEvents='none';
         loader.style.opacity='0';
         setTimeout(()=>loader.remove(),500);
       },300);

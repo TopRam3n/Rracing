@@ -528,7 +528,7 @@
   <!-- NAV -->
   <div class="nav-wrapper" id="navWrapper">
     <div class="container nav">
-      <a href="/index.html" class="logo" aria-label="ROK Racers JA home">
+      <a href="./index.html" class="logo" aria-label="ROK Racers JA home">
         <div class="logo-mark">
           <img src="Assets/logo.png" alt="ROK Racers JA logo">
         </div>
@@ -563,14 +563,14 @@
               <div class="dd-title">Signed in as</div>
               <div class="dd-email" id="ddEmail">—</div>
             </div>
-            <a href="/my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
+            <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
             <div class="dd-sep"></div>
-            <a href="/garage.html">My Garage</a>
-            <a href="/tickets.html">My Tickets</a>
-            <a href="/likes-builds.html">Liked Builds</a>
-            <a href="/likes-sightings.html">Liked Sightings</a>
-            <a href="/teams.html">My Teams</a>
-            <a id="myEventsLink" href="/admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
+            <a href="./garage.html">My Garage</a>
+            <a href="./tickets.html">My Tickets</a>
+            <a href="./likes-build.html">Liked Builds</a>
+            <a href="./likes-sightings.html">Liked Sightings</a>
+            <a href="./teams.html">My Teams</a>
+            <a id="myEventsLink" href="./admin-events.html" style="display:none">My Events <span class="dd-badge">Promoter</span></a>
             <div class="dd-sep"></div>
             <button id="signoutBtn" type="button">Sign out</button>
           </div>
@@ -772,6 +772,8 @@
   </div>
 
   <script>
+    const $ = (id) => document.getElementById(id);
+
     /* ========= Nav solid on scroll ========= */
     const navWrapper = document.getElementById('navWrapper');
     function updateNavSolid(){ navWrapper?.classList.toggle('nav-solid', window.scrollY > 40); }

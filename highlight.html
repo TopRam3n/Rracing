@@ -257,7 +257,7 @@
               <span id="navProfileInitials">U</span>
             </div>
             <div id="navProfileDropdown" class="dropdown">
-              <a href="/garage.html?view=my">My Garage</a>
+              <a href="./garage.html?view=my">My Garage</a>
               <a href="./tickets.html">My Tickets</a>
               <a href="./likes-builds.html">Liked Builds</a>
               <a href="./likes-sightings.html">Liked Sightings</a>
@@ -319,6 +319,18 @@
     const escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m => (
       {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
     ));
+
+    function extractYTId(url) {
+      if (!url) return null;
+      let m = url.match(/youtu\.be\/(?:live\/)?([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      m = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      return null;
+    }
+
     let currentUserId = null;
     let currentLikeCount = 0;
     let currentCategory = null;
@@ -361,7 +373,7 @@
 
       const { data: h, error } = await supabase
         .from('highlights_with_like_count')
-        .select('id,title,category,image_url,body,link_url,like_count,created_at')
+        .select('id,title,category,image_url,video_url,body,link_url,like_count,created_at')
         .eq('id', highlightId)
         .maybeSingle();
 
@@ -380,10 +392,21 @@
       const dateStr = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
       currentCategory = h.category || 'News';
 
+      // Determine hero media: YouTube iframe, video, or image
+      let heroMediaHtml;
+      const ytId = h.video_url ? extractYTId(h.video_url) : null;
+      if (ytId) {
+        heroMediaHtml = `<iframe src="https://www.youtube.com/embed/${ytId}" width="100%" style="aspect-ratio:16/9;border:none;display:block" allowfullscreen></iframe>`;
+      } else if (h.video_url) {
+        heroMediaHtml = `<video src="${h.video_url}" controls style="width:100%;display:block"></video>`;
+      } else {
+        heroMediaHtml = `<img src="${hero}" alt="${escapeHTML(h.title)}" class="heroimg">`;
+      }
+
       card.innerHTML = `
         <div class="hero-wrap">
-          <img src="${hero}" alt="${escapeHTML(h.title)}" class="heroimg">
-          <div class="hero-fade"></div>
+          ${heroMediaHtml}
+          ${!ytId ? '<div class="hero-fade"></div>' : ''}
         </div>
         <div class="pad">
           <div class="row" style="margin-bottom:6px">
@@ -443,7 +466,7 @@
         const img = h.image_url || 'Assets/og.png';
         const dt = h.created_at ? new Date(h.created_at).toLocaleDateString() : '';
         return `
-          <a class="relatedItem" href="/highlight.html?id=${h.id}">
+          <a class="relatedItem" href="./highlight.html?id=${h.id}">
             <img class="thumb" src="${img}" alt="">
             <div>
               <div class="relTitle">${escapeHTML(h.title)}</div>

@@ -362,7 +362,7 @@
 
         return `
           <article class="card">
-            <a href="/build.html?id=${encodeURIComponent(b.id)}">
+            <a href="./build.html?id=${encodeURIComponent(b.id)}">
               ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -461,7 +461,7 @@
               </div>
               <div class="row" style="margin-top:8px">
                 <span class="sub">Booked on ${escapeHTML(booked)}</span>
-                <a class="btn small" href="/event.html?id=${encodeURIComponent(event.id)}">View event</a>
+                <a class="btn small" href="./event.html?id=${encodeURIComponent(event.id)}">View event</a>
               </div>
             </div>
           </article>`;
@@ -516,7 +516,7 @@
 
         return `
           <article class="card">
-            <a href="/build.html?id=${encodeURIComponent(b.id)}">
+            <a href="./build.html?id=${encodeURIComponent(b.id)}">
               ${b.thumb_url ? `<img src="${escapeHTML(b.thumb_url)}" alt="${escapeHTML(b.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -572,7 +572,7 @@
 
         return `
           <article class="card">
-            <a href="/sighting.html?id=${encodeURIComponent(s.id)}">
+            <a href="./sighting.html?id=${encodeURIComponent(s.id)}">
               ${s.image_url ? `<img src="${escapeHTML(s.image_url)}" alt="${escapeHTML(s.title || 'Car sighting')}" loading="lazy">` : ''}
             </a>
             <div class="pad">
@@ -628,7 +628,7 @@
 
         return `
           <article class="card">
-            <a href="/highlight.html?id=${encodeURIComponent(h.id)}">
+            <a href="./highlight.html?id=${encodeURIComponent(h.id)}">
               ${h.cover_url ? `<img src="${escapeHTML(h.cover_url)}" alt="${escapeHTML(h.title)}" loading="lazy">` : ''}
             </a>
             <div class="pad">

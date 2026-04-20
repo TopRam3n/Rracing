@@ -158,8 +158,9 @@
             <label>Your role</label>
             <select id="__authRole">
               <option value="">Select one…</option>
-              <option value="racer">Racer / Enthusiast</option>
-              <option value="promoter">Team Promoter / Organiser</option>
+              <option value="viewer">Viewer / Fan</option>
+              <option value="spotter">Spotter</option>
+              <option value="driver">Racer / Enthusiast</option>
             </select>
           </div>
 
@@ -269,9 +270,11 @@
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) return setMsg(error.message || "Signup failed.", "bad");
         const uid = data?.user?.id;
-        if (uid && role) {
+        const SAFE_ROLES = ['viewer', 'spotter', 'driver'];
+        const safeRole = SAFE_ROLES.includes(role) ? role : 'viewer';
+        if (uid && safeRole) {
           await supabase.from("profiles").upsert(
-            { id: uid, role, updated_at: new Date().toISOString() },
+            { id: uid, role: safeRole, updated_at: new Date().toISOString() },
             { onConflict: "id" }
           );
         }
@@ -549,7 +552,11 @@
     signOut:     () => supabase.auth.signOut(),
     open:        openModal,
     close:       closeModal,
-    onChange:    (fn) => { if (typeof fn === "function") state.listeners.push(fn); },
+    onChange:    (fn) => {
+      if (typeof fn !== "function") return () => {};
+      state.listeners.push(fn);
+      return () => { state.listeners = state.listeners.filter(f => f !== fn); };
+    },
     refresh: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       state.user = session?.user || null;

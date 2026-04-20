@@ -277,7 +277,7 @@
 
           <a href="./my-profile.html">My Profile <span class="dd-badge">Hub</span></a>
           <div class="dd-sep"></div>
-          <a href="/garage.html?view=my">My Garage</a>
+          <a href="./garage.html?view=my">My Garage</a>
           <a href="./tickets.html">My Tickets</a>
           <a href="./likes-build.html">Liked Builds</a>
           <a href="./likes-sightings.html">Liked Sightings</a>
@@ -816,8 +816,12 @@
       syncGoLivePanel();
       await loadStreams();
 
-      // Auto-refresh every 60s
-      setInterval(loadStreams, 60_000);
+      // Auto-refresh every 30s, paused when tab is hidden
+      let refreshTimer = setInterval(loadStreams, 30_000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { clearInterval(refreshTimer); }
+        else { refreshTimer = setInterval(loadStreams, 30_000); }
+      });
     });
   </script>
 </body>
